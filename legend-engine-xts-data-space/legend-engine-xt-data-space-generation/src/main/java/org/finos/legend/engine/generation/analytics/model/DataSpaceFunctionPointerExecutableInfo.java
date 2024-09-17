@@ -16,7 +16,5 @@ package org.finos.legend.engine.generation.analytics.model;
 
 public class DataSpaceFunctionPointerExecutableInfo extends DataSpaceExecutableInfo
 {
-    public String id;
-    public String executionContextKey;
     public String function;
 }
