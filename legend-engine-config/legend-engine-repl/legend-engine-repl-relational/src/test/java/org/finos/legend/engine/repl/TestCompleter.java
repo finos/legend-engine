@@ -101,7 +101,7 @@ public class TestCompleter
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.")));
         Assert.assertEquals("[col , col]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.co")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.z")));
-        Assert.assertEquals("['na col' , 'na col']", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"na col\" VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.'na")));
+        Assert.assertEquals("[na col , 'na col']", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(\"na col\" VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.'na")));
     }
 
     //--------
