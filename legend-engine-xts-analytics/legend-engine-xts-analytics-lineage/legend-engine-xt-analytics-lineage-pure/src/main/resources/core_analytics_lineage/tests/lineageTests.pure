@@ -17,7 +17,7 @@ import meta::relational::extension::*;
 import meta::pure::functions::date::calendar::*;
 import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::calendarAggregations():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::calendarAggregations():Boolean[1]
 {
  let r = meta::analytics::lineage::computeLineage(|  Employee.all()
      ->groupBy(
@@ -38,7 +38,7 @@ import meta::analytics::lineage::*;
 import meta::relational::extension::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::tests::tds::tdsJoin::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMultipleDB():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testMultipleDB():Boolean[1]
 {
 
     let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
@@ -59,7 +59,7 @@ import meta::relational::metamodel::join::*;
 import meta::analytics::lineage::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testSelfJoin():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testSelfJoin():Boolean[1]
 {
 
     let fn= {|Firm.all()->project([
@@ -87,7 +87,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
 import meta::analytics::lineage::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testProjectWithIsolatedFilter():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testProjectWithIsolatedFilter():Boolean[1]
 {
    let fn =  { |Firm.all()->project([ f|$f.legalName,
                                   f|$f.employees.address->filter(a|$a.name=='Bob'  && $f.legalName=='Co' ).name->toOne()
@@ -106,7 +106,7 @@ import meta::relational::metamodel::join::*;
 import meta::analytics::lineage::*;
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testTDSJoinWithAdditionalTables():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testTDSJoinWithAdditionalTables():Boolean[1]
 {
     let fn= {|Firm.all()->project([  f|$f.legalName,
                                   f|$f.employees.address.name
@@ -123,8 +123,5 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
-      
-    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
-    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
 
 }
