@@ -4855,6 +4855,14 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
    );
 }
 
+// TODO: since we use SELECT * when processing PIVOT (effectively always force pivot to be part of a subselect in subsequent processing)
+// we perform the following check to see if the result columns can be dynamic. The following check is still pretty naive
+// it should (in theory) walk the chain of SELECT * (i.e. $select.columns->isEmpty()) and determine if the source of this is from a pivot()
+function meta::relational::functions::pureToSqlQuery::isResultColumnsDynamic(select:SelectSQLQuery[1]):Boolean[1]
+{
+  !$select.pivot->isEmpty() || $select.columns->isEmpty();
+}
+
 function meta::relational::functions::pureToSqlQuery::processPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
