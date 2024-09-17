@@ -29,3 +29,98 @@ function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggre
   assertSameElements(['Lambda','tb_EmployeeDatabasedefaultEmployeeTable','db_EmployeeDatabase'], $r.databaseLineage.nodes.data.id);
 
 }
+
+
+
+###Pure 
+import meta::analytics::lineage::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::tds::tdsJoin::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMultipleDB():Boolean[1]
+{
+
+    let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
+                                     ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});};
+                       
+                        
+
+    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
+
+}
+
+
+###Pure
+import meta::pure::lineage::scanRelations::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::analytics::lineage::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testSelfJoin():Boolean[1]
+{
+
+    let fn= {|Firm.all()->project([
+                                  f|$f.employees.address.name
+                                ],
+                                [
+
+                                   'addressName'
+                                ])  ->join(Firm.all()->project([
+                                  f|$f.employees.address.name
+                                ],
+                                [
+                                   'addressName2'
+                                ]) , JoinType.INNER, {a,b|$a.getString('addressName') == $b.getString('addressName2');});};
+
+
+
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+
+}
+
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testProjectWithIsolatedFilter():Boolean[1]
+{
+   let fn =  { |Firm.all()->project([ f|$f.legalName,
+                                  f|$f.employees.address->filter(a|$a.name=='Bob'  && $f.legalName=='Co' ).name->toOne()
+                                ],
+                                [
+                                   'legalName',
+                                   'addressName'
+                                ])};
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+
+}
+
+###Pure
+import meta::relational::metamodel::join::*;
+import meta::analytics::lineage::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testTDSJoinWithAdditionalTables():Boolean[1]
+{
+    let fn= {|Firm.all()->project([  f|$f.legalName,
+                                  f|$f.employees.address.name
+                                ],
+                                [
+                                  'legalName',
+                                   'addressName'
+                                ])  ->join(Person.all()->project([  f|$f.firstName,
+                                  f|$f.address.name
+                                ],
+                                [ 'firstname',
+                                   'addressName2'
+                                ]) , JoinType.INNER, {a,b|$a.getString('legalName') == $b.getString('firstname')   && $a.getString('addressName') == $b.getString('addressName2')    ;});};
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+
+
+}
