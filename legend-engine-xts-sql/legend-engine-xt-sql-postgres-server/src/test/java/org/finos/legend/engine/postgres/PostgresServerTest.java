@@ -174,7 +174,8 @@ public class PostgresServerTest
             while (resultSet.next())
             {
                 rows++;
-            }            Assert.assertEquals(4, rows);
+            }
+            Assert.assertEquals(4, rows);
         }
     }
 

@@ -821,7 +821,7 @@ public class PostgresWireProtocol
 
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Describe Message").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
