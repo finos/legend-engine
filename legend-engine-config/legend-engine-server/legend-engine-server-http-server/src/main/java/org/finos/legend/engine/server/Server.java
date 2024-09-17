@@ -265,7 +265,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     }
 
     @Override
-    public void run (T serverConfiguration, Environment environment)
+    public void run(T serverConfiguration, Environment environment)
     {
         loadVaults(serverConfiguration.vaults);
 
