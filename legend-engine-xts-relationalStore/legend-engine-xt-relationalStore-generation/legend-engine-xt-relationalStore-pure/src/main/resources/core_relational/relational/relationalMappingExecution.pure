@@ -60,6 +60,45 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
    );
 }
 
+function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1], query:TdsSelectSqlQuery[1],  exeCtx:meta::pure::runtime::ExecutionContext[1]):TDSResultType[1]
+{
+    let  paths = $query.paths;
+    ^TDSResultType
+        (
+          type = $class,
+          tdsColumns = $paths->map(p|
+                                      ^TDSColumn
+                                      (
+                                        name = $p.first,
+                                        type = $p.second.type->cast(@meta::pure::metamodel::type::DataType),
+                                        documentation =  $p.second.documentation,
+                                        enumMappingId =   if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),|[] ,|  $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>).name, p:PropertyMapping[0..1] | []])),
+                                        enumMapping   = if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM), | [], | $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>), p:PropertyMapping[0..1] | []])),
+                                        offset = $paths->indexOf($p),
+                                        sourceDataType = if($p.second.relationalType->isNotEmpty(),
+                                                            | $p.second.relationalType,
+                                                            | $p.second.propertyMapping->match([
+                                                                rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
+                                                                rpm1: RelationalPropertyMapping[1] | 
+                                                                                                      let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                      if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
+                                                                cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([
+                                                                                                          rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
+                                                                                                          rpm1: RelationalPropertyMapping[1] | 
+                                                                                                                                                let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                                                                if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
+                                                                                                          pm: PropertyMapping[0..1] | []]
+                                                                                                        ),
+                                                                pm: PropertyMapping[0..1] | [];
+                                                              ])
+                                                            )
+                                      );
+                                )
+        );
+
+
+}
+
 function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], query:SQLQuery[1], node:ExecutionNode[1], m:Mapping[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1]):ExecutionNode[1]
 {
    let possibleClass = $sq.fe.genericType.rawType->toOne();
@@ -67,39 +106,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
    let resultType = if([
                           pair(
                               |$class->_subTypeOf(TabularDataSet),
-                              |let paths = $query->cast(@TdsSelectSqlQuery).paths;
-                              ^TDSResultType
-                                  (
-                                    type = $class,
-                                    tdsColumns = $paths->map(p|
-                                                                ^TDSColumn
-                                                                (
-                                                                  name = $p.first,
-                                                                  type = $p.second.type->cast(@meta::pure::metamodel::type::DataType),
-                                                                  documentation =  $p.second.documentation,
-                                                                  enumMappingId =   if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),|[] ,|  $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>).name, p:PropertyMapping[0..1] | []])),
-                                                                  enumMapping   = if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM), | [], | $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>), p:PropertyMapping[0..1] | []])),
-                                                                  offset = $paths->indexOf($p),
-                                                                  sourceDataType = if($p.second.relationalType->isNotEmpty(),
-                                                                                      | $p.second.relationalType,
-                                                                                      | $p.second.propertyMapping->match([
-                                                                                          rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
-                                                                                          rpm1: RelationalPropertyMapping[1] | 
-                                                                                                                                let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
-                                                                                                                                if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
-                                                                                          cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([
-                                                                                                                                    rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
-                                                                                                                                    rpm1: RelationalPropertyMapping[1] | 
-                                                                                                                                                                          let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
-                                                                                                                                                                          if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
-                                                                                                                                    pm: PropertyMapping[0..1] | []]
-                                                                                                                                  ),
-                                                                                          pm: PropertyMapping[0..1] | [];
-                                                                                        ])
-                                                                                      )
-                                                                );
-                                                          )
-                                  );
+                              | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx);
                           ),
                           pair(
                               |$class->_subTypeOf(meta::pure::metamodel::relation::Relation),

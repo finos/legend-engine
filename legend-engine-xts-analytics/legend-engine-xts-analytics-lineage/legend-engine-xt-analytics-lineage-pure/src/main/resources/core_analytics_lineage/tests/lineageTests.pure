@@ -1,7 +1,3 @@
-import meta::analytics::lineage::graph::*;
-import meta::relational::extension::*;
-import meta::pure::functions::date::calendar::*;
-import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 // Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +11,11 @@ import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations:
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+import meta::analytics::lineage::graph::*;
+import meta::relational::extension::*;
+import meta::pure::functions::date::calendar::*;
+import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 
 function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggregations():Boolean[1]
 {
@@ -122,5 +123,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
+      
+    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
 
 }

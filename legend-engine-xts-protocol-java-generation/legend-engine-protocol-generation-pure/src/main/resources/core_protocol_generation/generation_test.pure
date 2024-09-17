@@ -1580,7 +1580,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        SubType that = (SubType) obj;\n'+
-                '        return this.prop == that.prop && this.other == that.other;\n'+
+                '        return this.prop == that.prop && Objects.equals(this.other, that.other);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+

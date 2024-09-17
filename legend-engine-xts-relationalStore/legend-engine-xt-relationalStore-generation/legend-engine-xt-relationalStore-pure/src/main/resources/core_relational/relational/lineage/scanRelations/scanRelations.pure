@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::*;
+import meta::pure::router::externalFormat::metamodel::clustering::*;
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::router::platform::metamodel::clustering::*;
 import meta::dsb::domain::config::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -341,12 +345,16 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
    $f->scanRelations($m, $r, $vars, noDebug(), $extensions);
 }
 
+
+
+
+
 function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[1]
 {
-   let sqlQuery   = meta::pure::lineage::scanRelations::generateSQLQuery($f, $m, $r, $vars, $extensions);
-   if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($sqlQuery, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
 
-   let childTrees = generateRelationTreeFromRelationalOperationElement($sqlQuery, $debug, $extensions);
+
+   let childTrees   = meta::pure::lineage::scanRelations::generatRelationalTrees($f, $m, $r, $vars, $debug, $extensions);
+
 
    let rootTree   = ^RelationTree
                      (
@@ -358,13 +366,54 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 
    $rootTree;
 }
+function meta::pure::lineage::scanRelations::collectStoreMappingCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
+{ 
+  $cluster->match([
+       sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database));  //TODO: Refactor to support additional store types
+                                                        if($DBCluster->isNotEmpty() ,|  ^ClusterAndVars(cluster=$DBCluster->toOne() ),|[]);,
+                                            
+        pl:PlatformClusteredValueSpecification[1] |    $pl.val->processPlatformValueSpecification($inScopeVars,$extensions); , 
+       a:Any[*]| fail('Found unsupported cluster type '+ $a->type().name->toOne()) ;  [];
+  ]);
 
-function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:Extension[*]):SQLQuery[1]
+}
+
+function meta::pure::lineage::scanRelations::processPlatformValueSpecification(val:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
+{    
+  $val->match([
+       fn:SimpleFunctionExpression[1] |  if ($fn.func ==letFunction_String_1__T_m__T_m_ && $fn.parametersValues->at(1)->instanceOf(ClusteredValueSpecification), //TODO: This might need a more robust function processor for different functions if they become relevent
+                                                     | let varName =  $fn.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString();
+                                                      let value =  $fn.parametersValues->at(1)->cast(@ClusteredValueSpecification)->collectStoreMappingCluster($inScopeVars,$extensions);
+                                                      ^ClusterAndVars(var=$varName,cluster=$value.cluster->last());
+                                                      , 
+                                                    |[]                                                   
+                                            );,         
+       
+       a:Any[*]| [];
+  ]);
+
+}
+Class meta::pure::lineage::scanRelations::ClusterAndVars
 {
-   let routed         = $f->routeFunction($m, $r, $extensions, noDebug());
-   let routedFunction = $routed->evaluateAndDeactivate()->toOne();
+  cluster:ClusteredValueSpecification[0..1];
+  var:String[0..1];
 
-   let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a | if ($vs->isLetFunction(),
+}
+
+Class meta::pure::lineage::scanRelations::RelationalTreeAndVars
+{
+  tree:RelationTree[*];
+  vars:Map<String, List<Any>>[1];
+
+}
+
+function <<access.private>> meta::pure::lineage::scanRelations::generatRelationalTrees(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug:DebugContext[1], extensions:Extension[*]):RelationTree[*]
+{   
+   let routed         = $f->routeFunction($m, $r, $extensions, $debug);
+   let routedFunction = $routed->evaluateAndDeactivate()->toOne();
+   let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a |  
+
+                                                                                                if ($vs->isLetFunction(),
                                                                                            |  let varName = $vs->meta::pure::router::utils::extractLetVariableName();
                                                                                               let varExprs = $vs->findVariableExpressionsInValueSpecification();
 
@@ -379,12 +428,25 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery
                                                                                         );
                                                                               }, $f->openVariableValues()->putAll($vars));
 
-   let clusters       = $routedFunction.expressionSequence->evaluateAndDeactivate()->filter(c | $c->instanceOf(StoreMappingClusteredValueSpecification))->cast(@StoreMappingClusteredValueSpecification)->filter(cvs | $cvs.store->instanceOf(Database));
-   assert($clusters->size() == 1, | 'Scan Relations currently supports 1 cluster, Found - ' + $clusters->size()->toString());
+                                                                              
+   let allClusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c|$c->  meta::pure::lineage::scanRelations::collectStoreMappingCluster($inScopeVars,$extensions) );   
+   let AllTrees =   $allClusters->fold({ v, a|    let fn = $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
+                                                  let context = ^RelationalExecutionContext();
+                                                  let SQL =   $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression)->toSQLQuery($m, $a.vars, $context, noDebug(), $extensions)  ;    
+                                                  if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($SQL, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
+  
+                                                  let possibleClass = $fn.genericType.rawType->toOne();
+                                                 let updatedVars = if($v.var->isNotEmpty(),
+                                                                      | let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fn); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+                                                                        let tdsType =  $class->meta::relational::mapping::TDSSelectQueryToTDSResultType($SQL->cast(@TdsSelectSqlQuery),$context);
+                                                                        let varName = $v.var->toOne();
+                                                                        let varset = ^PlanSetPlaceHolder(name=$varName,tdsColumns = $tdsType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]]));
+                                                                         $inScopeVars->put($varName,^List<Any>(values=$varset));,
+                                                                      |$a.vars);
+                                               let updatedTree=   generateRelationTreeFromRelationalOperationElement($SQL, noDebug(), $extensions)->concatenate($a.tree);
+                                              ^RelationalTreeAndVars(tree= $updatedTree, vars=$updatedVars);
+                                          }    , ^RelationalTreeAndVars(vars=$inScopeVars)).tree;
 
-   let fe             = $clusters->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
-
-   let sqlQuery       = $fe->toSQLQuery($m, $inScopeVars, ^RelationalExecutionContext(), noDebug(), $extensions);
 }
 
 function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalOperationElement(relOp:RelationalOperationElement[1], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[*]

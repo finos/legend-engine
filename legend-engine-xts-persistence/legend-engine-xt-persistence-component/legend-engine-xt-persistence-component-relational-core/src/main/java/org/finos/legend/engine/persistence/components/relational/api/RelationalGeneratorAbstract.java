@@ -252,6 +252,23 @@ public abstract class RelationalGeneratorAbstract
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
+        // schema evolution
+        Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.empty();
+        Optional<Dataset> schemaEvolutionDataset = Optional.empty();
+        if (enableSchemaEvolution())
+        {
+            // Get logical plan and physical plan for schema evolution and update datasets
+            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
+            SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset().schema());
+            LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
+
+            schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));
+            schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
+
+            // update main dataset with evolved schema and re-initialize planner
+            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
+        }
+
         // pre-run statistics
         Map<StatisticName, LogicalPlan> preIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPreRunStatistics(resources);
         Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan = new HashMap<>();
@@ -286,23 +303,6 @@ public abstract class RelationalGeneratorAbstract
         if (acquireLockLogicalPlan != null)
         {
             acquireLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(acquireLockLogicalPlan));
-        }
-
-        // schema evolution
-        Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.empty();
-        Optional<Dataset> schemaEvolutionDataset = Optional.empty();
-        if (enableSchemaEvolution())
-        {
-            // Get logical plan and physical plan for schema evolution and update datasets
-            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
-            SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset().schema());
-            LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
-
-            schemaEvolutionSqlPlan = Optional.of(transformer.generatePhysicalPlan(schemaEvolutionLogicalPlan));
-            schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
-
-            // update main dataset with evolved schema and re-initialize planner
-            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
         }
 
         // deduplication and versioning
