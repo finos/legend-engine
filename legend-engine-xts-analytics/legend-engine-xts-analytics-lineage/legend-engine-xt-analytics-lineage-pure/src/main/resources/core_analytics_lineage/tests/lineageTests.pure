@@ -17,7 +17,7 @@ import meta::relational::extension::*;
 import meta::pure::functions::date::calendar::*;
 import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 
-function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggregations():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::calendarAggregations():Boolean[1]
 {
  let r = meta::analytics::lineage::computeLineage(|  Employee.all()
      ->groupBy(
@@ -26,7 +26,7 @@ function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggre
        ['includedDate','annualized'])
      ->filter(x | isNotEmpty($x.getNumber('annualized')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   assertSameElements(['Lambda','tb_EmployeeDatabasedefaultEmployeeTable','db_EmployeeDatabase'], $r.databaseLineage.nodes.data.id);
 
 }
@@ -46,7 +46,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
                        
                         
 
-    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
+    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
 
 }
@@ -77,7 +77,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
 
 
 
-    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
 }
