@@ -109,7 +109,7 @@
         <!-- Legend -->
         <legend.pure.version>5.17.0</legend.pure.version>
         <legend.shared.version>0.25.6</legend.shared.version>
-        <legend.web-application.version>12.38.0</legend.web-application.version>
+        <legend.web-application.version>12.40.0</legend.web-application.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
