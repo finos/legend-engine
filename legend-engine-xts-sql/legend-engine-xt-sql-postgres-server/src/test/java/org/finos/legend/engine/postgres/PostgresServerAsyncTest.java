@@ -15,20 +15,6 @@
 package org.finos.legend.engine.postgres;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
@@ -45,6 +31,21 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class PostgresServerAsyncTest
 {
 
@@ -54,8 +55,8 @@ public class PostgresServerAsyncTest
     public static final ResourceTestRule resources;
     private static TestPostgresServer testPostgresServer;
 
-    private static int numberOfExecutor = 20;
-    private static int numberOfConcurrent = 20;
+    private static final int NUMBER_OF_EXECUTOR = 40;
+    private static final int NUMBER_OF_CONCURRENT = 20;
 
     static
     {
@@ -95,46 +96,41 @@ public class PostgresServerAsyncTest
 
         testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory,
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
-                new Messages((exception) -> exception.getMessage()));
+                new Messages(Throwable::getMessage));
         testPostgresServer.startUp();
     }
 
 
-    private void executeAsyncTest(String testName, Callable callableSupplier) throws Exception
+    private void executeAsyncTest(String testName, Callable<Void> callableSupplier) throws Exception
     {
-        AtomicInteger counter = new AtomicInteger(numberOfExecutor);
+        AtomicInteger counter = new AtomicInteger(NUMBER_OF_EXECUTOR);
 
         List<Callable<Void>> testArrayList = new ArrayList<>();
-        for (int i = 0; i < numberOfExecutor; i++)
+        for (int i = 0; i < NUMBER_OF_EXECUTOR; i++)
         {
             String testNameWithCounter = testName + "_" + i;
-            testArrayList.add(new Callable<Void>()
+            testArrayList.add(() ->
             {
-                @Override
-                public Void call() throws Exception
+                try
                 {
-                    try
-                    {
-                        LOGGER.info(testNameWithCounter + ": Start");
-                        callableSupplier.call();
-                        LOGGER.info(testNameWithCounter + ": Complete");
-                        counter.decrementAndGet();
-                        return (Void) null;
-                    }
-                    catch (Throwable e)
-                    {
-                        LOGGER.error(testNameWithCounter + ": Failed", e);
-                        throw e;
-                    }
+                    LOGGER.info("{}: Start", testNameWithCounter);
+                    callableSupplier.call();
+                    LOGGER.info("{}: Complete", testNameWithCounter);
+                    counter.decrementAndGet();
+                    return null;
+                }
+                catch (Throwable e)
+                {
+                    LOGGER.error("{}: Failed", testNameWithCounter, e);
+                    throw e;
                 }
             });
         }
-        ExecutorService service = Executors.newFixedThreadPool(numberOfConcurrent);
+        ExecutorService service = Executors.newFixedThreadPool(NUMBER_OF_CONCURRENT);
         List<Future<Void>> futureList = service.invokeAll(testArrayList, 100, TimeUnit.SECONDS);
 
-        for (int i = 0; i < futureList.size(); i++)
+        for (Future<Void> voidFuture : futureList)
         {
-            Future<Void> voidFuture = futureList.get(i);
             voidFuture.get();
         }
 
@@ -192,6 +188,7 @@ public class PostgresServerAsyncTest
     @AfterClass
     public static void tearDown()
     {
+        System.clearProperty("io.netty.eventLoopThreads");
         testPostgresServer.stopListening();
         testPostgresServer.shutDown();
     }

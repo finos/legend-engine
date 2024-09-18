@@ -57,7 +57,7 @@ public class JDBCSessionFactory implements SessionsFactory
     private static class JDBCPostgresStatement implements PostgresStatement
     {
 
-        private Statement postgresStatement;
+        private final Statement postgresStatement;
 
         public JDBCPostgresStatement(Statement postgresStatement)
         {
@@ -82,7 +82,6 @@ public class JDBCSessionFactory implements SessionsFactory
             if (postgresStatement != null)
             {
                 postgresStatement.close();
-                ;
             }
         }
 
@@ -91,7 +90,8 @@ public class JDBCSessionFactory implements SessionsFactory
     private static class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
     {
 
-        private PreparedStatement preparedStatement;
+        private final PreparedStatement preparedStatement;
+        private boolean isExecuted = false;
 
         public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement)
         {
@@ -129,8 +129,21 @@ public class JDBCSessionFactory implements SessionsFactory
         }
 
         @Override
+        public int getMaxRows() throws Exception
+        {
+            return preparedStatement.getMaxRows();
+        }
+
+        @Override
+        public boolean isExecuted()
+        {
+            return isExecuted;
+        }
+
+        @Override
         public boolean execute() throws Exception
         {
+            isExecuted = true;
             return preparedStatement.execute();
         }
 
@@ -144,7 +157,7 @@ public class JDBCSessionFactory implements SessionsFactory
     private static class JDBCPostgresResultSet implements PostgresResultSet
     {
 
-        private ResultSet resultSet;
+        private final ResultSet resultSet;
 
         public JDBCPostgresResultSet(ResultSet resultSet)
         {
@@ -192,7 +205,7 @@ public class JDBCSessionFactory implements SessionsFactory
     private static class JDBCPostgresResultSetMetaData implements PostgresResultSetMetaData
     {
 
-        private ResultSetMetaData resultSetMetaData;
+        private final ResultSetMetaData resultSetMetaData;
 
 
         public JDBCPostgresResultSetMetaData(ResultSetMetaData resultSetMetaData)
