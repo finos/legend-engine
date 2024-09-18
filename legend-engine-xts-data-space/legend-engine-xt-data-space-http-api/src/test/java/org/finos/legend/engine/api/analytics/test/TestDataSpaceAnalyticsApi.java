@@ -56,7 +56,7 @@ public class TestDataSpaceAnalyticsApi
     public void testDataSpaceAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
-        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"datasets\":[],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[]},\"name\":\"dummyContext\"}],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
+        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"datasets\":[],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"name\":\"dummyContext\"}],\"mappingToMappingCoverageResult\":{\"model::dummyMapping\":{\"mappedEntities\":[]}},\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
         testAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
     }
 
@@ -64,7 +64,7 @@ public class TestDataSpaceAnalyticsApi
     public void testDataSpaceCoverageAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
-        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[],\"model\":{\"_type\":\"data\",\"elements\":[{\"_type\":\"dataSpace\",\"defaultExecutionContext\":\"dummyContext\",\"executionContexts\":[{\"defaultRuntime\":{\"path\":\"model::dummyRuntime\",\"type\":\"RUNTIME\"},\"mapping\":{\"path\":\"model::dummyMapping\",\"type\":\"MAPPING\"},\"name\":\"dummyContext\"}],\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"stereotypes\":[],\"taggedValues\":[]}]}},\"name\":\"dummyContext\"}],\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
+        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"name\":\"dummyContext\"}],\"mappingToMappingCoverageResult\":{\"model::dummyMapping\":{\"mappedEntities\":[],\"model\":{\"_type\":\"data\",\"elements\":[]}}},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
         testCoverageAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
     }
 

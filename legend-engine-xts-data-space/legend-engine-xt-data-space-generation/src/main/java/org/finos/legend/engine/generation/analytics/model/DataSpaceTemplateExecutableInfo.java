@@ -16,6 +16,4 @@ package org.finos.legend.engine.generation.analytics.model;
 
 public class DataSpaceTemplateExecutableInfo extends DataSpaceExecutableInfo
 {
-    public String id;
-    public String executionContextKey;
 }
