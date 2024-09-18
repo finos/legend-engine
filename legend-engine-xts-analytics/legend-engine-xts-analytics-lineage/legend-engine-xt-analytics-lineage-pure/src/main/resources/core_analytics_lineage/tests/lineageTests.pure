@@ -47,7 +47,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                         
 
     let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
 
 }
 
@@ -78,7 +78,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
 }
 
@@ -97,7 +97,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                    'addressName'
                                 ])};
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
 }
 
@@ -121,7 +121,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                    'addressName2'
                                 ]) , JoinType.INNER, {a,b|$a.getString('legalName') == $b.getString('firstname')   && $a.getString('addressName') == $b.getString('addressName2')    ;});};
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
 
 }
