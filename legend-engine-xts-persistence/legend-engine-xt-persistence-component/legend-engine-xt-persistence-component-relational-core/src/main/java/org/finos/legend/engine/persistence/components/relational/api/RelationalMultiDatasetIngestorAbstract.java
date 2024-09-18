@@ -22,7 +22,6 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
-import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -323,7 +322,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion(), false);
 
                 // 4. Add optimization columns if needed
-                enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
+                enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer));
 
                 // 5. Use a placeholder for additional metadata
                 Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
@@ -446,7 +445,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
         SqlPlan acquireLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfo(BatchStartTimestampAbstract.INSTANCE))));
         executor.executePhysicalPlan(acquireLockSqlPlan, placeHolderKeyValues);
-        return IngestionUtils.getNextBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForNextBatchIdValue(),executor, transformer);
+        return IngestionUtils.getNextBatchIdFromLockTable(lockInfoUtils.getLogicalPlanForNextBatchIdValue(), executor, transformer);
     }
 
     private void updateBachIdInLockTable(long batchId)

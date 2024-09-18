@@ -121,6 +121,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
                 .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
                 .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .derivePartitionSpec(unitemporalSnapshot.derivePartitionSpec())
+                .maxPartitionSpecFilters(unitemporalSnapshot.maxPartitionSpecFilters())
                 .build();
     }
 

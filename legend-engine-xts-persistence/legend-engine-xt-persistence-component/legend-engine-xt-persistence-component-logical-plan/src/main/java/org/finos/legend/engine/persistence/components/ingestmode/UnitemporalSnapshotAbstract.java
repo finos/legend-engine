@@ -60,6 +60,18 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     }
 
     @Value.Default
+    default boolean derivePartitionSpec()
+    {
+        return false;
+    }
+
+    @Value.Default
+    default Long maxPartitionSpecFilters()
+    {
+        return 1000L;
+    }
+
+    @Value.Default
     default EmptyDatasetHandling emptyDatasetHandling()
     {
         return DeleteTargetData.builder().build();

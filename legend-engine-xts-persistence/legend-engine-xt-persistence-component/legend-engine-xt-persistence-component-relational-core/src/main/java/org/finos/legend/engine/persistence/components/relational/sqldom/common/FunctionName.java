@@ -51,7 +51,8 @@ public enum FunctionName
     ARRAY_CONSTRUCT("ARRAY_CONSTRUCT"),
     TO_JSON("TO_JSON"),
     CONVERT("CONVERT"),
-    STRUCT("STRUCT");
+    STRUCT("STRUCT"),
+    APPROX_COUNT_DISTINCT("APPROX_COUNT_DISTINCT");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays
         .stream(FunctionName.values())

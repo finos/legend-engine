@@ -25,12 +25,14 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
+import org.finos.legend.engine.persistence.components.logicalplan.quantifiers.DistinctQuantifier;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Function;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ApproxCountDistinct;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -40,6 +42,7 @@ import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LogicalPlanFactory
 {
@@ -130,6 +133,25 @@ public class LogicalPlanFactory
             .addFields(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(field).alias(MIN_OF_FIELD).build())
             .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
             .source(dataset).build();
+        return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    public static LogicalPlan getLogicalPlanForApproxDistinctCount(Dataset dataset, List<String> fields)
+    {
+        List<FieldValue> fieldValues = fields.stream().map(field -> FieldValue.builder().fieldName(field).build()).collect(Collectors.toList());
+        Selection selection = Selection.builder()
+                .addFields(ApproxCountDistinct.of(fieldValues))
+                .source(dataset).build();
+        return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    public static LogicalPlan getLogicalPlanForDistinctValues(Dataset dataset, List<String> fields)
+    {
+        List<FieldValue> fieldValues = fields.stream().map(field -> FieldValue.builder().fieldName(field).build()).collect(Collectors.toList());
+        Selection selection = Selection.builder()
+                .quantifier(DistinctQuantifier.INSTANCE)
+                .addAllFields(fieldValues)
+                .source(dataset).build();
         return LogicalPlan.builder().addOps(selection).build();
     }
 

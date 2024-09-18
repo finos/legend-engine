@@ -82,6 +82,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SumBina
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Udf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ApproxCountDistinct;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -149,9 +150,9 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.UdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ApproxCountDistinctVisitor;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
-import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
@@ -238,6 +239,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(All.class, new AllVisitor());
         logicalPlanVisitorByClass.put(Pair.class, new PairVisitor());
         logicalPlanVisitorByClass.put(Array.class, new ArrayVisitor());
+        logicalPlanVisitorByClass.put(ApproxCountDistinct.class, new ApproxCountDistinctVisitor());
         logicalPlanVisitorByClass.put(TabularValues.class, new TabularValuesVisitor());
         logicalPlanVisitorByClass.put(StringValue.class, new StringValueVisitor());
         logicalPlanVisitorByClass.put(DatetimeValue.class, new DatetimeValueVisitor());

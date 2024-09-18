@@ -638,7 +638,7 @@ public abstract class RelationalIngestorAbstract
         }
 
         // 6. Add Optimization Columns if needed
-        enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
+        enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer));
 
         // 7. Use a placeholder for additional metadata
         Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();

@@ -333,6 +333,81 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestModeWithDeleteTargetData, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithDerivedPartitionSpec() throws Exception
+    {
+        DatasetDefinition mainTable = DatasetDefinition.builder()
+                .group(testSchemaName).name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(accountNum)
+                        .addFields(dimension)
+                        .addFields(balance)
+                        .addFields(digest)
+                        .addFields(batchIdIn)
+                        .addFields(batchIdOut)
+                        .build()).build();
+
+        DatasetDefinition stagingTable = DatasetDefinition.builder()
+                .group(testSchemaName).name(stagingTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(accountNum)
+                        .addFields(dimension)
+                        .addFields(balance)
+                        .addFields(digest)
+                        .build()).build();
+
+        String[] schema = new String[]{dateName, accountNumName, dimensionName, balanceName, digestName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .derivePartitionSpec(true)
+                .addAllPartitionFields(Arrays.asList(dateName, accountNumName))
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_multi_values_partition/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_multi_values_partition/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithMultiPartition(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(15, 0, 15, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_multi_values_partition/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_multi_values_partition/expected_pass2.csv";
+
+        // 1. Load staging table
+        loadStagingDataForWithMultiPartition(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(5, 0, 2, 2, 3);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch - No Op) ------------------------
+        IngestMode ingestModeWithNoOpBatchHandling = ingestMode.withEmptyDatasetHandling(NoOp.builder().build());
+
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_multi_values_partition/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithMultiPartition(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestModeWithNoOpBatchHandling, options, datasets, schema, expectedDataPass3, expectedStats);
+    }
+
+
     private static void addPartitionSpec(List<Map<String, Object>> partitionSpecList, String date, String accountNum)
     {
         partitionSpecList.add(new HashMap<String,Object>()

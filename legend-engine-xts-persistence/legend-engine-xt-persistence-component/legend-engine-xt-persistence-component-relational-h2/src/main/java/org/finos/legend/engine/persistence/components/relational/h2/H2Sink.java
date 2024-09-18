@@ -42,6 +42,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Metadat
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ApproxCountDistinct;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -66,6 +67,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ApproxCountDistinctVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
@@ -142,6 +144,7 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
         logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
+        logicalPlanVisitorByClass.put(ApproxCountDistinct.class, new ApproxCountDistinctVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
