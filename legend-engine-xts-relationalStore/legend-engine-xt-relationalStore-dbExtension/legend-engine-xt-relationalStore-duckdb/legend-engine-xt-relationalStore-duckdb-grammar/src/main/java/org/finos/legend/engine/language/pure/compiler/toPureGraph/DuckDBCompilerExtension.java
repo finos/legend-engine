@@ -18,7 +18,10 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DuckDBDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
@@ -62,5 +65,11 @@ public class DuckDBCompilerExtension implements IRelationalCompilerExtension
     public CompilerExtension build()
     {
         return new DuckDBCompilerExtension();
+    }
+
+    @Override
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.DuckDB, DuckDBDatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class));
     }
 }
