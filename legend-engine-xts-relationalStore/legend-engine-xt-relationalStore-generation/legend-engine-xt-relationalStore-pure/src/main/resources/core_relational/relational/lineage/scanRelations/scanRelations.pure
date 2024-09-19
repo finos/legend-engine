@@ -725,11 +725,17 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
       |[],
       |let rootTree        = $select.data->toOne();
-       let childTrees      = $rootTree->children()->map(child | $child->extractLine());
+       let childTrees      = $rootTree->children()->map(child | $child->extractJoinChildren());
        let sourceOperation = $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $reqTableAliasColumn.alias.name).alias->toOne();
        $reqTableAliasColumn->toOne()->extractSourceColumn($sourceOperation, $relationIdentifiers, $sourceTree);
    );
 }
+
+function  <<access.private>> meta::pure::lineage::scanRelations::extractJoinChildren(j:JoinTreeNode[1]):JoinTreeNode[*]
+{
+   $j->concatenate(if($j->children()->isEmpty(),|[],|$j->children()->map(c|$c->extractJoinChildren())));
+}
+
 
 function <<access.private>> meta::pure::lineage::scanRelations::extractSourceRelation(sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*]):NamedRelation[1]
 {
