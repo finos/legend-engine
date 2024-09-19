@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,12 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-package org.finos.legend.engine.language.pure.grammar.test;
+package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestDuckDBConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestDuckDBConnectionCompiler extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Test
     public void testDuckDbDatabaseConnection()
@@ -32,5 +36,24 @@ public class TestDuckDBConnectionGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "  };\n" +
                 "  auth: Test;\n" +
                 "}\n");
+    }
+
+    @Override
+    protected String getDuplicatedElementTestCode()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected String getDuplicatedElementTestExpectedErrorMessage()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Test
+    @Ignore("N/A - no new elements on extension")
+    public void testDuplicatedElement()
+    {
+        throw new UnsupportedOperationException();
     }
 }
