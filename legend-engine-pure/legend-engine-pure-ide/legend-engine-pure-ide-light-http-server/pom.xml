@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-ide</artifactId>
-        <version>4.55.4-SNAPSHOT</version>
+        <version>4.57.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +28,7 @@
 
     <properties>
         <skip.yarn>false</skip.yarn>
-        <pure-ide.web-application.version>12.32.0</pure-ide.web-application.version>
+        <pure-ide.web-application.version>${legend.web-application.version}</pure-ide.web-application.version>
         <pure-ide.web-application.url>${npm.registry.url}/@finos/legend-application-pure-ide-deployment/-/legend-application-pure-ide-deployment-${pure-ide.web-application.version}.tgz</pure-ide.web-application.url>
     </properties>
 

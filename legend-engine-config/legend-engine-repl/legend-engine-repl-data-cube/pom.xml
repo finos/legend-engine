@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-repl</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.55.4-SNAPSHOT</version>
+        <version>4.57.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +28,7 @@
 
     <properties>
         <skip.yarn>false</skip.yarn>
-        <repl.web-application.version>12.32.0</repl.web-application.version>
+        <repl.web-application.version>${legend.web-application.version}</repl.web-application.version>
         <repl.web-application.url>${npm.registry.url}/@finos/legend-application-repl-deployment/-/legend-application-repl-deployment-${repl.web-application.version}.tgz</repl.web-application.url>
     </properties>
 

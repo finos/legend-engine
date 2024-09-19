@@ -15,17 +15,21 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.block.predicate.Predicate;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ClassConversion;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.Conversion;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ConversionContext;
@@ -34,117 +38,96 @@ import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.P
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.PropertyConversion;
 import org.json.simple.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class JsonClassDeserialization<T extends Any> extends ClassConversion<Object, T>
 {
-    private Predicate<String> isUnknownJsonProperty;
-
-    private static final Function<Property, String> PROPERTY_NAME_FUNC = new Function<Property, String>()
-    {
-        @Override
-        public String valueOf(Property property)
-        {
-            return property.getName();
-        }
-    };
+    private final MutableSet<String> knownJsonProperties = Sets.mutable.empty();
 
     public JsonClassDeserialization(Class<T> clazz)
     {
         super(clazz);
-        this.isUnknownJsonProperty = null;
     }
 
     @Override
     protected void completeInitialisation(ConversionContext context)
     {
         super.completeInitialisation(context);
-        this.isUnknownJsonProperty = this.createUnknownJsonPropertyTest((JsonDeserializationContext)context);
+        this.knownJsonProperties.add(((JsonDeserializationContext) context).getTypeKeyName());
+        getProperties(context.getProcessorSupport()).collect(CoreInstance::getName, this.knownJsonProperties);
     }
 
-    private Predicate<String> createUnknownJsonPropertyTest(JsonDeserializationContext context)
-    {
-        final Set<String> knownJsonProperties = this.getProperties(context.getProcessorSupport()).collect(PROPERTY_NAME_FUNC).toSet();
-        knownJsonProperties.add(context.getTypeKeyName());
-        return new Predicate<String>()
-        {
-            @Override
-            public boolean accept(String name)
-            {
-                return !knownJsonProperties.contains(name);
-            }
-        };
-    }
-
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected PropertyConversion<?, ?> newMultiplicityOneConversion(AbstractProperty abstractProperty, Conversion<?, ?> conversion, Type type)
     {
         return new JsonDeserializationMultiplicityOne(abstractProperty, abstractProperty._owner() instanceof Association, conversion, type);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected PropertyConversion<?, ?> newMultiplicityManyConversion(AbstractProperty abstractProperty, Conversion<?, ?> conversion, Type type)
     {
         return new JsonDeserializationMultiplicityMany(abstractProperty, abstractProperty._owner() instanceof Association, conversion, type);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected PropertyConversion<?, ?> newMultiplicityParameterisedConversion(AbstractProperty abstractProperty, Conversion<?, ?> conversion, Type type)
     {
         return new JsonDeserializationMultiplicityParameterised(abstractProperty, abstractProperty._owner() instanceof Association, conversion, type);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected PropertyConversion<?, ?> newMultiplicityOptionalConversion(AbstractProperty abstractProperty, Conversion<?, ?> conversion, Type type)
     {
         return new JsonDeserializationMultiplicityOptional(abstractProperty, abstractProperty._owner() instanceof Association, conversion, type);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected PropertyConversion<?, ?> newMultiplicityRangeConversion(AbstractProperty abstractProperty, Conversion<?, ?> conversion, Type type)
     {
         return new JsonDeserializationMultiplicityRange(abstractProperty, abstractProperty._owner() instanceof Association, conversion, type, abstractProperty._multiplicity());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T apply(Object input, ConversionContext context)
     {
-        if (input instanceof JSONObject)
-        {
-            JsonDeserializationContext deserializationContext = (JsonDeserializationContext)context;
-            ObjectFactory objectFactory = deserializationContext.getObjectFactory();
-
-            JSONObject jsonObject = (JSONObject)input;
-            Map<String, RichIterable<?>> propertyKeyValues = this.keyValueProperties(jsonObject, deserializationContext);
-            try
-            {
-                return (T)objectFactory.newObject(this.clazz, propertyKeyValues);
-            }
-            catch (PureExecutionException e)
-            {
-                throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString() + ": \n" + e.getInfo());
-            }
-        }
-        else
+        if (!(input instanceof JSONObject))
         {
             // value is a not a JSON object but number or string, a reference to another object.
-            // Currently this should be ignored.
+            // Currently, this should be ignored.
             return null;
+        }
+
+        JsonDeserializationContext deserializationContext = (JsonDeserializationContext) context;
+        ObjectFactory objectFactory = deserializationContext.getObjectFactory();
+
+        JSONObject jsonObject = (JSONObject) input;
+        MutableMap<String, RichIterable<?>> propertyKeyValues = keyValueProperties(jsonObject, deserializationContext);
+        try
+        {
+            return (T) objectFactory.newObject(this.clazz, propertyKeyValues);
+        }
+        catch (PureExecutionException e)
+        {
+            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString() + ": \n" + e.getInfo(), e);
         }
     }
 
     /**
      * Generates a mapping of property name to a collection of values which describe the properties of the newly instantiated object.
      */
-    private Map<String, RichIterable<?>> keyValueProperties(JSONObject jsonObject, JsonDeserializationContext context)
+    private MutableMap<String, RichIterable<?>> keyValueProperties(JSONObject jsonObject, JsonDeserializationContext context)
     {
-        this.failOnUnknownProperties(jsonObject, context);
-        Map<String, RichIterable<?>> keyValues = new HashMap<>();
+        failOnUnknownProperties(jsonObject, context);
+        MutableMap<String, RichIterable<?>> keyValues = Maps.mutable.empty();
         for (Conversion<?, ?> propertyConversion : this.propertyConversions)
         {
-            JsonPropertyDeserialization<?> jsonPropertyDeserialization = (JsonPropertyDeserialization)propertyConversion;
+            JsonPropertyDeserialization<?> jsonPropertyDeserialization = (JsonPropertyDeserialization<?>) propertyConversion;
             Object jsonValue = jsonObject.get(jsonPropertyDeserialization.getName());
             try
             {
@@ -156,12 +139,12 @@ public class JsonClassDeserialization<T extends Any> extends ClassConversion<Obj
             }
             catch (PureExecutionException e)
             {
-                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \n" + e.getInfo());
+                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \n" + e.getInfo(), e);
             }
             catch (ClassCastException | IllegalArgumentException e)
             {
                 String foundType = jsonValue instanceof JSONObject ? "JSON Object" : PrimitiveConversion.toPurePrimitiveName(jsonValue.getClass());
-                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \nExpected " + jsonPropertyDeserialization.pureTypeAsString() + ", found " + foundType);
+                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \nExpected " + jsonPropertyDeserialization.pureTypeAsString() + ", found " + foundType, e);
             }
         }
         return keyValues;
@@ -172,18 +155,16 @@ public class JsonClassDeserialization<T extends Any> extends ClassConversion<Obj
      * then ensure that no additional data is provided in the JSONObjects modelling instances of PURE classes.
      * This is relatively expensive to compute but the flag is rarely set.
      */
+    @SuppressWarnings("unchecked")
     private void failOnUnknownProperties(JSONObject jsonValue, JsonDeserializationContext context)
     {
         if (context.isFailOnUnknownProperties())
         {
-            RichIterable<String> unknownProperties = LazyIterate.select((Set<String>)jsonValue.keySet(), this.isUnknownJsonProperty);
-            if (!unknownProperties.isEmpty())
+            MutableList<String> unknownProperties = Iterate.reject((Set<String>) jsonValue.keySet(), this.knownJsonProperties::contains, Lists.mutable.empty());
+            if (unknownProperties.notEmpty())
             {
                 StringBuilder errorMsg = new StringBuilder();
-                for (String unknownProperty : unknownProperties)
-                {
-                    errorMsg.append(String.format("Property '%s' can't be found in class %s. ", unknownProperty, PackageableElement.getUserPathForPackageableElement(this.clazz)));
-                }
+                unknownProperties.forEach(p -> PackageableElement.writeUserPathForPackageableElement(errorMsg.append("Property '").append(p).append("' can't be found in class "), this.clazz).append(". "));
                 throw new PureExecutionException(context.getSourceInformation(), errorMsg.toString());
             }
         }

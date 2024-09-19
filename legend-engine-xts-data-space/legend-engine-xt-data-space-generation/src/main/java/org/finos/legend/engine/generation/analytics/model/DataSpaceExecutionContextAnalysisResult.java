@@ -27,6 +27,8 @@ public class DataSpaceExecutionContextAnalysisResult
     public String mapping;
     public List<String> compatibleRuntimes;
     public String defaultRuntime;
+    public DataSpaceExecutionContextRuntimeMetadata runtimeMetadata;
+    @Deprecated
     public MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult;
     public List<DatasetSpecification> datasets;
 }

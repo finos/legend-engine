@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -93,11 +94,13 @@ public class Completer
                         "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
+                new CastHandler(),
                 new FilterHandler(),
                 new FromHandler(),
                 new RenameHandler(),
                 new ExtendHandler(),
                 new GroupByHandler(),
+                new PivotHandler(),
                 new SortHandler(),
                 new JoinHandler(),
                 new SelectHandler(),
@@ -195,7 +198,7 @@ public class Completer
                 AppliedProperty appliedProperty = (AppliedProperty) topExpression;
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftCompiledVS = appliedProperty.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
                 String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
-                return new CompletionResult(extractPropertiesOrColumnsFromType(leftCompiledVS).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
+                return new CompletionResult(extractPropertiesOrColumnsFromType(leftCompiledVS).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c, PureGrammarComposerUtility.convertIdentifier(c))));
             }
         }
         return new CompletionResult(Lists.mutable.empty());
@@ -244,7 +247,7 @@ public class Completer
     {
         RelationType<?> r = (RelationType<?>) leftType._typeArguments().getFirst()._rawType();
         String typedColName = colSpec.name.replace(ParserFixer.magicToken, "");
-        return r._columns().select(c -> c._name().startsWith(typedColName)).collect(c -> c._name().contains(" ") ? "'" + c._name() + "'" : c._name()).collect(CompletionItem::new).toList();
+        return r._columns().select(c -> c._name().startsWith(typedColName)).collect(FunctionAccessor::_name).collect(c -> new CompletionItem(c, PureGrammarComposerUtility.convertIdentifier(c))).toList();
     }
     //--------------------------------------------------------------------
 
@@ -265,7 +268,7 @@ public class Completer
         if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             // May want to assert the mul to 1
-            return Lists.mutable.with("distinct", "drop", "select", "extend", "filter", "from", "groupBy", "join", "limit", "rename", "size", "slice", "sort");
+            return Lists.mutable.with("cast", "distinct", "drop", "select", "extend", "filter", "from", "groupBy", "pivot", "join", "limit", "rename", "size", "slice", "sort");
         }
         else if (leftType._rawType().getName().equals("String"))
         {
@@ -275,7 +278,7 @@ public class Completer
             }
             else
             {
-                return Lists.mutable.with("count", "joinStrings");
+                return Lists.mutable.with("count", "joinStrings", "uniqueValueOnly");
             }
         }
         else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Number), pureModel.getExecutionSupport().getProcessorSupport()))
@@ -411,7 +414,7 @@ public class Completer
 //                _line <= sourceInformation.endLine &&
 //                (sourceInformation.startColumn - 1) <= _column &&
 //                _column <= sourceInformation.endColumn);
-        return sourceInformation.startLine <= _line &&
+        return sourceInformation != null && sourceInformation.startLine <= _line &&
                 _line <= sourceInformation.endLine &&
                 (sourceInformation.startColumn - 1) <= _column &&
                 _column <= sourceInformation.endColumn;

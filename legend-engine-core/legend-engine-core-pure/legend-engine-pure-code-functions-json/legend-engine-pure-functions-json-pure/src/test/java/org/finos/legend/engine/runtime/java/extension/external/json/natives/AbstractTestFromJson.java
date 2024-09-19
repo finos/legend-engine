@@ -1395,9 +1395,18 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
 
     private void assertException(PureException e, String expectedInfo)
     {
+        String info = e.getInfo();
+        Assert.assertEquals(expectedInfo, info);
         // The cause of the exception should be considered the root level fromJson call so that it contains all of the information about the nested JSON structure.
-        Assert.assertEquals(e.getInfo(), e.getOriginatingPureException().getInfo());
-        Assert.assertEquals(expectedInfo, e.getInfo());
+        PureException originatingException = e.getOriginatingPureException();
+        if (originatingException != e)
+        {
+            String originatingInfo = e.getOriginatingPureException().getInfo();
+            if (!info.endsWith(originatingInfo))
+            {
+                Assert.fail("Expected exception info to end with \"" + originatingInfo + "\", got \"" + info + "\"");
+            }
+        }
     }
 
     private void assertFailsExecution(String testSource, String testFunction, String expectedExceptionMessage)

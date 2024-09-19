@@ -28,9 +28,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import org.finos.legend.engine.postgres.DelayableWriteChannel.DelayedWrites;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
@@ -42,42 +44,35 @@ import org.slf4j.Logger;
 class ResultSetReceiver
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultSetReceiver.class);
-
-
     private final String query;
     private final DelayableWriteChannel channel;
-    private boolean isSimpleQuery;
-    private Channel directChannel;
-    private DelayedWrites delayedWrites;
+    private final boolean isSimpleQuery;
+    private final Channel directChannel;
+    private final DelayedWrites delayedWrites;
     private final FormatCodes.FormatCode[] formatCodes;
-
-    private CompletableFuture<Void> completionFuture = new CompletableFuture<>();
-    
+    private final CompletableFuture<Void> completionFuture = new CompletableFuture<>();
     private final Messages messages;
-    
-    
-    
-
     private long rowCount = 0;
 
-    ResultSetReceiver(String query, DelayableWriteChannel channel, DelayedWrites delayedWrites,
+    ResultSetReceiver(String query, DelayableWriteChannel channel,
                       boolean isSimpleQuery, FormatCodes.FormatCode[] formatCodes, Messages messages)
     {
         this.query = query;
         this.channel = channel;
         this.isSimpleQuery = isSimpleQuery;
-        this.delayedWrites = delayedWrites;
+        // ResultSetReceiver is only created when actual execution is in progress, so it is safe to delay writes here
+        this.delayedWrites = channel.delayWrites();
         this.formatCodes = formatCodes;
         this.directChannel = this.channel.bypassDelay();
         this.messages = messages;
     }
 
 
-    public void sendResultSet(PostgresResultSet rs) throws Exception
+    public void sendResultSet(PostgresResultSet rs, int maxRows) throws Exception
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             if (rs != null)
             {
@@ -96,11 +91,11 @@ class ResultSetReceiver
                 }
                 //TODO add column types to the span
                 span.addEvent("startSendingData");
-                while (rs.next())
+                while ((maxRows == 0 || rowCount < maxRows) && rs.next())
                 {
                     rowCount++;
                     messages.sendDataRow(directChannel, rs, columnTypes, null);
-                    if (rowCount % 10000 == 0)
+                    if ((maxRows != 0 && rowCount % maxRows == 0) || rowCount % 10000 == 0)
                     {   //TODO REMOVE FLASH FROM essages.sendDataRow
                         directChannel.flush();
                         span.addEvent("sentRows", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
@@ -120,9 +115,26 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             ChannelFuture sendCommandComplete = messages.sendCommandComplete(directChannel, query, rowCount);
+            channel.writePendingMessages(delayedWrites);
+            channel.flush();
+            sendCommandComplete.addListener(future -> completionFuture.complete(null));
+        }
+        finally
+        {
+            span.end();
+        }
+    }
+
+    public void batchFinished()
+    {
+        Tracer tracer = OpenTelemetryUtil.getTracer();
+        Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
+        try (Scope ignored = span.makeCurrent())
+        {
+            ChannelFuture sendCommandComplete = messages.sendPortalSuspended(directChannel);
             channel.writePendingMessages(delayedWrites);
             channel.flush();
             sendCommandComplete.addListener(future -> completionFuture.complete(null));
@@ -138,7 +150,7 @@ class ResultSetReceiver
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             ChannelFuture sendErrorResponse = messages.sendErrorResponse(directChannel, throwable);
             channel.writePendingMessages(delayedWrites);

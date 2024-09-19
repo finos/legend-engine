@@ -37,7 +37,7 @@ Class meta::external::format::json::schema::generation::JSONSchemaConfig extends
   {doc.doc='The specification which your schema should be compatible with' }schemaSpecification:JSONSchemaSpecification[0..1];
   {doc.doc='Generate a components or definitions collection, if true, only one file will generate with a collection of related elements in scope for execution and there will be no root element in the schema' }createSchemaCollection:Boolean[0..1];
   {doc.doc='Generate milestoned properties on schemas' }generateMilestoneProperties:Boolean[0..1]; //defaults false - If true - the auto-gen milestoned properties will be included on generated schemas
-
+  {doc.doc='Include property stereotypes as part of generation'}includeStereotypes:Boolean[0..1]; //defaults false
 
 }
 
@@ -56,6 +56,7 @@ Class <<access.protected>> meta::external::format::json::schema::JSONSchemaConfi
    createSchemaCollection:Boolean[1]; //defaults false, if true all elements generate as a single collection
    generateMilestoneProperties:Boolean[1];  //defaults false - If true - the auto-gen milestoned properties will be included on generated schemas
    anyOfMember:Boolean[1];  //Indicates if we are generating an object inside an anyOf
+   includeStereotypes:Boolean[1]; //defaults false, if true include stereotypes in generation
 
 }
 
@@ -165,6 +166,7 @@ function <<access.private>> meta::external::format::json::schema::generation::de
 {
  ^JSONSchemaConfig(useConstraints=true,
                    includeAllRelatedTypes=true,
+                   includeStereotypes=false,
                    schemaSpecification = JSONSchemaSpecification.JSON_SCHEMA_DRAFT_07
                    );
 }
@@ -208,7 +210,8 @@ function <<access.private>> meta::external::format::json::schema::defaultInterna
                              fileType='json',
                              createSchemaCollection = false,
                              generateMilestoneProperties = false,
-                             anyOfMember = false
+                             anyOfMember = false,
+                             includeStereotypes=false
                               )
   }
 
@@ -223,6 +226,8 @@ function <<access.protected>> meta::external::format::json::schema::externalToIn
         let includeAllRelatedTypes = if($schemaSpecification->isOpenAPI(),|false,|if($config.includeAllRelatedTypes->isEmpty(),|true,| $config.includeAllRelatedTypes->toOne()));  
         let generateMilestoneProperties = if($config.generateMilestoneProperties->isEmpty(),|false,|$config.generateMilestoneProperties->toOne());
         let createSchemaCollection =   if($config.createSchemaCollection->isEmpty(),|false,|$config.createSchemaCollection->toOne());
+        let includeStereotypes = if($config.includeStereotypes->isEmpty(),|false,|$config.includeStereotypes->toOne());
+        
       ^JSONSchemaConfigInternal(useConstraints =$useConstraints,
                                    includeAllRelatedTypes = $includeAllRelatedTypes,
                                    useDefinitions=$includeAllRelatedTypes,
@@ -234,7 +239,8 @@ function <<access.protected>> meta::external::format::json::schema::externalToIn
                                    fileType = $fileType ,
                                    createSchemaCollection = $createSchemaCollection,
                                    generateMilestoneProperties = $generateMilestoneProperties,
-                                   anyOfMember = false
+                                   anyOfMember = false,
+                                   includeStereotypes = $includeStereotypes
                                      );
      );
 
@@ -315,8 +321,6 @@ function meta::external::format::json::schema::schemaProperties(type:Type[1], ro
                                 let anyOf = if( $config.generateAnyOfSubType && !$config.anyOfMember ,
                                                                |$class-> meta::external::format::json::schema::specializationsAnyOf($rootClass,$config),
                                                                | []);
-
-
 
                                let res =  if($config.generateAnyOfSubType && $config.anyOfMember,|[],|$class->allOfGeneralizations($config))
                                               ->concatenate( if($config.anyOfMember,|$class->title(),|[]))
@@ -950,6 +954,9 @@ function <<access.protected>> meta::external::format::json::schema::elementTags(
 
   let milestoning = $element->addMilestoningTag();
 
+  let stereotypes = if($config.includeStereotypes,
+                      | $element->addStereotypes(),
+                      |[]);
 
 let customTags = if( $config.scopeElements->filter(e|$e->instanceOf(Profile))->isNotEmpty(),
                         |  let allProfiles = $config.scopeElements->filter(e|$e->instanceOf(Profile));
@@ -962,7 +969,7 @@ let customTags = if( $config.scopeElements->filter(e|$e->instanceOf(Profile))->i
 
 
 
-   $readWrite->concatenate($doc)->concatenate($examples)->concatenate($nullable)->concatenate($customTags)->concatenate($milestoning);
+   $readWrite->concatenate($doc)->concatenate($examples)->concatenate($nullable)->concatenate($customTags)->concatenate($milestoning)->concatenate($stereotypes);
 
 }
 
@@ -990,6 +997,17 @@ function meta::external::format::json::schema::addMilestoningTag(type:AnnotatedE
               );   
   );
 
+}
+
+function meta::external::format::json::schema::addStereotypes(type:AnnotatedElement[1]):JSONKeyValue[*]
+{
+  let stereotypeKey = 'x-';
+  
+  if ($type.stereotypes->isNotEmpty(),
+      | $type.stereotypes->filter(t|!$t.profile->elementToPath()->startsWith('meta::json::schema') && !($t.profile->equal(temporal)))
+          ->map(s|newJSONKeyValue($stereotypeKey + $s.profile->elementToPath(), ^JSONString(value= $s.value)));,
+      |[]
+  );
 }
 
 function <<access.private>> meta::external::format::json::schema::propertyType( property:Property<Nil,Any|*>[1],root:Class<Any>[0..1] ,constraintHasType:Boolean[1],config:JSONSchemaConfigInternal[1]) : JSONKeyValue[0..1]

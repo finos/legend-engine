@@ -1144,10 +1144,10 @@ public class DomainParseTreeWalker
             {
                 appliedFunction = processBooleanOp(appliedFunction, ctx, ctx.OR(), "or", input, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
-            else
-            {
-                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-            }
+//            else
+//            {
+//                appliedFunction = this.equalNotEqual(ctx.equalNotEqual(), appliedFunction == null ? input : appliedFunction, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+//            }
         }
 
         return appliedFunction;
@@ -1167,6 +1167,7 @@ public class DomainParseTreeWalker
         {
             other = this.combinedArithmeticOnly(ctx.combinedArithmeticOnly(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             AppliedFunction inner = this.createAppliedFunction(Lists.mutable.of(input, other), "equal");
+            inner.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
             result = this.createAppliedFunction(Lists.mutable.of(inner), "not");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.TEST_NOT_EQUAL().getSymbol());
         }
@@ -1186,7 +1187,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification notExpression(DomainParserGrammar.NotExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
-        ValueSpecification negated = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+        ValueSpecification negated = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
         ValueSpecification valueSpecification = this.createAppliedFunction(Lists.mutable.of(negated), "not");
         valueSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return valueSpecification;
@@ -1198,13 +1199,13 @@ public class DomainParseTreeWalker
         ValueSpecification number;
         if (ctx.MINUS() != null)
         {
-            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "minus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.MINUS().getSymbol());
         }
         else
         {
-            number = this.nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
+            number = this.expression(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, true, addLines);
             result = this.createAppliedFunction(Lists.mutable.of(number), "plus");
             result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.PLUS().getSymbol());
         }
@@ -1319,6 +1320,10 @@ public class DomainParseTreeWalker
             {
                 result = this.unitTypeReference(ctx.type());
             }
+            else if (ctx.type().typeArguments() != null && !ctx.type().typeArguments().type().get(0).columnType().isEmpty())
+            {
+                result = this.processRelationColumnTypes(ctx.type());
+            }
             else
             {
                 result = this.typeReference(ctx.type());
@@ -1346,7 +1351,6 @@ public class DomainParseTreeWalker
                 ColSpecArray colSpecArr = new ColSpecArray();
                 colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.of()));
                 result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
-                ;
             }
             else
             {
@@ -1403,8 +1407,7 @@ public class DomainParseTreeWalker
 
         colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
-        colSpec.name = oneColSpec.identifier().getText().trim();
-        colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
+        colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
         if (oneColSpec.anyLambda() != null)
         {
@@ -1615,6 +1618,29 @@ public class DomainParseTreeWalker
         return genericTypeInstance;
     }
 
+    private GenericTypeInstance processRelationColumnTypes(DomainParserGrammar.TypeContext ctx)
+    {
+        String fullPath = ctx.qualifiedName().getText();
+        GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
+        genericTypeInstance.fullPath = fullPath;
+        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (!"meta::pure::metamodel::relation::Relation".equals(fullPath) && !"Relation".equals(fullPath))
+        {
+            throw new EngineException("Casting to type with generics is only supported for Relation type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        List<DomainParserGrammar.ColumnTypeContext> columnTypeContexts = ctx.typeArguments().type().get(0).columnType();
+        ColSpecArray colSpecArr = new ColSpecArray();
+        colSpecArr.colSpecs = ListIterate.collect(columnTypeContexts, columnTypeContext ->
+        {
+            ColSpec colSpec = new ColSpec();
+            colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(columnTypeContext);
+            colSpec.name = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(0));
+            colSpec.type = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(1));
+            return colSpec;
+        });
+        genericTypeInstance.typeArguments = Lists.mutable.with(DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(ctx), "colSpecArray"));
+        return genericTypeInstance;
+    }
 
     private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, List<? extends ValueSpecification> params, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {

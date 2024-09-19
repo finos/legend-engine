@@ -456,7 +456,7 @@ public class HelperRelationalBuilder
 
     public static View processDatabaseViewFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View srcView, CompileContext context, Schema schema)
     {
-        View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name, SourceInformationHelper.toM3SourceInformation(srcView.sourceInformation), null)._name(srcView.name);
+        View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name, SourceInformationHelper.toM3SourceInformation(srcView.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::View"))._name(srcView.name);
         MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, SourceInformationHelper.toM3SourceInformation(columnMapping.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
         RichIterable<Column> pk = ListIterate.collect(srcView.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         return view._columns(columns)._primaryKey(pk)._schema(schema);
@@ -682,7 +682,7 @@ public class HelperRelationalBuilder
         org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(srcFilter.sourceInformation);
         MutableMap<String, TableAlias> aliasMap = Maps.mutable.empty();
         Operation op = (Operation) processRelationalOperationElement(srcFilter.operation, context, aliasMap, Lists.mutable.empty());
-        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name, m3SourceInformation, null) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name, m3SourceInformation, null);
+        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::MultiGrainFilter")) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::Filter"));
         filter
                 ._name(srcFilter.name)
                 ._database(database)
@@ -986,7 +986,7 @@ public class HelperRelationalBuilder
         {
             return processOtherwiseEmbeddedRelationalPropertyMapping((OtherwiseEmbeddedRelationalPropertyMapping) propertyMapping, context, immediateParent, topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
         }
-        EmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl(propertyMapping.id, SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), null);
+        EmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl(propertyMapping.id, SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::EmbeddedRelationalInstanceSetImplementation"));
         return processEmbeddedRelationalPropertyMapping(propertyMapping, rpm, context, immediateParent, (RootRelationalInstanceSetImplementation) topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
     }
 

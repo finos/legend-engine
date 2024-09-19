@@ -673,3 +673,13 @@ Class meta::relational::tests::model::simple::Employee
   division: String[1];
   org() {if(1==1,|if($this.category->isEmpty(),|'',|'A'), |if($this.division->isEmpty(),|'',|'B'))}: String[0..1];
 }
+
+Class meta::relational::tests::model::simple::WeightedTrade
+{
+   id : Integer[1];
+   tradeDate : StrictDate[1];
+   quantity : Float[1];
+   settlementDateTime : DateTime[0..1];
+   weight: Float[1];
+   weight2: Float[1];
+}

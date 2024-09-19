@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
@@ -82,12 +83,12 @@ public class DataCubeRun implements Command
             ExecutionHelper.ExecuteResultSummary executeResultSummary;
             try
             {
-                executeResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel) ->
+                executeResultSummary = executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
                 {
                     ReplExtension extension = this.client.getReplExtensions().detect(x -> x.supports(res));
                     if (extension != null)
                     {
-                        return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, res, null);
+                        return new ExecutionHelper.ExecuteResultSummary(pmcd, pureModel, plan, res, null);
                     }
                     else
                     {

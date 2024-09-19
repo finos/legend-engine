@@ -153,9 +153,9 @@ expressionInstanceAtomicRightSide:              combinedExpression | expressionI
 ;
 expressionInstanceParserPropertyAssignment:     identifier (DOT identifier)* PLUS? EQUAL expressionInstanceRightSide
 ;
-notExpression:                                  NOT nonArrowOrEqualExpression
+notExpression:                                  NOT expression
 ;
-signedExpression:                               (MINUS | PLUS) nonArrowOrEqualExpression
+signedExpression:                               (MINUS | PLUS) expression
 ;
 lambdaPipe:                                     PIPE codeBlock
 ;
@@ -188,7 +188,7 @@ arithmeticPart:                                 (
                                                     | (GREATER_OR_EQUAL expression)
                                                 )
 ;
-booleanPart:                                    (AND expression) | (OR  expression) | equalNotEqual
+booleanPart:                                    (AND expression) | (OR  expression)
 ;
 functionVariableExpression:                     identifier COLON type multiplicity
 ;
@@ -209,7 +209,15 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                     BRACE_CLOSE
                                                 )
                                                 |
+                                                (
+                                                    PAREN_OPEN
+                                                        columnType (COMMA columnType)*
+                                                    PAREN_CLOSE
+                                                )
+                                                |
                                                 unitName
+;
+columnType:                                     identifier COLON identifier
 ;
 functionTypePureType:                           type multiplicity
 ;

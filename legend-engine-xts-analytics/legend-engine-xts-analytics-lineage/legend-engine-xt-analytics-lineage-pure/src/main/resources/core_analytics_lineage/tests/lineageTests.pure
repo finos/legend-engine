@@ -1,0 +1,53 @@
+import meta::analytics::lineage::graph::*;
+import meta::relational::extension::*;
+import meta::pure::functions::date::calendar::*;
+import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::analytics::lineage::test::relational::calendarAggregations():Boolean[1]
+{
+ let r = meta::analytics::lineage::computeLineage(|  Employee.all()
+     ->groupBy(
+       [p|$p.hireDate],
+       [ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
+       ['includedDate','annualized'])
+     ->filter(x | isNotEmpty($x.getNumber('annualized')))
+     ->restrict(['includedDate'])
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
+  assertSameElements(['Lambda','tb_EmployeeDatabasedefaultEmployeeTable','db_EmployeeDatabase'], $r.databaseLineage.nodes.data.id);
+
+}
+
+
+
+###Pure 
+import meta::analytics::lineage::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::tests::tds::tdsJoin::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMultipleDB():Boolean[1]
+{
+
+    let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
+                                     ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});};
+                       
+                        
+     // meta::pure::executionPlan::executionPlan($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction,meta::relational::tests::tds::tdsJoin::twoDBRunTime() ,relationalExtensions())->meta::pure::executionPlan::toString::planToString(relationalExtensions())->println();
+       
+    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), relationalExtensions());
+    assertEquals(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
+
+  true;
+}

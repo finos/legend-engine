@@ -15,11 +15,13 @@
 package org.finos.legend.engine.generation.analytics.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class DataSpaceAnalysisResult
 {
@@ -44,4 +46,6 @@ public class DataSpaceAnalysisResult
     public List<DataSpaceExecutableAnalysisResult> executables = Collections.emptyList();
     public List<DataSpaceDiagramAnalysisResult> diagrams = Collections.emptyList();
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
+
+    public Map<String, MappingModelCoverageAnalysisResult> mappingToMappingCoverageResult;
 }

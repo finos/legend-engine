@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-duckdb</artifactId>
-        <version>4.55.4-SNAPSHOT</version>
+        <version>4.57.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -54,7 +54,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -98,7 +97,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>

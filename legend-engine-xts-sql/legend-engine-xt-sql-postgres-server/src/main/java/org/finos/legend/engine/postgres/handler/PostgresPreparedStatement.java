@@ -29,6 +29,10 @@ public interface PostgresPreparedStatement
 
     void setMaxRows(int maxRows) throws Exception;
 
+    int getMaxRows() throws Exception;
+
+    boolean isExecuted();
+
     boolean execute() throws Exception;
 
     PostgresResultSet getResultSet() throws Exception;

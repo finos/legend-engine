@@ -25,7 +25,7 @@ public class EmptyPreparedStatement implements PostgresPreparedStatement
     @Override
     public void setObject(int i, Object o)
     {
-
+        // empty statement doesn't require objects to be set
     }
 
     @Override
@@ -43,13 +43,25 @@ public class EmptyPreparedStatement implements PostgresPreparedStatement
     @Override
     public void close() throws Exception
     {
-
+        // empty statement doesn't require closure
     }
 
     @Override
     public void setMaxRows(int maxRows)
     {
+        // empty statement doesn't require max rows
+    }
 
+    @Override
+    public int getMaxRows()
+    {
+        return 0;
+    }
+
+    @Override
+    public boolean isExecuted()
+    {
+        return true;
     }
 
     @Override

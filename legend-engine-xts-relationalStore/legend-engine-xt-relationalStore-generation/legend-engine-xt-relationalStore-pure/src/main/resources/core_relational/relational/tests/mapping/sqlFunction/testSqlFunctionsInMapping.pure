@@ -716,6 +716,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    dateTime: DateTime[1];
    adjustDate: DateTime[1];
    toBoolean: Boolean[1];
+   convertTimeZone: String[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -828,7 +829,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
 
           dateTime: dateTime,
           adjustDate: adjust(dateTime, -7, 'DAYS'),
-          toBoolean: parseBoolean('true')
+          toBoolean: parseBoolean('true'),
+          convertTimeZone: convertTimeZone( dateTime,'EST','yyyy-MM-dd HH:mm:ss')
        )
 
     }

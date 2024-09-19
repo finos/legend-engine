@@ -36,8 +36,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecut
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in.TestPlanExecutionForIn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.junit.Assert;

@@ -36,6 +36,12 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
     }
 
     @Override
+    public SessionHandler visitBegin(SqlBaseParser.BeginContext ctx)
+    {
+        return EMPTY_SESSION_HANDLER;
+    }
+
+    @Override
     public SessionHandler visitSet(SqlBaseParser.SetContext ctx)
     {
         // TODO: Handle set queries instead of returning empty result set

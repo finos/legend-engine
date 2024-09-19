@@ -35,6 +35,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
+import org.eclipse.collections.impl.utility.ListIterate;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
@@ -268,6 +269,7 @@ public abstract class TestTDS
         MutableList<String> columnOrdered = Lists.mutable.empty();
         columnOrdered.addAll(this.columnsOrdered);
         columnOrdered.addAll(otherTDS.columnsOrdered);
+        columnOrdered = columnOrdered.distinct();
         TestTDS res = newTDS(columnOrdered, columnTypes, (int) (rowCount * otherTDS.rowCount));
 
         for (int i = 0; i < this.rowCount; i++)
@@ -453,7 +455,7 @@ public abstract class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported in drop!");
+                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported yet!");
             }
         });
         copy.rowCount = copy.rowCount - size;
@@ -882,7 +884,7 @@ public abstract class TestTDS
                 break;
             }
             default:
-                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in drop!");
+                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
         }
     }
 
@@ -949,14 +951,14 @@ public abstract class TestTDS
                     break;
                 }
                 default:
-                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported in drop!");
+                    throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported yet!");
             }
         }
     }
 
     public String toString()
     {
-        RichIterable<String> columns = this.dataByColumnName.keysView();
+        RichIterable<String> columns = this.columnsOrdered;
         MutableList<String> rows = Lists.mutable.empty();
         for (int i = 0; i < rowCount; i++)
         {
@@ -1175,5 +1177,208 @@ public abstract class TestTDS
         {
             return -1;
         }
+    }
+
+    static class PivotColumnInfo
+    {
+        private final MutableList<Pair<String, String>> columnValues;
+        private final String aggColumnName;
+        private final DataType columnType;
+        private final String columnName;
+
+        public PivotColumnInfo(MutableList<Pair<String, String>> columnValues, String aggColumnName, DataType columnType)
+        {
+            this.columnValues = columnValues;
+            this.aggColumnName = aggColumnName;
+            this.columnType = columnType;
+            // TODO: we might need to rethink this column naming strategy, it could break in some edge cases
+            this.columnName = ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__");
+        }
+
+        public String getColumnName()
+        {
+            return this.columnName;
+        }
+
+        public String getAggColumnName()
+        {
+            return this.aggColumnName;
+        }
+
+        public DataType getColumnType()
+        {
+            return this.columnType;
+        }
+
+        public boolean match(TestTDS tds, int row)
+        {
+            return columnValues.allSatisfy(col ->
+            {
+                DataType columnType = tds.columnType.get(col.getOne());
+                switch (columnType)
+                {
+                    case INT:
+                    {
+                        return ((Integer) ((int[]) tds.dataByColumnName.get(col.getOne()))[row]).toString().equals(col.getTwo());
+                    }
+                    case CHAR:
+                    {
+                        return ((Character) ((char[]) tds.dataByColumnName.get(col.getOne()))[row]).toString().equals(col.getTwo());
+                    }
+                    case STRING:
+                    {
+                        return ((String[]) tds.dataByColumnName.get(col.getOne()))[row].equals(col.getTwo());
+                    }
+                    case DOUBLE:
+                    {
+                        return ((Double) ((double[]) tds.dataByColumnName.get(col.getOne()))[row]).toString().equals(col.getTwo());
+                    }
+                    default:
+                        throw new RuntimeException("ERROR " + columnType + " not supported yet!");
+                }
+            });
+        }
+    }
+
+    // TODO: clean this up so this is more readable and properly leverage the fundamental methods like sort()
+    public TestTDS applyPivot(ListIterable<String> nonTransposeColumns, ListIterable<String> pivotColumns, ListIterable<String> aggColumns)
+    {
+        // compute the different unique combinations of values
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedByPivotColumns = this.sort(pivotColumns.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        MutableList<PivotColumnInfo> newColumns = Lists.mutable.empty();
+        for (int i = 0; i < sortedByPivotColumns.getTwo().size(); i++)
+        {
+            Pair<Integer, Integer> r = sortedByPivotColumns.getTwo().get(i);
+            for (String aggColumnName : aggColumns)
+            {
+                newColumns.add(new PivotColumnInfo(pivotColumns.collect(c ->
+                {
+                    Object valuesAsObject = sortedByPivotColumns.getOne().dataByColumnName.get(c);
+                    DataType columnType = this.columnType.get(c);
+                    switch (columnType)
+                    {
+                        case INT:
+                        {
+                            return Tuples.pair(c, ((Integer) ((int[]) valuesAsObject)[r.getOne()]).toString());
+                        }
+                        case CHAR:
+                        {
+                            return Tuples.pair(c, ((Character) ((char[]) valuesAsObject)[r.getOne()]).toString());
+                        }
+                        case STRING:
+                        {
+                            return Tuples.pair(c, ((String[]) valuesAsObject)[r.getOne()]);
+                        }
+                        case DOUBLE:
+                        {
+                            return Tuples.pair(c, ((Double) ((double[]) valuesAsObject)[r.getOne()]).toString());
+                        }
+                        default:
+                            throw new RuntimeException("ERROR " + columnType + " not supported yet!");
+                    }
+                }).toList(), aggColumnName, this.columnType.get(aggColumnName)));
+            }
+        }
+
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedByNonTransposeColumns = this.sort(nonTransposeColumns.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        TestTDS result = this._distinct(sortedByNonTransposeColumns.getTwo()).removeColumns(this.columnsOrdered.reject(nonTransposeColumns::contains).toSet());
+        result = newColumns.injectInto(result, (tds, newColInfo) ->
+        {
+            int size = (int) tds.rowCount;
+            String name = newColInfo.getColumnName();
+            Object dataAsObject;
+            boolean[] isNull = new boolean[size];
+            Arrays.fill(isNull, Boolean.TRUE);
+            switch (newColInfo.getColumnType())
+            {
+                case INT:
+                {
+                    int[] values = new int[size];
+                    for (int i = 0; i < size; i++)
+                    {
+                        for (int j = sortedByNonTransposeColumns.getTwo().get(i).getOne(); j < sortedByNonTransposeColumns.getTwo().get(i).getTwo(); j++)
+                        {
+                            if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
+                            {
+                                values[i] = ((int[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
+                                isNull[i] = Boolean.FALSE;
+                            }
+                        }
+                    }
+                    dataAsObject = values;
+                    break;
+                }
+                case STRING:
+                {
+                    String[] values = new String[size];
+                    for (int i = 0; i < size; i++)
+                    {
+                        for (int j = sortedByNonTransposeColumns.getTwo().get(i).getOne(); j < sortedByNonTransposeColumns.getTwo().get(i).getTwo(); j++)
+                        {
+                            if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
+                            {
+                                values[i] = ((String[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
+                                isNull[i] = Boolean.FALSE;
+                            }
+                        }
+                    }
+                    dataAsObject = values;
+                    break;
+                }
+                case CHAR:
+                {
+                    char[] values = new char[size];
+                    for (int i = 0; i < size; i++)
+                    {
+                        for (int j = sortedByNonTransposeColumns.getTwo().get(i).getOne(); j < sortedByNonTransposeColumns.getTwo().get(i).getTwo(); j++)
+                        {
+                            if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
+                            {
+                                values[i] = ((char[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
+                                isNull[i] = Boolean.FALSE;
+                            }
+                        }
+                    }
+                    dataAsObject = values;
+                    break;
+                }
+                case DOUBLE:
+                {
+                    double[] values = new double[size];
+                    for (int i = 0; i < size; i++)
+                    {
+                        for (int j = sortedByNonTransposeColumns.getTwo().get(i).getOne(); j < sortedByNonTransposeColumns.getTwo().get(i).getTwo(); j++)
+                        {
+                            if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
+                            {
+                                values[i] = ((double[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
+                                isNull[i] = Boolean.FALSE;
+                            }
+                        }
+                    }
+                    dataAsObject = values;
+                    break;
+                }
+                default:
+                {
+                    throw new RuntimeException("ERROR " + newColInfo.getColumnType() + " not supported yet!");
+                }
+            }
+            tds.dataByColumnName.put(name, dataAsObject);
+            if (!newColInfo.getColumnType().equals(DataType.STRING))
+            {
+                tds.isNullByColumn.put(name, isNull);
+            }
+            tds.columnsOrdered.add(name);
+            tds.columnType.put(name, newColInfo.getColumnType());
+            return tds;
+        });
+
+        return result;
+    }
+
+    public MutableList<Pair<String, DataType>> getColumnWithTypes()
+    {
+        return this.columnsOrdered.collect(col -> Tuples.pair(col, this.columnType.get(col)));
     }
 }

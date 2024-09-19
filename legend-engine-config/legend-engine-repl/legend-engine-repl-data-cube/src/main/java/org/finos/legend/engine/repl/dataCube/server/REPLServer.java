@@ -86,6 +86,7 @@ public class REPLServer
                 .withKeyValue("/api/dataCube/getQueryCode/batch", new DataCubeQueryBuilder.GetQueryCodeBatch())
                 .withKeyValue("/api/dataCube/getBaseQuery", new DataCubeQueryBuilder.GetBaseQuery())
                 .withKeyValue("/api/dataCube/getRelationReturnType", new DataCubeQueryBuilder.GetRelationReturnType())
+                .withKeyValue("/api/dataCube/getRelationReturnType/code", new DataCubeQueryBuilder.GetQueryCodeRelationReturnType())
                 .withKeyValue("/api/dataCube/executeQuery", new DataCubeQueryExecutor.ExecuteQuery())
                 .keyValuesView().collect(config -> server.createContext(config.getOne(), config.getTwo().getHandler(this.state))).toList();
 

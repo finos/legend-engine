@@ -21,10 +21,11 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-repl</artifactId>
-        <version>4.55.4-SNAPSHOT</version>
+        <version>4.57.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-repl-app-assembly</artifactId>
+    <name>Legend Engine - REPL - App Assembly</name>
     <packaging>pom</packaging>
 
     <build>

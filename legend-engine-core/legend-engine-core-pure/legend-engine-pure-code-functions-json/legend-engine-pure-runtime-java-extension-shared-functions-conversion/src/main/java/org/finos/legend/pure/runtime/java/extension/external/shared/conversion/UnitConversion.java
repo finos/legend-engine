@@ -18,9 +18,12 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 public abstract class UnitConversion<F, T> implements Conversion<F, T>
 {
+    protected static final String UNIT_KEY_NAME = "unit";
+    protected static final String VALUE_KEY_NAME = "value";
+    protected static final String UNIT_ID_KEY_NAME = "unitId";
+    protected static final String EXPONENT_VALUE_KEY_NAME = "exponentValue";
+
     protected final CoreInstance type;
-    protected final String unitKeyName = "unit";
-    protected final String valueKeyName = "value";
 
     public UnitConversion(CoreInstance type)
     {

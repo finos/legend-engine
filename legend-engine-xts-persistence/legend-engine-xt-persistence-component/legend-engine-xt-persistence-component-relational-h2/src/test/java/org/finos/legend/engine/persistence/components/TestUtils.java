@@ -158,6 +158,8 @@ public class TestUtils
     public static Field batchId = Field.builder().name(batchIdName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdName).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
+    public static Field batchIdInInteger = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
+    public static Field batchIdOutInteger = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
     public static Field batchTimeIn = Field.builder().name(batchTimeInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchTimeInName).build();
     public static Field batchTimeOut = Field.builder().name(batchTimeOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(batchTimeOutName).build();
     public static Field deleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
@@ -167,10 +169,13 @@ public class TestUtils
     public static Field from = Field.builder().name(fromName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(fromName).primaryKey(true).build();
     public static Field through = Field.builder().name(throughName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(throughName).build();
     public static Field index = Field.builder().name(indexName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(indexName).build();
+    public static Field indexInteger = Field.builder().name(indexName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(indexName).build();
     public static Field dateTime = Field.builder().name(dateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateTimeName).primaryKey(true).build();
     public static Field balance = Field.builder().name(balanceName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(balanceName).build();
     public static Field startDateTime = Field.builder().name(startDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startDateTimeName).primaryKey(true).build();
     public static Field endDateTime = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(endDateTimeName).build();
+    public static Field startDateTimeTimestamp = Field.builder().name(startDateTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).fieldAlias(startDateTimeName).primaryKey(true).build();
+    public static Field endDateTimeTimestamp = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).fieldAlias(endDateTimeName).build();
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
     public static Field batch = Field.builder().name(batchName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchName).primaryKey(true).build();
     public static Field rating = Field.builder().name(ratingName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(ratingName).build();
@@ -1233,6 +1238,41 @@ public class TestUtils
                 .addFields(version)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getBitemporalFromOnlyMainTableIdBasedSchemaEvolutionAddColumn()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedBitemporalFromOnlyMainTableIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(indexInteger)
+                .addFields(balance)
+                .addFields(digestWithLength)
+                .addFields(startDateTimeTimestamp)
+                .addFields(endDateTimeTimestamp)
+                .addFields(batchIdInInteger)
+                .addFields(batchIdOutInteger)
                 .build()
             )
             .build();

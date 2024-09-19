@@ -553,3 +553,22 @@ function <<test.Test>> meta::json::tests::testFromJSONWithTypeLookup():Boolean[1
    let expected = ^H(a = ^G(a='val_a', c='val_c') );
    assertLogicallyEqual($expected, $actual);
 }
+
+
+###Pure
+import meta::json::tests::fromJson::*;
+import meta::json::*;
+
+Class <<access.private>> meta::json::tests::fromJson::ClassWithDefault
+{
+    name : String[1];
+    optional : String[0..1];
+    default : String[1] = 'default';
+}
+
+function <<test.Test>> meta::json::tests::fromJson::fromJSONwithDefaultValue():Boolean[1]
+{
+  let res = '{"name":"theName"}'->fromJSON(ClassWithDefault);
+  assertEquals('{"default":"default","name":"theName","optional":[]}', $res->toJsonBeta());
+
+}

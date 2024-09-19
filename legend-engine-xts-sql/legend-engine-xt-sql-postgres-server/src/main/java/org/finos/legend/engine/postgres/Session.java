@@ -26,13 +26,17 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -49,13 +53,15 @@ public class Session implements AutoCloseable
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
-    private final Map<String, Prepared> parsed = new HashMap<>();
-    private final Map<String, Portal> portals = new HashMap<>();
+    public static final String FAILED_TO_EXECUTE = "Failed to execute";
+    private final Map<String, Prepared> parsed = new ConcurrentHashMap<>();
+    private final Map<String, Portal> portals = new ConcurrentHashMap<>();
     private final ExecutionDispatcher dispatcher;
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
+    private final Identity identity;
+
     private CompletableFuture<?> activeExecution;
 
-    private Identity identity;
 
     public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService, Identity identity)
     {
@@ -64,6 +70,7 @@ public class Session implements AutoCloseable
         this.identity = identity;
         OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
+        activeExecution = CompletableFuture.completedFuture(null);
     }
 
     public Identity getIdentity()
@@ -71,25 +78,27 @@ public class Session implements AutoCloseable
         return identity;
     }
 
+    public void setActiveExecution(CompletableFuture<?> activeExecution)
+    {
+        this.activeExecution = activeExecution;
+    }
+
     public CompletableFuture<?> sync()
     {
         //TODO do we need to handle batch requests?
         LOGGER.info("Sync");
-        if (activeExecution == null)
-        {
-            CompletableFuture<String> completableFuture = new CompletableFuture<>();
-            completableFuture.complete(null);
-            return completableFuture;
-        }
-        else
-        {
-            CompletableFuture result = activeExecution;
-            activeExecution = null;
-            return result;
-        }
+        return activeExecution;
     }
 
-    public void parse(String statementName, String query, List<Integer> paramTypes)
+    public CompletableFuture<?> parseAsync(String statementName, String query, List<Integer> paramTypes)
+    {
+        LOGGER.debug("got request to parse");
+        activeExecution = activeExecution.thenRunAsync(() -> parse(statementName, query, paramTypes), executorService);
+        LOGGER.debug("done queuing parse");
+        return activeExecution;
+    }
+
+    private void parse(String statementName, String query, List<Integer> paramTypes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -100,7 +109,7 @@ public class Session implements AutoCloseable
         Prepared p = new Prepared();
         p.name = statementName;
         p.sql = query;
-        p.paramType = paramTypes.toArray(new Integer[] {});
+        p.paramType = paramTypes.toArray(new Integer[]{});
 
         if (query != null)
         {
@@ -154,8 +163,16 @@ public class Session implements AutoCloseable
     }
 
 
-    public void bind(String portalName, String statementName, List<Object> params,
-                     FormatCodes.FormatCode[] resultFormatCodes)
+    public CompletableFuture<?> bindAsync(String portalName, String statementName, List<Object> params,
+                                          FormatCodes.FormatCode[] resultFormatCodes)
+    {
+        LOGGER.debug("got request to bind");
+        activeExecution = activeExecution.thenRunAsync(() -> bind(portalName, statementName, params, resultFormatCodes), executorService);
+        LOGGER.debug("done queuing bind");
+        return activeExecution;
+    }
+
+    private void bind(String portalName, String statementName, List<Object> params, FormatCodes.FormatCode[] resultFormatCodes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -166,12 +183,6 @@ public class Session implements AutoCloseable
 
         Portal portal = new Portal(portalName, preparedStmt, resultFormatCodes);
         portals.put(portalName, portal);
-/*        if (oldPortal != null) {
-            // According to the wire protocol spec named portals should be removed explicitly and only
-            // unnamed portals are implicitly closed/overridden.
-            // We don't comply with the spec because we allow batching of statements, see #execute
-            oldPortal.closeActiveConsumer();
-        }*/
 
         PostgresPreparedStatement preparedStatement = portal.prep.prep;
         for (int i = 0; i < params.size(); i++)
@@ -188,7 +199,16 @@ public class Session implements AutoCloseable
     }
 
 
-    public DescribeResult describe(char type, String portalOrStatement)
+    public CompletableFuture<DescribeResult> describeAsync(char type, String portalOrStatement)
+    {
+        LOGGER.debug("got request to describe");
+        CompletableFuture<DescribeResult> describeCompletionFuture = activeExecution.thenApplyAsync(ignored -> describe(type, portalOrStatement), executorService);
+        activeExecution = describeCompletionFuture;
+        LOGGER.debug("done queuing describe");
+        return describeCompletionFuture;
+    }
+
+    private DescribeResult describe(char type, String portalOrStatement)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -196,7 +216,7 @@ public class Session implements AutoCloseable
         }
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Describe").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
             span.setAttribute("type", String.valueOf(type));
             span.setAttribute("name", portalOrStatement);
@@ -263,15 +283,6 @@ public class Session implements AutoCloseable
     }
 
 
-    public String getQuery(String portalName)
-    {
-        return getSafePortal(portalName).prep.sql;
-    }
-
-
-    /*TransactionState transactionState();
-     */
-
     public void close()
     {
         clearState();
@@ -323,39 +334,39 @@ public class Session implements AutoCloseable
                 }
                 parsed.remove(prepared.name);
                 return;
-
-               /* if (prepared != null) {
-                    Iterator<Map.Entry<String, Portal>> it = portals.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<String, Portal> entry = it.next();
-                        Portal portal = entry.getValue();
-                        if (portal.prep.equals(prepared)) {
-                            try {
-                                portal.prep.prep.close();
-                            } catch (SQLException e) {
-                                throw new RuntimeException(e);
-                            }
-                            it.remove();
-                        }
-                    }
-                }
-                return;*/
             }
             default:
                 throw new PostgresServerException("Invalid type: " + type + ", valid types are: [P, S]");
         }
     }
 
-    public CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
+    CompletableFuture<?> executeAsync(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
+    {
+        LOGGER.debug("got request to execute");
+        activeExecution = activeExecution.thenComposeAsync(ignored ->
+        {
+            LOGGER.debug("execute: previous stage response is {}", ignored);
+            return execute(portalName, maxRows, resultSetReceiverProvider);
+        }, executorService);
+        LOGGER.debug("done queuing execute");
+        return activeExecution;
+    }
+
+    private CompletableFuture<?> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored1 = span.makeCurrent())
         {
             Portal portal = getSafePortal(portalName);
+            String sql = portal.prep.sql;
+            span.setAttribute("portal.name", portalName);
+            span.setAttribute("query", sql);
+            span.setAttribute("user", identity.getName());
+            ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.apply(sql);
             if (LOGGER.isDebugEnabled())
             {
-                LOGGER.debug("Executing query {}/{} ", portalName, portal.prep.sql);
+                LOGGER.debug("Executing query {}/{} ", portalName, sql);
             }
 
             //TODO IDENTIFY THE USE CASE
@@ -365,24 +376,16 @@ public class Session implements AutoCloseable
                 resultSetReceiver.allFinished();
                 return CompletableFuture.completedFuture(Boolean.TRUE);
             }
-
             preparedStatement.setMaxRows(maxRows);
-            Context.taskWrapping(executorService).submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
-
-            if (activeExecution == null)
-            {
-                activeExecution = resultSetReceiver.completionFuture();
-            }
-            else
-            {
-                activeExecution = activeExecution
-                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
-            }
+            PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
+            // Task does not wait for any future since it is always chained asynchronously
+            CompletableFuture.runAsync(task::call, executorService);
+            activeExecution = resultSetReceiver.completionFuture();
             return activeExecution;
         }
         catch (Exception e)
         {
-            span.setStatus(StatusCode.ERROR, "Failed to execute");
+            span.setStatus(StatusCode.ERROR, FAILED_TO_EXECUTE);
             span.recordException(e);
             throw PostgresServerException.wrapException(e);
         }
@@ -393,7 +396,7 @@ public class Session implements AutoCloseable
     }
 
 
-    public CompletableFuture<?> executeSimple(String query, ResultSetReceiver resultSetReceiver)
+    CompletableFuture<?> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
     {
 
         if (LOGGER.isDebugEnabled())
@@ -402,20 +405,17 @@ public class Session implements AutoCloseable
         }
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute Simple").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored1 = span.makeCurrent())
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
             span.addEvent("submit StatementExecutionTask");
-            Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
-            if (activeExecution == null)
-            {
-                activeExecution = resultSetReceiver.completionFuture();
-            }
-            else
-            {
-                activeExecution = activeExecution
-                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
-            }
+            activeExecution = activeExecution
+                    .thenComposeAsync(ignored ->
+                    {
+                        ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.get();
+                        Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
+                        return resultSetReceiver.completionFuture();
+                    }, executorService);
             return activeExecution;
         }
         catch (Exception e)
@@ -529,8 +529,7 @@ public class Session implements AutoCloseable
     {
         private final PostgresStatement statement;
         private final ResultSetReceiver resultSetReceiver;
-
-        private String query;
+        private final String query;
 
         public StatementExecutionTask(PostgresStatement statement, String query, ResultSetReceiver resultSetReceiver)
         {
@@ -540,7 +539,7 @@ public class Session implements AutoCloseable
         }
 
         @Override
-        public Boolean call() throws Exception
+        public Boolean call()
         {
             OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
             OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
@@ -548,7 +547,7 @@ public class Session implements AutoCloseable
 
             Tracer tracer = OpenTelemetryUtil.getTracer();
             Span span = tracer.spanBuilder("Statement ExecutionTask Execute").startSpan();
-            try (Scope scope = span.makeCurrent())
+            try (Scope ignored = span.makeCurrent())
             {
                 boolean results = statement.execute(query);
                 span.addEvent("receivedResults");
@@ -559,7 +558,7 @@ public class Session implements AutoCloseable
                 else
                 {
                     PostgresResultSet rs = statement.getResultSet();
-                    resultSetReceiver.sendResultSet(rs);
+                    resultSetReceiver.sendResultSet(rs, 0);
                     resultSetReceiver.allFinished();
                 }
                 OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
@@ -567,7 +566,7 @@ public class Session implements AutoCloseable
             }
             catch (Exception e)
             {
-                span.setStatus(StatusCode.ERROR, "Failed to execute");
+                span.setStatus(StatusCode.ERROR, FAILED_TO_EXECUTE);
                 span.recordException(e);
                 resultSetReceiver.fail(e);
                 OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
@@ -593,7 +592,7 @@ public class Session implements AutoCloseable
         }
 
         @Override
-        public Boolean call() throws Exception
+        public Boolean call()
         {
             OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
             OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
@@ -601,9 +600,13 @@ public class Session implements AutoCloseable
 
             Tracer tracer = OpenTelemetryUtil.getTracer();
             Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
-            try (Scope scope = span.makeCurrent())
+            try (Scope ignored = span.makeCurrent())
             {
-                boolean results = preparedStatement.execute();
+                boolean results = true;
+                if (!preparedStatement.isExecuted())
+                {
+                    results = preparedStatement.execute();
+                }
                 span.addEvent("receivedResults");
                 if (!results)
                 {
@@ -612,14 +615,22 @@ public class Session implements AutoCloseable
                 else
                 {
                     PostgresResultSet rs = preparedStatement.getResultSet();
-                    resultSetReceiver.sendResultSet(rs);
-                    resultSetReceiver.allFinished();
+                    int maxRows = preparedStatement.getMaxRows();
+                    resultSetReceiver.sendResultSet(rs, maxRows);
+                    if (maxRows == 0)
+                    {
+                        resultSetReceiver.allFinished();
+                    }
+                    else
+                    {
+                        resultSetReceiver.batchFinished();
+                    }
                 }
                 OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
             }
             catch (Exception e)
             {
-                span.setStatus(StatusCode.ERROR, "Failed to execute");
+                span.setStatus(StatusCode.ERROR, FAILED_TO_EXECUTE);
                 span.recordException(e);
                 resultSetReceiver.fail(e);
                 OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);

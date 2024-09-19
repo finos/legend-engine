@@ -26,5 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class DataSpaceExecutableInfo
 {
+    public String id;
+    public String executionContextKey;
     public String query;
 }

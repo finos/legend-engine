@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -2322,7 +2323,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   testStrictTime(){\n" +
                 "       $this.time == %10:12:2b;\n" +
                 "   } : Boolean[1];\n" +
-                "}\n", "PARSER error at [5:30]: no viable alternative at input '==%10:12:2b'");
+                "}\n", "PARSER error at [5:30]: Unexpected token 'b'. Valid alternatives: ['&&', '||', '==', '!=', '->', '[', '.', ';', '+', '*', '-', '/', '<', '<=', '>', '>=']");
 
     }
 
@@ -2480,7 +2481,12 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", singleDateQPWithArgAndNoArg.size() == 2);
         Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
         Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
+        Property<?, ?> edgePointProp = collectionsType._properties().select(r -> ((Root_meta_pure_metamodel_function_property_Property_Impl) r).getName().equals("productTypeAllVersions")).getFirst();
+        Assert.assertEquals("Multiplicity", edgePointProp._multiplicity().getClassifier().getName());
     }
+
+
+
 
     @Test
     public void testCompilationOfNonMilestonedClasstoMilestonedClass()
@@ -2591,6 +2597,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForprocessingTemporalAddress3);
         Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbusinessTemporalAddress3);
         Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbiTemporalAddress3);
+
+
+
     }
 
     private boolean checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(QualifiedProperty generatedMilestoningClassQualifiedProperty)

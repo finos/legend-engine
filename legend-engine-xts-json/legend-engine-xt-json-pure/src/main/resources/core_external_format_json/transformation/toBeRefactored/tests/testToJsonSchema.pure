@@ -46,7 +46,7 @@ Class
 meta::external::format::json::schema::tests::Animal extends Being
 {
 
-   name:String[1];
+   <<meta::pure::profiles::test.Test>>name:String[1];
    age:Integer[1];
    <<JSONSchemaOpenAPIExtension.discriminatorProperty>>type:AnimalType[1];
    aliases:String[*];
@@ -81,7 +81,7 @@ Class
 {doc.doc = 'The OtherInfo Class'}
 meta::external::format::json::schema::tests::OtherInfo
 {
-   info:String[1];
+   <<meta::pure::profiles::test.BeforePackage, meta::pure::profiles::test.AfterPackage >>info:String[1];
 }
 
 Enum
@@ -111,9 +111,9 @@ Class
 {doc.doc = 'No Required Fields Class'}
 meta::external::format::json::schema::tests::NoRequiredFieldsClass
 {
-   a:String[0..1];
+   <<meta::pure::profiles::test.TestCollection>>a:String[0..1];
    b:String[0..1];
-   c:String[0..1];
+   <<meta::pure::profiles::test.ToFix>>c:String[0..1];
 }
 
 
@@ -1587,6 +1587,107 @@ function <<test.Test>>  meta::external::format::json::schema::generation::tests:
     assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/ClassWithProfileInterface.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString());
 }
 
+function <<test.Test>>  meta::external::format::json::schema::generation::tests::propStereotypeTest():Boolean[1]
+{
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::Animal],
+                                                     includeStereotypes = true, includeAllRelatedTypes = false  ));
+
+   let expectedjson ='{\n' +
+        '  "allOf": [\n' +
+        '    {\n' +
+        '      "$ref": "Being.json"\n' +
+        '    }\n' +
+        '  ],\n' +
+        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+        '  "description": "The Animal Class",\n' +
+        '  "title": "meta::external::format::json::schema::tests::Animal",\n' +
+        '  "type": "object",\n' +
+        '  "properties":   {\n' +
+        '    "aliases":     {\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "type": "string"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "extra":     {\n' +
+        '      "minItems": 4,\n' +
+        '      "maxItems": 4,\n' +
+        '      "type": "array",\n' +
+        '      "items":       {\n' +
+        '        "$ref": "OtherInfo.json"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    "name":     {\n' +
+        '      "type": "string"\n' + 
+        '      "x-meta::pure::profiles::test": "Test"\n' +
+        '    },\n' +
+        '    "type":     {\n' +
+        '      "$ref": "AnimalType.json"\n' +
+        '    },\n' +
+        '    "age":     {\n' +
+        '      "type": "integer"\n' +
+        '    }\n' +
+        '  },\n' +
+        '  "required": [\n' +
+        '"name",\n' +
+        '"age",\n' +
+        '"type",\n' +
+         '"extra"\n' +
+        '  ],\n' +
+        '}';
+
+
+    assertEquals($expectedjson->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+
+    let jsonSchema1 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::OtherInfo],
+                                                     includeStereotypes = true, includeAllRelatedTypes = false  ));
+
+    let expectedjson1 ='{\n' +
+            '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+            '  "description": "The OtherInfo Class",\n' +
+            '  "title": "meta::external::format::json::schema::tests::OtherInfo",\n' +
+            '  "type": "object",\n' +
+            '  "properties":   {\n' +
+            '    "info":     {\n' +
+            '      "type": "string"\n' + 
+            '      "x-meta::pure::profiles::test": "BeforePackage"\n' +
+            '      "x-meta::pure::profiles::test": "AfterPackage"\n' +
+            '    },\n' +
+            '  },\n' +
+            '  "required": [\n' +
+            '"info"\n' +
+            '  ],\n' +
+            '}';
+
+    assertEquals($expectedjson1->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema1.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+
+
+    let jsonSchema2 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::NoRequiredFieldsClass],
+                                                     includeStereotypes = true, includeAllRelatedTypes = false  ));
+
+    let expectedjson2 ='{\n' +
+            '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+            '  "description": "No Required Fields Class",\n' +
+            '  "title": "meta::external::format::json::schema::tests::NoRequiredFieldsClass",\n' +
+            '  "type": "object",\n' +
+            '  "properties":   {\n' +
+            '    "a":     {\n' +
+            '      "type": "string"\n' + 
+            '      "x-meta::pure::profiles::test": "TestCollection"\n' +
+            '    },\n' +
+            '    "b":     {\n' +
+            '      "type": "string"\n' + 
+            '    },\n' +
+            '    "c":     {\n' +
+            '      "type": "string"\n' + 
+            '      "x-meta::pure::profiles::test": "ToFix"\n' +
+            '    },\n' +
+            '  },\n' +
+            '}';
+
+    assertEquals($expectedjson2->meta::json::parseJSON()->toCompactJSONString(),$jsonSchema2.content->toOne()->meta::json::parseJSON()->toCompactJSONString());
+}
+
 function <<test.Test>>  meta::external::format::json::schema::generation::tests::toJSONSchemaWithConstraint():Boolean[1]
 {
     let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::constraints],
@@ -1972,7 +2073,6 @@ function <<test.Test>>  meta::external::format::json::schema::generation::tests:
                                                                                            meta::external::format::json::schema::tests::Cat,
                                                                                            meta::external::format::json::schema::tests::Dog],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML_PLAIN ));
-
 
    let expectedSubTypeAnimal= 'discriminator: \n' +
                               '  propertyName: type\n' +
