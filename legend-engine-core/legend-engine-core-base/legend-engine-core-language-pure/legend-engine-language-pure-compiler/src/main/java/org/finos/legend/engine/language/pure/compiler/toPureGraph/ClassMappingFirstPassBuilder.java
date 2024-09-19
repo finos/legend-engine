@@ -80,7 +80,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
 
         if (classMapping instanceof MergeOperationClassMapping)
         {
-            MergeOperationSetImplementation res = new Root_meta_pure_mapping_MergeOperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
+            MergeOperationSetImplementation res = new Root_meta_pure_mapping_MergeOperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::MergeOperationSetImplementation"))._id(id);
             res._class(pureClass)
                     ._root(classMapping.root)
                     ._parent(parentMapping)
@@ -90,7 +90,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
         }
         else
         {
-            OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
+            OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::OperationSetImplementation"))._id(id);
             res._class(pureClass)
                     ._root(classMapping.root)
                     ._parent(parentMapping)
@@ -144,7 +144,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(AggregationAwareClassMapping classMapping)
     {
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
-        final AggregationAwareSetImplementation res = new Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
+        final AggregationAwareSetImplementation res = new Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), this.context.pureModel.getClass("meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation"))._id(id);
 
         this.context.getCompilerExtensions().getExtraAggregationAwareClassMappingFirstPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
 
