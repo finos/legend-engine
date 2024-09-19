@@ -51,3 +51,109 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::rel
 
   true;
 }
+
+###Pure
+import meta::pure::graphFetch::execution::*;
+import meta::relational::tests::model::simple::*;
+
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForSimpleRelationalGraphFetch():Boolean[1]
+{
+  let tree = #{
+    Person {
+        firstName,
+        lastName
+    }
+  }#;
+
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  assertEquals('[Person.firstName: [personTable.FIRSTNAME <TableAliasColumn>]\n' +
+               ', Person.lastName: [personTable.LASTNAME <TableAliasColumn>]\n' +
+               ']',meta::analytics::lineage::ReportLineageToString($lineage.reportLineage));
+
+}
+
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForComplextRelationalGraphFetch():Boolean[1]
+{
+  let tree = #{
+    Person {
+        firstName,
+        lastName,
+        firm {
+          legalName
+        },
+        address {
+          name,
+          type
+        }
+    }
+  }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  assertEquals('[Person.firstName: [personTable.FIRSTNAME <TableAliasColumn>]\n' +
+                ', Person.address.name: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, personTable.ADDRESSID <JoinTreeNode>]\n' +
+                ', Person.firm.legalName: [firmTable.ID <JoinTreeNode>, firmTable.LEGALNAME <TableAliasColumn>, personTable.FIRMID <JoinTreeNode>]\n' +
+                ', Person.lastName: [personTable.LASTNAME <TableAliasColumn>]\n' +
+                ', Person.address.type: [addressTable.ID <JoinTreeNode>, addressTable.TYPE <TableAliasColumn>, personTable.ADDRESSID <JoinTreeNode>]\n' +
+                ']',meta::analytics::lineage::ReportLineageToString($lineage.reportLineage));
+}
+
+###Pure
+import meta::relational::tests::milestoning::*;
+import meta::pure::graphFetch::execution::*;
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithMilestoning():Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-10-16) {
+            name,
+            type,
+            classificationTypeStr
+         }
+      }
+   }#;
+  let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  assertEquals('[Order.id: [OrderTable.id <TableAliasColumn>]\n' +
+                ', Order.product.classificationTypeStr: [OrderTable.prodFk <JoinTreeNode>, ProductClassificationTable.type <JoinTreeNode>, ProductClassificationTable.type <TableAliasColumn>, ProductTable.id <JoinTreeNode>, ProductTable.type <JoinTreeNode>]\n' +
+                ', Order.product.name: [OrderTable.prodFk <JoinTreeNode>, ProductTable.id <JoinTreeNode>, ProductTable.name <TableAliasColumn>]\n' +
+                ', Order.product.type: [OrderTable.prodFk <JoinTreeNode>, ProductTable.id <JoinTreeNode>, ProductTable.type <TableAliasColumn>]\n' +
+                ']',meta::analytics::lineage::ReportLineageToString($lineage.reportLineage));
+}
+
+###Pure
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
+import meta::pure::graphFetch::execution::*;
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithCrossStore():Boolean[1]
+{
+  let tree = #{
+      Trade {
+         tradeId,
+         product {
+            productName
+         }
+      }
+   }#;
+   
+  let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  assertEquals('[Trade.product.productName: [productTable.productName <TableAliasColumn>]\n' +
+                ', Trade.tradeId: [tradeTable.tradeId_source <TableAliasColumn>]\n' +
+                ']',meta::analytics::lineage::ReportLineageToString($lineage.reportLineage));
+}
