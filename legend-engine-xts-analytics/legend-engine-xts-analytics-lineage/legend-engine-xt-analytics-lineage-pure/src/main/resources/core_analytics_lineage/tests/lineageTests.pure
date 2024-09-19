@@ -125,3 +125,16 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
 }
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testProjectWithIsolatedFilterMultiJoinTrees():Boolean[1]
+{
+   let fn =  { |Order.all()-> filter( p| $p.pnlContact->exists(l|$l.address.name == 'Main St' &&  $l.firm.legalName == 'Co' ))
+                                 ->project([ f|$f.quantity ], ['quantity'])};
+    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+    assertSameElements(['Lambda', 'db_db', 'db_dbInc', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbdefaultaccountTable', 'tb_dbdefaultorderPnlTable', 'tb_dbdefaultorderTable', 'tb_dbdefaultsalesPersonTable'],$lineage.databaseLineage.nodes.data.id);
+
+}
