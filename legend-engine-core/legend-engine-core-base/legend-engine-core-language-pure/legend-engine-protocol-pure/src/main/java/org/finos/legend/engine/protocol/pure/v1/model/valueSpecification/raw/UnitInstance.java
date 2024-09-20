@@ -19,7 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 public class UnitInstance extends DataTypeValueSpecification
 {
     public String unitType;
-    public Long unitValue;
+    public Number unitValue;
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)

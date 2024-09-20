@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function meta::pure::functions::meta::value4Tag(f:Type[1], tagName:String[1], profile:Profile[1]):TaggedValue[*]
+function meta::pure::functions::meta::value4Tag(type:Type[1], tagName:String[1], profile:Profile[1]):TaggedValue[*]
 {
-    $f->cast(@ElementWithTaggedValues)->value4Tag($tagName, $profile);
+    $type->match([
+                  e:ElementWithTaggedValues[1] | $e->value4Tag($tagName, $profile),
+                  a:Any[1] | []
+                 ])
 }
 
 function meta::pure::functions::meta::value4Tag(f:ElementWithTaggedValues[1], tagName:String[1], profile:Profile[1]):TaggedValue[*]

@@ -88,7 +88,7 @@ public class JsonGen
     @SuppressWarnings("unchecked")
     public static <T> T _fromJson(String json, Class<T> clazz, String _typeKeyName, boolean _failOnUnknownProperties, final SourceInformation si, final CompiledExecutionSupport es, final ConstraintsOverride constraintsHandler, RichIterable<? extends Pair<? extends String, ? extends String>> _typeLookup)
     {
-        String targetClassName = JavaPackageAndImportBuilder.buildInterfaceReferenceFromType(clazz);
+        String targetClassName = JavaPackageAndImportBuilder.buildInterfaceReferenceFromType(clazz, es.getProcessorSupport());
         try
         {
             es.getClassLoader().loadClass(targetClassName);
@@ -129,11 +129,18 @@ public class JsonGen
             @Override
             public <T extends Any> T newUnitInstance(CoreInstance propertyType, String unitTypeString, Number unitValue)
             {
-                CoreInstance unitRetrieved = es.getProcessorSupport().package_getByUserPath(unitTypeString);
+                CoreInstance unitRetrieved = Measure.getUnitByUserPath(unitTypeString, es.getProcessorSupport());
                 if (!es.getProcessorSupport().type_subTypeOf(unitRetrieved, propertyType))
                 {
                     StringBuilder builder = new StringBuilder("Cannot match unit type: ").append(unitTypeString).append(" as subtype of type: ");
-                    PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
+                    if (Measure.isUnit(propertyType, es.getProcessorSupport()))
+                    {
+                        Measure.writeUserPathForUnit(builder, propertyType);
+                    }
+                    else
+                    {
+                        PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
+                    }
                     throw new PureExecutionException(builder.toString());
                 }
 

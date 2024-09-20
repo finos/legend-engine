@@ -247,8 +247,9 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::Measure extends meta::pr
    nonCanonicalUnits : meta::protocols::pure::vX_X_X::metamodel::domain::Unit[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::domain::Unit extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement
+Class meta::protocols::pure::vX_X_X::metamodel::domain::Unit
 {
+   name : String[1];
    measure : String[1];
    conversionFunction : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
 }
@@ -425,6 +426,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstanc
 {
    type : String[1];
    value : Any[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::UnitType extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+{
+   fullPath : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification

@@ -17,13 +17,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.predicate.Predicate;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.block.factory.Functions;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -39,8 +37,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotypeEnum;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.ElementWithStereotypes;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
@@ -49,6 +47,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
@@ -192,7 +191,8 @@ public class Milestoning
 
     private static MilestoningPropertyTransformation milestoningPropertyTransformations(Property<?, ?> originalProperty, CompileContext context, Class<?> sourceClass, PropertyOwner propertyOwner)
     {
-        MilestoningStereotype returnTypeMilestoningStereotype = temporalStereotypes(((PackageableElement) originalProperty._genericType()._rawType())._stereotypes());
+        Type rawType = originalProperty._genericType()._rawType();
+        MilestoningStereotype returnTypeMilestoningStereotype = (rawType instanceof ElementWithStereotypes) ? temporalStereotypes(((ElementWithStereotypes) rawType)._stereotypes()) : null;
         MilestoningPropertyTransformation milestoningPropertyTransformation = new MilestoningPropertyTransformation(originalProperty);
 
         if (returnTypeMilestoningStereotype != null)
@@ -267,7 +267,7 @@ public class Milestoning
         LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::function::LambdaFunction"))
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))
-                        ._typeArguments(FastList.newListWith(functionType)))
+                        ._typeArguments(Lists.mutable.with(functionType)))
                 ._openVariables(Lists.fixedSize.of("this"))
                 ._expressionSequence(Lists.fixedSize.of(equalExpression));
 
@@ -350,7 +350,7 @@ public class Milestoning
         LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::function::LambdaFunction"))
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))
-                        ._typeArguments(FastList.newListWith(functionType)))
+                        ._typeArguments(Lists.mutable.with(functionType)))
                 ._openVariables(returnTypeMilestoningStereotype.getTemporalDatePropertyNames())
                 ._expressionSequence(Lists.fixedSize.of(equalExpression));
 
@@ -386,7 +386,7 @@ public class Milestoning
 
         GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar).withAll(datesToCompare.collect(Functions.firstOfPair())), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
+                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar).withAll(datesToCompare.collect(Pair::getOne)), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
 
         qualifiedProperty._classifierGenericType(classifierGenericType);
         qualifiedProperty._expressionSequence(Lists.fixedSize.of(finalExpression));

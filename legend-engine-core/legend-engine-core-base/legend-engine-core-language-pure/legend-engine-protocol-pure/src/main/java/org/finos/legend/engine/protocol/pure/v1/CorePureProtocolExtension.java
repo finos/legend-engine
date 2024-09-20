@@ -43,7 +43,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
@@ -67,11 +66,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 
 import java.util.List;
 import java.util.Map;
@@ -100,7 +99,6 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(Association.class, "association")
                         .withSubtype(Function.class, "function")
                         .withSubtype(Measure.class, "measure")
-                        .withSubtype(Unit.class, "unit")
                         .withSubtype(ExternalFormatSchemaSet.class, "externalFormatSchemaSet")
                         .withSubtype(Binding.class, "binding")
                         .withSubtype(RelationalMapper.class, "relationalMapper")
@@ -176,7 +174,6 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(PackageableConnection.class, "meta::pure::runtime::PackageableConnection")
                 .withKeyValue(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime")
                 .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
-                .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit")
                 .withKeyValue(DataElement.class, "meta::pure::data::DataElement")
                 .withKeyValue(ExternalFormatSchemaSet.class, "meta::external::format::shared::metamodel::SchemaSet")
                 .withKeyValue(Binding.class, "meta::external::format::shared::binding::Binding")

@@ -17,9 +17,11 @@ package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m3.navigation.measure.Measure;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ConversionContext;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.UnitConversion;
@@ -43,7 +45,7 @@ public class JsonUnitSerialization<T extends CoreInstance> extends UnitConversio
     private String getUnitId(InstanceValue unitInstance)
     {
         Type type = unitInstance._genericType()._rawType();
-        return PackageableElement.getUserPathForPackageableElement(type);
+        return (type instanceof Unit) ? Measure.getUserPathForUnit(type) : PackageableElement.getUserPathForPackageableElement(type);
     }
 
     private Number getValue(InstanceValue unitInstance)

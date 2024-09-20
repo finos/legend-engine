@@ -31,7 +31,6 @@ function meta::protocols::pure::v1_29_0::transformation::fromPureGraph::domain::
      assoc:Association[1]            | transformAssociation($assoc, $extensions),
      enum:Enumeration<Any>[1]        | transformEnum($enum),
      meas:Measure[1]                 | transformMeasure($meas, $extensions),
-     unit:Unit[1]                    | transformUnit($unit, $extensions),
      func:ConcreteFunctionDefinition<Any>[1] | transformFunction($func, $extensions),
      prof:Profile[1]                 | transformProfile($prof, $extensions)
    ])
@@ -135,7 +134,7 @@ function meta::protocols::pure::v1_29_0::transformation::fromPureGraph::domain::
    (
       _type = 'unit',
       name = $unit.name->toOne(),
-      package = if($unit.package->isEmpty(),|[],|$unit.package->toOne()->elementToPath()),
+      package = if($measure.package->isEmpty(),|[],|$measure.package->toOne()->elementToPath()),
       measure = $measure->toOne()->elementToPath(),
       conversionFunction = $conversionFunction->toOne()->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::transformLambda($extensions)
    );

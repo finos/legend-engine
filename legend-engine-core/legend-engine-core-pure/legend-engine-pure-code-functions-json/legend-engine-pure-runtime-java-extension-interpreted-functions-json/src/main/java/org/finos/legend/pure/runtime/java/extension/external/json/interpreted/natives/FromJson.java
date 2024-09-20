@@ -111,11 +111,18 @@ public class FromJson extends NativeFunction
             @Override
             public <T extends Any> T newUnitInstance(CoreInstance propertyType, String unitTypeString, Number unitValue)
             {
-                CoreInstance retrievedUnit = processorSupport.package_getByUserPath(unitTypeString);
+                CoreInstance retrievedUnit = Measure.getUnitByUserPath(unitTypeString, processorSupport);
                 if (!processorSupport.type_subTypeOf(retrievedUnit, propertyType))
                 {
                     StringBuilder builder = new StringBuilder("Cannot match unit type: ").append(unitTypeString).append(" as subtype of type: ");
-                    PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
+                    if (Measure.isUnit(propertyType, processorSupport))
+                    {
+                        Measure.writeUserPathForUnit(builder, propertyType);
+                    }
+                    else
+                    {
+                        PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
+                    }
                     throw new PureExecutionException(builder.toString());
                 }
 

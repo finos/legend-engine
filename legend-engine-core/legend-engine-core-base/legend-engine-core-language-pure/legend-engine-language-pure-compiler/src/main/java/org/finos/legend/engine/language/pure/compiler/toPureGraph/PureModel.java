@@ -17,12 +17,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.factory.Lists;
@@ -81,10 +75,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnect
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.NativeFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -107,14 +103,14 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
-import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
@@ -123,9 +119,13 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PureModel implements IPureModel
@@ -150,7 +150,7 @@ public class PureModel implements IPureModel
     private final MutableSet<String> immutables;
     private final MutableMap<String, Multiplicity> multiplicitiesIndex;
     private final MutableMap<String, Section> sectionsIndex;
-    final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> typesIndex;
+    final MutableMap<String, Type> typesIndex;
     final MutableMap<String, GenericType> typesGenericTypeIndex;
     private final MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> packageableElementsIndex;
     private final ConcurrentLinkedQueue<EngineException> engineExceptions = new ConcurrentLinkedQueue<>();
@@ -204,8 +204,6 @@ public class PureModel implements IPureModel
                     null,
                     null,
                     console,
-                    new FunctionCache(),
-                    new ClassCache(classLoader),
                     null,
                     Sets.mutable.empty(),
                     CompiledExtensionLoader.extensions()
@@ -669,19 +667,20 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement;
-
-        packageableElement = this.packageableElementsIndex.get(packagePrefix(fullPath));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.packageableElementsIndex.get(packagePrefix(fullPath));
         if (packageableElement != null)
         {
             return packageableElement;
         }
 
-        packageableElement = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) getType_safe(fullPath);
-        if (packageableElement != null)
+        Type type = getType_safe(fullPath);
+        if (type != null)
         {
-            return packageableElement;
+            return (type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ?
+                   (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type :
+                   null;
         }
+
         packageableElement = getGraphFunctions(fullPath);
         if (packageableElement != null)
         {
@@ -745,61 +744,76 @@ public class PureModel implements IPureModel
         }
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType(String fullPath)
+    public Type getType(String fullPath)
     {
         return getType(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType(String fullPath, SourceInformation sourceInformation)
+    public Type getType(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type = getType_safe(fullPath);
+        Type type = getType_safe(fullPath);
         Assert.assertTrue(type != null, () -> "Can't find type '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return type;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType_safe(String fullPath)
+    public Type getType_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type;
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
         // Search in the user graph (and cached types found subsequently in the Pure graph)
-        type = this.typesIndex.get(fullPathWithPrefix);
+        Type type = this.typesIndex.get(fullPathWithPrefix);
+        if (type != null)
+        {
+            return type;
+        }
+
+        // Search for system types in the Pure graph
+        MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+        String metadataId = "Root::" + fullPath;
+        try
+        {
+            type = metadataAccessor.getClass(metadataId);
+        }
+        catch (Exception ignore)
+        {
+            // metadata may throw if the instance is not found
+        }
         if (type == null)
         {
-            // Search for system types in the Pure graph
             try
             {
-                type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Class", "Root::" + fullPath);
+                type = metadataAccessor.getEnumeration(metadataId);
             }
-            catch (Exception e)
+            catch (Exception ignore)
+            {
+                // metadata may throw if the instance is not found
+            }
+            if (type == null)
             {
                 try
                 {
-                    type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Enumeration", "Root::" + fullPath);
+                    type = metadataAccessor.getUnit(metadataId);
                 }
-                catch (Exception ee)
+                catch (Exception ignore)
                 {
-                    try
-                    {
-                        type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Unit", "Root::" + fullPath);
-                    }
-                    catch (Exception eee)
-                    {
-                        try
-                        {
-                            type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Measure", "Root::" + fullPath);
-                        }
-                        catch (Exception ignored)
-                        {
-                            // do nothing
-                        }
-                    }
+                    // metadata may throw if the instance is not found
                 }
             }
-            if (type != null)
+            if (type == null)
             {
-                this.immutables.add(fullPathWithPrefix);
-                this.typesIndex.put(fullPathWithPrefix, type);
+                try
+                {
+                    type = metadataAccessor.getMeasure(metadataId);
+                }
+                catch (Exception ignore)
+                {
+                    // metadata may throw if the instance is not found
+                }
             }
+        }
+        if (type != null)
+        {
+            this.immutables.add(fullPathWithPrefix);
+            this.typesIndex.put(fullPathWithPrefix, type);
         }
         return type;
     }
@@ -811,126 +825,63 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath, SourceInformation sourceInformation)
     {
-        Type type;
-        try
+        Type type = getType_safe(fullPath);
+        if (!(type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class))
         {
-            type = this.getType(fullPath, sourceInformation);
+            throw new EngineException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        catch (EngineException e)
-        {
-            throw new EngineException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
-        try
-        {
-            _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
-        }
-        catch (ClassCastException e)
-        {
-            throw new EngineException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        return _class;
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner getPropertyOwner(String fullPath, SourceInformation sourceInformation)
+    public PropertyOwner getPropertyOwner(String fullPath, SourceInformation sourceInformation)
     {
         Type type = getType_safe(fullPath);
+        if (type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
+        {
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
+        }
         if (type != null)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
-            try
-            {
-                _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
-            }
-            catch (ClassCastException e)
-            {
-                throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-            }
-            return _class;
+            throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        else
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = getAssociation_safe(fullPath);
+        if (association == null)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association;
-            try
-            {
-                association = this.getAssociation(fullPath, sourceInformation);
-            }
-            catch (EngineException e)
-            {
-                throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-            }
-            return association;
+            throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
+        return association;
     }
 
     @SuppressWarnings("unchecked")
-    public Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum> getEnumeration(String fullPath, SourceInformation sourceInformation)
+    public Enumeration<Enum> getEnumeration(String fullPath, SourceInformation sourceInformation)
     {
-        Type type;
-        try
+        Type type = getType_safe(fullPath);
+        if (!(type instanceof Enumeration))
         {
-            type = this.getType(fullPath, sourceInformation);
+            throw new EngineException("Can't find enumeration '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        catch (EngineException e)
-        {
-            throw new EngineException("Can't find enumeration '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum> enumeration;
-        try
-        {
-            enumeration = (Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum>) type;
-        }
-        catch (ClassCastException e)
-        {
-            throw new EngineException("Can't find enumeration '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        return enumeration;
+        return (Enumeration<Enum>) type;
     }
 
     public Measure getMeasure(String fullPath, SourceInformation sourceInformation)
     {
-        Type type;
-        try
+        Type type = getType_safe(fullPath);
+        if (!(type instanceof Measure))
         {
-            type = this.getType(fullPath, sourceInformation);
+            throw new EngineException("Can't find measure '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        catch (EngineException e)
-        {
-            throw new EngineException("Can't find measure '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        Measure measure;
-        try
-        {
-            measure = (Measure) type;
-        }
-        catch (ClassCastException e)
-        {
-            throw new EngineException("Can't find measure '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        return measure;
+        return (Measure) type;
     }
 
     public Unit getUnit(String fullPath, SourceInformation sourceInformation)
     {
-        Type type;
-        try
+        Type type = getType_safe(fullPath);
+        if (!(type instanceof Unit))
         {
-            type = this.getType(fullPath, sourceInformation);
+            throw new EngineException("Can't find unit '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
-        catch (EngineException e)
-        {
-            throw new EngineException("Can't find unit '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        Unit unit;
-        try
-        {
-            unit = (Unit) type;
-        }
-        catch (ClassCastException e)
-        {
-            throw new EngineException("Can't find unit '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
-        }
-        return unit;
+        return (Unit) type;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation(String fullPath)
@@ -947,22 +898,29 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> getGraphFunctions(String fullPath)
     {
+        String metadataId = "Root::" + fullPath;
         try
         {
-            return  (ConcreteFunctionDefinition<?>) this.executionSupport.getMetadata("meta::pure::metamodel::function::ConcreteFunctionDefinition", "Root::" + fullPath);
+            ConcreteFunctionDefinition<?> func = this.executionSupport.getMetadataAccessor().getConcreteFunctionDefinition(metadataId);
+            if (func != null)
+            {
+                return func;
+            }
         }
-        catch (Exception e)
+        catch (Exception ignore)
         {
-            try
-            {
-                return  (NativeFunction<?>) this.executionSupport.getMetadata("meta::pure::metamodel::function::NativeFunction", "Root::" + fullPath);
-            }
-            catch (Exception ee)
-            {
-                // do nothing
-            }
+            // metadata may throw if element is not found
         }
-        return null;
+
+        try
+        {
+            return (NativeFunction<?>) this.executionSupport.getMetadata(M3Paths.NativeFunction, metadataId);
+        }
+        catch (Exception ignore)
+        {
+            // metadata may throw if element is not found
+            return null;
+        }
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
@@ -1198,7 +1156,7 @@ public class PureModel implements IPureModel
 
     public String buildTypeId(Type type)
     {
-        return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type, this.getExecutionSupport());
+        return HelperModelBuilder.getTypeFullPath(type, getExecutionSupport());
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty<?> getProperty(String fullPath, String propertyName)
@@ -1256,7 +1214,7 @@ public class PureModel implements IPureModel
         return this.getSection(element.getPath());
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getTypeFromIndex(String fullPath)
+    public Type getTypeFromIndex(String fullPath)
     {
         return this.typesIndex.get(addPrefixToTypeReference(fullPath));
     }
@@ -1272,9 +1230,7 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> getFunction(String functionName, boolean isNative)
     {
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) this.executionSupport.getMetadata(isNative
-                ? "meta::pure::metamodel::function::NativeFunction"
-                : "meta::pure::metamodel::function::ConcreteFunctionDefinition", "Root::" + functionName);
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) this.executionSupport.getMetadata(isNative ? M3Paths.NativeFunction : M3Paths.ConcreteFunctionDefinition, "Root::" + functionName);
     }
 
     public DeploymentMode getDeploymentMode()

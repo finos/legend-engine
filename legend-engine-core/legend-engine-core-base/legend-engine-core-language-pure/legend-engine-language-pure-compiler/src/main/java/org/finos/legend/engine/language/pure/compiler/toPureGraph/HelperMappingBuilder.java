@@ -15,15 +15,13 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.factory.Sets;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
@@ -103,26 +101,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
 import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperMappingBuilder
 {
-    private static final Procedure2<Mapping, MutableSet<Mapping>> collectIncludedMappings = (mapping, results) ->
-    {
-        if (results.contains(mapping))
-        {
-            return;
-        }
-        results.add(mapping);
-        ListIterate.forEach(mapping._includes().toList(), include -> HelperMappingBuilder.collectIncludedMappings.value(include._included(), results));
-    };
-
     public static SetIterable<Mapping> getAllIncludedMappings(Mapping mapping)
     {
-        MutableSet<Mapping> results = Sets.mutable.with();
-        HelperMappingBuilder.collectIncludedMappings.value(mapping, results);
+        return collectAllIncludedMappings(mapping, Sets.mutable.empty());
+    }
+
+    private static MutableSet<Mapping> collectAllIncludedMappings(Mapping mapping, MutableSet<Mapping> results)
+    {
+        if (results.add(mapping))
+        {
+            mapping._includes().forEach(include -> collectAllIncludedMappings(include._included(), results));
+        }
         return results;
     }
 
@@ -133,7 +127,7 @@ public class HelperMappingBuilder
 
     public static ImmutableSet<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>> getAllEnumerationMappings(Mapping mapping)
     {
-        return HelperMappingBuilder.getAllIncludedMappings(mapping).flatCollect(m -> (Iterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>>) m._enumerationMappings()).toSet().toImmutable();
+        return HelperMappingBuilder.getAllIncludedMappings(mapping).flatCollect(m -> (Iterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>>) m._enumerationMappings(), Sets.mutable.empty()).toImmutable();
     }
 
     public static String getPropertyMappingTargetId(PropertyMapping pm)
@@ -141,11 +135,11 @@ public class HelperMappingBuilder
         return pm.target == null ? "" : pm.target;
     }
 
-    public static String getPropertyMappingTargetId(PropertyMapping propertyMapping, Property property, CompileContext context)
+    public static String getPropertyMappingTargetId(PropertyMapping propertyMapping, Property<?, ?> property, CompileContext context)
     {
-        if (propertyMapping.target == null && property instanceof Root_meta_pure_metamodel_function_property_Property_Impl && ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType instanceof Class)
+        if (propertyMapping.target == null && (property._genericType()._rawType() instanceof Class))
         {
-            return HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ((Root_meta_pure_metamodel_type_generics_GenericType_Impl) ((Root_meta_pure_metamodel_function_property_Property_Impl) property)._genericType)._rawType, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+            return HelperModelBuilder.getTypeFullPath(property._genericType()._rawType(), "_", context.pureModel.getExecutionSupport());
         }
         return HelperMappingBuilder.getPropertyMappingTargetId(propertyMapping);
     }
@@ -161,7 +155,7 @@ public class HelperMappingBuilder
         // process enum value mappings
         String id = getEnumerationMappingId(em);
         return new Root_meta_pure_mapping_EnumerationMapping_Impl<>(id, SourceInformationHelper.toM3SourceInformation(em.sourceInformation), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::mapping::EnumerationMapping"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Any")))))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::mapping::EnumerationMapping"))._typeArguments(Lists.mutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Any")))))
                 ._name(id)
                 ._parent(pureMapping)
                 ._enumeration(context.resolveEnumeration(em.enumeration.path, em.enumeration.sourceInformation))
@@ -232,7 +226,7 @@ public class HelperMappingBuilder
         String type = (String) map.get("_type");
         if ("string".equals(type))
         {
-            return FastList.newList((List) map.get("values"));
+            return Lists.mutable.withAll((List) map.get("values"));
         }
         else if ("integer".equals(type))
         {
@@ -241,7 +235,7 @@ public class HelperMappingBuilder
         }
         else if ("enumValue".equals(type))
         {
-            return FastList.newListWith(context.resolveEnumValue((String) map.get("fullPath"), (String) map.get("value")));
+            return Lists.mutable.with(context.resolveEnumValue((String) map.get("fullPath"), (String) map.get("value")));
         }
         else if ("collection".equals(type))
         {
@@ -290,7 +284,7 @@ public class HelperMappingBuilder
 
     public static String getClassMappingId(ClassMapping cm, CompileContext context)
     {
-        return cm.id != null ? cm.id : getElementFullPath(context.resolveClass(cm._class, cm.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
+        return cm.id != null ? cm.id : HelperModelBuilder.getElementFullPath(context.resolveClass(cm._class, cm.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
     }
 
     public static LambdaFunction processPurePropertyMappingTransform(PurePropertyMapping ppm, Lambda lambda, PropertyMappingsImplementation owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type inputVarType, CompileContext context, String mappingName)
@@ -312,7 +306,7 @@ public class HelperMappingBuilder
         String mappingPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(owner._parent(), context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("src");
         return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(Lists.mutable.with(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
     }
@@ -392,10 +386,10 @@ public class HelperMappingBuilder
     {
         if (aggregateSetImplementationContainer.setImplementation.mappingClass == null)
         {
-            Class _class = context.resolveClass(aggregateSetImplementationContainer.setImplementation._class, aggregateSetImplementationContainer.setImplementation.classSourceInformation);
+            Class<?> _class = context.resolveClass(aggregateSetImplementationContainer.setImplementation._class, aggregateSetImplementationContainer.setImplementation.classSourceInformation);
             aggregateSetImplementationContainer.setImplementation.mappingClass = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass();
             aggregateSetImplementationContainer.setImplementation.mappingClass.name = _class.getName() + "_" + parent.getName() + "_" + aggregateSetImplementationContainer.setImplementation.id;
-            aggregateSetImplementationContainer.setImplementation.mappingClass.superTypes = Lists.mutable.with(new PackageableElementPointer(getElementFullPath(_class, context.pureModel.getExecutionSupport())));
+            aggregateSetImplementationContainer.setImplementation.mappingClass.superTypes = Lists.mutable.with(new PackageableElementPointer(HelperModelBuilder.getElementFullPath(_class, context.pureModel.getExecutionSupport())));
         }
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregateSetImplementationContainer container = new Root_meta_pure_mapping_aggregationAware_AggregateSetImplementationContainer_Impl("", null, context.pureModel.getClass("meta::pure::mapping::aggregationAware::AggregateSetImplementationContainer"));
         container._setImplementation((InstanceSetImplementation) aggregateSetImplementationContainer.setImplementation.accept(new ClassMappingFirstPassBuilder(context, parent)).getOne());

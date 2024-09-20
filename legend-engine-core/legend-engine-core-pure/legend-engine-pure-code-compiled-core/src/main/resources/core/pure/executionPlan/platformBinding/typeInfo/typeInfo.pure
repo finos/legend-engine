@@ -695,8 +695,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::isNotTypeFn(type:Type[1]):Function<{Type[1]->Boolean[1]}>[1]
 {
-   let path = $type->cast(@PackageableElement)->elementToPath();
-   {t:Type[1] | ($type != $t) && ($path != $t->cast(@PackageableElement)->elementToPath())};
+   let path = $type->elementToPath();
+   {t:Type[1] | ($type != $t) && ($path != $t->elementToPath())};
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::isNotClassFn(class:Class<Any>[1]):Function<{Class<Any>[1]->Boolean[1]}>[1]

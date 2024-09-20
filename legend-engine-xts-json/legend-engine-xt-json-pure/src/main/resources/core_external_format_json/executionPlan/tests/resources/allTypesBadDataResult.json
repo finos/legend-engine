@@ -274,7 +274,7 @@
       {
         "id": null,
         "externalId": null,
-        "message": "optionalMeasure: Unexpected NUMBER for PURE Mass~Kilogram",
+        "message": "optionalMeasure: Unexpected NUMBER for PURE meta::pure::unit::Mass~Kilogram",
         "enforcementLevel": "Error",
         "ruleType": "InvalidInput",
         "ruleDefinerPath": "meta::external::format::json::executionPlan::test::types::AllTypes",

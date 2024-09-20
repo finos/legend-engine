@@ -336,7 +336,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
 {
   let javaType             = $conventions->pureTypeToJavaType($type, PureOne);
   let simpleJavaName       = $conventions->identifier($type.name->toOne());
-  let typeName             = j_string($type.name->toOne());
+  let typeName             = j_string($type->elementToPath());
   let nodeParameter        = j_parameter(jsonNode(), 'node');
   let nodeTypeInvoke       = {param:Code[1] | $param->j_invoke('getNodeType', [], jsonNodeType())};
   let checkMethodInvokeGen = {params:Code[3] | j_this($javaInterface)->j_invoke('check', $params, javaVoid())};

@@ -362,9 +362,11 @@ function meta::external::language::java::transform::identifier(conventions: Conv
    $conventions.identifierFactory->eval($name);
 }
 
-function meta::external::language::java::transform::className(conventions: Conventions[1], pe:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
+function meta::external::language::java::transform::className(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-    meta::external::language::java::transform::className($conventions, $pe->cast(@PackageableElement));
+    if($conventions->isProvidedType($type),
+       | $conventions->getProvidedType($type),
+       | $conventions->generateClassName($type, 'app', ''))
 }
 
 function meta::external::language::java::transform::className(conventions: Conventions[1], pe:PackageableElement[1]): meta::external::language::java::metamodel::Class[1]
@@ -375,14 +377,42 @@ function meta::external::language::java::transform::className(conventions: Conve
    );
 }
 
-function meta::external::language::java::transform::implClassName(conventions: Conventions[1], pe:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
+function meta::external::language::java::transform::implClassName(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-   $conventions->generateClassName($pe->cast(@PackageableElement), 'internal', '_Impl');
+   $conventions->generateClassName($type, 'internal', '_Impl');
 }
 
 function meta::external::language::java::transform::implClassName(conventions: Conventions[1], pe:PackageableElement[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->generateClassName($pe, 'internal', '_Impl');
+}
+
+function <<access.private>> meta::external::language::java::transform::generateClassName(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], zone:String[1], suffix:String[1]): meta::external::language::java::metamodel::Class[1]
+{
+   assert(!$conventions->isProvidedType($type), 'Cannot provide implementation for provided types');
+   assert($type != Function, 'Cannot handle function, should use pureTypeToJavaType with generic type');
+
+   let packageAndName = if($conventions.typeAndPackageNameStrategy->isEmpty(),
+    |let zoneRoot    = $conventions.basePackageName + '.' + $zone + '.';
+     let package     = $type->match([
+                           u:Unit[1]                                    | $u.measure.package,
+                           mc:meta::pure::mapping::MappingClass<Any>[1] | $mc.generalizations.general->cast(@GenericType).rawType->cast(@meta::pure::metamodel::type::Class<Any>).package,
+                           pe:PackageableElement[1]                     | $pe.package
+                       ])->toOne();
+     let javaPkgName = $zoneRoot + $conventions->identifier($package->elementToPath('.'));
+     let typeName = $type->match([
+                        u:Unit[1]                | $u.name,
+                        pe:PackageableElement[1] | $pe.name
+                    ])->toOne();
+     let name = $conventions->identifier($typeName)->toUpperFirstCharacter()->toOne() + $suffix;
+     pair($javaPkgName, $name);,
+    |$conventions.typeAndPackageNameStrategy->toOne()->eval($type, $conventions)
+   );
+
+   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+      | javaEnum(javaPackage($packageAndName.first), $packageAndName.second),
+      | javaClass(javaPackage($packageAndName.first), $packageAndName.second);
+   );
 }
 
 function <<access.private>> meta::external::language::java::transform::generateClassName(conventions:Conventions[1], pe:PackageableElement[1], zone:String[1], suffix:String[1]): meta::external::language::java::metamodel::Class[1]
@@ -393,7 +423,7 @@ function <<access.private>> meta::external::language::java::transform::generateC
    let packageAndName = if ($conventions.typeAndPackageNameStrategy->isEmpty(),
     |let zoneRoot    = $conventions.basePackageName + '.' + $zone + '.';
      let package     = if($pe->instanceOf(meta::pure::mapping::MappingClass), | $pe->cast(@meta::pure::mapping::MappingClass<Any>).generalizations.general->cast(@GenericType).rawType->cast(@meta::pure::metamodel::type::Class<Any>).package->toOne(), | $pe.package->toOne());
-     let javaPkgName = $zoneRoot + $conventions->identifier($package->elementToPath()->replace('::', '.'));
+     let javaPkgName = $zoneRoot + $conventions->identifier($package->elementToPath('.'));
      let name = $conventions->identifier($pe.name->toOne())->toUpperFirstCharacter()->toOne() + $suffix;
      pair($javaPkgName, $name);,
     | $conventions.typeAndPackageNameStrategy->toOne()->eval($pe->cast(@meta::pure::metamodel::type::Type), $conventions)

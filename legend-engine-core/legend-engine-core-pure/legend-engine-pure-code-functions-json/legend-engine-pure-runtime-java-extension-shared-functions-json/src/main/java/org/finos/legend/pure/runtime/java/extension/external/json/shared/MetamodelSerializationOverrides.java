@@ -23,9 +23,11 @@ import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m3.navigation.measure.Measure;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.PropertyConversion;
 
@@ -76,5 +78,10 @@ class MetamodelSerializationOverrides
     static Object serializePackageableElement(CoreInstance pureObject, boolean serializeMultiplicityAsNumber)
     {
         return serializeMultiplicityAsNumber && pureObject instanceof Multiplicity ? serializeMultiplicityAsNumber((Multiplicity)pureObject) : PackageableElement.getUserPathForPackageableElement(pureObject);
+    }
+
+    static Object serializeUnit(Unit unit)
+    {
+        return Measure.getUserPathForUnit(unit);
     }
 }

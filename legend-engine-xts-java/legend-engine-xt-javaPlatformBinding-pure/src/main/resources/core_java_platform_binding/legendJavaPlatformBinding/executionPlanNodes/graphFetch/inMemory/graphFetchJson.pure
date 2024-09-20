@@ -444,7 +444,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    javaMethod('private', $javaType, 'accept'+$type.name->toOne(), $nodeParameter,
       [
-        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type.name->toOne())))),
+        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type->elementToPath())))),
         $jThis->j_invoke('check', [javaArrays()->j_invoke('asList', $acceptableNodes, javaList(jsonNodeType())), $nodeParameter->j_invoke('getNodeType', [], jsonNodeType()), $errorMessage], javaVoid()),
 
         j_return($conventions->jsonNodeGetter($nodeParameter, $type))
@@ -472,19 +472,19 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     let simpleJavaName          = $conventions->identifier($type.name->toOne());
     let fullJavaName            = $conventions->identifier($javaType->meta::external::language::java::serialization::typeToString());
     let acceptibleTokens        = $conventions->jacksonTokenTypesFor($type);
-    let getCurrentTokenErrorMsg = '"Unexpected " + parser.getCurrentToken() + " for PURE '+ $type.name->toOne()+'"';
-    let getNextTokenErrorMsg    = '"Unexpected " + parser.nextToken() + " for PURE '+ $type.name->toOne()+'"';
+    let getCurrentTokenErrorMsg = '"Unexpected " + parser.getCurrentToken() + " for PURE ' + $type->elementToPath() + '"';
+    let getNextTokenErrorMsg    = '"Unexpected " + parser.nextToken() + " for PURE ' + $type->elementToPath() + '"';
     let appendToRecord          = '    this.appendToRecord();\n';
     let nodeParameter           = j_parameter(jsonNode(), 'node');
 
     javaMethod('private', $javaType, 'accept' + $simpleJavaName, $nodeParameter,
-       '    check(JsonNodeType.OBJECT, node.getNodeType(), "Unexpected " + node.getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
-       '    check(JsonNodeType.ARRAY, node.path("unit").getNodeType(), "Unexpected unit" + node.path("unit").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
-       '    check(JsonNodeType.STRING, node.path("unit").path(0).path("unitId").getNodeType(), "Unexpected unitId" + node.path("unit").path(0).path("unitId").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
-       '    check(JsonNodeType.NUMBER, node.path("unit").path(0).path("exponentValue").getNodeType(), "Unexpected exponentValue" + node.path("unit").path(0).path("exponentValue").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    check(JsonNodeType.OBJECT, node.getNodeType(), "Unexpected " + node.getNodeType() + " for PURE ' + $type->elementToPath() + '");\n' +
+       '    check(JsonNodeType.ARRAY, node.path("unit").getNodeType(), "Unexpected unit" + node.path("unit").getNodeType() + " for PURE ' + $type->elementToPath() + '");\n' +
+       '    check(JsonNodeType.STRING, node.path("unit").path(0).path("unitId").getNodeType(), "Unexpected unitId" + node.path("unit").path(0).path("unitId").getNodeType() + " for PURE ' + $type->elementToPath() + '");\n' +
+       '    check(JsonNodeType.NUMBER, node.path("unit").path(0).path("exponentValue").getNodeType(), "Unexpected exponentValue" + node.path("unit").path(0).path("exponentValue").getNodeType() + " for PURE ' + $type->elementToPath() + '");\n' +
 
 
-       '    check(JsonNodeType.NUMBER, node.path("value").getNodeType(), "Unexpected value" + node.path("value").getNodeType() + " for PURE '+ $type.name->toOne()+'");\n' +
+       '    check(JsonNodeType.NUMBER, node.path("value").getNodeType(), "Unexpected value" + node.path("value").getNodeType() + " for PURE ' + $type->elementToPath() + '");\n' +
        '    Double unitValue = node.path("value").doubleValue();\n' +
        '    ' +$fullJavaName+' value = new ' + $simpleJavaName +'_Impl(unitValue);\n' +
 
