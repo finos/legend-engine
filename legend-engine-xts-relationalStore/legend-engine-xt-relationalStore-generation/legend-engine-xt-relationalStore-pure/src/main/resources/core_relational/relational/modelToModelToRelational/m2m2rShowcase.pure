@@ -125,6 +125,42 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
   assertEquals($expected, $result);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testChainPostFilter(): Boolean[1]
+{
+  let connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c|$c.element==meta::relational::tests::db)->toOne();
+  let testConnection = $connection.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+  meta::relational::metamodel::execute::executeInDb('Drop table if exists SimplePerson;', $connection);
+  meta::relational::metamodel::execute::executeInDb('Create Table SimplePerson(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',22, 4,1,null);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
+  meta::relational::metamodel::execute::executeInDb('insert into SimplePerson (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
+
+  let query = {|meta::relational::tests::m2m2r::SimplePerson.all()->groupBy([ p|$p.age], [agg(p|$p.age, p | $p->count())], ['age', 'count'])->filter(x | $x.getInteger('age') < 30)};
+
+  let result = execute($query,
+                        meta::relational::tests::m2m2r::SimplePersonMapping,
+                         ^Runtime(
+      connectionStores=[
+        ^meta::core::runtime::ConnectionStore(
+          element =meta::relational::tests::m2m2r::Person_Info_store,
+          connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c|$c.element==meta::relational::tests::db)->toOne().connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection)),
+        ^meta::core::runtime::ConnectionStore(element = ^ModelStore(),connection=^ meta::external::store::model::ModelChainConnection( mappings = [meta::relational::tests::m2m2r::SimplePersonMappingV2]))
+      ]
+  ),
+                        meta::relational::extension::relationalExtensions()
+                        );
+  print($result.values.rows->map(r | $r.values->makeString(' | ')));
+  assertEquals($result.values.rows->at(0).values->makeString(' | '), '12 | 1');
+  assertEquals($result.values.rows->at(1).values->makeString(' | '), '22 | 2');
+  assertEquals($result.values.rows->at(2).values->makeString(' | '), '23 | 1');
+
+}
+
 function meta::relational::tests::m2m2r::runtimeSimple():meta::core::runtime::Runtime[1]
 {
   meta::core::runtime::getRuntimeWithModelConnection(meta::relational::tests::m2m2r::Entitlement,[])
@@ -206,6 +242,20 @@ Class  meta::relational::tests::m2m2r::SourceAnnouncement
   grossRate:Decimal[0..1];
 }
 
+Class meta::relational::tests::m2m2r::SimplePerson {
+  id: String[1];
+  firstName: String[1];
+  lastName: String[1];
+  age : Integer[0..1];
+}
+
+Class meta::relational::tests::m2m2r::SimplePersonV2 {
+  id: String[1];
+  firstName: String[1];
+  lastName: String[1];
+  age : Integer[0..1];
+}
+
 Association meta::relational::tests::m2m2r::SourceEntitlementAnnouncementAssociation
 {
   entitlments: meta::relational::tests::m2m2r::SourceEntitlement[1..*];
@@ -275,6 +325,57 @@ Mapping meta::relational::tests::m2m2r::AxionTargetRelational
   }
 )
 
+###Mapping
+Mapping meta::relational::tests::m2m2r::SimplePersonMappingV2
+(
+  *meta::relational::tests::m2m2r::SimplePersonV2: Relational
+  {
+    // ~filter [store::GBM_Salesforce_Case]ServiceManagerCase
+    ~primaryKey
+    (
+      [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.ID
+    )
+    ~mainTable [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson
+
+    id: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.ID,
+    firstName: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.FIRSTNAME,
+    lastName: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.LASTNAME,
+    age: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.AGE
+
+  }
+)
+
+###Mapping
+Mapping meta::relational::tests::m2m2r::SimplePersonMapping
+(
+
+  *meta::relational::tests::m2m2r::SimplePerson: Pure
+  {
+    ~src meta::relational::tests::m2m2r::SimplePersonV2
+    id: $src.id,
+    firstName: $src.firstName,
+    lastName: $src.lastName,
+    age: $src.age
+
+  }
+
+    *meta::relational::tests::m2m2r::SimplePersonV2: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.ID
+    )
+    ~mainTable [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson
+
+    id: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.ID,
+    firstName: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.FIRSTNAME,
+    lastName: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.LASTNAME,
+    age: [meta::relational::tests::m2m2r::Person_Info_store]SimplePerson.AGE
+
+  }
+
+)
+
 ###Relational
 Database meta::relational::tests::m2m2r::SourceDB
 (
@@ -298,4 +399,16 @@ Database meta::relational::tests::m2m2r::SourceDB
   )
 
   Join entitlement_announcment(S.sourceEntitlement.id  = S.SourceAnnouncement.id)
+)
+
+###Relational
+Database meta::relational::tests::m2m2r::Person_Info_store
+(
+  Table SimplePerson
+    (
+      ID VARCHAR(100) NOT NULL,
+      FIRSTNAME VARCHAR(10000),
+      LASTNAME VARCHAR(100000),
+      AGE INT
+    )
 )
