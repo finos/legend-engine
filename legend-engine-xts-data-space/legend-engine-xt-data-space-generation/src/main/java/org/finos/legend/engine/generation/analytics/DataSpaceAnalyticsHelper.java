@@ -45,7 +45,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
@@ -61,13 +60,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.shared.core.ObjectMapperFactory.withStandardConfigurations;
@@ -283,43 +280,8 @@ public class DataSpaceAnalyticsHelper
             if (returnLightPMCD)
             {
                 PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-
-                // Here we prune the bindings to have just packageableIncludes part of ModelUnit
-                // because we only need that as a part of analytics.
-                List<String> bindingPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof Binding).map(b ->
-                {
-                    Binding _binding = new Binding();
-                    _binding.name = b.name;
-                    _binding.contentType = ((Binding) b).contentType;
-                    _binding._package = b._package;
-                    _binding.modelUnit = ((Binding) b).modelUnit;
-                    _binding.modelUnit.packageableElementExcludes = Lists.mutable.empty();
-                    builder.addElement(_binding);
-                    return b.getPath();
-                }).collect(Collectors.toList());
-                RichIterable<? extends Root_meta_external_format_shared_binding_Binding> bindings = Lists.mutable.ofAll(bindingPaths.stream().map(path ->
-                {
-                    Root_meta_external_format_shared_binding_Binding binding;
-                    try
-                    {
-                        binding = (Root_meta_external_format_shared_binding_Binding) pureModel.getPackageableElement(path);
-                        return binding;
-                    }
-                    catch (Exception ignored)
-                    {
-
-                    }
-                    return null;
-                }).filter(Objects::nonNull).collect(Collectors.toList()));
-                Root_meta_analytics_binding_modelCoverage_BindingModelCoverageAnalysisResult bindingAnalysisResult = core_analytics_binding_modelCoverage_analytics.Root_meta_analytics_binding_modelCoverage_getBindingModelCoverage_Binding_MANY__BindingModelCoverageAnalysisResult_1_(bindings, pureModel.getExecutionSupport());
-                MutableList<? extends Class<? extends Object>> coveredClasses = mappingModelCoverageAnalysisResult._classes().toList();
-                List<String> coveredClassesPaths = coveredClasses.stream().map(c -> HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())).collect(Collectors.toList());
-                coveredClasses = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(
-                        Stream.concat(
-                                bindingAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport()))),
-                                mappingModelCoverageAnalysisResult._classes().toList().stream()).distinct().collect(Collectors.toList()));
                 MutableList<Enumeration<? extends Enum>> coveredEnumerations = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(mappingModelCoverageAnalysisResult._enumerations().toList().stream().collect(Collectors.toList()));
-                PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(coveredClasses, clientVersion, pureModel.getExecutionSupport());
+                PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(mappingModelCoverageAnalysisResult._classes().toList(), clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(coveredEnumerations, clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) mappingModelCoverageAnalysisResult._profiles(), clientVersion, pureModel.getExecutionSupport());
                 PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(mappingModelCoverageAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
