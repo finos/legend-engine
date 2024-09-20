@@ -41,6 +41,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSnowflake_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      schemaIdentifierToString = meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
@@ -48,6 +49,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       processTempTableName = processTempTableNameSnowflake_String_1__DatabaseConnection_1__String_1_
    );
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->split('.')->map(s|$s->processIdentifierWithQuoteChar('"', $dbConfig))->joinStrings('.');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::getLiteralProcessorsForSnowflake():Map<Type,LiteralProcessor>[1]
@@ -413,7 +419,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformConvertTimeZone(params:String[3],context:SqlGenerationContext[1]):String[1]
 {
-  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);  $unWrappedfmt->println();
+  let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1); 
   assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
   let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
   let format = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
