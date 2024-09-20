@@ -116,7 +116,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    schemaIdentifierToString(s:String[1])
    {
-     if($this.dbExtension.schemaIdentifierToString->isEmpty(), |$this.schemaNameToIdentifier($s), |$this.dbExtension.schemaIdentifierToString->toOne()->eval($s, $this));
+     if($this.dbExtension.schemaIdentifierToString->isEmpty(), |$this.identifierProcessor($s), |$this.dbExtension.schemaIdentifierToString->toOne()->eval($s, $this));
    }: String[1];
 
 
