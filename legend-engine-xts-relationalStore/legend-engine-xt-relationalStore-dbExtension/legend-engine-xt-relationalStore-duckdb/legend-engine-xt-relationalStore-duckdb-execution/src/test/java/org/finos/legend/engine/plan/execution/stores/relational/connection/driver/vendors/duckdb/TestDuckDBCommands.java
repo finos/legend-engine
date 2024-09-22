@@ -210,6 +210,6 @@ public class TestDuckDBCommands
         DuckDBDatasourceSpecification duckDBDatasourceSpecification = new DuckDBDatasourceSpecification();
         duckDBDatasourceSpecification.path = TEMPORARY_FOLDER.newFolder("duckDB").getAbsolutePath() + "/duck_db_file";
         TestDatabaseAuthenticationStrategy testDatabaseAuthSpec = new TestDatabaseAuthenticationStrategy();
-        return new RelationalDatabaseConnection(duckDBDatasourceSpecification, testDatabaseAuthSpec, DatabaseType.H2);
+        return new RelationalDatabaseConnection(duckDBDatasourceSpecification, testDatabaseAuthSpec, DatabaseType.DuckDB);
     }
 }
