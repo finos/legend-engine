@@ -52,6 +52,12 @@ public class H2Commands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String load(String tableName, String location, List<Column> columns)
+    {
+        return "CREATE TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(", ")) + ") AS SELECT * FROM CSVREAD('" + location + "');";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);

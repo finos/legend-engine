@@ -19,12 +19,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -64,6 +66,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
@@ -692,6 +695,28 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         catch (Exception e)
         {
             LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + RequestContext.getSessionID(this.requestContext) + " " + e.getMessage()).toString());
+        }
+    }
+
+    public List<Column> getResultSetColumns()
+    {
+        try
+        {
+            List<Column> columns = new ArrayList<>(this.resultSetMetaData.getColumnCount());
+            Function<String, String> unquote = s -> s.startsWith("\"") && s.endsWith("\"") ? s.substring(1, s.length() - 1) : s;
+            for (int i = 1; i <= this.resultSetMetaData.getColumnCount(); i++)
+            {
+                String columnType = JDBCType.valueOf(this.resultSetMetaData.getColumnType(i)).getName();
+                String updatedColumnType = columnType.equals("TIMESTAMP_WITH_TIMEZONE") ? "TIMESTAMP WITH TIME ZONE" :
+                        columnType.equals("TIME_WITH_TIMEZONE") ? "TIME WITH TIME ZONE" : columnType;
+                columns.add(new Column(unquote.valueOf(this.resultSetMetaData.getColumnLabel(i)), updatedColumnType));
+            }
+            return columns;
+        }
+        catch (SQLException e)
+        {
+            this.close();
+            throw new RuntimeException(e);
         }
     }
 }

@@ -34,6 +34,11 @@ public abstract class RelationalDatabaseCommands
         throw new RuntimeException("Load not implemented for " + this.getClass().getSimpleName());
     }
 
+    public String load(String tableName, String location, List<Column> columns)
+    {
+        throw new RuntimeException("Load not implemented for " + this.getClass().getSimpleName());
+    }
+
     public String dropTable(String tableName, String location)
     {
         throw new RuntimeException("Drop table not implemented for " + this.getClass().getSimpleName());

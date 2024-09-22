@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
@@ -41,6 +42,7 @@ import org.jline.reader.ParsedLine;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
@@ -94,6 +96,7 @@ public class Cache implements Command
                     if (res instanceof RelationalResult)
                     {
                         RelationalResult relationalResult = (RelationalResult) res;
+                        List<Column> relationalResultColumns = relationalResult.getResultSetColumns();
                         String tempDir = ((RelationalStoreState) this.client.getPlanExecutor().getExecutorsOfType(StoreType.Relational).getOnly().getStoreState()).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath;
                         try (TemporaryFile tempFile = new TemporaryFile(tempDir))
                         {
@@ -112,7 +115,7 @@ public class Cache implements Command
                                 String tableName = specifiedTableName != null ? specifiedTableName : "test" + (getTables(connection).size() + 1);
                                 try (Statement statement = connection.createStatement())
                                 {
-                                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile()));
+                                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile(), relationalResultColumns));
                                     this.client.println("Cached into table: '" + tableName + "'");
                                 }
                             }
