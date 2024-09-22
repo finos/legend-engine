@@ -5,6 +5,7 @@
     "platform",
     "platform_dsl_store",
     "platform_dsl_mapping",
+    "core_java_platform_binding",
     "core_functions_unclassified",
     "core",
     "core_external_language_java"

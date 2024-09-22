@@ -1,0 +1,299 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::generation::java::tests::validate::model::*;
+
+Class meta::protocols::generation::java::tests::validate::model::ASimpleConstraint
+[
+  constraintIdOne(
+        ~function:!$this.value->startsWith('x') || $this.value->endsWith('eee')
+        ~message:'The '+$this.value+' is not set properly'
+      )
+]
+{
+  value : String[1];
+}
+
+Class meta::protocols::generation::java::tests::validate::model::ASimpleConstraintLight
+[
+  $this.value != 'bad value' 
+]
+{
+  value : String[0..1];
+}
+
+Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent
+[
+  $this.ok < 2.0
+]
+{
+  ok : Float[1];
+}
+
+Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain extends MultiplicityAndChain_Parent
+[
+  $this.value == 'ok'
+]
+{
+  value : String[1];
+  potentialValue : String[0..1];
+  childrenMinOne : MultiplicityAndChain_Child[1..*];
+  childrenInRange : MultiplicityAndChain_Child[3..5];
+  childrenMaxRange : MultiplicityAndChain_Child[0..7];
+  child : MultiplicityAndChain_Child[1];
+  potentialChild : MultiplicityAndChain_Child[0..1];
+  children : MultiplicityAndChain_Child[*];
+}
+
+Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Child
+[
+  $this.val > 2
+]
+{
+  potentialVal : Integer[0..1];
+  val : Integer[1];
+}
+
+
+function <<test.Test>> meta::protocols::generation::java::tests::validate::testValidateSimpleConstraint():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::validate::model',
+    javaPackage  = 'org.finos',
+    generateValidation = true,
+    generateVisitor = false,
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(generateJSONAnnotations=false)
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolProject($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+        true;
+
+  assertEquals(6, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Arrays;\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                'import java.util.stream.Collector;\n'+
+                'import java.util.stream.Collectors;\n'+
+                'import java.util.stream.Stream;\n'+
+                '\n'+
+                'public class ASimpleConstraint\n'+
+                '{\n'+
+                '    public String value;\n'+
+                '\n'+
+                '    public List<ValidationError> validate()\n'+
+                '    {\n'+
+                '        List<ValidationError> result = Collections.emptyList();\n'+
+                '        if (this.value == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "ASimpleConstraint.value",\n'+
+                '                                           "The property \'ASimpleConstraint.value\' can\'t be null"));\n'+
+                '        }\n'+
+                '        if (!this.value.startsWith("x") || this.value.endsWith("eee"))\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("constraintIdOne",\n'+
+                '                                           "{this|($this.value->startsWith(\'x\')->not() || $this.value->endsWith(\'eee\'))}",\n'+
+                '                                           Arrays.asList("The ", this.value, " is not set properly")\n'+
+                '                                                 .stream()\n'+
+                '                                                 .collect(Collectors.joining(""))));\n'+
+                '        }\n'+
+                '        return result;\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                'import org.finos.legend.engine.plan.dependencies.util.Library;\n'+
+                '\n'+
+                'public class ASimpleConstraintLight\n'+
+                '{\n'+
+                '    public String value;\n'+
+                '\n'+
+                '    public List<ValidationError> validate()\n'+
+                '    {\n'+
+                '        List<ValidationError> result = Collections.emptyList();\n'+
+                '        if (!Library.equals(this.value, "bad value"))\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("0",\n'+
+                '                                           "{this|not(($this.value == \'bad value\'))}",\n'+
+                '                                           null));\n'+
+                '        }\n'+
+                '        return result;\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                'import org.finos.legend.engine.plan.dependencies.util.Library;\n'+
+                '\n'+
+                'public class MultiplicityAndChain extends MultiplicityAndChain_Parent\n'+
+                '{\n'+
+                '    public String value;\n'+
+                '    public String potentialValue;\n'+
+                '    public List<MultiplicityAndChain_Child> childrenMinOne = Collections.<MultiplicityAndChain_Child>emptyList();\n'+
+                '    public List<MultiplicityAndChain_Child> childrenInRange = Collections.<MultiplicityAndChain_Child>emptyList();\n'+
+                '    public List<MultiplicityAndChain_Child> childrenMaxRange = Collections.<MultiplicityAndChain_Child>emptyList();\n'+
+                '    public MultiplicityAndChain_Child child;\n'+
+                '    public MultiplicityAndChain_Child potentialChild;\n'+
+                '    public List<MultiplicityAndChain_Child> children = Collections.<MultiplicityAndChain_Child>emptyList();\n'+
+                '\n'+
+                '    public List<ValidationError> validate()\n'+
+                '    {\n'+
+                '        List<ValidationError> result = Collections.emptyList();\n'+
+                '        result.addAll(super.validate());\n'+
+                '        if (this.value == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain.value",\n'+
+                '                                           "The property \'MultiplicityAndChain.value\' can\'t be null"));\n'+
+                '        }\n'+
+                '        if (this.childrenMinOne.size() < 1)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain.childrenMinOne",\n'+
+                '                                           "The property \'MultiplicityAndChain.childrenMinOne\' collection has a size of " + this.childrenMinOne\n'+
+                '                                                                                                                                .size() + " but its multiplicity lower bound is 1"));\n'+
+                '        }\n'+
+                '        if (this.childrenInRange.size() < 3 || this.childrenInRange.size() > 5)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain.childrenInRange",\n'+
+                '                                           "The property \'MultiplicityAndChain.childrenInRange\' collection has a size of " + this.childrenInRange\n'+
+                '                                                                                                                                 .size() + " but its multiplicity lower bound is 3 and its upper bound is 5"));\n'+
+                '        }\n'+
+                '        if (this.childrenMaxRange.size() > 7)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain.childrenMaxRange",\n'+
+                '                                           "The property \'MultiplicityAndChain.childrenMaxRange\' collection has a size of " + this.childrenMaxRange\n'+
+                '                                                                                                                                  .size() + " but its multiplicity upper bound is 7"));\n'+
+                '        }\n'+
+                '        if (this.child == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain.child",\n'+
+                '                                           "The property \'MultiplicityAndChain.child\' can\'t be null"));\n'+
+                '        }\n'+
+                '        if (Library.equals(this.value, "ok"))\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("0",\n'+
+                '                                           "{this|($this.value == \'ok\')}",\n'+
+                '                                           null));\n'+
+                '        }\n'+
+                '        for (MultiplicityAndChain_Child val: this.childrenMinOne)\n'+
+                '        {\n'+
+                '            result.addAll(val.validate());\n'+
+                '        }\n'+
+                '        for (MultiplicityAndChain_Child val: this.childrenInRange)\n'+
+                '        {\n'+
+                '            result.addAll(val.validate());\n'+
+                '        }\n'+
+                '        for (MultiplicityAndChain_Child val: this.childrenMaxRange)\n'+
+                '        {\n'+
+                '            result.addAll(val.validate());\n'+
+                '        }\n'+
+                '        result.addAll(this.child.validate());\n'+
+                '        if (this.potentialChild != null)\n'+
+                '        {\n'+
+                '            result.addAll(this.potentialChild.validate());\n'+
+                '        }\n'+
+                '        for (MultiplicityAndChain_Child val: this.children)\n'+
+                '        {\n'+
+                '            result.addAll(val.validate());\n'+
+                '        }\n'+
+                '        return result;\n'+
+                '    }\n'+
+                '}', $sources->at(2));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                '\n'+
+                'public class MultiplicityAndChain_Child\n'+
+                '{\n'+
+                '    public Long potentialVal;\n'+
+                '    public long val;\n'+
+                '\n'+
+                '    public List<ValidationError> validate()\n'+
+                '    {\n'+
+                '        List<ValidationError> result = Collections.emptyList();\n'+
+                '        if (this.val == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain_Child.val",\n'+
+                '                                           "The property \'MultiplicityAndChain_Child.val\' can\'t be null"));\n'+
+                '        }\n'+
+                '        if (this.val > 2L)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("0", "{this|($this.val > 2)}", null));\n'+
+                '        }\n'+
+                '        return result;\n'+
+                '    }\n'+
+                '}', $sources->at(3));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'import java.util.Collections;\n'+
+                'import java.util.List;\n'+
+                '\n'+
+                'public abstract class MultiplicityAndChain_Parent\n'+
+                '{\n'+
+                '    public double ok;\n'+
+                '\n'+
+                '    public List<ValidationError> validate()\n'+
+                '    {\n'+
+                '        List<ValidationError> result = Collections.emptyList();\n'+
+                '        if (this.ok == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain_Parent.ok",\n'+
+                '                                           "The property \'MultiplicityAndChain_Parent.ok\' can\'t be null"));\n'+
+                '        }\n'+
+                '        if (this.ok < 2.0)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("0", "{this|($this.ok < 2.0)}", null));\n'+
+                '        }\n'+
+                '        return result;\n'+
+                '    }\n'+
+                '}', $sources->at(4));
+  
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class ValidationError\n'+
+                '{\n'+
+                '    public String constraintId;\n'+
+                '    public String definition;\n'+
+                '    public String message;\n'+
+                '\n'+
+                '    public ValidationError(String constraintId, String definition, String message)\n'+
+                '    {\n'+
+                '        this.constraintId = constraintId;\n'+
+                '        this.definition = definition;\n'+
+                '        this.message = message;\n'+
+                '    }\n'+
+                '}', $sources->at(5));
+}

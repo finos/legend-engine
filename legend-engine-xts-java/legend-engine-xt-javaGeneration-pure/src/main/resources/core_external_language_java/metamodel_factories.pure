@@ -1245,6 +1245,11 @@ function meta::external::language::java::factory::j_this(type:meta::external::la
    ^This(type=$type);
 }
 
+function meta::external::language::java::factory::j_super(type:meta::external::language::java::metamodel::Type[1]):Code[1]
+{
+   ^Super(type=$type);
+}
+
 function meta::external::language::java::factory::j_variable(param:meta::external::language::java::metamodel::Parameter[1]):Code[1]
 {
    ^Variable(name=$param.name, type=$param.type);

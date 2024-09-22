@@ -1,0 +1,91 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::language::java::transform::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::factory::*;
+
+
+function <<access.private>> meta::protocols::generation::java::generateHashCode(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let properties = $c->hierarchicalProperties();
+  let code = if ($properties->isEmpty(),
+    | j_invoke(j_field($base,'class',javaClass('java.lang.Class')), 'hashCode',[]),
+    | j_invoke(javaClass('java.util.Objects'), 'hash', $properties->map(p|j_field(j_this($base), $p.name->toOne(), javaObject())))
+  );
+javaMethod('public', javaInt(), 'hashCode', [], j_return($code));
+}
+
+function <<access.private>> meta::protocols::generation::java::generateToString(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let stringBuilder = j_variable(javaClass('java.lang.StringBuilder'), 'stringBuilder');
+  let properties = $c->hierarchicalProperties();
+  let code =  if($properties->isEmpty(),
+                | j_return(j_invoke(javaClass('java.lang.String'), 'format', [j_string('%s'), j_invoke(j_invoke(j_this($base),'getClass',[]),'getSimpleName',[])])),
+                | j_declare($stringBuilder, j_new(javaClass('java.lang.StringBuilder'), []))
+                  ->concatenate(
+                    $properties->map(p |
+                        j_invoke($stringBuilder, 'append', j_invoke(javaClass('java.lang.String'), 'format', [j_string($p.name->toOne()+': %s,'), j_field(j_this($base), $p.name->toOne(), javaObject())]))
+                    )
+                  )
+                  ->concatenate(
+                        j_return
+                        (
+                              j_invoke(javaClass('java.lang.String'), 'format',
+                                [
+                                  j_string('%s:[%s]'), j_invoke(j_invoke(j_this($base),'getClass',[]),'getSimpleName',[]),
+                                  j_invoke($stringBuilder, 'toString', [])
+                                ])
+                        )
+                  )
+              );              
+  javaMethod('public', javaString(), 'toString', [], $code);
+}
+
+function <<access.private>> meta::protocols::generation::java::generateEquals(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]):Method[1]
+{
+  let variable = j_variable($base, 'that');
+
+  let properties = $c->hierarchicalProperties();
+
+  let parameter = j_parameter(javaObject(), 'obj');
+  let baseCode = j_if(j_eq(j_this($base), $parameter), j_return(j_true()));
+  let code = if ($properties->isEmpty(),
+    | $baseCode->concatenate(
+        j_return(j_and(j_ne($parameter, j_null()), j_eq(j_invoke(j_this($base),'getClass',[]), j_invoke($parameter,'getClass',[]))))
+      ),
+    | $baseCode->concatenate(
+        [
+          j_if(j_or(j_eq($parameter, j_null()), j_ne(j_invoke(j_this($base),'getClass',[]), j_invoke($parameter,'getClass',[]))), j_return(j_false())),
+          j_declare($variable, $parameter->j_cast($base)),
+          j_return($c->hierarchicalProperties()->fold({p,a| 
+                                                let propertyType = javaObject();//pureTypeToJavaType($conventions, $p);
+                                                let eq =if(pureTypeToJavaType($conventions, $p->functionReturnType().rawType->toOne(), $p->functionReturnMultiplicity())->isPrimitive(),
+                                                  |j_eq(
+                                                              j_field(j_this($base), $p.name->toOne(), $propertyType),
+                                                              j_field($variable, $p.name->toOne(), $propertyType)
+                                                        ),
+                                                  |j_invoke(javaClass('java.util.Objects'),'equals',[j_field(j_this($base), $p.name->toOne(), $propertyType), j_field($variable, $p.name->toOne(), $propertyType)])
+                                                );                                                 
+                                               if($a->isEmpty(),|$eq, |j_and($eq,$a->toOne()));},
+                                          []->cast(@Code)
+          )->toOne())
+        ]
+    )
+  );
+
+  javaMethod('public', javaBoolean(), 'equals', $parameter, $code);
+
+}

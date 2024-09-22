@@ -37,6 +37,7 @@ Class meta::external::language::java::transform::Conventions
    fieldNameStrategy           : Function<{String[1]->String[1]}>[1];
    getterNameStrategy          : Function<{String[1]->String[1]}>[1];
    setterNameStrategy          : Function<{String[1]->String[1]}>[1];
+   useGetterForPropertyAccess  : Boolean[1] = true;
 
    defaultClassPurpose         : Any[1];
 

@@ -231,7 +231,10 @@ function <<access.private>> meta::external::language::java::transform::processFu
       {p:Property<Nil,Any|*>[1] |
          print(if($debug.debug,|$debug.space+'Property: \''+($fe.func.name->toOne())+'\'\n',|''));
          let src  = $params->at(0)->generateJava($conventions, $debug->indent());
-         $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+         if ($conventions.useGetterForPropertyAccess,
+            | $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p)),
+            | $src->j_field($p.name->toOne(), $conventions->pureTypeToJavaType($p))
+         );
       },
       {q:QualifiedProperty<Any>[1] |
          print(if($debug.debug,|$debug.space+'QualifiedProperty: \''+($fe.func.name->toOne())+'\'\n',|''));
