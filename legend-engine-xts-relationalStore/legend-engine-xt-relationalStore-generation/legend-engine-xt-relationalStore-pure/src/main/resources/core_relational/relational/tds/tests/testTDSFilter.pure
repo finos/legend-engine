@@ -276,30 +276,26 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFirstNotNull
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testChainPostFilter():Boolean[1]
 {  
-   let connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c|$c.element==meta::relational::tests::db)->toOne();
-   meta::relational::tests::createPersonTableAndFillDb($connection.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection));
-
    let result = execute(
       |meta::relational::tests::tds::tdsFilter::PersonV2.all()
-         ->project(p|$p.firstName,'firstName')
+         ->project(p | $p.firstName, 'firstName')
          ->filter(p | $p.getString('firstName') == 'John'),
       meta::relational::tests::tds::tdsFilter::PersonMappingV2,
       ^meta::core::runtime::Runtime(
-      connectionStores=[
-        ^meta::core::runtime::ConnectionStore(
-          element = meta::relational::tests::dbInc,
-          connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c|$c.element==meta::relational::tests::db)->toOne().connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection)),
-        ^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(),connection=^ meta::external::store::model::ModelChainConnection( mappings = [meta::relational::tests::simpleRelationalMappingInc]))
-      ]
-  ), meta::relational::extension::relationalExtensions());
+         connectionStores = [
+           ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::dbInc, connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c | $c.element == meta::relational::tests::db)->toOne().connection),
+           ^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(), connection = ^meta::external::store::model::ModelChainConnection(mappings = meta::relational::tests::simpleRelationalMappingInc))
+         ]
+      ),
+      meta::relational::extension::relationalExtensions()
+   );
 
    assertSize($result.values.columns, 1);
-
-   assertEquals('John,John',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   assertEquals('John,John', $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 }
 
-Class meta::relational::tests::tds::tdsFilter::PersonV2 {
+Class meta::relational::tests::tds::tdsFilter::PersonV2
+{
   firstName : String[1];
   lastName : String[1];
   age : Integer[0..1];
@@ -317,5 +313,4 @@ Mapping meta::relational::tests::tds::tdsFilter::PersonMappingV2
     lastName: $src.lastName,
     age: $src.age
   }
-
 )
