@@ -21,6 +21,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 public class ExecutionNodeTDSResultHelper
 {
     @JsonIgnore
@@ -33,7 +36,10 @@ public class ExecutionNodeTDSResultHelper
     public static TDSColumn getTDSColumn(ExecutionNode executionNode, String name, boolean isColumnNameCaseSensitive)
     {
         TDSResultType resultType = (TDSResultType) executionNode.resultType;
-        return ListIterate.select(resultType.tdsColumns, n -> isColumnNameCaseSensitive ? n.name.equals(name) : n.name.equalsIgnoreCase(name)).getFirst();
+        return Objects.requireNonNull(
+                ListIterate.select(resultType.tdsColumns, n -> isColumnNameCaseSensitive ? n.name.equals(name) : n.name.equalsIgnoreCase(name)).getAny(), 
+                () -> "Column '" + name + "' (case sensitive? " + isColumnNameCaseSensitive + ") not found among: " + resultType.tdsColumns.stream().map(x -> x.name).collect(Collectors.joining(", ", "[", "]"))
+        );
     }
 
     @JsonIgnore
