@@ -28,18 +28,25 @@ Class meta::protocols::generation::java::tests::validate::model::ASimpleConstrai
 
 Class meta::protocols::generation::java::tests::validate::model::ASimpleConstraintLight
 [
-  $this.value != 'bad value' 
+  $this.value != 'bad value'
 ]
 {
   value : String[0..1];
 }
 
+Enum meta::protocols::generation::java::tests::validate::model::SomeEnum
+{
+  On, Off
+}
+
 Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent
 [
-  $this.ok < 2.0
+  $this.ok < 2.0,
+  $this.enumVal == SomeEnum.On
 ]
 {
   ok : Float[1];
+  enumVal : SomeEnum[1];
 }
 
 Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain extends MultiplicityAndChain_Parent
@@ -83,7 +90,9 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
         ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
         true;
 
-  assertEquals(6, $sources->size());
+  assertEquals(7, $sources->size());
+
+  println($sources->at(5));
 
   assertEquals( 'package org.finos;\n'+
                 '\n'+
@@ -258,10 +267,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '\n'+
                 'import java.util.Collections;\n'+
                 'import java.util.List;\n'+
+                'import org.finos.legend.engine.plan.dependencies.util.Library;\n'+
                 '\n'+
                 'public abstract class MultiplicityAndChain_Parent\n'+
                 '{\n'+
                 '    public double ok;\n'+
+                '    public SomeEnum enumVal;\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
@@ -272,16 +283,45 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "MultiplicityAndChain_Parent.ok",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.ok\' can\'t be null"));\n'+
                 '        }\n'+
+                '        if (this.enumVal == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain_Parent.enumVal",\n'+
+                '                                           "The property \'MultiplicityAndChain_Parent.enumVal\' can\'t be null"));\n'+
+                '        }\n'+
                 '        if (this.ok < 2.0)\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0", "{this|($this.ok < 2.0)}", null));\n'+
+                '        }\n'+
+                '        if (Library.equals(this.enumVal, SomeEnum.getEnumFromPureName("On")))\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("1",\n'+
+                '                                           "{this|($this.enumVal == meta::protocols::generation::java::tests::validate::model::SomeEnum->extractEnumValue(\'On\'))}",\n'+
+                '                                           null));\n'+
                 '        }\n'+
                 '        return result;\n'+
                 '    }\n'+
                 '}', $sources->at(4));
   
-
   assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public enum SomeEnum\n'+
+                '{\n'+
+                '    On,\n'+
+                '    Off;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static SomeEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return SomeEnum.valueOf(pureName);\n'+
+                '    }\n'+
+                '}', $sources->at(5));
+
+    assertEquals( 'package org.finos;\n'+
                 '\n'+
                 'public class ValidationError\n'+
                 '{\n'+
@@ -295,5 +335,5 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        this.definition = definition;\n'+
                 '        this.message = message;\n'+
                 '    }\n'+
-                '}', $sources->at(5));
+                '}', $sources->at(6));
 }

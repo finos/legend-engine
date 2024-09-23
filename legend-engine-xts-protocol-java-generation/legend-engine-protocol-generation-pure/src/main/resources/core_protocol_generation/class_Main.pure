@@ -98,7 +98,7 @@ function <<access.private>> meta::protocols::generation::java::generateProtocolT
 function <<access.private>> meta::protocols::generation::java::generateEnumeration(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]
 {
   let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
-  javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+  let res = javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
     ->addEntries(
       $enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()
       ->map(e| 
@@ -112,6 +112,12 @@ function <<access.private>> meta::protocols::generation::java::generateEnumerati
                 );
       )
     );
+  $res->addMethods(
+        [
+          javaMethod('public', meta::external::language::java::factory::javaString(), 'getName', [], 'return this.name();'),
+          javaMethod(['public', 'static'], $res, 'getEnumFromPureName', javaParam(javaString(), 'pureName'), $res->j_invoke('valueOf', j_parameter(javaString(), 'pureName'), $res)->j_return())
+        ]
+      );
 }
 
 function <<access.private>> meta::protocols::generation::java::generateClass(c:meta::pure::metamodel::type::Class<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]

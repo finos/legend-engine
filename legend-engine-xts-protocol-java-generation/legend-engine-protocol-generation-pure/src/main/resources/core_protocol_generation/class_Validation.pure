@@ -86,7 +86,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
              )
              ->concatenate(
                 $c.properties->map(p|
-                  if (!$p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::PrimitiveType),
+                  if (!$p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType),
                     | let mul = $p->functionReturnMultiplicity()->toOne();
                       if (
                         [
