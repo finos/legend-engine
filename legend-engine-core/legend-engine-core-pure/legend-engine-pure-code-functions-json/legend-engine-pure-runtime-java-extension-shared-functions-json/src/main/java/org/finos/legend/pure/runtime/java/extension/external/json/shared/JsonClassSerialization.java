@@ -25,6 +25,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.As
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ClassConversion;
@@ -143,6 +144,10 @@ public class JsonClassSerialization<T extends CoreInstance> extends ClassConvers
         if ((jsonSerializationContext.isSerializePackageableElementName() && pureObject instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) || MetamodelSerializationOverrides.shouldSerializeAsElementToPath(pureObject))
         {
             return MetamodelSerializationOverrides.serializePackageableElement(pureObject, jsonSerializationContext.isSerializeMultiplicityAsNumber());
+        }
+        if ((jsonSerializationContext.isSerializePackageableElementName() && pureObject instanceof Unit))
+        {
+            return MetamodelSerializationOverrides.serializeUnit((Unit) pureObject);
         }
         jsonSerializationContext.getVisitedInstances().push(pureObject);
         JSONObject json = new JSONObject();

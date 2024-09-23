@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -41,6 +40,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
@@ -51,11 +51,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.measure.Measure;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.slf4j.Logger;
@@ -65,8 +67,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_;
 
 public class HelperModelBuilder
 {
@@ -188,7 +188,7 @@ public class HelperModelBuilder
     {
         if (signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            throw new EngineException(errorStub + " - Type error: '" + getElementFullPath((PackageableElement) actualReturnType, context.pureModel.getExecutionSupport()) + "' is not a subtype of '" + getElementFullPath((PackageableElement) signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(errorStub + " - Type error: '" + getTypeFullPath(actualReturnType, context.pureModel.getExecutionSupport()) + "' is not a subtype of '" + getTypeFullPath(signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
@@ -549,6 +549,24 @@ public class HelperModelBuilder
         return o._name() == p.name && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }
 
+    public static String getTypeFullPath(Type type, CompiledExecutionSupport executionSupport)
+    {
+        return getTypeFullPath(type, "::", executionSupport);
+    }
+
+    public static String getTypeFullPath(Type type, String separator, CompiledExecutionSupport executionSupport)
+    {
+        if (type instanceof PackageableElement)
+        {
+            return getElementFullPath((PackageableElement) type, separator, executionSupport);
+        }
+        if (type instanceof Unit)
+        {
+            return Measure.getUserPathForUnit(type, separator);
+        }
+        throw new IllegalArgumentException("Unsupported type: " + type);
+    }
+
     public static String getElementFullPath(PackageableElement element, CompiledExecutionSupport executionSupport)
     {
         return getElementFullPath(element, "::", executionSupport);
@@ -561,6 +579,6 @@ public class HelperModelBuilder
             return "ModelStore";
         }
         // TODO: we might want to fix a bugs here where if we pass in element without ID/package + name, we might get `cannot cast a collection of multiplicity [0] to [1]` or so
-        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(element, separator, executionSupport);
+        return platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(element, separator, executionSupport);
     }
 }

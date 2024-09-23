@@ -571,10 +571,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::addChildTrees(pa
 function <<access.private>> meta::pure::lineage::scanRelations::addChildTree(parent: RelationTree[1], child:RelationTree[1]):RelationTree[1]
 {
    let parentRelation = $parent.relation->toOne();
+   let parentRelationFromJoin = $child.join->map(x|$x->otherTable($child.relation->toOne())).relation;
    
-   let parentRelationFromJoin = $child.join->map(x|$x->otherTable($child.relation->toOne())).relation->toOne();
-
-   if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin),
+   if($parentRelationFromJoin->isEmpty() || getRelationName($parentRelation) == getRelationName($parentRelationFromJoin->toOne()),
       | ^$parent(children += $child);,
       | ^$parent(children = $parent.children->map(pc | addChildTree($pc, $child))));
 }
@@ -606,8 +605,8 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
    let tableAliasColumns        = $j.join.operation->extractTableAliasColumns()->removeDuplicates();
 
    let oldToNewTableColumnAlias = $tableAliasColumns->map(tac | let orgColumn     = $tac.column;
-
-                                                                assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias in ' +$j.joinName);
+                                                            
+                                                               assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]) || $j.joinName->startsWith('__iso'), | 'Columns in join should refer either source alias or target alias in ' +$j.joinName);
 
                                                                 let alias         = if($tac.alias.name == $sourceAliasName, | $sourceOperation, |$targetOperation);
                                                                 let tree          = if($tac.alias.name == $sourceAliasName, | $sourceTree, |$targetTree);
@@ -648,7 +647,6 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
       |if($debug.debug, | print($debug.space + 'Neglecting this child since only 1 relation found. Expect the join between this relation and a union relation. Part of union relation considered in this iteraton has null assigned to join column\n');, |[]);
        [];,
       |
-      assert($updatedAliases->size() == 2, | 'Expected 2 relations in join. Found : ' + $updatedAliases->size()->toString() + ' in '  +$j.joinName );
 
       let milestoningAliasColumns  = $updatedNonNullPairs->removeDuplicatesBy(p | $p.second.alias.name)
                                                          ->map(p |if($p.second.alias.relation->instanceOf(Table),
@@ -727,11 +725,17 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
       |[],
       |let rootTree        = $select.data->toOne();
-       let childTrees      = $rootTree->children()->map(child | $child->extractLine());
+       let childTrees      = $rootTree->children()->map(child | $child->extractJoinChildren());
        let sourceOperation = $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $reqTableAliasColumn.alias.name).alias->toOne();
        $reqTableAliasColumn->toOne()->extractSourceColumn($sourceOperation, $relationIdentifiers, $sourceTree);
    );
 }
+
+function  <<access.private>> meta::pure::lineage::scanRelations::extractJoinChildren(j:JoinTreeNode[1]):JoinTreeNode[*]
+{
+   $j->concatenate(if($j->children()->isEmpty(),|[],|$j->children()->map(c|$c->extractJoinChildren())));
+}
+
 
 function <<access.private>> meta::pure::lineage::scanRelations::extractSourceRelation(sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*]):NamedRelation[1]
 {

@@ -172,6 +172,21 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
    assertEquals('select 	"root"."NAME" as "name" from "productSchema"."synonymTable" as "root" where (\'CUSIP\' <> \'ISIN\')', $result->replace('\n', ''));
 }
 
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlagAndSchemaMapping():Boolean[1]
+{
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, 
+                                                                                                        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
+                                                                                                                      type = DatabaseType.Snowflake,
+                                                                                                                      quoteIdentifiers = true,
+                                                                                                                      sqlQueryPostProcessors = meta::pure::alloy::connections::postProcessTablesFn([], ^meta::pure::alloy::connections::SchemaNameMapper(from='productSchema', to='test.productSchema')) 
+                                                                                                                                                ->map(pp|{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess($pp)})
+                                                                                                          )));
+   let result = toSQLStringPretty(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
+                                  simpleRelationalMappingWithEnumConstant, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select 	"root"."NAME" as "name" from "test"."productSchema"."synonymTable" as "root" where (\'CUSIP\' <> \'ISIN\')', $result->replace('\n', ''));
+}
+
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlagInColumnName():Boolean[1]
 {
    let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(

@@ -15,10 +15,10 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
@@ -75,7 +75,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -86,11 +85,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperServiceStoreClassMappingBuilder
@@ -115,9 +112,9 @@ public class HelperServiceStoreClassMappingBuilder
         validateRootServiceStoreClassMapping(res, serviceStoreClassMapping);
 
         MutableList<EmbeddedSetImplementation> embeddedSetImplementations = Lists.mutable.empty();
-        Set<Class<?>> processedClasses = new HashSet<>();
+        Set<Class<?>> processedClasses = Sets.mutable.empty();
         List<PropertyMapping> generatePropertyMappings = generatePropertyMappingsForClassMapping(res, embeddedSetImplementations, serviceStoreClassMapping, processedClasses, context);
-        res._propertyMappings(FastList.newList(generatePropertyMappings).toImmutable());
+        res._propertyMappings(Lists.immutable.withAll(generatePropertyMappings));
 
         return Tuples.pair(res, embeddedSetImplementations);
     }
@@ -174,7 +171,7 @@ public class HelperServiceStoreClassMappingBuilder
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path compilePath(Path pathOffset, Root_meta_external_store_service_metamodel_Service service, CompileContext ctx)
     {
-        pathOffset.startType = getElementFullPath(service._response()._type(), ctx.pureModel.getExecutionSupport());
+        pathOffset.startType = HelperModelBuilder.getElementFullPath(service._response()._type(), ctx.pureModel.getExecutionSupport());
 
         Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)new ValueSpecificationBuilder(ctx, Lists.mutable.empty(), new ProcessingContext("")).processClassInstance(pathOffset);
 
@@ -251,7 +248,7 @@ public class HelperServiceStoreClassMappingBuilder
         String mappingPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(owner._parent(), context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("src");
         return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(id, new org.finos.legend.pure.m4.coreinstance.SourceInformation(mappingPath, 0, 0, 0, 0), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(Lists.mutable.with(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
     }
@@ -287,7 +284,7 @@ public class HelperServiceStoreClassMappingBuilder
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, Sets.mutable.withAll(processedClasses), context)).toList();
 
         List<PropertyMapping> allPropertyMapping = Lists.mutable.empty();
         allPropertyMapping.addAll(primitivePropertyMappings);
@@ -322,7 +319,7 @@ public class HelperServiceStoreClassMappingBuilder
         propertyMapping._sourceSetImplementationId(sourceSetId);
         propertyMapping._targetSetImplementationId(id);
 
-        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context)).toImmutable());
+        propertyMapping._propertyMappings(Lists.immutable.withAll(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, Sets.mutable.withAll(processedClasses), context)));
 
         embeddedSetImplementations.add(propertyMapping);
         return propertyMapping;
@@ -346,7 +343,7 @@ public class HelperServiceStoreClassMappingBuilder
         }
     }
 
-    private static void validateServiceMapping(Root_meta_external_store_service_metamodel_mapping_ServiceMapping serviceMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, SourceInformation sourceInformation, CompileContext context)
+    private static void validateServiceMapping(Root_meta_external_store_service_metamodel_mapping_ServiceMapping serviceMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass, SourceInformation sourceInformation, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type sourceDataType;
         if (serviceMapping._pathOffset() == null)
@@ -360,11 +357,11 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (sourceDataType != pureClass)
         {
-            throw new EngineException("Response type of source service should match mapping class. Found response type : " + getElementFullPath((PackageableElement) sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Response type of source service should match mapping class. Found response type : " + HelperModelBuilder.getTypeFullPath(sourceDataType, context.pureModel.getExecutionSupport()) + " does not match mapping class : " + HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport()), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         RichIterable<String> requiredServiceParameters = serviceMapping._service()._parameters().collectIf(Root_meta_external_store_service_metamodel_ServiceParameter::_required, Root_meta_external_store_service_metamodel_ServiceParameter::_name);
-        RichIterable<String> mappedParameters = (serviceMapping._requestBuildInfo() == null) || (serviceMapping._requestBuildInfo()._requestParametersBuildInfo() == null) ? FastList.newList() : serviceMapping._requestBuildInfo()._requestParametersBuildInfo()._parameterBuildInfoList().collect(pm -> pm._serviceParameter()._name());
+        RichIterable<String> mappedParameters = (serviceMapping._requestBuildInfo() == null) || (serviceMapping._requestBuildInfo()._requestParametersBuildInfo() == null) ? Lists.mutable.empty() : serviceMapping._requestBuildInfo()._requestParametersBuildInfo()._parameterBuildInfoList().collect(pm -> pm._serviceParameter()._name());
 
         List<String> parametersMappedMoreThanOnce = mappedParameters.select(e -> Collections.frequency(mappedParameters.toList(), e) > 1).toSet().toList();
 

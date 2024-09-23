@@ -362,7 +362,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
 
    let newAcceptMethod = javaMethod('private', $javaType, $methodName, $nodeParameter,
       [
-        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type.name->toOne())))),
+        $errorMessage->j_declare(j_string('Unexpected node type:')->j_plus($nodeParameter->j_invoke('getNodeType', [], jsonNodeType())->j_plus(j_string(' for PURE ' + $type->elementToPath())))),
         $jThis->j_invoke('check', [javaArrays()->j_invoke('asList', $acceptableNodes, javaList(jsonNodeType())), $nodeParameter->j_invoke('getNodeType', [], jsonNodeType()), $errorMessage], javaVoid()),
         j_if(j_and($nodeParameter->j_invoke('has',[$dateKey], javaBoolean()), $nodeParameter->j_invoke('get', [$dateKey], jsonNode())->j_invoke('isLong',[],javaBoolean())), j_return($conventions->codeType($pureDate)->j_invoke('fromDate', [javaDate()->j_new([$nodeParameter->j_invoke('get', [$dateKey], jsonNode())->j_invoke('longValue',[], javaLong())])], $pureDate)), j_throw(j_new(javaIllegalArgumentException(), j_string('Failed to parse $date from Mongo ISO Date field'))))
       ]->j_try(j_catch($exception, $conventions->className(DataParsingException)->j_new($exception->j_invoke('getMessage', [], javaString()))->j_throw()))

@@ -15,34 +15,27 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -73,7 +66,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "###Pure\n" +
                 "Class anything::somethingelse\n" +
                 "{\n" +
-                "}\n", Arrays.asList("COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'"));
+                "}\n", Lists.fixedSize.with("COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'"));
     }
 
     @Test
@@ -125,9 +118,9 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         // Function
         test(initialGraph +
                 "###Pure\n" +
-                "function anything::somethingelse(a:String[1]):String[1]" +
-                "{" +
-                "   'hiiii'" +
+                "function anything::somethingelse(a:String[1]):String[1]\n" +
+                "{\n" +
+                "   'hiiii'\n" +
                 "}\n");
         // Measure
         test(initialGraph +
@@ -147,7 +140,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,$input]->meta::pure::functions::math::max();" +
+                        "   [1,$input]->meta::pure::functions::math::max();\n" +
                         "}\n";
         test(code);
     }
@@ -158,7 +151,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,$input]->max();" +
+                        "   [1,$input]->max();\n" +
                         "}\n";
         test(code);
     }
@@ -169,17 +162,17 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,$input]->max();" +
+                        "   [1,$input]->max();\n" +
                         "}\n" +
                         "function example::testMaxInteger():Any[0..1]\n" +
                         "{\n" +
-                        "   [1,2]->max();" +
+                        "   [1,2]->max();\n" +
                         "}\n" + "###Pure\n" +
                         "import example::*;\n" +
                         "function example::test::go():Any[0..1]\n" +
                         "{\n" +
-                        "   testMaxInteger(1);" +
-                        "   testMaxInteger();" +
+                        "   testMaxInteger(1);\n" +
+                        "   testMaxInteger();\n" +
                         "}\n";
         test(code);
     }
@@ -190,30 +183,30 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,$input]->max();" +
+                        "   [1,$input]->max();\n" +
                         "}\n" +
                         "function example::testMaxInteger(input: Number[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,2]->max();" +
+                        "   [1,2]->max();\n" +
                         "}\n" +
                         "function example::testMaxInteger(f: Float[1], d: Float[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1, $f, $d]->max();" +
+                        "   [1, $f, $d]->max();\n" +
                         "}\n" +
                         "function example::testMaxInteger():Any[0..1]\n" +
                         "{\n" +
-                        "   [1,2]->max();" +
+                        "   [1,2]->max();\n" +
                         "}\n" +
                         "function example::test::testMaxInteger():Any[0..1]\n" +
                         "{\n" +
-                        "   [1,2]->max();" +
+                        "   [1,2]->max();\n" +
                         "}\n" +
                         "function example::test::go():Any[0..1]\n" +
                         "{\n" +
-                        "   example::testMaxInteger(1);" +
-                        "   example::testMaxInteger();" +
-                        "   example::test::testMaxInteger();" +
-                        "   example::testMaxInteger(1.0, 1.123);" +
+                        "   example::testMaxInteger(1);\n" +
+                        "   example::testMaxInteger();\n" +
+                        "   example::test::testMaxInteger();\n" +
+                        "   example::testMaxInteger(1.0, 1.123);\n" +
                         "}\n";
         test(code);
     }
@@ -224,13 +217,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         String code =
                 "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,$input]->max();" +
+                        "   [1,$input]->max();\n" +
                         "}\n" +
                         "function example::testMaxInteger(input: Integer[1]):Any[0..1]\n" +
                         "{\n" +
-                        "   [1,2]->max();" +
+                        "   [1,2]->max();\n" +
                         "}\n";
-        test(code, "COMPILATION error at [4:1-6:17]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
+        test(code, "COMPILATION error at [5:1-8:1]: Duplicated element 'example::testMaxInteger_Integer_1__Any_$0_1$_'");
     }
 
     @Test
@@ -266,47 +259,47 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testDuplicateProfileTagAndStereotypeWarning() throws Exception
+    public void testDuplicateProfileTagAndStereotypeWarning()
     {
-        Pair<PureModelContextData, PureModel> res = test("Profile test::A\n" +
+        test("Profile test::A\n" +
                 "{\n" +
                 "   tags : [doc, doc];\n" +
                 "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
-                "}\n", null, Arrays.asList("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
     }
 
     @Test
-    public void testDuplicateEnumValueWarning() throws Exception
+    public void testDuplicateEnumValueWarning()
     {
-        Pair<PureModelContextData, PureModel> res = test("Enum test::A\n" +
+        test("Enum test::A\n" +
                 "{\n" +
                 "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
-                "}\n", null, Arrays.asList("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
     }
 
     @Test
-    public void testDuplicateAssociationPropertyWarning() throws Exception
+    public void testDuplicateAssociationPropertyWarning()
     {
-        Pair<PureModelContextData, PureModel> res = test("Class test::A {}\n" +
+        test("Class test::A {}\n" +
                 "Class test::B {}\n" +
                 "Association test::C\n" +
                 "{\n" +
                 "   property1: test::A[0..1];\n" +
                 "   property1: test::B[1];\n" +
-                "}\n", null, Arrays.asList("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
     }
 
     @Test
-    public void testDuplicateClassPropertyWarning() throws Exception
+    public void testDuplicateClassPropertyWarning()
     {
-        Pair<PureModelContextData, PureModel> res = test("Class test::A\n" +
+        test("Class test::A\n" +
                 "{\n" +
                 "   property : Integer[0..1];\n" +
                 "   property : String[1];\n" +
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Arrays.asList("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
     }
 
     @Test
@@ -326,7 +319,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n", null, Arrays.asList("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION error at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION error at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'", "COMPILATION error at [10:4-28]: Found duplicated property 'property' in class 'test::D'", "COMPILATION error at [12:4-21]: Found duplicated property 'other' in class 'test::D'"));
     }
 
     @Test
@@ -353,7 +346,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}\n" +
                 "Class test::B \n" +
                 "{\n" +
-                " good : Integer[0..1];" +
+                " good : Integer[0..1];\n" +
                 "}\n"
         );
     }
@@ -549,8 +542,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   a : String[1];\n" +
                 "   b : String[1];\n" +
                 "   c : String[1];\n" +
-                "}\n" +
-                "\n", "COMPILATION error at [1:1-6:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
+                "}\n", "COMPILATION error at [1:1-6:1]: Expected 2 properties for an association 'test::FaultyAssociation'"
         );
     }
 
@@ -650,34 +642,34 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "}\n",
                 "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
         test("Class test::A\n" +
-                "[" +
-                "   ok" +
-                "]" +
+                "[\n" +
+                "   ok\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [2:5-6]: Can't find the packageable element 'ok'");
+                "}", "COMPILATION error at [3:4-5]: Can't find the packageable element 'ok'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}" +
+                "}\n" +
                 "Class test::A\n" +
-                "[" +
-                "   test::a" +
-                "]" +
+                "[\n" +
+                "   test::a\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [5:5-11]: Can't find the packageable element 'test::a'");
+                "}", "COMPILATION error at [7:4-10]: Can't find the packageable element 'test::a'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}" +
+                "}\n" +
                 "Class test::A\n" +
-                "[" +
-                "   test::b" +
-                "]" +
+                "[\n" +
+                "   test::b\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [5:5-11]: Constraint must be of type 'Boolean'");
+                "}", "COMPILATION error at [7:4-10]: Constraint must be of type 'Boolean'");
     }
 
     @Test
@@ -690,39 +682,39 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}\n", "COMPILATION error at [4:21-22]: Can't find the packageable element 'ok'");
         test("Enum test::b\n" +
                 "{\n" +
-                "   names" +
-                "}" +
+                "   names\n" +
+                "}\n" +
                 "Class test::A\n" +
-                "[" +
-                "   test::b.c" +
-                "]" +
+                "[\n" +
+                "   test::b.c\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [4:13]: Can't find enum value 'c' in enumeration 'test::b'");
+                "}", "COMPILATION error at [7:12]: Can't find enum value 'c' in enumeration 'test::b'");
         test("Class test::b\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}" +
+                "}\n" +
                 "Class test::A\n" +
-                "[" +
-                "   test::b.c" +
-                "]" +
+                "[\n" +
+                "   test::b.c\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [5:13]: Can't find property 'c' in class 'meta::pure::metamodel::type::Class'");
+                "}", "COMPILATION error at [7:12]: Can't find property 'c' in class 'meta::pure::metamodel::type::Class'");
     }
 
     @Test
     public void testMissingAssociationProperty()
     {
-        test("Class test::A {\n" +
+        test("Class test::A\n" +
+                "{\n" +
                 "}\n" +
                 "Association test::FaultyAssociation\n" +
                 "{\n" +
                 "   a : test::A[1];\n" +
                 "   b : someClass[1];\n" +
-                "}\n" +
-                "\n", "COMPILATION error at [6:4-20]: Can't find class 'someClass'");
+                "}\n", "COMPILATION error at [7:4-20]: Can't find class 'someClass'");
     }
 
     @Test
@@ -896,618 +888,619 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "Class test::D\n" +
                 "{\n" +
                 "   xza(s: String[1]){$src}:String[1];\n" +
-                "}\n", Arrays.asList("COMPILATION error at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'", "COMPILATION error at [19:22-25]: Can't find variable class for variable 'src' in the graph"));
+                "}\n", Lists.fixedSize.with("COMPILATION error at [7:31-43]: Can't find property 'WhoopsfuncDog' in class 'test::Dog'", "COMPILATION error at [19:22-25]: Can't find variable class for variable 'src' in the graph"));
     }
 
     @Test
     public void testMapLambdaInferenceWithPrimitive()
     {
-        test("Class test::A" +
-                "{" +
-                "   p(){[1,2]->map(a|$a+1)}:Integer[*];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   p(){[1,2]->map(a|$a+1)}:Integer[*];\n" +
                 "}"
         );
-        test("Class test::A" +
-                "{" +
-                "   p(){[1,2]->map(a|$a+'1')}:String[1];" +
-                "}", "COMPILATION error at [1:37-40]: Can't find a match for function 'plus(Any[2])'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   p(){[1,2]->map(a|$a+'1')}:String[1];\n" +
+                "}", "COMPILATION error at [3:23-26]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
     public void testMapLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->map(a|$a.name)}:String[*];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->map(a|$a.name)}:String[*];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
-                "}", "COMPILATION error at [1:81-83]: Can't find property 'nam' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->map(a|$a.nam)}:String[*];\n" +
+                "}", "COMPILATION error at [8:32-34]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
     public void testPackageableElementMismatchNotFoundWithGetAll()
     {
-        test("Class test::B" +
-                "{" +
-                "   z(){test::A.all()->map(a|$a.nam)}:String[*];" +
-                "}", "COMPILATION error at [1:22-28]: Can't find the packageable element 'test::A'");
+        test("Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->map(a|$a.nam)}:String[*];\n" +
+                "}", "COMPILATION error at [3:8-14]: Can't find the packageable element 'test::A'");
     }
 
     @Test
     public void testPackageableElementMismatchWithGetAll()
     {
         test("###Pure\n" +
-                "Class test::A" +
-                "{ prop : String[1];" +
-                "}" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];" +
+                "Class test::A\n" +
+                "{\n" +
+                "   prop : String[1];\n" +
+                "}\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping test::MyMapping\n" +
                 "(\n" +
-                ")\n", "COMPILATION error at [2:70-75]: Can't find a match for function 'getAll(Mapping[1])'");
+                ")\n", "COMPILATION error at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'");
     }
 
     @Test
     public void testSortByLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->sortBy(a|$a.name)}:test::A[*];" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->sortBy(a|$a.nam)}:test::A[*];" +
-                "}", "COMPILATION error at [1:84-86]: Can't find property 'nam' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->sortBy(a|$a.name)}:test::A[*];\n" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->sortBy(a|$a.nam)}:test::A[*];\n" +
+                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
     public void testPartialCompilationPackageableElementMismatchWithGetAllAndSortByLambdaInferenceWithClass()
     {
         partialCompilationTest("###Pure\n" +
-                "Class test::A" +
-                "{ prop : String[1];" +
-                "}" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];" +
+                "Class test::A\n" +
+                "{\n" +
+                "   prop : String[1];\n" +
                 "}\n" +
-                "Class test::C" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::D" +
-                "{" +
-                "   z(){test::C.all()->sortBy(a|$a.nam)}:test::C[*];" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::MyMapping.all()->map(a|$a.nam)}:String[*];\n" +
+                "}\n" +
+                "Class test::C\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::D\n" +
+                "{\n" +
+                "   z(){test::C.all()->sortBy(a|$a.nam)}:test::C[*];\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping test::MyMapping\n" +
                 "(\n" +
-                ")\n", Arrays.asList("COMPILATION error at [2:70-75]: Can't find a match for function 'getAll(Mapping[1])'", "COMPILATION error at [3:84-86]: Can't find property 'nam' in class 'test::C'"));
+                ")\n", Lists.fixedSize.with("COMPILATION error at [8:23-28]: Can't find a match for function 'getAll(Mapping[1])'", "COMPILATION error at [17:35-37]: Can't find property 'nam' in class 'test::C'"));
     }
 
     @Test
     public void testFilterLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->filter(a|$a.name == 'yeah')}:test::A[*];" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->filter(a|$a.nam == 'ohoh')}:test::A[*];" +
-                "}", "COMPILATION error at [1:84-86]: Can't find property 'nam' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->filter(a|$a.name == 'yeah')}:test::A[*];\n" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->filter(a|$a.nam == 'ohoh')}:test::A[*];\n" +
+                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
     public void testGroupByLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupBy(a|$a.nae, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:85-87]: Can't find property 'nae' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.nae, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:100-102]: Can't find property 'nae' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->map(k|$k+1)), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:120-121]: Can't find a match for function 'plus(Any[2])'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupBy(a|$a.nae, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:36-38]: Can't find property 'nae' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.nae, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:51-53]: Can't find property 'nae' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->map(k|$k+1)), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:71-72]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
     public void testGroupByWithWindowLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.name, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.namex, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:116-120]: Can't find property 'namex' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.name, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->groupByWithWindowSubset(a|$a.name, agg(x|$x.namex, z|$z->count()), ['a', 'b'], ['a'], ['b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:67-71]: Can't find property 'namex' in class 'test::A'");
     }
 
     @Test
     public void testProjectInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([a|$a.name], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "   g(){test::A.all()->project(a|$a.name, ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([a|$a.name.name], ['a'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:91-94]: The property 'name' can't be accessed on primitive types. Inferred primitive type is String");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([a|$a.nawme], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:86-90]: Can't find property 'nawme' in class 'test::A'");
-        test("Class  test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project(a|$a.nawme, ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:86-90]: Can't find property 'nawme' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([a|$a.name], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   g(){test::A.all()->project(a|$a.name, ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([a|$a.name.name], ['a'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:42-45]: The property 'name' can't be accessed on primitive types. Inferred primitive type is String");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([a|$a.nawme], ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:37-41]: Can't find property 'nawme' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project(a|$a.nawme, ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:36-40]: Can't find property 'nawme' in class 'test::A'");
     }
 
     @Test
     public void testProjectColInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];" +
-                "   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([col(a|$a.naxme, 'a')])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:90-94]: Can't find property 'naxme' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:89-93]: Can't find property 'naxme' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([col(a|$a.naxme, 'a')])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:41-45]: Can't find property 'naxme' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:40-44]: Can't find property 'naxme' in class 'test::A'");
     }
 
     @Test
     public void testProjectWithSubsetColInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.name, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "   y(){test::A.all()->projectWithColumnSubset(col(a|$a.name, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "   h(){test::A.all()->projectWithColumnSubset([a|$a.name], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "   j(){test::A.all()->projectWithColumnSubset(a|$a.name, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.name, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   y(){test::A.all()->projectWithColumnSubset(col(a|$a.name, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   h(){test::A.all()->projectWithColumnSubset([a|$a.name], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   j(){test::A.all()->projectWithColumnSubset(a|$a.name, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
 
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:106-110]: Can't find property 'xname' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   y(){test::A.all()->projectWithColumnSubset(col(a|$a.xname, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:105-109]: Can't find property 'xname' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   h(){test::A.all()->projectWithColumnSubset([a|$a.xname], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:102-106]: Can't find property 'xname' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   j(){test::A.all()->projectWithColumnSubset(a|$a.xname, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", "COMPILATION error at [1:101-105]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:57-61]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   y(){test::A.all()->projectWithColumnSubset(col(a|$a.xname, 'a'), ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:56-60]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   h(){test::A.all()->projectWithColumnSubset([a|$a.xname], 'a', ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:53-57]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   j(){test::A.all()->projectWithColumnSubset(a|$a.xname, 'a' , ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", "COMPILATION error at [8:52-56]: Can't find property 'xname' in class 'test::A'");
     }
 
     @Test
     public void testPartialCompilationProjectColInferenceWithClassAndProjectWithSubsetColInferenceWithClass()
     {
-        partialCompilationTest("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];" +
-                "   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
+        partialCompilationTest("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project([col(a|$a.name, 'a')])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "   y(){test::A.all()->project(col(a|$a.name, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}", null);
 
-        partialCompilationTest("Class test::C" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::D" +
-                "{" +
-                "   z(){test::C.all()->project([col(c|$c.naxme, 'c')])}:meta::pure::tds::TabularDataSet[1];" +
+        partialCompilationTest("Class test::C\n" +
+                "{\n" +
+                "   name : String[1];\n" +
                 "}\n" +
-                "Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];" +
-                "}", Arrays.asList("COMPILATION error at [1:90-94]: Can't find property 'naxme' in class 'test::C'", "COMPILATION error at [2:106-110]: Can't find property 'xname' in class 'test::A'"));
+                "\n" +
+                "Class test::D\n" +
+                "{\n" +
+                "   z(){test::C.all()->project([col(c|$c.naxme, 'c')])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}\n" +
+                "Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->projectWithColumnSubset([col(a|$a.xname, 'a')], ['a','b'])}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", Lists.fixedSize.with("COMPILATION error at [8:41-45]: Can't find property 'naxme' in class 'test::C'", "COMPILATION error at [17:57-61]: Can't find property 'xname' in class 'test::A'"));
 
-        partialCompilationTest("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];" +
-                "}", Arrays.asList("COMPILATION error at [1:89-93]: Can't find property 'naxme' in class 'test::A'"));
+        partialCompilationTest("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->project(col(a|$a.naxme, 'a'))}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}", Lists.fixedSize.with("COMPILATION error at [8:40-44]: Can't find property 'naxme' in class 'test::A'"));
     }
 
     @Test
     public void testExistsLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->exists(a|$a.name == 'yeah')}:Boolean[1];" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->exists(a|$a.name == 'yeah')}:Boolean[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->exists(a|$a.nam == 'ohoh')}:test::A[*];" +
-                "}", "COMPILATION error at [1:84-86]: Can't find property 'nam' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->exists(a|$a.nam == 'ohoh')}:test::A[*];\n" +
+                "}", "COMPILATION error at [8:35-37]: Can't find property 'nam' in class 'test::A'");
     }
 
     @Test
     public void testTDSContainsInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->filter(a|$a->tdsContains([p|$p.name], test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];" +
-                "   k(){test::A.all()->filter(a|$a->tdsContains(p|$p.name, test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   z(){test::A.all()->filter(a|$a->tdsContains([p|$p.xname], test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];" +
-                "}", "COMPILATION error at [1:103-107]: Can't find property 'xname' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   k(){test::A.all()->filter(a|$a->tdsContains(p|$p.xname, test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];" +
-                "}", "COMPILATION error at [1:102-106]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->filter(a|$a->tdsContains([p|$p.name], test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
+                "   k(){test::A.all()->filter(a|$a->tdsContains(p|$p.name, test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   z(){test::A.all()->filter(a|$a->tdsContains([p|$p.xname], test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
+                "}", "COMPILATION error at [8:54-58]: Can't find property 'xname' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   k(){test::A.all()->filter(a|$a->tdsContains(p|$p.xname, test::A.all()->project(col(a|$a.name, 'ww'))))}:test::A[*];\n" +
+                "}", "COMPILATION error at [8:53-57]: Can't find property 'xname' in class 'test::A'");
     }
 
     @Test
     public void testTDSContainsWithLambdaInferenceWithClass()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains(p|$p.name, ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
-                "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+                "}\n");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.ncame, 'ww')), {a,b | $a.isNotXNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
-                "}", "COMPILATION error at [1:149-153]: Can't find property 'ncame' in class 'test::A'");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+                "}", "COMPILATION error at [8:100-104]: Can't find property 'ncame' in class 'test::A'");
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->filter(v|$v->tdsContains([p|$p.name], ['a'], test::A.all()->project(col(a|$a.name, 'ww')), {a,b | $a.isNotXNull('name') && $b.isNotNull('Addr_Name')}))}:test::A[*];\n" +
-                "}", "COMPILATION error at [1:173-182]: Can't find property 'isNotXNull' in class 'meta::pure::tds::TDSRow'");
+                "}", "COMPILATION error at [8:124-133]: Can't find property 'isNotXNull' in class 'meta::pure::tds::TDSRow'");
     }
 
     @Test
     public void testGroupByTDS()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->groupBy('prodName', agg('sum', x|$x.getFloat('quantity')*$x.getInteger('quantity'), y| $y->sum()))}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->groupBy('prodName', agg('sum', x|$x.getwFloat('quantity')*$x.getInteger('quantity'), y| $y->sum()))}:meta::pure::tds::TabularDataSet[1];\n" +
-                "}", "COMPILATION error at [1:149-157]: Can't find property 'getwFloat' in class 'meta::pure::tds::TDSRow'");
+                "}", "COMPILATION error at [8:100-108]: Can't find property 'getwFloat' in class 'meta::pure::tds::TDSRow'");
     }
 
     @Test
     public void testOlapGroupByTDS()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'],desc('age'), func(y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'],desc('age'), y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->olapGroupBy( ['age'],desc('age'), func('age', y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], func(y|$y->rank()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], y|$y->rank(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], func('age', y|$y->max()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(desc('age'), func( y|$y->denseRank()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(asc('age'), y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(desc('age'), func('age', y|$y->max()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
 
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(func(y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "   age : Integer[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   age : Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(func('age',y|$y->min()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-
     }
 
     @Test
@@ -1534,19 +1527,19 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testConstraint()
     {
         test("Class test::A\n" +
-                "[" +
-                "   $this.names->isNotEmpty()" +
-                "]" +
+                "[\n" +
+                "   $this.names->isNotEmpty()\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
                 "}");
         test("Class test::A\n" +
-                "[" +
-                "   $this.names->at(0)" +
-                "]" +
+                "[\n" +
+                "   $this.names->at(0)\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", "COMPILATION error at [2:18-19]: Constraint must be of type 'Boolean'");
+                "}", "COMPILATION error at [3:17-18]: Constraint must be of type 'Boolean'");
     }
 
     @Test
@@ -1562,7 +1555,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", Arrays.asList("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
+                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
 
         partialCompilationTest("Class test::A\n" +
                 "{\n" +
@@ -1570,12 +1563,12 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
                 "}\n" +
                 "Class test::B\n" +
-                "[" +
-                "   $this.names->at(0)" +
-                "]" +
+                "[\n" +
+                "   $this.names->at(0)\n" +
+                "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", Arrays.asList("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [7:18-19]: Constraint must be of type 'Boolean'"));
+                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [8:17-18]: Constraint must be of type 'Boolean'"));
     }
 
     @Test
@@ -1611,62 +1604,62 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testEval1Param()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){ {a|$a+1}->eval(1);}:Integer[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){ {a|$a+'1'}->eval(1);}:Integer[1];\n" +
-                "}", "COMPILATION error at [1:63-66]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION error at [8:14-17]: Can't find a match for function 'plus(Any[2])'");
     }
 
     @Test
     public void testEval2Param()
     {
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){ {a,b|$a+$b}->eval(1,2);}:Integer[1];\n" +
                 "}");
-        test("Class test::A" +
-                "{" +
-                "   name : String[1];" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
                 "   z(){ {a,b|$a+$b}->eval(1,'a');}:Integer[1];\n" +
-                "}", "COMPILATION error at [1:65-67]: Can't find a match for function 'plus(Any[2])'");
+                "}", "COMPILATION error at [8:16-18]: Can't find a match for function 'plus(Any[2])'");
     }
 
 
     @Test
     public void testPropertyPostFunction()
     {
-        test("Class test::Firm" +
-                "{" +
-                "   employees:test::Person[*];" +
-                "   emp(){$this.employees->first().lastName}:String[0..1];" +
-                "}" +
-                "" +
-                "Class test::Person" +
-                "{" +
-                "   lastName : String[1];" +
+        test("Class test::Firm\n" +
+                "{\n" +
+                "   employees:test::Person[*];\n" +
+                "   emp(){$this.employees->first().lastName}:String[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   lastName : String[1];\n" +
                 "}");
     }
 
@@ -1680,14 +1673,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testEnum()
     {
-        test("Enum test::A" +
-                "{" +
-                "   A,B" +
-                "}" +
-                "" +
-                "Class test::B" +
-                "{" +
-                "   e:test::A[1];" +
+        test("Enum test::A\n" +
+                "{\n" +
+                "   A,B\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "   e:test::A[1];\n" +
                 "   z(){ $this.e.name}:String[1];\n" +
                 "}"
         );
@@ -1696,38 +1689,37 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testFunction()
     {
-        PureModel model = test("Class test::A" +
-                "{" +
-                "   s:String[1];" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[1]):String[1]" +
-                "{" +
-                "   $a.s;" +
+        PureModel model = test("Class test::A\n" +
+                "{\n" +
+                "   s:String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   $a.s;\n" +
                 "}"
         ).getTwo();
 
-        Function<?> f = model.getConcreteFunctionDefinition("test::f_A_1__String_1_", null);
-        Assert.assertTrue(f instanceof ConcreteFunctionDefinition);
-        ConcreteFunctionDefinition<?> cfd = (ConcreteFunctionDefinition<?>) f;
-        Assert.assertEquals("f_A_1__String_1_", cfd._name());
+        ConcreteFunctionDefinition<?> f = model.getConcreteFunctionDefinition("test::f_A_1__String_1_", null);
+        Assert.assertNotNull(f);
+        Assert.assertEquals("f_A_1__String_1_", f._name());
     }
 
     @Test
     public void testUserDefinedFunctionMatching()
     {
-        test("Class test::A" +
-                "{" +
-                "   s:String[1];" +
-                "}" +
-                "function test::other(a:test::A[1]):String[1]" +
-                "{" +
-                "   test::f($a)" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[1]):String[1]" +
-                "{" +
-                "   $a.s;" +
+        test("Class test::A\n" +
+                "{\n" +
+                "   s:String[1];\n" +
+                "}\n" +
+                "function test::other(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   test::f($a)\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   $a.s;\n" +
                 "}"
         );
     }
@@ -1735,42 +1727,42 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testUserDefinedFunctionMatchingError()
     {
-        test("Class test::A" +
-                        "{" +
-                        "   s:String[1];" +
-                        "}" +
-                        "function test::other(a:test::A[1]):String[1]" +
-                        "{" +
-                        "   test::f('test')" +
-                        "}" +
-                        "" +
-                        "function test::f(a:test::A[1]):String[1]" +
-                        "{" +
-                        "   $a.s;" +
+        test("Class test::A\n" +
+                        "{\n" +
+                        "   s:String[1];\n" +
+                        "}\n" +
+                        "function test::other(a:test::A[1]):String[1]\n" +
+                        "{\n" +
+                        "   test::f('test')\n" +
+                        "}\n" +
+                        "\n" +
+                        "function test::f(a:test::A[1]):String[1]\n" +
+                        "{\n" +
+                        "   $a.s;\n" +
                         "}",
-                "COMPILATION error at [1:79-85]: Can't find a match for function 'test::f(String[1])'"
+                "COMPILATION error at [7:4-10]: Can't find a match for function 'test::f(String[1])'"
         );
     }
 
     @Test
     public void testUserDefinedFunctionMatchingInheritance()
     {
-        test("Class test::B" +
-                "{" +
-                "   s:String[1];" +
-                "}" +
-                "" +
-                "Class test::A extends test::B" +
-                "{" +
-                "}" +
-                "function test::other(a:test::A[1]):String[1]" +
-                "{" +
-                "   test::f($a)" +
-                "}" +
-                "" +
-                "function test::f(a:test::B[1]):String[1]" +
-                "{" +
-                "   $a.s;" +
+        test("Class test::B\n" +
+                "{\n" +
+                "   s:String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::A extends test::B\n" +
+                "{\n" +
+                "}\n" +
+                "function test::other(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   test::f($a)\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::B[1]):String[1]\n" +
+                "{\n" +
+                "   $a.s;\n" +
                 "}"
         );
     }
@@ -1778,40 +1770,40 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testUserDefinedFunctionMatchingInheritanceError()
     {
-        test("Class test::B" +
-                "{" +
-                "   s:String[1];" +
-                "}" +
-                "" +
-                "Class test::A extends test::B" +
-                "{" +
-                "}" +
-                "function test::other(a:test::B[1]):String[1]" +
-                "{" +
-                "   test::f($a)" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[1]):String[1]" +
-                "{" +
-                "   $a.s;" +
-                "}", "COMPILATION error at [1:110-116]: Can't find a match for function 'test::f(B[1])'"
+        test("Class test::B\n" +
+                "{\n" +
+                "   s:String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::A extends test::B\n" +
+                "{\n" +
+                "}\n" +
+                "function test::other(a:test::B[1]):String[1]\n" +
+                "{\n" +
+                "   test::f($a)\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   $a.s;\n" +
+                "}", "COMPILATION error at [11:4-10]: Can't find a match for function 'test::f(B[1])'"
         );
     }
 
     @Test
     public void testUserDefinedFunctionMatchingMultiplicity()
     {
-        test("Class test::A" +
-                "{" +
-                "}" +
-                "function test::other(a:test::A[1]):String[1]" +
-                "{" +
-                "   test::f($a)" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[*]):String[1]" +
-                "{" +
-                "   'bogus';" +
+        test("Class test::A\n" +
+                "{\n" +
+                "}\n" +
+                "function test::other(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   test::f($a)\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[*]):String[1]\n" +
+                "{\n" +
+                "   'bogus';\n" +
                 "}"
         );
     }
@@ -1819,46 +1811,46 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testUserDefinedFunctionMatchingMultiplicityError()
     {
-        test("Class test::A" +
-                "{" +
-                "}" +
-                "function test::other(a:test::A[*]):String[1]" +
-                "{" +
-                "   test::f($a)" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[1]):String[1]" +
-                "{" +
-                "   'yo';" +
-                "}", "COMPILATION error at [1:64-70]: Can't find a match for function 'test::f(A[*])'"
+        test("Class test::A\n" +
+                "{\n" +
+                "}\n" +
+                "function test::other(a:test::A[*]):String[1]\n" +
+                "{\n" +
+                "   test::f($a)\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   'yo';\n" +
+                "}", "COMPILATION error at [6:4-10]: Can't find a match for function 'test::f(A[*])'"
         );
     }
 
     @Test
     public void testFunctionReturnError()
     {
-        test("Class test::A" +
-                "{" +
-                "   s:String[1];" +
-                "}" +
-                "" +
-                "function test::f(a:test::A[1]):String[1]" +
-                "{" +
-                "   $a;" +
-                "}", "COMPILATION error at [1:75-76]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
+        test("Class test::A\n" +
+                "{\n" +
+                "   s:String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(a:test::A[1]):String[1]\n" +
+                "{\n" +
+                "   $a;\n" +
+                "}", "COMPILATION error at [8:4-5]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
         );
     }
 
     @Test
     public void testFunctionReferenceBeforeFunctionDefinition()
     {
-        test("function b::myFunction():String[1]" +
-                "{" +
-                "   z::otherFunction();" +
-                "}" +
-                "function z::otherFunction():String[1]" +
-                "{" +
-                "   'ok';" +
+        test("function b::myFunction():String[1]\n" +
+                "{\n" +
+                "   z::otherFunction();\n" +
+                "}\n" +
+                "function z::otherFunction():String[1]\n" +
+                "{\n" +
+                "   'ok';\n" +
                 "}"
         );
     }
@@ -1866,18 +1858,18 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testDeepfetch()
     {
-        test("Class test::Person" +
-                "{" +
-                "   firstName:String[1];" +
-                "   lastName:String[1];" +
-                "}" +
-                "Class test::Firm" +
-                "{" +
-                "   employees:test::Person[*];" +
-                "}" +
-                "Class test::Test" +
-                "{" +
-                "   x(){test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#);true;}:Boolean[1];" +
+        test("Class test::Person\n" +
+                "{\n" +
+                "   firstName:String[1];\n" +
+                "   lastName:String[1];\n" +
+                "}\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   employees:test::Person[*];\n" +
+                "}\n" +
+                "Class test::Test\n" +
+                "{\n" +
+                "   x(){test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#);true;}:Boolean[1];\n" +
                 "}");
     }
 
@@ -1936,7 +1928,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   x(){test::Person.all()->graphFetch(#{\n" +
                 "       test::Person{\n" +
                 "                first}}#);true;}:Boolean[1];\n" +
-                "}\n", Arrays.asList("COMPILATION error at [10:37-41]: Can't find property 'name2' in class 'test::trial'", "COMPILATION error at [30:17-21]: Can't find property 'first' in [Person, Any]"));
+                "}\n", Lists.fixedSize.with("COMPILATION error at [10:37-41]: Can't find property 'name2' in class 'test::trial'", "COMPILATION error at [30:17-21]: Can't find property 'first' in [Person, Any]"));
     }
 
     @Test
@@ -1962,19 +1954,19 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         test("function example::testMaxString():Any[0..1]\n" +
                 "{\n" +
-                "   ['string1', 'string2']->max();" +
+                "   ['string1', 'string2']->max();\n" +
                 "}\n" +
                 "function example::testMaxInteger():Any[0..1]\n" +
                 "{\n" +
-                "   [1,2]->max();" +
+                "   [1,2]->max();\n" +
                 "}\n" +
                 "function example::testMaxFloat():Any[0..1]\n" +
                 "{\n" +
-                "   [1.0,2.0]->max();" +
+                "   [1.0,2.0]->max();\n" +
                 "}\n" +
                 "function example::testMaxDate():Any[0..1]\n" +
                 "{\n" +
-                "   [%1999-01-01,%2000-01-01]->max();" +
+                "   [%1999-01-01,%2000-01-01]->max();\n" +
                 "}\n"
         );
     }
@@ -2205,14 +2197,14 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  stereotypes: [test];\n" +
                 "  tags: [doc, todo];\n" +
-                "}" +
+                "}\n" +
                 "Association <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} ahh::myAsso\n" +
                 "{\n" +
                 // `String` won't be valid here as we specifically look for a class
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} a: String[1];\n" +
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} b: goes2[1];\n" +
                 "}\n" +
-                "\n", "COMPILATION error at [11:3-69]: Can't find class 'String'");
+                "\n", "COMPILATION error at [12:3-69]: Can't find class 'String'");
         test("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
@@ -2228,8 +2220,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 // Association property tagged values, stereotypes, and type
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} a: goes2[1];\n" +
                 "  <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} b: goes2[1];\n" +
-                "}\n" +
-                "\n");
+                "}\n");
     }
 
     @Test
@@ -2258,16 +2249,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     {
         test("Class my::Class\n" +
                 "{\n" +
-                "\n" +
                 "}\n" +
                 "\n" +
                 "Association my::association\n" +
                 "{\n" +
-                "\n" +
-                "toAny:Any[1];\n" +
-                "toClass:my::Class[1]; \n" +
-                "\n" +
-                "}", "COMPILATION error at [6:1-12:1]: Associations to Any are not allowed. Found in 'my::association'");
+                "    toAny:Any[1];\n" +
+                "    toClass:my::Class[1];\n" +
+                "}", "COMPILATION error at [5:1-9:1]: Associations to Any are not allowed. Found in 'my::association'");
 
     }
 
@@ -2330,48 +2318,35 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     @Test
     public void testClassWithInvalidStrictTime()
     {
-        try
-        {
-            test("Class apps::Trade\n" +
-                    "{\n" +
-                    "   time : StrictTime[1];\n" +
-                    "   testStrictTime(){\n" +
-                    "       $this.time == %200:12:22.88;\n" +
-                    "   } : Boolean[1];\n" +
-                    "}\n");
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Invalid hour: 200", e.getMessage());
-        }
-        try
-        {
-            test("Class apps::Trade\n" +
-                    "{\n" +
-                    "   time : StrictTime[1];\n" +
-                    "   testStrictTime(){\n" +
-                    "       $this.time == %20:122:22.88;\n" +
-                    "   } : Boolean[1];\n" +
-                    "}\n");
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Invalid minute: 122", e.getMessage());
-        }
-        try
-        {
-            test("Class apps::Trade\n" +
-                    "{\n" +
-                    "   time : StrictTime[1];\n" +
-                    "   testStrictTime(){\n" +
-                    "       $this.time == %20:12:61.88;\n" +
-                    "   } : Boolean[1];\n" +
-                    "}\n");
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Invalid second: 61", e.getMessage());
-        }
+        Exception e1 = Assert.assertThrows(Exception.class, () -> test(
+                "Class apps::Trade\n" +
+                        "{\n" +
+                        "   time : StrictTime[1];\n" +
+                        "   testStrictTime(){\n" +
+                        "       $this.time == %200:12:22.88;\n" +
+                        "   } : Boolean[1];\n" +
+                        "}\n"));
+        Assert.assertEquals("Invalid hour: 200", e1.getMessage());
+
+        Exception e2 = Assert.assertThrows(Exception.class, () -> test(
+                "Class apps::Trade\n" +
+                        "{\n" +
+                        "   time : StrictTime[1];\n" +
+                        "   testStrictTime(){\n" +
+                        "       $this.time == %20:122:22.88;\n" +
+                        "   } : Boolean[1];\n" +
+                        "}\n"));
+        Assert.assertEquals("Invalid minute: 122", e2.getMessage());
+
+        Exception e3 = Assert.assertThrows(Exception.class, () -> test(
+                "Class apps::Trade\n" +
+                        "{\n" +
+                        "   time : StrictTime[1];\n" +
+                        "   testStrictTime(){\n" +
+                        "       $this.time == %20:12:61.88;\n" +
+                        "   } : Boolean[1];\n" +
+                        "}\n"));
+        Assert.assertEquals("Invalid second: 61", e3.getMessage());
     }
 
     @Test
@@ -2424,22 +2399,20 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "  employs: apps::Employee[*]; \n" +
                         "} \n");
         PureModel model = modelWithInput.getTwo();
-        Type clazz = model.getType("apps::Employee", SourceInformation.getUnknownSourceInformation());
-        Root_meta_pure_metamodel_type_Class_Impl<?> type = (Root_meta_pure_metamodel_type_Class_Impl<?>) clazz;
-        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property>> originalMilestonedPropertiesGetter = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_originalMilestonedProperties;
-        RichIterable<? extends Property> firmProperty = originalMilestonedPropertiesGetter.valueOf(type).select(p -> p.getName().equals("firm"));
-        Assert.assertTrue("Missing firm property in _originalMilestonedProperties", firmProperty.size() == 1);
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForProperty = originalMilestonedPropertiesGetter.valueOf(type).select(p -> p.getName().equals("worksFor"));
-        Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties", worksForProperty.size() == 1);
+        Class<?> type = model.getClass("apps::Employee", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<?, ?>> firmProperty = type._originalMilestonedProperties().select(p -> p.getName().equals("firm"));
+        Assert.assertEquals("Missing firm property in _originalMilestonedProperties", 1, firmProperty.size());
+        RichIterable<? extends Property<?, ?>> worksForProperty = type._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties", 1, worksForProperty.size());
 
         Association association = model.getAssociation("apps::Employee_Firm", SourceInformation.getUnknownSourceInformation());
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
-        Assert.assertTrue("Missing worksFor property in _originalMilestonedProperties for association", worksForPropertyFromAssoc.size() == 1);
+        RichIterable<? extends Property<?, ?>> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties for association", 1, worksForPropertyFromAssoc.size());
     }
 
     public String getMilestoningModelWithDatePropagationAndInheritance()
     {
-        String model = "###Pure\n" +
+        return "###Pure\n" +
                 "Class <<temporal.businesstemporal>> {doc.doc = 'Account class'} my::domainModel::migration::test::account::AccountValue\n" +
                 "{\n" +
                 "  value: String[1];\n" +
@@ -2463,25 +2436,22 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  productType: my::domainModel::migration::test::product::ProductType[1];\n" +
                 "}\n";
-        return model;
     }
 
     @Test
-    public void testCompilationOfBusinesstemporalDatePropagationWithInheritance()
+    public void testCompilationOfBusinessTemporalDatePropagationWithInheritance()
     {
         String grammar = getMilestoningModelWithDatePropagationAndInheritance();
         Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
         PureModel model = modelWithInput.getTwo();
-        Type collectionsClazz = model.getType("my::domainModel::migration::test::product::Collections", SourceInformation.getUnknownSourceInformation());
-        Root_meta_pure_metamodel_type_Class_Impl<?> collectionsType = (Root_meta_pure_metamodel_type_Class_Impl<?>) collectionsClazz;
-        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> updatedQualifiedProperties = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_qualifiedProperties;
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> collectionsQPs = updatedQualifiedProperties.valueOf(collectionsType);
+        Class<?> collectionsClass = model.getClass("my::domainModel::migration::test::product::Collections", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends QualifiedProperty<?>> collectionsQPs = collectionsClass._qualifiedProperties();
         Assert.assertEquals(3, collectionsQPs.size());
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
-        Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", singleDateQPWithArgAndNoArg.size() == 2);
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters.size() == 2));
-        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((Root_meta_pure_metamodel_type_FunctionType_Impl) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 1));
-        Property<?, ?> edgePointProp = collectionsType._properties().select(r -> ((Root_meta_pure_metamodel_function_property_Property_Impl) r).getName().equals("productTypeAllVersions")).getFirst();
+        RichIterable<? extends QualifiedProperty<?>> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
+        Assert.assertEquals("Missing productType property for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties", 2, singleDateQPWithArgAndNoArg.size());
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((FunctionType) (qp._classifierGenericType()._typeArguments().getFirst()._rawType()))._parameters().size() == 2));
+        Assert.assertTrue("One of the productType properties for Class in my::domainModel::migration::test::product::Collections _qualifiedProperties should not contain one argument for Date", ListIterate.anySatisfy(singleDateQPWithArgAndNoArg.toList(), qp -> ((FunctionType) qp._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters().size() == 1));
+        Property<?, ?> edgePointProp = collectionsClass._properties().detect(p -> "productTypeAllVersions".equals(p.getName()));
         Assert.assertEquals("Multiplicity", edgePointProp._multiplicity().getClassifier().getName());
     }
 
@@ -2489,21 +2459,18 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
 
     @Test
-    public void testCompilationOfNonMilestonedClasstoMilestonedClass()
+    public void testCompilationOfNonMilestonedClassToMilestonedClass()
     {
         String grammar = getMilestoningModelWithDatePropagationAndInheritance();
         test(grammar);
         Pair<PureModelContextData, PureModel> modelWithInput = test(grammar);
         PureModel model = modelWithInput.getTwo();
-        Type collectionsClazz = model.getType("my::domainModel::migration::test::product::Classification", SourceInformation.getUnknownSourceInformation());
-        Root_meta_pure_metamodel_type_Class_Impl<?> collectionsType = (Root_meta_pure_metamodel_type_Class_Impl<?>) collectionsClazz;
-        org.eclipse.collections.api.block.function.Function<Class, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty>> updatedQualifiedProperties = org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ClassAccessor::_qualifiedProperties;
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> collectionsQPs = updatedQualifiedProperties.valueOf(collectionsType);
+        Class<?> collectionsType = model.getClass("my::domainModel::migration::test::product::Classification", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends QualifiedProperty<?>> collectionsQPs = collectionsType._qualifiedProperties();
         Assert.assertEquals(2, collectionsQPs.size());
-        Assert.assertTrue("Missing productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties", collectionsQPs.select(p -> p.getName().equals("productType")).size() == 1);
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty singleDateQP = singleDateQPWithArgAndNoArg.getFirst();
-        Assert.assertTrue("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", ((Root_meta_pure_metamodel_type_FunctionType_Impl) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 2);
+        Assert.assertEquals("Missing productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties", 1, collectionsQPs.select(p -> p.getName().equals("productType")).size());
+        QualifiedProperty<?> singleDateQP = collectionsQPs.detect(p -> p.getName().equals("productType"));
+        Assert.assertEquals("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", 2, ((FunctionType) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters().size());
     }
 
     @Test
@@ -2591,25 +2558,22 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForprocessingTemporalAddress1);
         Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForbusinessTemporalAddress1);
         Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForbiTemporalAddress1);
-        Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForprocessingTemporalAddress2);
-        Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbusinessTemporalAddress2);
-        Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbiTemporalAddress2);
-        Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForprocessingTemporalAddress3);
-        Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbusinessTemporalAddress3);
-        Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbiTemporalAddress3);
-
-
-
+        Assert.assertFalse("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForprocessingTemporalAddress2);
+        Assert.assertFalse("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForbusinessTemporalAddress2);
+        Assert.assertFalse("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForbiTemporalAddress2);
+        Assert.assertFalse("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForprocessingTemporalAddress3);
+        Assert.assertFalse("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForbusinessTemporalAddress3);
+        Assert.assertFalse("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", checkQualifiedExpressionForbiTemporalAddress3);
     }
 
-    private boolean checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(QualifiedProperty generatedMilestoningClassQualifiedProperty)
+    private boolean checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(QualifiedProperty<?> generatedMilestoningClassQualifiedProperty)
     {
         FunctionExpression topLevelExpression = ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst());
         return topLevelExpression._func()._functionName().equals("toOne");
     }
 
     @Test
-    public void testMilestoningSimplePropertiesAreNotOverridenByUserProperties()
+    public void testMilestoningSimplePropertiesAreNotOverriddenByUserProperties()
     {
         String grammar = "###Pure\n" +
                 "Class <<temporal.processingtemporal>> test::ProcessingTemporalAddress\n" +
@@ -2641,47 +2605,47 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
         )).getTwo();
 
-        java.util.function.Function<Property, Boolean> isGeneratedMilestoningProperty = p -> p._stereotypes().anySatisfy(s -> s._value().equals(Milestoning.GeneratedMilestoningStereotype.generatedmilestoningdateproperty.name()));
+        java.util.function.Function<Property<?, ?>, Boolean> isGeneratedMilestoningProperty = p -> p._stereotypes().anySatisfy(s -> s._value().equals(Milestoning.GeneratedMilestoningStereotype.generatedmilestoningdateproperty.name()));
 
-        Property processingDateProperty = pm.getClass("test::ProcessingTemporalAddress")._properties().select(p -> p.getName().equals("processingDate")).getOnly();
-        Property businessDateProperty = pm.getClass("test::BusinessTemporalAddress")._properties().select(p -> p.getName().equals("businessDate")).getOnly();
+        Property<?, ?> processingDateProperty = pm.getClass("test::ProcessingTemporalAddress")._properties().select(p -> p.getName().equals("processingDate")).getOnly();
+        Property<?, ?> businessDateProperty = pm.getClass("test::BusinessTemporalAddress")._properties().select(p -> p.getName().equals("businessDate")).getOnly();
 
         Assert.assertTrue(isGeneratedMilestoningProperty.apply(processingDateProperty));
         Assert.assertTrue(isGeneratedMilestoningProperty.apply(businessDateProperty));
         RichIterable<? extends QualifiedProperty<?>> personQualifiedProperties = pm.getClass("test::Person")._qualifiedProperties();
 
-        boolean classProcessingDatePropertyIsUsedInMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(processingDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress")));
-        boolean classBusinessPropertyIsUsedInMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(businessDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress")));
+        boolean classProcessingDatePropertyIsUsedInMiletoningExpression = generatedMilestoningQualifiedPropertyUsesGeneratedMilestoningProperty(processingDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress")));
+        boolean classBusinessPropertyIsUsedInMiletoningExpression = generatedMilestoningQualifiedPropertyUsesGeneratedMilestoningProperty(businessDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress")));
         Assert.assertTrue("Class generated milestoning processingDate property should be used in the generated milestoning expression", classProcessingDatePropertyIsUsedInMiletoningExpression);
         Assert.assertTrue("Class generated milestoning businessDate property should be used in the generated milestoning expression", classBusinessPropertyIsUsedInMiletoningExpression);
 
-        RichIterable<? extends Property<?, ?>> biTemporalMilestoningDateProperties = pm.getClass("test::BiTemporalAddress")._properties().select(p -> Arrays.asList("businessDate", "processingDate").contains(p.getName()));
+        RichIterable<? extends Property<?, ?>> biTemporalMilestoningDateProperties = pm.getClass("test::BiTemporalAddress")._properties().select(p -> Lists.fixedSize.with("businessDate", "processingDate").contains(p.getName()));
         Assert.assertTrue(biTemporalMilestoningDateProperties.size() == 2 && biTemporalMilestoningDateProperties.anySatisfy(p -> p.getName().equals("businessDate")) && biTemporalMilestoningDateProperties.anySatisfy(p -> p.getName().equals("processingDate")));
-        Assert.assertTrue(biTemporalMilestoningDateProperties.allSatisfy(p -> isGeneratedMilestoningProperty.apply(p)));
-        boolean classProcessingDatePropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("processingDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
-        boolean classBusinessPropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("businessDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
+        Assert.assertTrue(biTemporalMilestoningDateProperties.allSatisfy(isGeneratedMilestoningProperty::apply));
+        boolean classProcessingDatePropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("processingDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
+        boolean classBusinessPropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("businessDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
         Assert.assertTrue("Class generated milestoning processingDate property should be used in the generated milestoning expression", classProcessingDatePropertyIsUsedInBiTemporalMiletoningExpression);
         Assert.assertTrue("Class generated milestoning businessDate property should be used in the generated milestoning expression", classBusinessPropertyIsUsedInBiTemporalMiletoningExpression);
     }
 
-    private boolean generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(Property generatedMilestoningClassSimpleProperty, QualifiedProperty generatedMilestoningClassQualifiedProperty)
+    private boolean generatedMilestoningQualifiedPropertyUsesGeneratedMilestoningProperty(Property<?, ?> generatedMilestoningClassSimpleProperty, QualifiedProperty<?> generatedMilestoningClassQualifiedProperty)
     {
         FunctionExpression topLevelExpression = ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst());
         FunctionExpression simplifiedExpression;
         if (topLevelExpression._func()._functionName().equals("toOne"))
         {
-            simplifiedExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) ((FunctionExpression) (topLevelExpression._parametersValues().toList().get(0)))._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
+            simplifiedExpression = (FunctionExpression) ((LambdaFunction<?>) ((InstanceValue) ((FunctionExpression) (topLevelExpression._parametersValues().toList().get(0)))._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
         }
         else
         {
-            simplifiedExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) topLevelExpression._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
+            simplifiedExpression = (FunctionExpression) ((LambdaFunction<?>) ((InstanceValue) topLevelExpression._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
         }
         if (simplifiedExpression._func()._functionName().equals("and"))
         {
             int idx = generatedMilestoningClassSimpleProperty.getName().equals("processingDate") ? 0 : 1;
             simplifiedExpression = (FunctionExpression) simplifiedExpression._parametersValues().toList().get(idx);
         }
-        Property filterMilestoningDateProperty = (Property) ((FunctionExpression) simplifiedExpression._parametersValues().toList().get(0))._func();
+        Property<?, ?> filterMilestoningDateProperty = (Property<?, ?>) ((FunctionExpression) simplifiedExpression._parametersValues().toList().get(0))._func();
         return generatedMilestoningClassSimpleProperty.equals(filterMilestoningDateProperty);
     }
 
@@ -2733,10 +2697,10 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
         String WALK_TREE = "main::walkTree_String_$2_MANY$__Person_MANY__String_MANY_";
 
-        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        ConcreteFunctionDefinition<?> walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression fold = (SimpleFunctionExpression) walkTree._expressionSequence().getFirst();
-        InstanceValue iv = (InstanceValue) ((FastList) fold._parametersValues()).get(1);
-        SimpleFunctionExpression concat = (SimpleFunctionExpression) ((LambdaFunction) iv._values().getFirst())._expressionSequence().getFirst();
+        InstanceValue iv = (InstanceValue) fold._parametersValues().toList().get(1);
+        SimpleFunctionExpression concat = (SimpleFunctionExpression) ((LambdaFunction<?>) iv._values().getFirst())._expressionSequence().getFirst();
         Assert.assertEquals(pureModel.getType("String"), fold._genericType()._rawType());
         Assert.assertEquals(pureModel.getType("String"), concat._genericType()._rawType());
 
@@ -3078,25 +3042,19 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         // This is added to test legacy Binary primitive type usages
         test("Class demo::Class\n" +
                 "{\n" +
-                "   binary: Binary[1];" +
+                "   binary: Binary[1];\n" +
                 "}\n");
     }
 
     @Test
     public void testCompilationOfRelationStoreAccessor()
     {
-        try
-        {
-            test("function my::func():Any[*]" +
-                    "{" +
-                    "   #>{my::Store}#->filter(c|$c.val);" +
-                    "}");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("The store 'my::Store' can't be found.", e.getMessage());
-        }
+        Exception e = Assert.assertThrows(Exception.class, () -> test(
+                "function my::func():Any[*]\n" +
+                        "{\n" +
+                        "   #>{my::Store}#->filter(c|$c.val);\n" +
+                        "}\n"));
+        Assert.assertEquals("The store 'my::Store' can't be found.", e.getMessage());
     }
 
     @Test

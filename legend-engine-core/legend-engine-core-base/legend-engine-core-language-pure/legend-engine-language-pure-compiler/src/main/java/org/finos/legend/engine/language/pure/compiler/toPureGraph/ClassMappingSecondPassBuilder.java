@@ -48,15 +48,15 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         if (classMapping.extendsClassMappingId != null)
         {
             String superSetId = classMapping.extendsClassMappingId;
-            ImmutableSet<SetImplementation> superSets = HelperMappingBuilder.getAllClassMappings(parentMapping).select(c -> c._id().equals(superSetId));
-            if (superSets.size() == 0)
+            ImmutableSet<SetImplementation> superSets = HelperMappingBuilder.getAllClassMappings(this.parentMapping).select(c -> c._id().equals(superSetId));
+            if (superSets.isEmpty())
             {
-                throw new EngineException("Can't find extends class mapping '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Can't find extends class mapping '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
             }
             if (superSets.size() > 1)
             {
                 String parents = superSets.stream().map(superSet -> "'" + HelperModelBuilder.getElementFullPath(superSet._parent(), this.context.pureModel.getExecutionSupport()) + "'").sorted().collect(Collectors.joining(", "));
-                throw new EngineException("Duplicated class mappings found with ID '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'" + "; parent mapping for duplicated: " + parents, classMapping.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Duplicated class mappings found with ID '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport()) + "'; parent mapping for duplicated: " + parents, classMapping.sourceInformation, EngineErrorType.COMPILATION);
             }
         }
         this.context.getCompilerExtensions().getExtraClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
@@ -66,13 +66,13 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(OperationClassMapping classMapping)
     {
-        OperationSetImplementation operationSetImplementation = (OperationSetImplementation) parentMapping._classMappings().detect(c -> c._id().equals(HelperMappingBuilder.getClassMappingId(classMapping, this.context)));
+        OperationSetImplementation operationSetImplementation = (OperationSetImplementation) this.parentMapping._classMappings().detect(c -> c._id().equals(HelperMappingBuilder.getClassMappingId(classMapping, this.context)));
         return operationSetImplementation._parameters(ListIterate.collect(classMapping.parameters, classMappingId ->
         {
-            SetImplementation match = HelperMappingBuilder.getAllClassMappings(parentMapping).detect(c -> c._id().equals(classMappingId));
+            SetImplementation match = HelperMappingBuilder.getAllClassMappings(this.parentMapping).detect(c -> c._id().equals(classMappingId));
             if (match == null)
             {
-                throw new EngineException("Can't find class mapping '" + classMappingId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Can't find class mapping '" + classMappingId + "' in mapping '" + HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
             }
             return new Root_meta_pure_mapping_SetImplementationContainer_Impl("", null, context.pureModel.getClass("meta::pure::mapping::SetImplementationContainer"))._id(classMappingId)._setImplementation(match);
         }));

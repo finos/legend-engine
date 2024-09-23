@@ -253,7 +253,7 @@ public class TestCompatibilityAndMigration
                         "          ]\n" +
                         "        },\n" +
                         "        \"measure\": \"test::NewMeasure\",\n" +
-                        "        \"name\": \"NewMeasure~UnitOne\",\n" +
+                        "        \"name\": \"UnitOne\",\n" +
                         "        \"package\": \"test\"\n" +
                         "      },\n" +
                         "      \"name\": \"NewMeasure\",\n" +
@@ -292,8 +292,7 @@ public class TestCompatibilityAndMigration
                         "    \"_type\" : \"measure\",\n" +
                         "    \"name\" : \"NewMeasure\",\n" +
                         "    \"canonicalUnit\" : {\n" +
-                        "      \"_type\" : \"unit\",\n" +
-                        "      \"name\" : \"NewMeasure~UnitOne\",\n" +
+                        "      \"name\" : \"UnitOne\",\n" +
                         "      \"measure\" : \"test::NewMeasure\",\n" +
                         "      \"conversionFunction\" : {\n" +
                         "        \"_type\" : \"lambda\",\n" +
@@ -305,8 +304,7 @@ public class TestCompatibilityAndMigration
                         "          \"_type\" : \"var\",\n" +
                         "          \"name\" : \"x\"\n" +
                         "        } ]\n" +
-                        "      },\n" +
-                        "      \"package\" : \"test\"\n" +
+                        "      }\n" +
                         "    },\n" +
                         "    \"package\" : \"test\"\n" +
                         "  }, {\n" +
@@ -318,7 +316,7 @@ public class TestCompatibilityAndMigration
                         "      \"upperBound\" : 1\n" +
                         "    },\n" +
                         "    \"body\" : [ {\n" +
-                        "      \"_type\" : \"packageableElementPtr\",\n" +
+                        "      \"_type\" : \"unitType\",\n" +
                         "      \"sourceInformation\" : {\n" +
                         "        \"startLine\" : 8,\n" +
                         "        \"startColumn\" : 3,\n" +

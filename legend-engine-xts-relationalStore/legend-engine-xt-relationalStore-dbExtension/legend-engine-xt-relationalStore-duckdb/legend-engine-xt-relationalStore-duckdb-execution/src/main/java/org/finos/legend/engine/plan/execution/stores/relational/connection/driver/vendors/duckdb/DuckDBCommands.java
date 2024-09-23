@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DuckDBCommands extends RelationalDatabaseCommands
 {
@@ -45,6 +46,13 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     public String load(String tableName, String location)
     {
         return "CREATE TABLE " + tableName + " AS SELECT * FROM read_csv('" + location + "', header=true);";
+    }
+
+    @Override
+    public String load(String tableName, String location, List<Column> columns)
+    {
+        String columnTypesString = columns.stream().map(c -> String.format("'%s': '%s'", c.name, c.type)).collect(Collectors.joining(", ", "{", "}"));
+        return "CREATE TABLE " + tableName + " AS SELECT * FROM read_csv('" + location + "', header = true, columns = " + columnTypesString + ");";
     }
 
     @Override

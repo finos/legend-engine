@@ -69,6 +69,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.util.List;
 
@@ -138,13 +139,15 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         this.context.pureModel.typesIndex.put(fullPath, targetMeasure);
         GenericType genericType = newGenericType(targetMeasure);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
-        targetMeasure._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::type::Measure")));
-        HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, this.context);
+        targetMeasure._classifierGenericType(newGenericType(this.context.pureModel.getType(M3Paths.Measure)));
+        if (measure.canonicalUnit != null)
+        {
+            HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, this.context);
+        }
         measure.nonCanonicalUnits.forEach(ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, this.context));
         return setNameAndPackage(targetMeasure, measure);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public PackageableElement visit(Association srcAssociation)
     {

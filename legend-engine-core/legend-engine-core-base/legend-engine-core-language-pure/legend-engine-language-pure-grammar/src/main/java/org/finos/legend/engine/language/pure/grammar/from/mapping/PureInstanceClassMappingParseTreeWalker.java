@@ -32,7 +32,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class PureInstanceClassMappingParseTreeWalker
@@ -111,7 +110,7 @@ public class PureInstanceClassMappingParseTreeWalker
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext);
         // add source parameter
         Lambda lambda = new Lambda();
-        lambda.body = new ArrayList<>();
+        lambda.body = Lists.mutable.empty();
         lambda.body.add(valueSpecification);
         lambda.parameters = Lists.mutable.empty();
         return lambda;
@@ -126,4 +125,3 @@ public class PureInstanceClassMappingParseTreeWalker
         return m;
     }
 }
-

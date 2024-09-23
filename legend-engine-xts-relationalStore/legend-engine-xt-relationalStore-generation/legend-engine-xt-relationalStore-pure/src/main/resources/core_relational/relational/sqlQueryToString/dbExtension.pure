@@ -114,6 +114,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      if($this.dbExtension.schemaNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.schemaNameToIdentifier->toOne()->eval($s, $this));
    }: String[1];
 
+   schemaIdentifierToString(s:String[1])
+   {
+     if($this.dbExtension.schemaIdentifierToString->isEmpty(), |$this.identifierProcessor($s), |$this.dbExtension.schemaIdentifierToString->toOne()->eval($s, $this));
+   }: String[1];
+
+
    tableNameToIdentifier(s:String[1])
    {
      if($this.dbExtension.tableNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.tableNameToIdentifier->toOne()->eval($s, $this));
@@ -226,6 +232,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    selectSQLQueryWithCTEsProcessor: meta::pure::metamodel::function::Function<{SelectSQLQueryWithCommonTableExpressions[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
+   schemaIdentifierToString: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    tableNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    columnNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
@@ -443,7 +450,7 @@ function meta::relational::functions::sqlQueryToString::tableToString(table:Tabl
 {
    let schemaName = $dbConfig.schemaNameToIdentifier($table.schema.name);
    let tableName = $dbConfig.tableNameToIdentifier($table.name);
-   if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.identifierProcessor($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
+   if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.schemaIdentifierToString($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
 }
 
 function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Format[1]

@@ -14,12 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.domain;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
-
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
@@ -27,10 +21,9 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
@@ -95,9 +88,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Gen
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class DomainParseTreeWalker
 {
@@ -303,8 +302,8 @@ public class DomainParseTreeWalker
             return new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(t));
         });
         _class.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
-        _class.properties = ctx.classBody().properties().property() == null ? new ArrayList<>() : ListIterate.collect(ctx.classBody().properties().property(), this::visitSimpleProperty);
-        _class.qualifiedProperties = ctx.classBody().properties().qualifiedProperty() == null ? new ArrayList<>() : ListIterate.collect(ctx.classBody().properties().qualifiedProperty(), this::visitDerivedProperty);
+        _class.properties = ctx.classBody().properties().property() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.classBody().properties().property(), this::visitSimpleProperty);
+        _class.qualifiedProperties = ctx.classBody().properties().qualifiedProperty() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.classBody().properties().qualifiedProperty(), this::visitDerivedProperty);
         _class.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return _class;
     }
@@ -313,7 +312,7 @@ public class DomainParseTreeWalker
     {
         Constraint constraint = new Constraint();
         constraint.functionDefinition = new Lambda();
-        List<String> typeParametersNames = new ArrayList<>();
+        List<String> typeParametersNames = Lists.mutable.empty();
 
         if (ctx.simpleConstraint() != null)
         {
@@ -416,8 +415,8 @@ public class DomainParseTreeWalker
         assoc.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         assoc.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         assoc.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
-        assoc.properties = ctx.associationBody().properties().property() == null ? new ArrayList<>() : ListIterate.collect(ctx.associationBody().properties().property(), this::visitSimpleProperty);
-        assoc.qualifiedProperties = ctx.associationBody().properties().qualifiedProperty() == null ? new ArrayList<>() : ListIterate.collect(ctx.associationBody().properties().qualifiedProperty(), this::visitDerivedProperty);
+        assoc.properties = ctx.associationBody().properties().property() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.associationBody().properties().property(), this::visitSimpleProperty);
+        assoc.qualifiedProperties = ctx.associationBody().properties().qualifiedProperty() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.associationBody().properties().qualifiedProperty(), this::visitDerivedProperty);
         assoc.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return assoc;
     }
@@ -665,7 +664,7 @@ public class DomainParseTreeWalker
         else
         {
             // non-convertible unit pattern
-            MutableList<Unit> nonConvertibleUnits = FastList.newList();
+            MutableList<Unit> nonConvertibleUnits = Lists.mutable.empty();
             for (DomainParserGrammar.NonConvertibleMeasureExprContext ncctx : ctx.measureBody().nonConvertibleMeasureExpr())
             {
                 Unit currentUnit = this.visitNonConvertibleUnit(ncctx, measure);
@@ -694,42 +693,29 @@ public class DomainParseTreeWalker
 
     private Unit visitUnit(DomainParserGrammar.MeasureExprContext ctx, Measure measure)
     {
-        Unit unit = new Unit();
-        unit._package = measure._package == null || measure._package.equals("") ? "" : measure._package;
-        unit.name = measure.name.concat(TILDE).concat(PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier()));
-        unit.measure = measure.getPath();
-        unit.superType = (measure._package == null || measure._package.equals("") ? "" : measure._package + "::") + measure.name;
+        String name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
 
         Lambda conversionFunction = new Lambda();
         Variable variable = new Variable();
         variable.name = PureGrammarParserUtility.fromIdentifier(ctx.unitExpr().identifier());
         conversionFunction.parameters = Collections.singletonList(variable);
 
-        DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext(unit.name.replace("::", "_"));
-        conversionFunction.body = this.codeBlock(ctx.unitExpr().codeBlock(), new ArrayList<>(), lambdaContext, false, "");
+        DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext(name.replace("::", "_"));
+        conversionFunction.body = this.codeBlock(ctx.unitExpr().codeBlock(), Lists.mutable.empty(), lambdaContext, false, "");
 
-        unit.conversionFunction = conversionFunction;
-        unit.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        return unit;
+        return Unit.newUnit(name, measure.getPath(), conversionFunction, this.walkerSourceInformation.getSourceInformation(ctx));
     }
 
     private Unit visitNonConvertibleUnit(DomainParserGrammar.NonConvertibleMeasureExprContext ncctx, Measure measure)
     {
-        Unit unit = new Unit();
-        unit._package = measure._package == null || measure._package.equals("") ? "" : measure._package;
-        unit.name = measure.name.concat(TILDE).concat(PureGrammarParserUtility.fromIdentifier(ncctx.qualifiedName().identifier()));
-        unit.measure = measure.getPath();
-        unit.superType = (measure._package == null || measure._package.equals("") ? "" : measure._package + "::") + measure.name;
-
-        unit.sourceInformation = this.walkerSourceInformation.getSourceInformation(ncctx);
-        return unit;
+        return Unit.newUnit(PureGrammarParserUtility.fromIdentifier(ncctx.qualifiedName().identifier()), measure.getPath(), this.walkerSourceInformation.getSourceInformation(ncctx));
     }
 
     // ----------------------------------------------- LAMBDA -----------------------------------------------
 
     public ValueSpecification concreteFunctionDefinition(DomainParserGrammar.FunctionDefinitionContext ctx)
     {
-        List<String> typeParametersNames = new ArrayList<>();
+        List<String> typeParametersNames = Lists.mutable.empty();
         String name = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         LambdaContext lambdaContext = new LambdaContext(name.replace("::", "_"));
         List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, false, " ");
@@ -748,36 +734,25 @@ public class DomainParseTreeWalker
 
     private List<ValueSpecification> codeBlock(DomainParserGrammar.CodeBlockContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        List<ValueSpecification> lines = new ArrayList<>();
-        for (DomainParserGrammar.ProgramLineContext plCtx : ctx.programLine())
-        {
-            lines.add(this.programLine(plCtx, typeParametersNames, lambdaContext, addLines, space + "  "));
-        }
-        return lines;
+        return ListIterate.collect(ctx.programLine(), plCtx -> programLine(plCtx, typeParametersNames, lambdaContext, addLines, space + "  "));
     }
 
     private ValueSpecification programLine(DomainParserGrammar.ProgramLineContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        if (ctx.combinedExpression() != null)
-        {
-            return this.combinedExpression(ctx.combinedExpression(), "line", typeParametersNames, lambdaContext, space, true, addLines);
-        }
-        else
-        {
-            return this.letExpression(ctx.letExpression(), typeParametersNames, lambdaContext, addLines, space);
-        }
+        return (ctx.combinedExpression() == null) ?
+               letExpression(ctx.letExpression(), typeParametersNames, lambdaContext, addLines, space) :
+               combinedExpression(ctx.combinedExpression(), "line", typeParametersNames, lambdaContext, space, true, addLines);
     }
 
     public ValueSpecification combinedExpression(DomainParserGrammar.CombinedExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
         ValueSpecification result = this.expressionOrExpressionGroup(ctx.expression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
-        ValueSpecification boolResult = result;
-        ValueSpecification arithResult = result;
-
         if (ctx.expressionPart() != null)
         {
-            MutableList<DomainParserGrammar.ArithmeticPartContext> arth = FastList.newList();
-            MutableList<DomainParserGrammar.BooleanPartContext> bool = FastList.newList();
+            ValueSpecification boolResult = result;
+            ValueSpecification arithResult = result;
+            MutableList<DomainParserGrammar.ArithmeticPartContext> arth = Lists.mutable.empty();
+            MutableList<DomainParserGrammar.BooleanPartContext> bool = Lists.mutable.empty();
 
             //Invariant: arth and bool cannot both contains elements at the same time: either we have processed arith, or bool and have moved onto the next grouping
             for (DomainParserGrammar.ExpressionPartContext epCtx : ctx.expressionPart())
@@ -916,7 +891,7 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
+        PackageableElementPtr newClass = new PackageableElementPtr();
         newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection(keyExpressions);
@@ -927,7 +902,7 @@ public class DomainParseTreeWalker
 
     private MutableList<ValueSpecification> processExpressionInstanceParserPropertyAssignments(List<DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext> keyExpressions, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        MutableList<ValueSpecification> values = FastList.newList();
+        MutableList<ValueSpecification> values = Lists.mutable.empty();
         for (DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext val : keyExpressions)
         {
             KeyExpression v = new KeyExpression();
@@ -960,41 +935,29 @@ public class DomainParseTreeWalker
         {
             return this.combinedExpression(ctx.combinedExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        else if (ctx.atomicExpression() != null)
+        if (ctx.atomicExpression() != null)
         {
             return this.atomicExpression(ctx.atomicExpression(), typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        else if (ctx.notExpression() != null)
+        if (ctx.notExpression() != null)
         {
             return this.notExpression(ctx.notExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
-        else if (ctx.signedExpression() != null)
+        if (ctx.signedExpression() != null)
         {
             return this.signedExpression(ctx.signedExpression(), exprName, typeParametersNames, lambdaContext, space, addLines);
         }
-        else if (ctx.expressionsArray() != null)
+        if (ctx.expressionsArray() != null)
         {
-            List<ValueSpecification> expressions = Lists.mutable.of();
-            for (DomainParserGrammar.ExpressionContext eCtx : ctx.expressionsArray().expression())
-            {
-                expressions.add(this.expression(eCtx, exprName, typeParametersNames, lambdaContext, space, false, addLines));
-            }
-            return this.collect(expressions, walkerSourceInformation.getSourceInformation(ctx));
+            List<ValueSpecification> expressions = ListIterate.collect(ctx.expressionsArray().expression(), eCtx -> expression(eCtx, exprName, typeParametersNames, lambdaContext, space, false, addLines));
+            return collect(expressions, this.walkerSourceInformation.getSourceInformation(ctx));
         }
-        else
-        {
-            throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-
+        throw new EngineException(ctx.getText() + " is not supported", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private ValueSpecification expression(DomainParserGrammar.ExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result;
-
-        List<ValueSpecification> parameters;
-
-        result = nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        ValueSpecification result = nonArrowOrEqual(ctx.nonArrowOrEqualExpression(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
 
         if (ctx.propertyOrFunctionExpression() != null)
         {
@@ -1012,10 +975,9 @@ public class DomainParseTreeWalker
                         throw new EngineException("Bracket operation is not supported", walkerSourceInformation.getSourceInformation(pfCtx.propertyBracketExpression()), EngineErrorType.PARSER);
                     }
                     String getPropertyName = "oneString";
-                    parameters = new ArrayList<>();
                     AppliedProperty appliedProperty = new AppliedProperty();
                     appliedProperty.property = getPropertyName;
-                    appliedProperty.parameters = Lists.mutable.of(result).withAll(parameters);
+                    appliedProperty.parameters = Lists.mutable.with(result);
                     if (pfCtx.propertyBracketExpression().STRING() != null)
                     {
                         CString instance = getInstanceString(pfCtx.propertyBracketExpression().STRING().getText());
@@ -1035,7 +997,7 @@ public class DomainParseTreeWalker
                 {
                     for (int i = 0; i < pfCtx.functionExpression().qualifiedName().size(); i++)
                     {
-                        parameters = this.functionExpressionParameters(pfCtx.functionExpression().functionExpressionParameters(i), typeParametersNames, lambdaContext, addLines, space);
+                        List<ValueSpecification> parameters = this.functionExpressionParameters(pfCtx.functionExpression().functionExpressionParameters(i), typeParametersNames, lambdaContext, addLines, space);
                         parameters.add(0, result);
                         result = this.functionExpression(pfCtx.functionExpression().qualifiedName(i), parameters);
                     }
@@ -1052,7 +1014,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification propertyExpression(DomainParserGrammar.PropertyExpressionContext ctx, ValueSpecification result, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
-        List<ValueSpecification> parameters = new ArrayList<>();
+        List<ValueSpecification> parameters = Lists.mutable.empty();
         DomainParserGrammar.IdentifierContext property = ctx.identifier();
         ValueSpecification parameter;
         if (ctx.functionExpressionParameters() != null)
@@ -1223,141 +1185,114 @@ public class DomainParseTreeWalker
 
     private List<ValueSpecification> functionExpressionParameters(DomainParserGrammar.FunctionExpressionParametersContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        List<ValueSpecification> parameters = new ArrayList<>();
-        for (DomainParserGrammar.CombinedExpressionContext ceCtx : ctx.combinedExpression())
-        {
-            parameters.add(this.combinedExpression(ceCtx, "param", typeParametersNames, lambdaContext, space, true, addLines));
-        }
-        return parameters;
+        return ListIterate.collect(ctx.combinedExpression(), ceCtx -> combinedExpression(ceCtx, "param", typeParametersNames, lambdaContext, space, true, addLines));
     }
 
     private ValueSpecification instanceLiteralToken(DomainParserGrammar.InstanceLiteralTokenContext ctx, boolean wrapFlag)
     {
-        ValueSpecification result;
-        try
+        if (ctx.STRING() != null)
         {
-            if (ctx.STRING() != null)
-            {
-                CString instance = getInstanceString(ctx.getText());
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
-            }
-            else if (ctx.INTEGER() != null)
-            {
-                CInteger instance = getInstanceInteger(ctx.getText());
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
-            }
-            else if (ctx.FLOAT() != null)
-            {
-                CFloat instance = getInstanceFloat(ctx.getText());
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
-            }
-            else if (ctx.DECIMAL() != null)
-            {
-                CFloat instance = getInstanceFloat(ctx.getText());
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
-            }
-            else if (ctx.DATE() != null)
-            {
-                result = new DateParseTreeWalker(ctx.DATE(), this.walkerSourceInformation).visitDefinition();
-            }
-            else if (ctx.STRICTTIME() != null)
-            {
-                result = new StrictTimeParseTreeWalker(ctx.STRICTTIME(), this.walkerSourceInformation).visitStrictTimeDefinition();
-            }
-            else if (ctx.BOOLEAN() != null)
-            {
-                CBoolean instance = new CBoolean(Boolean.parseBoolean(ctx.getText()));
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
-            }
-            else
-            {
-                throw new RuntimeException("TODO");
-            }
+            CString instance = getInstanceString(ctx.getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            return instance;
         }
-        catch (Exception e)
+        if (ctx.INTEGER() != null)
         {
-            throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            CInteger instance = getInstanceInteger(ctx.getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            return instance;
         }
-        return result;
+        if (ctx.FLOAT() != null)
+        {
+            CFloat instance = getInstanceFloat(ctx.getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            return instance;
+        }
+        if (ctx.DECIMAL() != null)
+        {
+            CFloat instance = getInstanceFloat(ctx.getText());
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            return instance;
+        }
+        if (ctx.DATE() != null)
+        {
+            return new DateParseTreeWalker(ctx.DATE(), this.walkerSourceInformation).visitDefinition();
+        }
+        if (ctx.STRICTTIME() != null)
+        {
+            return new StrictTimeParseTreeWalker(ctx.STRICTTIME(), this.walkerSourceInformation).visitStrictTimeDefinition();
+        }
+        if (ctx.BOOLEAN() != null)
+        {
+            CBoolean instance = new CBoolean(Boolean.parseBoolean(ctx.getText()));
+            instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            return instance;
+        }
+        throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private ValueSpecification atomicExpression(DomainParserGrammar.AtomicExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        ValueSpecification result = null;
-        ListIterable<ValueSpecification> dsl;
-        Variable expr;
-        List<Variable> expressions = Lists.mutable.of();
         if (ctx.instanceLiteralToken() != null)
         {
-            result = this.instanceLiteralToken(ctx.instanceLiteralToken(), wrapFlag);
+            return instanceLiteralToken(ctx.instanceLiteralToken(), wrapFlag);
         }
-        else if (ctx.dsl() != null)
+        if (ctx.dsl() != null)
         {
-            dsl = this.visitDsl(ctx.dsl(), this.walkerSourceInformation);
+            ListIterable<ValueSpecification> dsl = visitDsl(ctx.dsl(), this.walkerSourceInformation);
             assert dsl != null;
             if (dsl.size() > 1)
             {
                 throw new EngineException("Only expected one graph fetch tree", walkerSourceInformation.getSourceInformation(ctx.dsl()), EngineErrorType.PARSER);
             }
-            result = dsl.getFirst();
+            return dsl.getFirst();
         }
-        else if (ctx.expressionInstance() != null)
+        if (ctx.expressionInstance() != null)
         {
-            result = this.newFunction(ctx.expressionInstance(), typeParametersNames, lambdaContext, addLines, space);
+            return newFunction(ctx.expressionInstance(), typeParametersNames, lambdaContext, addLines, space);
         }
-        else if (ctx.variable() != null)
+        if (ctx.variable() != null)
         {
-            result = this.variable(ctx.variable());
+            return variable(ctx.variable());
         }
-        else if (ctx.type() != null)
+        if (ctx.type() != null)
         {
             if (ctx.type().unitName() != null)
             {
-                result = this.unitTypeReference(ctx.type());
+                return unitTypeReference(ctx.type());
             }
-            else if (ctx.type().typeArguments() != null && !ctx.type().typeArguments().type().get(0).columnType().isEmpty())
+            if (ctx.type().typeArguments() != null && !ctx.type().typeArguments().type().get(0).columnType().isEmpty())
             {
-                result = this.processRelationColumnTypes(ctx.type());
+                return processRelationColumnTypes(ctx.type());
             }
-            else
-            {
-                result = this.typeReference(ctx.type());
-            }
+            return typeReference(ctx.type());
         }
-        else if (ctx.anyLambda() != null)
+        if (ctx.anyLambda() != null)
         {
-            result = this.processLambda(ctx.anyLambda(), typeParametersNames, lambdaContext, space, addLines, wrapFlag, expressions);
+            return processLambda(ctx.anyLambda(), typeParametersNames, lambdaContext, space, addLines, wrapFlag, Lists.mutable.empty());
         }
-        else if (ctx.instanceReference() != null)
+        if (ctx.instanceReference() != null)
         {
-            result = this.instanceReference(ctx.instanceReference(), typeParametersNames, lambdaContext, space, addLines);
+            return instanceReference(ctx.instanceReference(), typeParametersNames, lambdaContext, space, addLines);
         }
-        else if (ctx.columnBuilders() != null)
+        if (ctx.columnBuilders() != null)
         {
             DomainParserGrammar.OneColSpecContext oneColSpec = ctx.columnBuilders().oneColSpec();
             DomainParserGrammar.ColSpecArrayContext colSpecArray = ctx.columnBuilders().colSpecArray();
             if (oneColSpec != null)
             {
-                ColSpec colSpec = processOneColSpec(oneColSpec, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
-                result = DomainParseTreeWalker.wrapWithClassInstance(colSpec, colSpec.sourceInformation, "colSpec");
+                ColSpec colSpec = processOneColSpec(oneColSpec, typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
+                return DomainParseTreeWalker.wrapWithClassInstance(colSpec, colSpec.sourceInformation, "colSpec");
             }
-            else if (colSpecArray != null)
+            if (colSpecArray != null)
             {
                 ColSpecArray colSpecArr = new ColSpecArray();
                 colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.of()));
-                result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
+                return DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, this.walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
             }
-            else
-            {
-                throw new RuntimeException("No Possible");
-            }
+            throw new RuntimeException("Not Possible");
         }
-        return result;
+        return null;
     }
 
     private Lambda processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
@@ -1441,7 +1376,7 @@ public class DomainParseTreeWalker
                 EmbeddedPureParser embeddedPureParser = this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParser(openTag);
                 if (embeddedPureParser == null)
                 {
-                    throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                    throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(EmbeddedPureParser::getType).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
                 }
                 String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), RuleContext::getText).makeString("").trim();
                 return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions()), sourceInformation));
@@ -1550,52 +1485,32 @@ public class DomainParseTreeWalker
      */
     private ValueSpecification instanceReference(DomainParserGrammar.InstanceReferenceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
-        ValueSpecification instance = null;
+        ValueSpecification instance;
         if (ctx.qualifiedName() != null)
         {
-            FastList<String> primitiveTypes = FastList.newListWith("Integer", "Boolean", "Date", "DateTime", "Float", "StrictTime", "StrictDate", "Decimal", "LatestDate", "String", "Number");
+            // Resolve the element full path, if we know it has a (all) function call after it, we will enforce that it is a Class, otherwise, it is a PackageableElement.
             String fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-            // Resolve the element full path, if we know it has a (all) function call after it, we will enforce that it is a class, otherwise, it is either an enumeration or a class.
-            if (ctx.allOrFunction() != null)
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr _class = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
-                _class.fullPath = fullPath;
-                _class.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                instance = _class;
-            }
-            else if (primitiveTypes.contains(fullPath))  // is Primitive
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr primitiveType = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
-                primitiveType.fullPath = fullPath;
-                primitiveType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                instance = primitiveType;
-
-            }
-            else //Unknown or Enum
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr packageElementPtr = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
-                packageElementPtr.fullPath = fullPath;
-                packageElementPtr.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-                instance = packageElementPtr;
-            }
-
+            instance = new PackageableElementPtr(fullPath);
+            instance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
         }
         else if (ctx.unitName() != null)
         {
-            String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
-            PackageableElementPtr _unit = new PackageableElementPtr();
-            _unit.fullPath = fullPath;
-            _unit.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.unitName());
-            instance = _unit;
+            String fullMeasurePath = PureGrammarParserUtility.fromQualifiedName(ctx.unitName().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.unitName().qualifiedName().packagePath().identifier(), ctx.unitName().qualifiedName().identifier());
+            String fullPath = fullMeasurePath + TILDE + ctx.unitName().identifier().getText();
+            instance = new UnitType(fullPath, this.walkerSourceInformation.getSourceInformation(ctx.unitName()));
+        }
+        else
+        {
+            instance = null;
         }
         if (ctx.allOrFunction() != null)
         {
             if (instance == null)
             {
                 // NOTE: due to some weird parsing rule in Pure M3, we are allowed to have `::.all()`
-                throw new EngineException("Expected a non-empty function caller", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                throw new EngineException("Expected a non-empty function caller", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
             }
-            instance = this.allOrFunction(ctx.allOrFunction(), Lists.mutable.of(instance), ctx.qualifiedName(), typeParametersNames, lambdaContext, space, addLines);
+            return allOrFunction(ctx.allOrFunction(), instance, ctx.qualifiedName(), typeParametersNames, lambdaContext, space, addLines);
         }
         return instance;
     }
@@ -1605,7 +1520,7 @@ public class DomainParseTreeWalker
         String fullPath = ctx.getText();
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
         genericTypeInstance.fullPath = fullPath;
-        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
 
@@ -1614,7 +1529,7 @@ public class DomainParseTreeWalker
         String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
         genericTypeInstance.fullPath = fullPath;
-        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
 
@@ -1642,16 +1557,15 @@ public class DomainParseTreeWalker
         return genericTypeInstance;
     }
 
-    private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, List<? extends ValueSpecification> params, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
+    private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, ValueSpecification instance, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)
     {
         AppliedFunction appliedFunction = new AppliedFunction();
-        appliedFunction.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        appliedFunction.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
         // NOTE: no matter what instance turned out to be (either enumeration or class), we will take it as class here since only class allows function calling (e.g. `Person.all()`)
-        List<ValueSpecification> parameters;
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr cl = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
-        cl.fullPath = ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr) params.get(0)).fullPath;
-        cl.sourceInformation = params.get(0).sourceInformation;
+        PackageableElementPtr cl = new PackageableElementPtr();
+        cl.fullPath = ((PackageableElementPtr) instance).fullPath;
+        cl.sourceInformation = instance.sourceInformation;
         appliedFunction.parameters = Lists.mutable.with(cl);
 
         if (ctx.allFunction() != null)
@@ -1659,43 +1573,39 @@ public class DomainParseTreeWalker
             appliedFunction.function = "getAll";
             return appliedFunction;
         }
-        else if (ctx.allVersionsFunction() != null)
+        if (ctx.allVersionsFunction() != null)
         {
             appliedFunction.function = "getAllVersions";
             return appliedFunction;
         }
-        else if (ctx.allVersionsInRangeFunction() != null)
+        if (ctx.allVersionsInRangeFunction() != null)
         {
-            throw new EngineException(ctx.allVersionsInRangeFunction().getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx.allVersionsInRangeFunction()), EngineErrorType.PARSER);
+            throw new EngineException(ctx.allVersionsInRangeFunction().getText() + " is not supported", this.walkerSourceInformation.getSourceInformation(ctx.allVersionsInRangeFunction()), EngineErrorType.PARSER);
         }
-        else if (ctx.allFunctionWithMilestoning() != null)
+        if (ctx.allFunctionWithMilestoning() != null)
         {
             appliedFunction.function = "getAll";
-            appliedFunction.parameters.addAll(ListIterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b ->
+            Iterate.collect(ctx.allFunctionWithMilestoning().buildMilestoningVariableExpression(), b ->
             {
                 if (b.variable() != null)
                 {
                     return variable(b.variable());
                 }
-                else if (b.DATE() != null)
+                if (b.DATE() != null)
                 {
                     return new DateParseTreeWalker(b.DATE(), this.walkerSourceInformation).visitDefinition();
                 }
-                else
-                {
-                    CLatestDate latestDate = new CLatestDate();
-                    latestDate.sourceInformation = walkerSourceInformation.getSourceInformation(b);
-                    latestDate.multiplicity = getMultiplicityOneOne();
-                    return latestDate;
-                }
-            }));
+
+                CLatestDate latestDate = new CLatestDate();
+                latestDate.sourceInformation = this.walkerSourceInformation.getSourceInformation(b);
+                latestDate.multiplicity = getMultiplicityOneOne();
+                return latestDate;
+            }, appliedFunction.parameters);
             return appliedFunction;
         }
-        else
-        {
-            parameters = this.functionExpressionParameters(ctx.functionExpressionParameters(), typeParametersNames, lambdaContext, addLines, space);
-            return this.functionExpression(funcName, parameters);
-        }
+
+        List<ValueSpecification> parameters = this.functionExpressionParameters(ctx.functionExpressionParameters(), typeParametersNames, lambdaContext, addLines, space);
+        return this.functionExpression(funcName, parameters);
     }
 
     private Variable variable(DomainParserGrammar.VariableContext ctx)
@@ -1742,7 +1652,7 @@ public class DomainParseTreeWalker
 
     AppliedFunction buildDivide(DomainParserGrammar.ArithmeticPartContext ctx, String op, ValueSpecification initialValue, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        List<ValueSpecification> others = new ArrayList<>();
+        List<ValueSpecification> others = Lists.mutable.empty();
         for (DomainParserGrammar.ExpressionContext eCtx : ctx.expression())
         {
             others.add(this.expression(eCtx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines));
@@ -1760,7 +1670,7 @@ public class DomainParseTreeWalker
 
     AppliedFunction buildArithmeticOp(DomainParserGrammar.ArithmeticPartContext ctx, String op, ValueSpecification initialValue, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        List<ValueSpecification> others = new ArrayList<>();
+        List<ValueSpecification> others = Lists.mutable.empty();
         for (DomainParserGrammar.ExpressionContext eCtx : ctx.expression())
         {
             others.add(this.expression(eCtx, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines));

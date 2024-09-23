@@ -84,12 +84,13 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
 {
    let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
    let modelToModelMappings = $mappings->init();
+
    let sourceMapping = $mappings->last()->toOne();
    let funcBody = $f.expressionSequence->at(0)->evaluateAndDeactivate();
    let updatedFuncBody = $funcBody->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions);
    let propertyTrees = $updatedFuncBody->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions);
 
-   let reprocessedFuncBody = if($modelToModelMappings->isEmpty(),
+   let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && $mappings->size() == 1,
                                 |$updatedFuncBody,
                                 |$updatedFuncBody->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res);
 
@@ -98,10 +99,11 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
                             | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
                             | scanRelations($propertyTrees->last()->toOne(), $sourceMapping));
 
+   let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
    ^FunctionAnalytics
    (
       databaseLineage = $f->toFlowDatabase($sourceMapping, $propertyTrees->last()->toOne(), $r)->toGraph(),
-      classLineage = $f->toFlowClass($propertyTrees->at(0), $modelToModelMappings)->toGraph(),
+      classLineage = $f->toFlowClass($propertyTrees->at(0), $classLineageMapping)->toGraph(),
       functionTrees = $propertyTrees,
       relationTree = $relationTree,
       reportLineage = buildReportLineage($reprocessedFuncBody, $sourceMapping)
@@ -189,7 +191,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
          let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
          let maturityTests = maturityTests();
          ^Flow(
-            functions = $f,
+            functions = if($tables->size() == 0 && $dbs->size() == 0, | [], | $f),
             databases = $dbs,
             tables = $tables->cast(@NamedRelation),
             links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
@@ -218,7 +220,11 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                              sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()););
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
-                                                         | $propertyMappings->cast(@RelationalPropertyMapping)->map(pm|$pm->meta::analytics::lineage::flowDatabase::getTables());,
+                                                         | $propertyMappings->map(pm |$pm->match([
+                                                                                              rpm: RelationalPropertyMapping[1] | $rpm->meta::analytics::lineage::flowDatabase::getTables(),
+                                                                                              ppm: PurePropertyMapping[1] | [],
+                                                                                              a: Any[*] | fail('Database lineage not support for given type of mapping: ' + $pm->typeName()); [];
+                                                                                             ])),
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
                                                        );,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),

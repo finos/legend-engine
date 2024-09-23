@@ -18,41 +18,56 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Unit_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 public class HelperMeasureBuilder
 {
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit processUnitPackageableElementFirstPass(Unit unit, CompileContext context)
     {
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit targetUnit = new Root_meta_pure_metamodel_type_Unit_Impl(unit.name, SourceInformationHelper.toM3SourceInformation(unit.sourceInformation), null);
-        context.pureModel.typesIndex.put(context.pureModel.buildPackageString(unit._package, unit.name), targetUnit);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(targetUnit);
-        context.pureModel.typesGenericTypeIndex.put(context.pureModel.buildPackageString(unit._package, unit.name), genericType);
-        GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Unit"));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit res = targetUnit._classifierGenericType(unitGenericType);
-        return context.pureModel.setNameAndPackage(res, unit.name, unit._package, unit.sourceInformation);
+        Class<?> unitClass = context.pureModel.getClass(M3Paths.Unit);
+        Class<?> genericTypeClass = context.pureModel.getClass(M3Paths.GenericType);
+
+        SourceInformation sourceInfo = SourceInformationHelper.toM3SourceInformation(unit.sourceInformation);
+        GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", sourceInfo, genericTypeClass)._rawType(unitClass);
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit targetUnit = new Root_meta_pure_metamodel_type_Unit_Impl(unit.name, sourceInfo, unitClass)
+                ._name(unit.name)
+                ._classifierGenericType(classifierGenericType);
+
+        String unitPath = buildUnitPath(unit, context);
+        context.pureModel.typesIndex.put(unitPath, targetUnit);
+        context.pureModel.typesGenericTypeIndex.put(unitPath, new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, genericTypeClass)._rawType(targetUnit));
+        return targetUnit;
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit processUnitPackageableElementSecondPass(Unit unit, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit targetUnit = context.resolveUnit(context.pureModel.buildPackageString(unit._package, unit.name), unit.sourceInformation);
+        String unitPath = buildUnitPath(unit, context);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit targetUnit = context.resolveUnit(unitPath, unit.sourceInformation);
         targetUnit._measure(context.resolveMeasure(unit.measure, unit.sourceInformation));
         if (unit.conversionFunction != null)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> newLambda;
-            String lambdaSrcId = context.pureModel.buildPackageString(unit._package, unit.name).replace("::", "_");
+            String lambdaSrcId = unitPath.replace("::", "_");
             SourceInformation si = new SourceInformation(lambdaSrcId, 0, 0, 0, 0);
-            ProcessingContext pctx = new ProcessingContext("Unit '" + context.pureModel.buildPackageString(unit._package, unit.name));
+            ProcessingContext pctx = new ProcessingContext("Unit '" + unitPath + "'");
             ListIterate.forEach(unit.conversionFunction.parameters, param -> pctx.addInferredVariables(param.name, HelperModelBuilder.createVariableValueSpecification(context, param.name)));
 
             pctx.push("Unit lambda function for " + unit.name);
-            newLambda = HelperValueSpecificationBuilder.buildLambdaWithContext(unit.name, unit.conversionFunction.body, unit.conversionFunction.parameters, context, pctx);
+            LambdaFunction<?> newLambda = HelperValueSpecificationBuilder.buildLambdaWithContext(unit.name, unit.conversionFunction.body, unit.conversionFunction.parameters, context, pctx);
             newLambda.setSourceInformation(si);
             pctx.pop();
 
             targetUnit._conversionFunction(newLambda);
         }
         return targetUnit;
+    }
+
+    private static String buildUnitPath(Unit unit, CompileContext context)
+    {
+        return context.pureModel.addPrefixToTypeReference(unit.measure) + "~" + unit.name;
     }
 }

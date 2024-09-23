@@ -19,7 +19,7 @@ import org.junit.Test;
 public class TestDuckDBConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void testDeltaLakeDatabaseConnection()
+    public void testDuckDbDatabaseConnection()
     {
         test("###Connection\n" +
                 "RelationalDatabaseConnection simple::DuckDBConnection\n" +
