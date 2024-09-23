@@ -92,8 +92,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
 
   assertEquals(7, $sources->size());
 
-  println($sources->at(5));
-
   assertEquals( 'package org.finos;\n'+
                 '\n'+
                 'import java.util.Arrays;\n'+
@@ -244,7 +242,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 'public class MultiplicityAndChain_Child\n'+
                 '{\n'+
                 '    public Long potentialVal;\n'+
-                '    public long val;\n'+
+                '    public Long val;\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
@@ -271,7 +269,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '\n'+
                 'public abstract class MultiplicityAndChain_Parent\n'+
                 '{\n'+
-                '    public double ok;\n'+
+                '    public Double ok;\n'+
                 '    public SomeEnum enumVal;\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+

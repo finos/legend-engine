@@ -275,19 +275,10 @@ function <<access.private>> meta::protocols::generation::java::translation::chec
 
 function meta::protocols::generation::java::conventions(purePackage:String[1], javaPackage:String[1], basePackageStr:String[1]):Conventions[1]
 {
-  let library = newConventionsLibrary()
-                ->usesInteger(javaLong(), javaLongBoxed(), {i:Integer[1] | j_long($i)})
-                ->usesFloat(javaDouble(), javaDoubleBoxed(), {f:Float[1] | j_double($f)})
-                ->usesBoolean(javaBoolean(), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
-                ->usesNumber(javaNumber(), javaNumber(), {n:Number[1] |  ^Literal(literal=$n->toString(), type=javaNumber())})
-                ->usesString(javaString(), javaString(), {s:String[1]| j_string($s)})
-                ->usesDecimal(javaBigDecimal(), javaBigDecimal(), {d:Decimal[1]| j_bigDecimal($d)});
-
-  let base = meta::pure::executionPlan::platformBinding::legendJava::engineConventions([]);
+  let base = meta::pure::executionPlan::platformBinding::legendJava::engineConventions([], true);
 
   ^$base(useGetterForPropertyAccess = false)
   ->conventionsCoreProvidedTypes()
-  ->registerLibrary($library)
   ->setBasePackageName($javaPackage)
   ->setTypeAndPackageNameStrategy(
       {t,c|
