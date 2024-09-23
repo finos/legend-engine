@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-changetoken</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.57.2-SNAPSHOT</version>
+        <version>4.58.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

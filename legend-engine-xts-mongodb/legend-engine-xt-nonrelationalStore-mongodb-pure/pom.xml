@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.57.2-SNAPSHOT</version>
+        <version>4.58.0</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
