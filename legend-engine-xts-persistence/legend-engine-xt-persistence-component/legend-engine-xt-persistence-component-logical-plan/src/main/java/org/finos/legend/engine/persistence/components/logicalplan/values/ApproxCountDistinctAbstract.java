@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,35 +14,18 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum FunctionName
+import java.util.List;
+
+@org.immutables.value.Value.Immutable
+@org.immutables.value.Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface ApproxCountDistinctAbstract extends Value
 {
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    DISTINCT,
-    COALESCE,
-    CURRENT_TIME,
-    CURRENT_DATE,
-    HASH,
-    CURRENT_TIMESTAMP,
-    UPPER,
-    ROW_NUMBER,
-    DENSE_RANK,
-    SUBSTRING,
-    PARSE_JSON,
-    DATE,
-    DATE_TRUNC,
-    DATETIME_TRUNC,
-    TIMESTAMP_TRUNC,
-    RANGE_BUCKET,
-    GENERATE_ARRAY,
-    PARSE_DATETIME,
-    OBJECT_CONSTRUCT,
-    ARRAY_CONSTRUCT,
-    TO_VARIANT,
-    TO_JSON,
-    CONVERT,
-    STRUCT,
-    APPROX_COUNT_DISTINCT;
+    @org.immutables.value.Value.Parameter(order = 0)
+    List<FieldValue> parameters();
 }

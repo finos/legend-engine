@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithAllColumns;
@@ -106,6 +107,64 @@ public class LogicalPlanFactoryTest
         List<String> list = physicalPlan.getSqlList();
 
         String expectedQuery = "SELECT * FROM batch_metadata as batch_metadata WHERE (batch_metadata.\"ingest_request_id\" = '123xyz') AND (batch_metadata.\"table_name\" = 'main')";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+    }
+
+    @Test
+    public void testLogicalPlanForDistinct()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForApproxDistinctCount(dataset, Arrays.asList("col_int", "col_char"));
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedQuery = "SELECT APPROX_COUNT_DISTINCT(\"col_int\",\"col_char\") FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+
+        logicalPlan = LogicalPlanFactory.getLogicalPlanForDistinctValues(dataset, Arrays.asList("col_int", "col_char"));
+        physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        list = physicalPlan.getSqlList();
+
+        expectedQuery = "SELECT DISTINCT \"col_int\",\"col_char\" FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+    }
+
+    @Test
+    public void testLogicalPlanForDistinctWithDerivedDataset()
+    {
+        DerivedDataset dataset = DerivedDataset.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .addDatasetFilters(DatasetFilter.of("col_int", FilterType.GREATER_THAN_EQUAL, 1))
+                .addDatasetFilters(DatasetFilter.of("col_int", FilterType.LESS_THAN_EQUAL, 3))
+                .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForApproxDistinctCount(dataset, Arrays.asList("col_int", "col_char"));
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedQuery = "SELECT APPROX_COUNT_DISTINCT(\"col_int\",\"col_char\") FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias " +
+                "WHERE (my_alias.\"col_int\" >= 1) AND (my_alias.\"col_int\" <= 3)";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+
+        logicalPlan = LogicalPlanFactory.getLogicalPlanForDistinctValues(dataset, Arrays.asList("col_int", "col_char"));
+        physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        list = physicalPlan.getSqlList();
+
+        expectedQuery = "SELECT DISTINCT \"col_int\",\"col_char\" FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias " +
+                "WHERE (my_alias.\"col_int\" >= 1) AND (my_alias.\"col_int\" <= 3)";
         Assertions.assertEquals(expectedQuery, list.get(0));
     }
 
