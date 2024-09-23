@@ -145,7 +145,7 @@ function meta::pure::graphFetch::routing::createGetAllApplicationForRootGraphFet
     )->evaluateAndDeactivate();
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::createFunctionApplicationForPropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1]):FunctionExpression[1]
+function meta::pure::graphFetch::routing::createFunctionApplicationForPropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1]):FunctionExpression[1]
 {
    let mapDummyLambda = {x:Class<Any>[1] | $x.name};
    let mapExpr = $mapDummyLambda.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression);

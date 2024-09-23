@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::graphFetch::*;
 import meta::pure::lineage::scanProject::*;
 import meta::pure::mapping::*;
 
@@ -69,6 +70,11 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                                     columns = zip($names->match([s:String[*]|$s, a:Unknown[*]|range(1, $allFuncs->size(),1)->map(z|'unknown_'+$z->toString())]),
                                                                                   $allFuncs->match([s:FunctionDefinition<Any>[*]|$s, a:Unknown[*]|[]]))
                                                           );
+                                                      ),
+                                                      pair('meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_',
+                                                        | 
+                                                          let tree = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
+                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->cast(@RootGraphFetchTree<Any>)->toOne()));
                                                       )
                                                     ];
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
@@ -97,6 +103,37 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
    ]
   );
 }
+
+function <<access.private>> meta::pure::lineage::scanProject::scanRootGraphFetchTree(root:meta::pure::graphFetch::RootGraphFetchTree<Any>[1]):Pair<String, FunctionDefinition<Any>>[*]
+{
+  let rootGetAllExpression = meta::pure::lineage::scanProject::createGetAllApplicationForRootGraphFetchTree($root);
+  $root.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->recurseForPropertyGraphFetchTree($rootGetAllExpression,$root.class.name->toOne()));
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::recurseForPropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1], name:String[1]):Pair<String, FunctionDefinition<Any>>[*]
+{
+  let propertyApplicationExpression = meta::pure::graphFetch::routing::createFunctionApplicationForPropertyGraphFetchTree($prop, $functionExpression);
+  let propertyName = $name + '.' + $prop.property.name->toOne();
+  if($prop.subTrees->isEmpty(),
+    |  pair($propertyName, ^FunctionDefinition<{->TabularDataSet[1]}>(expressionSequence = $propertyApplicationExpression));,
+    |  $prop.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->recurseForPropertyGraphFetchTree($propertyApplicationExpression,$propertyName));
+  );
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::createGetAllApplicationForRootGraphFetchTree(root: RootGraphFetchTree<Any>[1]):FunctionExpression[1]
+{
+  let getAllExpression = ^SimpleFunctionExpression
+  (
+      func = getAll_Class_1__T_MANY_,
+      functionName = 'getAll',
+      importGroup = system::imports::coreImport,
+      genericType = ^GenericType(rawType = $root.class),
+      multiplicity = ZeroMany,
+      parametersValues =  ^InstanceValue(values = $root.class, genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $root.class)), multiplicity = PureOne)                    
+  )->evaluateAndDeactivate();
+}
+
+
 
 function <<access.private>> meta::pure::lineage::scanProject::scanAggregateValue(val:Any[*]):FunctionDefinition<Any>[*]
 {

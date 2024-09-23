@@ -386,3 +386,14 @@ function meta::analytics::lineage::transformColumns(c: meta::analytics::lineage:
     )
   );
 }
+
+//testing purpose
+function meta::analytics::lineage::ReportLineageToString(reportLineage:ReportLineage[1]):String[1]
+{
+  $reportLineage.columns->map(c | $c.name + $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->removeDuplicates()->sort()->makeString(': [', ', ', ']'))->sort()->joinStrings('[', ', ', ']');
+}
+
+function meta::analytics::lineage::assertLineage(databaseLineage:String[*], classLineage:String[*], reportLineage:String[1], functionAnalytics:FunctionAnalytics[1]):Boolean[1]
+{
+  assertSameElements($databaseLineage, $functionAnalytics.databaseLineage.nodes.data.id) && assertSameElements($classLineage, $functionAnalytics.classLineage.nodes.data.id) && assertEquals($reportLineage, ReportLineageToString($functionAnalytics.reportLineage));
+}
