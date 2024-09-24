@@ -49,7 +49,7 @@ function meta::protocols::generation::java::generateProtocolProject(configJson: 
   let pack = $config.purePackage->pathToElement()->cast(@Package);
   let basePackageStr = $pack->elementToPath('.');
   let conventions = conventions($config.purePackage, $config.javaPackage, $basePackageStr)
-      ->addProvidedTypesFromDependencies($dependencies);
+                    ->addProvidedTypesFromDependencies($dependencies);
   let taxonomies = $pack->findTaxonomies();
   let package = javaPackage($config.javaPackage);
 

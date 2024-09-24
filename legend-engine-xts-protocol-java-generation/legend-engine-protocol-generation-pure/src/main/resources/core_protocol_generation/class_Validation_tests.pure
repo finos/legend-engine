@@ -42,11 +42,13 @@ Enum meta::protocols::generation::java::tests::validate::model::SomeEnum
 Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent
 [
   $this.ok < 2.0,
-  $this.enumVal == SomeEnum.On
+  $this.enumVal == SomeEnum.On,
+  $this.b
 ]
 {
   ok : Float[1];
   enumVal : SomeEnum[1];
+  b : Boolean[1];
 }
 
 Class meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain extends MultiplicityAndChain_Parent
@@ -271,6 +273,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '{\n'+
                 '    public Double ok;\n'+
                 '    public SomeEnum enumVal;\n'+
+                '    public Boolean b;\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
@@ -287,6 +290,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "MultiplicityAndChain_Parent.enumVal",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.enumVal\' can\'t be null"));\n'+
                 '        }\n'+
+                '        if (this.b == null)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '                                           "MultiplicityAndChain_Parent.b",\n'+
+                '                                           "The property \'MultiplicityAndChain_Parent.b\' can\'t be null"));\n'+
+                '        }\n'+
                 '        if (this.ok < 2.0)\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0", "{this|($this.ok < 2.0)}", null));\n'+
@@ -296,6 +305,10 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '            result.add(new ValidationError("1",\n'+
                 '                                           "{this|($this.enumVal == meta::protocols::generation::java::tests::validate::model::SomeEnum->extractEnumValue(\'On\'))}",\n'+
                 '                                           null));\n'+
+                '        }\n'+
+                '        if (this.b)\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("2", "{this|$this.b}", null));\n'+
                 '        }\n'+
                 '        return result;\n'+
                 '    }\n'+

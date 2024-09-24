@@ -256,7 +256,7 @@ function meta::external::language::java::transform::stringType(conventions:Conve
 
 function meta::external::language::java::transform::booleanType(conventions:Conventions[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
-   if($mult == PureOne, |javaBoolean(), | javaBooleanBoxed())->listIfMulti($mult)
+  $conventions->javaType(Boolean, $mult);
 }
 
 function meta::external::language::java::transform::integerType(conventions:Conventions[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
