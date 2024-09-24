@@ -941,7 +941,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'public class Enum\n' +
 		'{\n' +
 		'    public String constant;\n' +
-		'    public long constantNumber;\n' +
+		'    public Long constantNumber;\n' +
 		'}', $sources->at(1));
 
 	assertEquals('package org.finos;\n' +
@@ -961,10 +961,10 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'public class Field\n' +
 		'{\n' +
 		'    public FieldFlag flag;\n' +
-		'    public long binaryFieldNumber;\n' +
+		'    public Long binaryFieldNumber;\n' +
 		'    public String name;\n' +
 		'    public ProtoBufType type;\n' +
-		'    public boolean repeated;\n' +
+		'    public Boolean repeated;\n' +
 		'}', $sources->at(4));
 
 	assertEquals('package org.finos;\n' +
@@ -984,6 +984,16 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'public enum FieldFlag\n' +
 		'{\n' +
 		'    ON,\n' +
-		'    OFF\n' +
+		'    OFF;\n' +
+    '\n'+
+    '    public String getName()\n'+
+    '    {\n'+
+    '        return this.name();\n'+
+    '    }\n'+
+    '\n'+
+    '    public static FieldFlag getEnumFromPureName(String pureName)\n'+
+    '    {\n'+
+    '        return FieldFlag.valueOf(pureName);\n'+
+    '    }\n'+
 		'}', $sources->at(5));
 }

@@ -105,7 +105,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-a")\n'+
                 '    myA,\n'+
                 '\n'+
-                '    myB\n'+
+                '    myB;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static ZEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return ZEnum.valueOf(pureName);\n'+
+                '    }\n'+                
                 '}', $sources->at(4));
 }
 
@@ -167,7 +177,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 'public enum ZEnum\n'+
                 '{\n'+
                 '    myA,\n'+
-                '    myB\n'+
+                '    myB;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static ZEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return ZEnum.valueOf(pureName);\n'+
+                '    }\n'+
                 '}', $sources->at(4));
 }
 
@@ -241,7 +261,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-a")\n'+
                 '    myA,\n'+
                 '\n'+
-                '    myB\n'+
+                '    myB;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static ZEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return ZEnum.valueOf(pureName);\n'+
+                '    }\n'+
                 '}', $sources->at(4));
 }
 
@@ -318,7 +348,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-a")\n'+
                 '    myA,\n'+
                 '\n'+
-                '    myB\n'+
+                '    myB;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static ZEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return ZEnum.valueOf(pureName);\n'+
+                '    }\n'+                
                 '}', $sources->at(4));
 
   assertEquals( 'package org.finos;\n'+

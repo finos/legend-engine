@@ -182,9 +182,9 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 'import java.util.Objects;\n\n'+
                 'public class ClassWithPrimitiveProperties\n'+
                 '{\n'+
-                '    public long value;\n'+
+                '    public Long value;\n'+
                 '    public Long otherValue;\n'+
-                '    public boolean myBoolean;\n'+
+                '    public Boolean myBoolean;\n'+
                 '\n'+
                 '    public boolean equals(Object obj)\n'+
                 '    {\n'+
@@ -197,11 +197,9 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        ClassWithPrimitiveProperties that = (ClassWithPrimitiveProperties) obj;\n'+
-                '        return this.myBoolean == that\n'+
-                '                   .myBoolean && Objects\n'+
-                '                   .equals(this.otherValue, that.otherValue) && this\n'+
-                '                   .value == that\n'+
-                '                   .value;\n'+
+                '        return Objects.equals(this.myBoolean, that.myBoolean) && Objects\n'+
+                '                      .equals(this.otherValue, that.otherValue) && Objects\n'+
+                '                      .equals(this.value, that.value);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -228,7 +226,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '\n'+
                 'public class OtherClass\n'+
                 '{\n'+
-                '    public long value;\n'+
+                '    public Long value;\n'+
                 '\n'+
                 '    public boolean equals(Object obj)\n'+
                 '    {\n'+
@@ -241,7 +239,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        OtherClass that = (OtherClass) obj;\n'+
-                '        return this.value == that.value;\n'+
+                '        return Objects.equals(this.value, that.value);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -283,7 +281,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '            return false;\n'+
                 '        }\n'+
                 '        SubType that = (SubType) obj;\n'+
-                '        return this.prop == that.prop && Objects.equals(this.other, that.other);\n'+
+                '        return Objects.equals(this.prop, that.prop) && Objects.equals(this.other, that.other);\n'+
                 '    }\n'+
                 '\n'+
                 '    public String toString()\n'+
@@ -311,7 +309,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.SubType.class, name="subType")})\n'+
                 'public abstract class SuperType\n'+
                 '{\n'+
-                '    public long prop;\n'+
+                '    public Long prop;\n'+
                 '\n'+
                 '    public abstract <T> T accept(SuperTypeVisitor<T> visitor);\n'+
                 '}', $sources->at(6));
