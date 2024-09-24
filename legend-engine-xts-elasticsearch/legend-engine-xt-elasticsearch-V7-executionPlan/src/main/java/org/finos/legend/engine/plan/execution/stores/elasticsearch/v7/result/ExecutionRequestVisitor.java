@@ -485,7 +485,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
         List<Function<Hit<ObjectNode>, Object>> extractors = columnResultPaths.stream()
-                .map(x -> ElasticsearchTDSResultHelper.hitTransformer(tdsColumns.get((int) x.index), x.resultPath))
+                .map(x -> ElasticsearchTDSResultHelper.hitTransformer(tdsColumns.get((int)(long)x.index), x.resultPath))
                 .collect(Collectors.toList());
 
         return new CollectIterator<>(hits, h -> extractors.stream().map(x -> x.apply(h)).toArray());

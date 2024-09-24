@@ -33,7 +33,7 @@ public class MongoDBConnectionSpecification extends ConnectionSpecification
 
     public List<ServerAddress> getServerAddresses()
     {
-        return this.mongoDBDataSourceSpec.serverURLs.stream().map(x -> new ServerAddress(x.baseUrl, (int) x.port)).collect(Collectors.toList());
+        return this.mongoDBDataSourceSpec.serverURLs.stream().map(x -> new ServerAddress(x.baseUrl, (int)(long)x.port)).collect(Collectors.toList());
     }
 
     public String getDatabaseName()

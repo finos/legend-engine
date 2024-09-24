@@ -75,12 +75,12 @@ Class meta::external::query::sql::metamodel::Union extends meta::external::query
 {
   <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
   <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
-  <<equality.Key>> distinct: Boolean[1];
+  <<equality.Key>> distinct: Boolean[1] = false;
 }
 
 Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
 {
-  <<equality.Key>> distinct: Boolean[1];
+  <<equality.Key>> distinct: Boolean[1] = false;
   <<equality.Key>> selectItems: meta::external::query::sql::metamodel::SelectItem[*];
 }
 
@@ -244,7 +244,7 @@ Class meta::external::query::sql::metamodel::CurrentTime extends meta::external:
 Class meta::external::query::sql::metamodel::FunctionCall extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> name: meta::external::query::sql::metamodel::QualifiedName[1];
-  <<equality.Key>> distinct: Boolean[1];
+  <<equality.Key>> distinct: Boolean[1] = false;
   <<equality.Key>> arguments: meta::external::query::sql::metamodel::Expression[*];
   <<equality.Key>> filter: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> window: meta::external::query::sql::metamodel::Window[0..1];
