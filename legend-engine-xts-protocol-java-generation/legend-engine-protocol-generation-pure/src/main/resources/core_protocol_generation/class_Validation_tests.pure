@@ -122,7 +122,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "ASimpleConstraint.value",\n'+
                 '                                           "The property \'ASimpleConstraint.value\' can\'t be null"));\n'+
                 '        }\n'+
-                '        if (!this.value.startsWith("x") || this.value.endsWith("eee"))\n'+
+                '        if (!(!this.value.startsWith("x") || this.value.endsWith("eee")))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("constraintIdOne",\n'+
                 '                                           "{this|($this.value->startsWith(\'x\')->not() || $this.value->endsWith(\'eee\'))}",\n'+
@@ -153,7 +153,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
                 '        List<ValidationError> result = new ArrayList<ValidationError>();\n'+
-                '        if (!Library.equals(this.value, "bad value"))\n'+
+                '        if (!!Library.equals(this.value, "bad value"))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0",\n'+
                 '                                           "{this|not(($this.value == \'bad value\'))}",\n'+
@@ -266,7 +266,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "MultiplicityAndChain.child",\n'+
                 '                                           "The property \'MultiplicityAndChain.child\' can\'t be null"));\n'+
                 '        }\n'+
-                '        if (Library.equals(this.value, "ok"))\n'+
+                '        if (!Library.equals(this.value, "ok"))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0",\n'+
                 '                                           "{this|($this.value == \'ok\')}",\n'+
@@ -331,7 +331,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "MultiplicityAndChain_Child.val",\n'+
                 '                                           "The property \'MultiplicityAndChain_Child.val\' can\'t be null"));\n'+
                 '        }\n'+
-                '        if (this.val > 2L)\n'+
+                '        if (!(this.val > 2L))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0", "{this|($this.val > 2)}", null));\n'+
                 '        }\n'+
@@ -390,17 +390,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '                                           "MultiplicityAndChain_Parent.b",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.b\' can\'t be null"));\n'+
                 '        }\n'+
-                '        if (this.ok < 2.0)\n'+
+                '        if (!(this.ok < 2.0))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0", "{this|($this.ok < 2.0)}", null));\n'+
                 '        }\n'+
-                '        if (Library.equals(this.enumVal, SomeEnum.getEnumFromPureName("On")))\n'+
+                '        if (!Library.equals(this.enumVal, SomeEnum.getEnumFromPureName("On")))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("1",\n'+
                 '                                           "{this|($this.enumVal == meta::protocols::generation::java::tests::validate::model::SomeEnum->extractEnumValue(\'On\'))}",\n'+
                 '                                           null));\n'+
                 '        }\n'+
-                '        if (this.b)\n'+
+                '        if (!this.b)\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("2", "{this|$this.b}", null));\n'+
                 '        }\n'+

@@ -76,7 +76,12 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
              ->concatenate(
               $c.constraints->map(c|
                 let message = $c.messageFunction->evaluateAndDeactivate().expressionSequence;
-                j_if(meta::external::language::java::transform::generateJava($c.functionDefinition->evaluateAndDeactivate().expressionSequence->toOne(), $context.conventions, noDebug()),
+                let expression = meta::external::language::java::transform::generateJava($c.functionDefinition->evaluateAndDeactivate().expressionSequence->toOne(), $context.conventions, noDebug());
+                let notedExpression = $expression->match([
+                  c:Cast[1]|j_not($c.expression),
+                  c:Code[1]|j_not($c);
+                ]);
+                j_if($notedExpression,
                   j_invoke($resultVar, 'add', j_new($resClass, [j_string($c.name->toOne()),
                                                                 j_string($c.functionDefinition->printFunctionDefinition('')),
                                                                 if($message->isEmpty(), |j_null(), |meta::external::language::java::transform::generateJava($message->toOne(), $context.conventions, noDebug()))
