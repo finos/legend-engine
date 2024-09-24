@@ -284,7 +284,10 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        {\n'+
                 '            result.addAll(val.validate());\n'+
                 '        }\n'+
-                '        result.addAll(this.child.validate());\n'+
+                '        if (this.child != null)\n'+
+                '        {\n'+
+                '            result.addAll(this.child.validate());\n'+
+                '        }\n'+
                 '        if (this.potentialChild != null)\n'+
                 '        {\n'+
                 '            result.addAll(this.potentialChild.validate());\n'+

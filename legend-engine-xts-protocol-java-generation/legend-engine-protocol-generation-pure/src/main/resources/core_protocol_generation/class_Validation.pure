@@ -88,24 +88,15 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                 $c.properties->map(p|
                   if (!$p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType),
                     | let mul = $p->functionReturnMultiplicity()->toOne();
-                      if (
-                        [
-                          pair(
-                            |!$mul->hasLowerBound() && $mul->hasUpperBound() && $mul->getUpperBound() == 1,
-                            |j_if(j_ne(j_field(j_this($base), $p.name->toOne()),j_null()),
+                      if (!$mul->hasUpperBound() || ($mul->hasUpperBound() && ($mul->getUpperBound() > 1)),
+                          |let rawType = $p->functionReturnType().rawType->toOne();
+                            let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($rawType, $context.conventions);
+                            let variable = j_parameter(javaClass([], [], $typeAndPackages.first->javaPackage(), $typeAndPackages.second), 'val');
+                            j_for($variable, j_field(j_this($base), $p.name->toOne()),j_invoke($resultVar,'addAll',j_invoke($variable, 'validate',[], $listType)));,
+                          |j_if(j_ne(j_field(j_this($base), $p.name->toOne()),j_null()),
                               j_invoke($resultVar,'addAll',j_invoke(j_field(j_this($base), $p.name->toOne()),'validate',[],$listType))
-                            )
-                          ),
-                          pair(
-                            |!$mul->hasUpperBound() || ($mul->hasUpperBound() && ($mul->getUpperBound() > 1)),
-                            |let rawType = $p->functionReturnType().rawType->toOne();
-                             let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($rawType, $context.conventions);
-                             let variable = j_parameter(javaClass([], [], $typeAndPackages.first->javaPackage(), $typeAndPackages.second), 'val');
-                             j_for($variable, j_field(j_this($base), $p.name->toOne()),j_invoke($resultVar,'addAll',j_invoke($variable, 'validate',[], $listType)));
-                          )
-                        ],
-                        |j_invoke($resultVar,'addAll',j_invoke(j_field(j_this($base), $p.name->toOne()),'validate',[],$listType))
-                      );,                    
+                           );
+                      );,
                     |[]
                   )
                 )
