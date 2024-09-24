@@ -59,6 +59,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-property")\n'+
                 '    public String myProperty;\n'+
                 '\n'+
+                '    public SubClassA _myProperty(String myProperty)\n'+
+                '    {\n'+
+                '        this.myProperty = myProperty;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+                
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -140,6 +146,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '{\n'+
                 '    public String myProperty;\n'+
                 '\n'+
+                '    public SubClassA _myProperty(String myProperty)\n'+
+                '    {\n'+
+                '        this.myProperty = myProperty;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -215,6 +227,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-property")\n'+
                 '    public String myProperty;\n'+
                 '\n'+
+                '    public SubClassA _myProperty(String myProperty)\n'+
+                '    {\n'+
+                '        this.myProperty = myProperty;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+                
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -301,6 +319,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '    @JsonProperty("my-property")\n'+
                 '    public String myProperty;\n'+
                 '\n'+
+                '    public SubClassA _myProperty(String myProperty)\n'+
+                '    {\n'+
+                '        this.myProperty = myProperty;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+                
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+

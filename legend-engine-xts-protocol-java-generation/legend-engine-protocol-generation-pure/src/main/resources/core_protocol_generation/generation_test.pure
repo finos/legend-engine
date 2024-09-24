@@ -1,4 +1,3 @@
-import meta::protocols::generation::java::translation::*;
 // Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +11,8 @@ import meta::protocols::generation::java::translation::*;
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+import meta::protocols::generation::java::translation::*;
 
 Class meta::protocols::generation::java::tests::model::exclude::ToExclude
 {
@@ -740,6 +741,18 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public T t;\n' +
 		'    public List<V> v = Collections.<V>emptyList();\n' +
+    '\n'+
+    '    public PojoWithGenerics _t(T t)\n'+
+    '    {\n'+
+    '        this.t = t;\n'+
+    '        return this;\n'+
+    '    }\n'+
+    '\n'+
+    '    public PojoWithGenerics _v(List<V> v)\n'+
+    '    {\n'+
+    '        this.v = v;\n'+
+    '        return this;\n'+
+    '    }\n'+
     '\n' +
 		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
 		'}', $sources->at(9));
@@ -757,7 +770,19 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public List<T> t = Collections.<T>emptyList();\n' +
 		'    public List<V> v = Collections.<V>emptyList();\n' +
-    '\n' +   
+    '\n'+
+    '    public PojoWithGenericsAndMult _t(List<T> t)\n'+
+    '    {\n'+
+    '        this.t = t;\n'+
+    '        return this;\n'+
+    '    }\n'+
+    '\n'+
+    '    public PojoWithGenericsAndMult _v(List<V> v)\n'+
+    '    {\n'+
+    '        this.v = v;\n'+
+    '        return this;\n'+
+    '    }\n'+
+    '\n'+
 		'    public abstract <T> T accept(PojoWithGenericsAndMultVisitor<T> visitor);\n' +
 		'}', $sources->at(12));
 
@@ -769,7 +794,13 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'public abstract class PojoWithGenerics2<T> extends PojoWithGenerics<T, String>\n' +
 		'{\n' +
 		'    public List<T> t2 = Collections.<T>emptyList();\n' +
-    '\n' + 
+    '\n' +
+    '    public PojoWithGenerics2 _t2(List<T> t2)\n' +
+    '    {\n' +
+    '        this.t2 = t2;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
 		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
 		'}', $sources->at(10));
 
@@ -793,6 +824,18 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public Number reqFactor;\n' +
 		'    public Number optionalFactor;\n' +
+	  '\n' +
+    '    public PojoWithInheritance _reqFactor(Number reqFactor)\n' +
+    '    {\n' +
+    '        this.reqFactor = reqFactor;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public PojoWithInheritance _optionalFactor(Number optionalFactor)\n' +
+    '    {\n' +
+    '        this.optionalFactor = optionalFactor;\n' +
+    '        return this;\n' +
+    '    }\n' + 
 		'}', $sources->at(16));
 
 	assertEquals('package org.finos.pojo;\n' +
@@ -887,6 +930,18 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public String name;\n' +
 		'    public List<Enum> values = Collections.<Enum>emptyList();\n' +
     '\n' +
+    '    public Enumeration _name(String name)\n' +
+    '    {\n' +
+    '        this.name = name;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Enumeration _values(List<Enum> values)\n' +
+    '    {\n' +
+    '        this.values = values;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
 		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
@@ -904,6 +959,30 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public List<Field> fields = Collections.<Field>emptyList();\n' +
 		'    public List<String> reservedFieldNames = Collections.<String>emptyList();\n' +
 		'    public List<Long> reservedFieldNumbers = Collections.<Long>emptyList();\n' +
+    '\n' +
+    '    public Message _name(String name)\n' +
+    '    {\n' +
+    '        this.name = name;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Message _fields(List<Field> fields)\n' +
+    '    {\n' +
+    '        this.fields = fields;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Message _reservedFieldNames(List<String> reservedFieldNames)\n' +
+    '    {\n' +
+    '        this.reservedFieldNames = reservedFieldNames;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Message _reservedFieldNumbers(List<Long> reservedFieldNumbers)\n' +
+    '    {\n' +
+    '        this.reservedFieldNumbers = reservedFieldNumbers;\n' +
+    '        return this;\n' +
+    '    }\n' +
     '\n' +
 		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
 		'    {\n' +
@@ -942,6 +1021,18 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public String constant;\n' +
 		'    public Long constantNumber;\n' +
+    '\n' +
+    '    public Enum _constant(String constant)\n' +
+    '    {\n' +
+    '        this.constant = constant;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Enum _constantNumber(Long constantNumber)\n' +
+    '    {\n' +
+    '        this.constantNumber = constantNumber;\n' +
+    '        return this;\n' +
+    '    }\n' +
 		'}', $sources->at(1));
 
 	assertEquals('package org.finos;\n' +
@@ -950,6 +1041,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public String name;\n' +
     '\n' +
+    '    public EnumPtr _name(String name)\n'+
+    '    {\n'+
+    '        this.name = name;\n'+
+    '        return this;\n'+
+    '    }\n'+
+    '\n'+
 		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
@@ -965,6 +1062,36 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public String name;\n' +
 		'    public ProtoBufType type;\n' +
 		'    public Boolean repeated;\n' +
+    '\n' +
+    '    public Field _flag(FieldFlag flag)\n' +
+    '    {\n' +
+    '        this.flag = flag;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _binaryFieldNumber(Long binaryFieldNumber)\n' +
+    '    {\n' +
+    '        this.binaryFieldNumber = binaryFieldNumber;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _name(String name)\n' +
+    '    {\n' +
+    '        this.name = name;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _type(ProtoBufType type)\n' +
+    '    {\n' +
+    '        this.type = type;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _repeated(Boolean repeated)\n' +
+    '    {\n' +
+    '        this.repeated = repeated;\n' +
+    '        return this;\n' +
+    '    }\n' +
 		'}', $sources->at(4));
 
 	assertEquals('package org.finos;\n' +
@@ -972,6 +1099,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'public class MessagePtr extends ProtoBufType\n' +
 		'{\n' +
 		'    public String name;\n' +
+    '\n' +
+    '    public MessagePtr _name(String name)\n' +
+    '    {\n' +
+    '        this.name = name;\n' +
+    '        return this;\n' +
+    '    }\n' +
     '\n' +
 		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
 		'    {\n' +

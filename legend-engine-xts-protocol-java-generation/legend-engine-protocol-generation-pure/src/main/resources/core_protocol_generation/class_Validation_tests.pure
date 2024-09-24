@@ -107,6 +107,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '{\n'+
                 '    public String value;\n'+
                 '\n'+
+                '    public ASimpleConstraint _value(String value)\n'+
+                '    {\n'+
+                '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
                 '        List<ValidationError> result = Collections.emptyList();\n'+
@@ -138,6 +144,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '{\n'+
                 '    public String value;\n'+
                 '\n'+
+                '    public ASimpleConstraintLight _value(String value)\n'+
+                '    {\n'+
+                '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
                 '        List<ValidationError> result = Collections.emptyList();\n'+
@@ -167,6 +179,54 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '    public MultiplicityAndChain_Child child;\n'+
                 '    public MultiplicityAndChain_Child potentialChild;\n'+
                 '    public List<MultiplicityAndChain_Child> children = Collections.<MultiplicityAndChain_Child>emptyList();\n'+
+                '\n'+
+                '    public MultiplicityAndChain _value(String value)\n'+
+                '    {\n'+
+                '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _potentialValue(String potentialValue)\n'+
+                '    {\n'+
+                '        this.potentialValue = potentialValue;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _childrenMinOne(List<MultiplicityAndChain_Child> childrenMinOne)\n'+
+                '    {\n'+
+                '        this.childrenMinOne = childrenMinOne;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _childrenInRange(List<MultiplicityAndChain_Child> childrenInRange)\n'+
+                '    {\n'+
+                '        this.childrenInRange = childrenInRange;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _childrenMaxRange(List<MultiplicityAndChain_Child> childrenMaxRange)\n'+
+                '    {\n'+
+                '        this.childrenMaxRange = childrenMaxRange;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _child(MultiplicityAndChain_Child child)\n'+
+                '    {\n'+
+                '        this.child = child;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _potentialChild(MultiplicityAndChain_Child potentialChild)\n'+
+                '    {\n'+
+                '        this.potentialChild = potentialChild;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain _children(List<MultiplicityAndChain_Child> children)\n'+
+                '    {\n'+
+                '        this.children = children;\n'+
+                '        return this;\n'+
+                '    }\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
@@ -246,6 +306,18 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '    public Long potentialVal;\n'+
                 '    public Long val;\n'+
                 '\n'+
+                '    public MultiplicityAndChain_Child _potentialVal(Long potentialVal)\n'+
+                '    {\n'+
+                '        this.potentialVal = potentialVal;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain_Child _val(Long val)\n'+
+                '    {\n'+
+                '        this.val = val;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+                
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+
                 '        List<ValidationError> result = Collections.emptyList();\n'+
@@ -274,6 +346,24 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '    public Double ok;\n'+
                 '    public SomeEnum enumVal;\n'+
                 '    public Boolean b;\n'+
+                '\n'+
+                '    public MultiplicityAndChain_Parent _ok(Double ok)\n'+
+                '    {\n'+
+                '        this.ok = ok;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain_Parent _enumVal(SomeEnum enumVal)\n'+
+                '    {\n'+
+                '        this.enumVal = enumVal;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public MultiplicityAndChain_Parent _b(Boolean b)\n'+
+                '    {\n'+
+                '        this.b = b;\n'+
+                '        return this;\n'+
+                '    }\n'+
                 '\n'+
                 '    public List<ValidationError> validate()\n'+
                 '    {\n'+

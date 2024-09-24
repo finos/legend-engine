@@ -15,6 +15,7 @@
 // --------------- Protocol Classes ---------------------
 
 ###Pure
+import meta::external::language::java::serialization::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::*;
@@ -135,27 +136,47 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
                 $c.properties->map(p|
                       let javaType = pureTypeToJavaType($context.conventions, $p);
                       let javaName = $p.name->toOne()->sanitizeJavaKeywords();
-                      let field = if ($javaType->isJavaList(),
-                        |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
-                        |javaField('public', $javaType, $javaName)
-                      );
+                      let default = $p.defaultValue.functionDefinition.expressionSequence;
+                      let field = if ($default->isNotEmpty(),
+                                    |javaField('public', $javaType, $javaName, $default->at(0)->meta::external::language::java::transform::generateJava($context.conventions, noDebug())),
+                                    |if ($javaType->isJavaList(),
+                                      |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
+                                      |javaField('public', $javaType, $javaName)
+                                    )
+                                  );
                       let jsonName = $p->value4Tag('name', JSON);
                       if ($jsonName->isNotEmpty() && $context.configuration.json.generateJSONAnnotations,
                         |$field->annotate(^meta::external::language::java::metamodel::annotations::json::JsonProperty(
                                             value = $jsonName.value->toOne()
                                          )),
                         |$field
-                      );
+                      );                      
                     )
               );
 
+  let sbase = $pbase->addMethods(
+    $c.properties->map(p|
+        let javaType = pureTypeToJavaType($context.conventions, $p);
+        let javaName = $p.name->toOne()->sanitizeJavaKeywords();
+        let field = $pbase.fields->filter(f | $f.name == $javaName)->toOne();
+        let jfield = j_this($pbase)->j_field($field);   
+        let param  = j_parameter($javaType, $field.name);
+        javaMethod(['public'], $pbase, $context.conventions->setterName($field.name), j_parameter($javaType, $field.name), 
+            [
+              $jfield->j_assign($param),
+              j_return(j_this($pbase))
+            ]
+        );
+    )
+  );            
+
   let base = if (!$taxonomy->isEmpty() && $context.configuration.json.generateJSONAnnotations,
     | let typeKeyword = if ($taxonomy.topClass == $c,
-                              |$pbase->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
+                              |$sbase->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
                                         use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
                                         property = $context.configuration.json.typeKeyword
                                     )),
-                              |$pbase
+                              |$sbase
                         );
       if ([
             pair(|$taxonomy.topClass == $c && $context.configuration.json.subTypeOnTopType,
@@ -176,7 +197,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
           ],|$typeKeyword
         );
     ,
-    | $pbase
+    | $sbase
   );
 
   let superType = $c.generalizations.general;
@@ -277,7 +298,10 @@ function meta::protocols::generation::java::conventions(purePackage:String[1], j
 {
   let base = meta::pure::executionPlan::platformBinding::legendJava::engineConventions([], true);
 
-  ^$base(useGetterForPropertyAccess = false)
+  ^$base(
+    useGetterForPropertyAccess = false,
+    setterNameStrategy = {p:String[1] | '_' + $p->toLowerFirstCharacter()->toOne()}
+  )
   ->conventionsCoreProvidedTypes()
   ->setBasePackageName($javaPackage)
   ->setTypeAndPackageNameStrategy(
