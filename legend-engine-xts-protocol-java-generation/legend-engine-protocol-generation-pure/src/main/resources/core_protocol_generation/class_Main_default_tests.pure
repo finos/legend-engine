@@ -41,7 +41,7 @@ Enum meta::protocols::generation::java::tests::default::model::SomeEnum
   On, Off
 }
 
-function <<test.Test>> meta::protocols::generation::java::tests::validate::testDefault():Boolean[1]
+function <<test.Test>> meta::protocols::generation::java::tests::default::testDefault():Boolean[1]
 {
   let config = ^meta::protocols::generation::java::translation::Configuration(
     purePackage = 'meta::protocols::generation::java::tests::default::model',

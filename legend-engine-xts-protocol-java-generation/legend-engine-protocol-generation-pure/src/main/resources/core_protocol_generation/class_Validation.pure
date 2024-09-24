@@ -26,7 +26,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
   let listType = javaList($resClass);
   let resultVar = j_variable($listType, 'result');
   let taxonomy = $c->findTaxonomy($context.taxonomies);
-  let code = j_declare($resultVar, javaCollections()->j_invoke('emptyList', [], $listType))
+  let code = j_declare($resultVar, j_new(javaArrayList($resClass),[]))
              ->concatenate(
               if($taxonomy->isEmpty() || $taxonomy.topClass == $c, |[], |j_invoke($resultVar,'addAll',j_invoke(j_super(javaObject()),'validate', [], $listType)))
              )
