@@ -188,6 +188,11 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     public void create()
     {
+        create(Optional.empty());
+    }
+
+    public void create(Optional<Long> initialBatchId)
+    {
         // 1. Validate initialization has been performed
         validateInitialization();
 
@@ -195,7 +200,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         createAllDatasets();
 
         // 3. Initialize the lock which will exist for all stages
-        initializeLock();
+        initializeLock(initialBatchId);
     }
 
     /**
@@ -419,7 +424,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         }
     }
 
-    private void initializeLock()
+    private void initializeLock(Optional<Long> initialBatchId)
     {
         LOGGER.info("Concurrent safety is enabled, Initializing lock");
         Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
@@ -427,7 +432,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         try
         {
             LockInfoUtils lockInfoUtils = new LockInfoUtils(lockInfoDataset());
-            SqlPlan initializeLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(lockInfoUtils.initializeLockInfoForMultiIngest(Optional.empty(), BatchStartTimestampAbstract.INSTANCE)));
+            SqlPlan initializeLockSqlPlan = transformer.generatePhysicalPlan(LogicalPlan.of(lockInfoUtils.initializeLockInfoForMultiIngest(initialBatchId, BatchStartTimestampAbstract.INSTANCE)));
             executor.executePhysicalPlan(initializeLockSqlPlan, placeHolderKeyValues);
         }
         catch (Exception e)
