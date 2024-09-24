@@ -44,5 +44,6 @@ public enum FunctionName
     TO_JSON,
     CONVERT,
     STRUCT,
+    CONCAT,
     APPROX_COUNT_DISTINCT;
 }
