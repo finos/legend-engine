@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.relation;
+package org.finos.legend.engine.pure.code.core.functions.json;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
 
-public class TestFunctionsRelationCompiledStateStrategy extends AbstractCompiledStateIntegrityTest
+public class TestFunctionsJsonCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
     public static void initialize()
     {
-        initialize("core_functions_relation");
+        initialize("core_functions_json");
     }
 }
