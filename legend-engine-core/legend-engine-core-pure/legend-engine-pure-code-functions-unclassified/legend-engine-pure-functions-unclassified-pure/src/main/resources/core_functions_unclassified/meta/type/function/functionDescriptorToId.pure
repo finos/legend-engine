@@ -43,9 +43,9 @@ function <<test.Test>> meta::pure::functions::meta::tests::functionDescriptorToI
 function <<test.Test>> meta::pure::functions::meta::tests::functionDescriptorToId::testFunctionDescriptorToIdWithUnits():Boolean[1]
 {
     assertEquals(
-        'my::test::testUnits_Mass~Kilogram_1__Mass~Kilogram_1_',
+        'my::test::testUnits_Mass$Kilogram_1__Mass$Kilogram_1_',
         'my::test::testUnits(Mass~Kilogram[1]):Mass~Kilogram[1]'->functionDescriptorToId());
     assertEquals(
-        'my::test::testUnits_Mass~Kilogram_1__Mass~Kilogram_1_',
+        'my::test::testUnits_Mass$Kilogram_1__Mass$Kilogram_1_',
         'my::test::testUnits( Mass ~ Kilogram [1..1] ) : Mass~Kilogram[1]'->functionDescriptorToId());
 }
