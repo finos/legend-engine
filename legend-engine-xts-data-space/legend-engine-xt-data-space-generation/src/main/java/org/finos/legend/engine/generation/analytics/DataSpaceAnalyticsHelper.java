@@ -51,6 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
@@ -233,7 +234,12 @@ public class DataSpaceAnalyticsHelper
                                     dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
                             mapping = executionContext._mapping();
                             runtime = executionContext._defaultRuntime()._runtimeValue();
-                            functionPointerExecutableInfo.query = _el.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
+                            Lambda lambda = new Lambda();
+                            lambda.body = new ArrayList<>();
+                            lambda.body.addAll(((Function) _el).body);
+                            lambda.parameters = new ArrayList<>();
+                            lambda.parameters.addAll(((Function) _el).parameters);
+                            functionPointerExecutableInfo.query = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
                             executableAnalysisResult.info = functionPointerExecutableInfo;
                         }
                         else
