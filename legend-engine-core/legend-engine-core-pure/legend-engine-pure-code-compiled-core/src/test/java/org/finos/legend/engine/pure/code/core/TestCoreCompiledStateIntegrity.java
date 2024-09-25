@@ -35,15 +35,6 @@ public class TestCoreCompiledStateIntegrity extends AbstractCompiledStateIntegri
     @Test
     @Ignore
     @Override
-    public void testPackageHasChildrenWithDuplicateNames()
-    {
-        // TODO fix this test
-        super.testPackageHasChildrenWithDuplicateNames();
-    }
-
-    @Test
-    @Ignore
-    @Override
     public void testReferenceUsages()
     {
         // TODO fix this test
