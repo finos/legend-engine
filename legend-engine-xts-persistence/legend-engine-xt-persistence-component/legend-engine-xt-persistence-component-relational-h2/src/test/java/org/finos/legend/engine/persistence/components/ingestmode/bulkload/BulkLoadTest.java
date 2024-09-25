@@ -305,7 +305,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
                 "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
                 "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
-                "LAKEHOUSE_MD5(ARRAY['col_datetime','col_decimal','col_int','col_string'],ARRAY[\"col_datetime\",\"col_decimal\",\"col_int\",\"col_string\"])," +
+                "LAKEHOUSE_MD5(ARRAY['col_datetime',\"col_datetime\",'col_decimal',\"col_decimal\",'col_int',\"col_int\",'col_string',\"col_string\"])," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -385,7 +385,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
             "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
             "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
-            "LAKEHOUSE_MD5(ARRAY['col_decimal','col_int'],ARRAY[\"col_decimal\",\"col_int\"])," +
+            "LAKEHOUSE_MD5(ARRAY['col_decimal',\"col_decimal\",'col_int',\"col_int\"])," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -466,7 +466,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
                 "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
                 "SELECT CONVERT(\"COL_INT\",INTEGER),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",DECIMAL(5,2)),CONVERT(\"COL_DATETIME\",TIMESTAMP)," +
-                "LAKEHOUSE_MD5(ARRAY['COL_DATETIME','COL_DECIMAL','COL_INT','COL_STRING'],ARRAY[\"COL_DATETIME\",\"COL_DECIMAL\",\"COL_INT\",\"COL_STRING\"])," +
+                "LAKEHOUSE_MD5(ARRAY['COL_DATETIME',\"COL_DATETIME\",'COL_DECIMAL',\"COL_DECIMAL\",'COL_INT',\"COL_INT\",'COL_STRING',\"COL_STRING\"])," +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
                 "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file4.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
 

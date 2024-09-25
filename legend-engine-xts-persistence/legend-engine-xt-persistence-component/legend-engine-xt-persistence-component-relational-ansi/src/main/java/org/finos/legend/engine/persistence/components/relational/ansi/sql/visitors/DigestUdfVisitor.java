@@ -16,10 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.ansi.sql.visit
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -38,18 +35,30 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
     {
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
-        List<Value> columnNameList = new ArrayList<>();
-        List<Value> columnValueList = new ArrayList<>();
+        List<Value> columns = new ArrayList<>();
         for (int i = 0; i < current.values().size(); i++)
         {
-            columnNameList.add(StringValue.of(current.fieldNames().get(i)));
-            columnValueList.add(getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
+            Value columnName = StringValue.of(current.fieldNames().get(i));
+            Value columnValue = getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames());
+            if (current.columnNameValueConcatUdfName().isPresent())
+            {
+                columns.add(org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(current.columnNameValueConcatUdfName().get()).addParameters(columnName, columnValue).build());
+            }
+            else
+            {
+                columns.add(columnName);
+                columns.add(columnValue);
+            }
         }
 
-        ToArrayFunction toArrayColumnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
-        ToArrayFunction toArrayColumnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
+        Value mergeFunction = mergeColumnsFunction(columns);
+        return new VisitorResult(udf, Arrays.asList(mergeFunction));
+    }
 
-        return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
+    protected Value mergeColumnsFunction(List<Value> columns)
+    {
+        FunctionImpl concatFunction = FunctionImpl.builder().functionName(FunctionName.CONCAT).addAllValue(columns).build();
+        return concatFunction;
     }
 
     protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)
