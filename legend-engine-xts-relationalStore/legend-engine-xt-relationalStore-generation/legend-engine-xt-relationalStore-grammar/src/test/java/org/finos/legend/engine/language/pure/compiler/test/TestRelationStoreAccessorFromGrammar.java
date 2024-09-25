@@ -14,7 +14,18 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.relationType.Column;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +35,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     @Test
     public void testCompilationOfRelationStoreAccessor()
     {
-        test("###Relational\n" +
+        Pair<PureModelContextData, PureModel> pureModelPair = test("###Relational\n" +
                 "Database my::Store" +
                 "(" +
                 "   Table myTable" +
@@ -34,10 +45,15 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "   )" +
                 ")\n" +
                 "###Pure\n" +
-                "function my::func():Any[*]" +
+                "function my::func():Relation[1]" +
                 "{" +
                 "   #>{my::Store.myTable}#->filter(c|$c.name == 'ok');" +
                 "}");
+
+        ConcreteFunctionDefinition<?> func = pureModelPair.getTwo().getConcreteFunctionDefinition("my::func__Relation_1_", null);
+        FunctionType fType = (FunctionType) func._classifierGenericType()._typeArguments().getOnly()._rawType();
+        List<Column> columns = RelationTypeHelper.convert((RelationType<?>) fType._returnType()._typeArguments().getAny()._rawType()).columns;
+        Assert.assertEquals(Lists.mutable.with("id: Integer", "name: String"), columns.stream().map(x -> x.name + ": " + x.type).collect(Collectors.toList()));
     }
 
     @Test
@@ -59,7 +75,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "\n" +
                 "\n" +
                 "###Pure\n" +
-                "function my::func(): Any[*]\n" +
+                "function my::func(): Relation[1]\n" +
                 "{\n" +
                 "  #>{my::Store.mySchema.myTable}#->filter(\n" +
                 "    c|$c.name == 'ok'\n" +
@@ -86,7 +102,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "\n" +
                 "\n" +
                 "###Pure\n" +
-                "function my::func(): Any[*]\n" +
+                "function my::func(): Relation[1]\n" +
                 "{\n" +
                 "  #>{my::Store.SchemaMissing.myTable}#->filter(\n" +
                 "    c|$c.name == 'ok'\n" +
@@ -109,7 +125,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                     "   )" +
                     ")\n" +
                     "###Pure\n" +
-                    "function my::func():Any[*]" +
+                    "function my::func():Relation[1]" +
                     "{" +
                     "   #>{my::Store.myTabe}#->filter(c|$c.name == 'ok');" +
                     "}");
@@ -117,7 +133,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (EngineException e)
         {
-            Assert.assertEquals("COMPILATION error at [4:31-51]: The table myTabe can't be found in the store Store", e.toPretty());
+            Assert.assertEquals("COMPILATION error at [4:36-56]: The table myTabe can't be found in the store Store", e.toPretty());
         }
     }
 
@@ -136,7 +152,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                     "   )" +
                     ")\n" +
                     "###Pure\n" +
-                    "function my::func():Any[*]" +
+                    "function my::func():Relation[1]" +
                     "{" +
                     "   #>{my::Store.myTable}#->filter(c|$c.naeme == 'ok');" +
                     "}");
@@ -144,7 +160,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (EngineException e)
         {
-            Assert.assertEquals("COMPILATION error at [4:67-71]: The column 'naeme' can't be found in the relation (id:Integer, name:String)", e.toPretty());
+            Assert.assertEquals("COMPILATION error at [4:72-76]: The column 'naeme' can't be found in the relation (id:Integer, name:String)", e.toPretty());
         }
     }
 
@@ -164,7 +180,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                     "   )" +
                     ")\n" +
                     "###Pure\n" +
-                    "function my::func():Any[*]" +
+                    "function my::func():Relation[1]" +
                     "{" +
                     "   #>{my::Store}#->filter(c|$c.naeme == 'ok');" +
                     "}");
@@ -172,7 +188,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (EngineException e)
         {
-            Assert.assertEquals("COMPILATION error at [4:31-44]: Error in the accessor definition. Please provide a table.", e.toPretty());
+            Assert.assertEquals("COMPILATION error at [4:36-49]: Error in the accessor definition. Please provide a table.", e.toPretty());
         }
     }
 
