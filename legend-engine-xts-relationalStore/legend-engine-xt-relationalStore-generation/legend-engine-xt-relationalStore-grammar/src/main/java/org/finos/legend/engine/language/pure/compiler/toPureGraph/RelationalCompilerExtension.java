@@ -83,6 +83,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.platform_store_relational_functions;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl;
@@ -136,14 +137,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Relationa
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.*;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Double;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Float;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -801,7 +798,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), processorSupport), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
@@ -829,46 +826,13 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         });
     }
 
-    private GenericType convertTypes(DataType c, ProcessorSupport processorSupport)
+    private GenericType convertTypes(DataType c, CompileContext compileContext)
     {
-        String primitiveType;
-        if (c instanceof Varchar)
-        {
-            primitiveType = "String";
-        }
-        else if (c instanceof Integer)
-        {
-            primitiveType = "Integer";
-        }
-        else if (c instanceof BigInt)
-        {
-            primitiveType = "Integer";
-        }
-        else if (c instanceof Bit)
-        {
-            primitiveType = "Boolean";
-        }
-        else if (c instanceof Double || c instanceof Float)
-        {
-            primitiveType = "Float";
-        }
-        else if (c instanceof Decimal)
-        {
-            primitiveType = "Decimal";
-        }
-        else if (c instanceof Date)
-        {
-            primitiveType = "Date";
-        }
-        else if (c instanceof Timestamp)
-        {
-            primitiveType = "DateTime";
-        }
-        else
-        {
-            throw new RuntimeException("Implement support for '" + c.getClass().getName() + "'");
-        }
-        return (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(primitiveType, processorSupport));
+        return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(
+                platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToCompatiblePureType_DataType_1__Type_1_(
+                        c, compileContext.pureModel.getExecutionSupport()
+                )
+        );
     }
 
     @Override

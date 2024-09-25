@@ -41,6 +41,38 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     }
 
     @Test
+    public void testCompilationOfRelationStoreAccessorWithTypes()
+    {
+        test("###Relational\n" +
+                "Database test::myDB\n" +
+                "(\n" +
+                "    Table dataTable\n" +
+                "    (\n" +
+                "        pk INTEGER PRIMARY KEY,\n" +
+                "        ti TINYINT,\n" +
+                "        si SMALLINT,\n" +
+                "        int INTEGER,\n" +
+                "        bi BIGINT,\n" +
+                "        vc VARCHAR(200),\n" +
+                "        c CHAR(1),\n" +
+                "        date DATE,\n" +
+                "        ts TIMESTAMP,\n" +
+                "        f FLOAT,\n" +
+                "        d DOUBLE,\n" +
+                "        bit BIT,\n" +
+                "        dec DECIMAL(18,6),\n" +
+                "        r REAL,\n" +
+                "        n NUMERIC(18,6)\n" +
+                "    )\n" +
+                ")\n" +
+                "###Pure\n" +
+                "function my::func():Any[*]" +
+                "{" +
+                "   #>{test::myDB.dataTable}#->filter(c|$c.pk == 1);" +
+                "}");
+    }
+
+    @Test
     public void testCompilationWithSchema()
     {
         test("###Relational\n" +
