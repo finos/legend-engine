@@ -173,19 +173,12 @@ public class DataQualityExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
-        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality: lambda").startActive(true))
-        {
-            // 1. load pure model from PureModelContext
-            PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
-            // 2. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit);
-            Lambda lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
-            return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
-        }
-        catch (Exception ex)
-        {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
-        }
+        // 1. load pure model from PureModelContext
+        PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
+        // 2. call DQ PURE func to generate lambda
+        LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit);
+        Lambda lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
+        return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }
 
 
