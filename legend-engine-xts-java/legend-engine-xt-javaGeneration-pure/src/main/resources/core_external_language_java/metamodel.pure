@@ -497,6 +497,10 @@ Class meta::external::language::java::metamodel::This extends Code
 {
 }
 
+Class meta::external::language::java::metamodel::Super extends Code
+{
+}
+
 Class meta::external::language::java::metamodel::Literal extends Code
 {
    <<equality.Key>> literal : String[1];

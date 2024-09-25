@@ -241,7 +241,7 @@ public class Protobuf3GrammarParser
         else if (constantContext.intLit() != null)
         {
             IntLiteral l = new IntLiteral();
-            l.value = Integer.parseInt(constantContext.intLit().INT_LIT().getText());
+            l.value = Long.parseLong(constantContext.intLit().INT_LIT().getText());
             return l;
         }
         else if (constantContext.floatLit() != null)

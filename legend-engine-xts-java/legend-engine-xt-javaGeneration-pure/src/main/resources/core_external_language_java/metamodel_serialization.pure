@@ -483,6 +483,7 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:SimpleCode[1]               | $sfer->forEach($c.code->replace('\n\n','\nBLANKLINE\n')->split('\n')->map(l| if($l->trim() == '', |'BLANKLINE', |$l)), {s, l| if($l == 'BLANKLINE', |$s->blankLine(), |$s->addText($l)->newLine())}),
       c:Null[1]                     | $sfer->addText('null'),
       c:This[1]                     | if($sfer.stack->isEmpty() || $sfer.stack->last() == $c.type, |$sfer, |$sfer->doType($c.type)->addText('.'))->addText('this'),
+      c:Super[1]                    | $sfer->addText('super'),
       c:Variable[1]                 | if($sfer.inParameters, |$sfer->doType($c.type)->space(), |$sfer)->addText($c.name),
       c:ArrayAccess[1]              | $sfer->doCode($c.array)->addText('[')->doCode($c.index)->addText(']'),
       c:Literal[1]                  | $sfer->addText($c.literal),
@@ -598,6 +599,7 @@ function <<access.private>> meta::external::language::java::serialization::maybe
    let required = $code->resolveDeferred()->match([
       c:SimpleCode[1]               | false,  // We don't know but safe at present and deprecated.  Any issues should be moved to new style
       c:This[1]                     | false,
+      c:Super[1]                    | false,
       c:Variable[1]                 | false,
       c:ArrayAccess[1]              | false,
       c:Literal[1]                  | false,

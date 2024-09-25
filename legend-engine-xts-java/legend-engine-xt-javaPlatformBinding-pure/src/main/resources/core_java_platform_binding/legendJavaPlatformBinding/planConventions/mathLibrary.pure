@@ -20,15 +20,15 @@ import meta::external::language::java::serialization::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::math::*;
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
    let lib = newConventionsLibrary()
       ->usesNumber( javaNumber(),     javaNumber(),      {n:Number[1]  | javaBigDecimal()->j_new(j_string($n->toString()))})
       ->usesDecimal(javaBigDecimal(), javaBigDecimal(),  {d:Number[1]  | javaBigDecimal()->j_new(j_string($d->toString()))})
-      ->usesInteger(javaLong(),       javaLongBoxed(),   {i:Integer[1] | j_long($i)})
-      ->usesFloat(  javaDouble(),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
+      ->usesInteger(if($boxPrimitives, |javaLongBoxed(), |javaLong()),       javaLongBoxed(),   {i:Integer[1] | j_long($i)})
+      ->usesFloat(if($boxPrimitives, |javaDoubleBoxed(), |javaDouble()),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
       ->usesJavaPackage('java.math')
       ->addFunctionCoders([
          fc1(plus_Decimal_MANY__Decimal_1_,                            {ctx,collection | maybeReduce($ctx, $collection, bigDecimalZero(), $library->j_methodReference('decimalPlus', reduceFT(javaBigDecimal())))}),

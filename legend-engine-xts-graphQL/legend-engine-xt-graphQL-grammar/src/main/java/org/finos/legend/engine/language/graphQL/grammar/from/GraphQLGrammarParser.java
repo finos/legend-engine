@@ -473,7 +473,7 @@ public class GraphQLGrammarParser
         if (valueContext.intValue() != null)
         {
             IntValue value = new IntValue();
-            value.value = Integer.parseInt(valueContext.intValue().getText());
+            value.value = Long.parseLong(valueContext.intValue().getText());
             return value;
         }
         if (valueContext.stringValue() != null)

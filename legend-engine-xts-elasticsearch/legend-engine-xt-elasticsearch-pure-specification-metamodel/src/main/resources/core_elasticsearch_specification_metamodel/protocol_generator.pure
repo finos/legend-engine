@@ -186,7 +186,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
       []
   );
 
-  let fullCls = if ($taxonomy->isEmpty(),
+  let fullCls = if ($taxonomy->isEmpty() || !$context.configuration.generateVisitor,
     |$withJackson,
     |$withJackson->addMethod(buildAccept($withJackson, $c, $taxonomy->toOne(), $context));
   );

@@ -22,7 +22,7 @@ import meta::pure::functions::reportDelta::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::collection::*;
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
@@ -32,11 +32,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
       ->usesJavaPackage('java.util.stream')
-      ->usesBoolean(
-         javaType('boolean'),
-         javaType('java.lang.Boolean'),
-         {b:Boolean[1] | j_boolean($b)}
-      )
+      ->usesBoolean(if($boxPrimitives, |javaBooleanBoxed(), |javaBoolean()), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
       ->addFunctionCoders([
          fc2(at_T_MANY__Integer_1__T_1_,                                         {ctx,collection,index         | $library->j_invoke('at', [$collection, $index], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),
          fc2(indexOf_T_MANY__T_1__Integer_1_,                                    {ctx,collection,obj           | $library->j_invoke('indexOf', [$collection, $obj], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),

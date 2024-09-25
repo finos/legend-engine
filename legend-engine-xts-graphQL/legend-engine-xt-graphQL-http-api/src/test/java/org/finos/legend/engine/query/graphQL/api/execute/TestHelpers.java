@@ -58,7 +58,7 @@ public class TestHelpers
         ObjectField objectField1 = new ObjectField();
         objectField1.name = "_eq";
         IntValue intValue = new IntValue();
-        intValue.value = 1;
+        intValue.value = 1L;
         objectField1.value = intValue;
         obj1.fields.add(objectField1);
         objectField.value = obj1;

@@ -69,7 +69,7 @@ public class TestMongoDBStoreTestConnectionBuilder
         dataSourceSpec.databaseName = LEGEND_DB;
         MongoDBURL mongoDBURL = new MongoDBURL();
         mongoDBURL.baseUrl = "http://baseUrl"; // Not used for test connection creation.
-        mongoDBURL.port = -99;   // Not used for test connection creation.
+        mongoDBURL.port = -99L;   // Not used for test connection creation.
         dataSourceSpec.serverURLs = Lists.mutable.of(mongoDBURL);
         connection.dataSourceSpecification = dataSourceSpec;
 

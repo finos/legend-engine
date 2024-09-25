@@ -1,0 +1,161 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::generation::java::tests::default::model::*;
+
+Class meta::protocols::generation::java::tests::default::model::SimpleDefault
+{
+  value : String[1] = 'default_value';
+  myEmnum : SomeEnum[1] = SomeEnum.On;
+  intV : Integer[1] = 2;
+  floatV : Float[1] = 2.0;
+  bool : Boolean[1] = true;
+}
+
+Class meta::protocols::generation::java::tests::default::model::Nested
+{
+  bool : Boolean[1] = false;
+  ok : Integer[1];
+  other : String[0..1];
+}
+
+Class meta::protocols::generation::java::tests::default::model::ClassDefault
+{
+  value : Nested[1] = ^Nested(ok=10, other='ww');
+}
+
+Enum meta::protocols::generation::java::tests::default::model::SomeEnum
+{
+  On, Off
+}
+
+function <<test.Test>> meta::protocols::generation::java::tests::default::testDefault():Boolean[1]
+{
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::default::model',
+    javaPackage  = 'org.finos',
+    generateValidation = false,
+    generateVisitor = false,
+    json = ^meta::protocols::generation::java::translation::JSONConfiguration(generateJSONAnnotations=false)
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolProject($config, [])
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
+        ->sortBy(c | $c.simpleName)
+        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
+        true;
+
+  assertEquals(4, $sources->size());
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class ClassDefault\n'+
+                '{\n'+
+                '    public Nested value = new Nested()._ok(10L)._other("ww");\n'+
+                '\n'+
+                '    public ClassDefault _value(Nested value)\n'+
+                '    {\n'+
+                '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '}', $sources->at(0));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class Nested\n'+
+                '{\n'+
+                '    public Boolean bool = false;\n'+
+                '    public Long ok;\n'+
+                '    public String other;\n'+
+                '\n'+
+                '    public Nested _bool(Boolean bool)\n'+
+                '    {\n'+
+                '        this.bool = bool;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public Nested _ok(Long ok)\n'+
+                '    {\n'+
+                '        this.ok = ok;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public Nested _other(String other)\n'+
+                '    {\n'+
+                '        this.other = other;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '}', $sources->at(1));
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public class SimpleDefault\n'+
+                '{\n'+
+                '    public String value = "default_value";\n'+
+                '    public SomeEnum myEmnum = SomeEnum.getEnumFromPureName("On");\n'+
+                '    public Long intV = 2L;\n'+
+                '    public Double floatV = 2.0;\n'+
+                '    public Boolean bool = true;\n'+
+                '\n'+
+                '    public SimpleDefault _value(String value)\n'+
+                '    {\n'+
+                '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public SimpleDefault _myEmnum(SomeEnum myEmnum)\n'+
+                '    {\n'+
+                '        this.myEmnum = myEmnum;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public SimpleDefault _intV(Long intV)\n'+
+                '    {\n'+
+                '        this.intV = intV;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public SimpleDefault _floatV(Double floatV)\n'+
+                '    {\n'+
+                '        this.floatV = floatV;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public SimpleDefault _bool(Boolean bool)\n'+
+                '    {\n'+
+                '        this.bool = bool;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '}', $sources->at(2));
+
+
+  assertEquals( 'package org.finos;\n'+
+                '\n'+
+                'public enum SomeEnum\n'+
+                '{\n'+
+                '    On,\n'+
+                '    Off;\n'+
+                '\n'+
+                '    public String getName()\n'+
+                '    {\n'+
+                '        return this.name();\n'+
+                '    }\n'+
+                '\n'+
+                '    public static SomeEnum getEnumFromPureName(String pureName)\n'+
+                '    {\n'+
+                '        return SomeEnum.valueOf(pureName);\n'+
+                '    }\n'+
+                '}', $sources->at(3));           
+}
