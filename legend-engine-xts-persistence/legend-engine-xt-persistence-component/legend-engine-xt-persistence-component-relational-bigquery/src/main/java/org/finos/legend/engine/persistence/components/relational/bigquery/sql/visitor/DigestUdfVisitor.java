@@ -16,8 +16,10 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sql.v
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
+import java.util.List;
 import java.util.Map;
 
 public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
@@ -34,5 +36,12 @@ public class DigestUdfVisitor extends org.finos.legend.engine.persistence.compon
         {
             return value;
         }
+    }
+
+    @Override
+    protected Value mergeColumnsFunction(List<Value> columns)
+    {
+        ToArrayFunction toArrayFunction = ToArrayFunction.builder().addAllValues(columns).build();
+        return toArrayFunction;
     }
 }

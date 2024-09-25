@@ -59,13 +59,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.appendTimeName;
@@ -234,7 +228,8 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
-        ingestor.create();
+        // No impact of re-init
+        ingestor.create(Optional.of(10L));
         actual = ingestor.ingest();
 
         // Verify results
@@ -380,7 +375,7 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
-        ingestor.create();
+        ingestor.create(Optional.of(10L));
         List<DatasetIngestResults> actual = ingestor.ingest();
 
         // Verify results
@@ -392,13 +387,13 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         List<DatasetIngestResults> expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset1)
-            .batchId(1L)
+            .batchId(11L)
             .ingestRequestId(requestId1)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset1, ingestStageResult2ForDataset1))
             .build());
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset2)
-            .batchId(1L)
+            .batchId(11L)
             .ingestRequestId(requestId1)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset2, ingestStageResult2ForDataset2))
             .build());
@@ -433,7 +428,8 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Run ingestion
         ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
-        ingestor.create();
+        // There should not be any impact of re-init
+        ingestor.create(Optional.of(20L));
         actual = ingestor.ingest();
 
         // Verify results
@@ -445,13 +441,13 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset1)
-            .batchId(2L)
+            .batchId(12L)
             .ingestRequestId(requestId2)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset1, ingestStageResult2ForDataset1))
             .build());
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset2)
-            .batchId(2L)
+            .batchId(12L)
             .ingestRequestId(requestId2)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset2, ingestStageResult2ForDataset2))
             .build());
@@ -498,13 +494,13 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         expected = new ArrayList<>();
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset1)
-            .batchId(3L)
+            .batchId(13L)
             .ingestRequestId(requestId3)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset1, ingestStageResult2ForDataset1))
             .build());
         expected.add(DatasetIngestResults.builder()
             .dataset(dataset2)
-            .batchId(3L)
+            .batchId(13L)
             .ingestRequestId(requestId3)
             .addAllIngestStageResults(Arrays.asList(ingestStageResult1ForDataset2, ingestStageResult2ForDataset2))
             .build());

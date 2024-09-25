@@ -16,13 +16,15 @@ package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 
+import java.util.List;
 import java.util.Map;
 
 public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
@@ -46,5 +48,12 @@ public class DigestUdfVisitor extends org.finos.legend.engine.persistence.compon
         {
             return FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(value, ObjectValue.of(DataType.VARCHAR.name())).build();
         }
+    }
+
+    @Override
+    protected Value mergeColumnsFunction(List<Value> columns)
+    {
+        ToArrayFunction toArrayFunction = ToArrayFunction.builder().addAllValues(columns).build();
+        return toArrayFunction;
     }
 }
