@@ -20,11 +20,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class Compiler
 {
@@ -49,9 +53,27 @@ public class Compiler
         return new PureModel(model, user, deploymentMode, pureModelProcessParameter, metaData);
     }
 
+    public static ValueSpecification getLambdaRawType(Lambda lambda, PureModel pureModel)
+    {
+        return HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast();
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> buildLambdaRelationType(Lambda lambda, PureModel pureModel)
+    {
+        ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
+        Type type = valueSpecification._genericType()._typeArguments().getFirst()._rawType();
+        Assert.assertTrue(type instanceof RelationType, () -> "Relation type expected in lambda");
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) type;
+    }
+
+    public static org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
+    {
+        return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel));
+    }
+
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)
     {
-        ValueSpecification valueSpecification = HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast();
+        ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
         return HelperModelBuilder.getTypeFullPath(valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
     }
 }
