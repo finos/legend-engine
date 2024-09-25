@@ -1,0 +1,135 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::generation::java::translation::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::metamodel::*;
+import meta::protocols::generation::java::*;
+
+function meta::protocols::generation::java::generateValidate(base:meta::external::language::java::metamodel::Class[1], c:meta::pure::metamodel::type::Class<Any>[1], context:Context[1]):Method[1]
+{
+  let resClass = generateValidationResultClass($context)->toOne();
+  let listType = javaList($resClass);
+  let resultVar = j_variable($listType, 'result');
+  let taxonomy = $c->findTaxonomy($context.taxonomies);
+  let code = j_declare($resultVar, j_new(javaArrayList($resClass),[]))
+             ->concatenate(
+              if($taxonomy->isEmpty() || $taxonomy.topClass == $c, |[], |j_invoke($resultVar,'addAll',j_invoke(j_super(javaObject()),'validate', [], $listType)))
+             )
+             ->concatenate(
+              $c.properties->map(p|
+                let mul = $p->functionReturnMultiplicity()->toOne();
+                if ([
+                        pair( | $mul->hasLowerBound() && $mul->getLowerBound() == 1 && $mul->hasUpperBound() && $mul->getUpperBound() == 1,
+                              | j_if(j_eq(j_field(j_this($base), $p.name->toOne()), j_null()),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                                                                j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
+                                                                                j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' can\'t be null')
+                                                                            ]))
+                                )                          
+                        ),
+                        pair (| $mul->hasLowerBound() && !$mul->hasUpperBound(),
+                              | j_if(j_lt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getLowerBound())),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                                                                j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
+                                                                                j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity lower bound is '+$mul->getLowerBound()->toString()))
+                                                                            ]))
+                                )
+                        ),
+                        pair (| !$mul->hasLowerBound() && $mul->hasUpperBound() && ($mul->getUpperBound() > 1),
+                              | j_if(j_gt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getUpperBound())),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                                                                j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
+                                                                                j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity upper bound is '+$mul->getUpperBound()->toString()))
+                                                                            ]))
+                                )
+                        ),
+                        pair (| $mul->hasLowerBound() && $mul->hasUpperBound(),
+                              | j_if(j_or(
+                                      j_lt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getLowerBound())),
+                                      j_gt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getUpperBound()))),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                                                                j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
+                                                                                j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity lower bound is '+$mul->getLowerBound()->toString()+' and its upper bound is '+$mul->getUpperBound()->toString()))
+                                                                            ]))
+                                )
+                        )
+                    ],
+                    | [];
+                  );
+                )
+             )
+             ->concatenate(
+              $c.constraints->map(c|
+                let message = $c.messageFunction->evaluateAndDeactivate().expressionSequence;
+                let expression = meta::external::language::java::transform::generateJava($c.functionDefinition->evaluateAndDeactivate().expressionSequence->toOne(), $context.conventions, noDebug());
+                let notedExpression = $expression->match([
+                  c:Cast[1]|j_not($c.expression),
+                  c:Code[1]|j_not($c);
+                ]);
+                j_if($notedExpression,
+                  j_invoke($resultVar, 'add', j_new($resClass, [j_string($c.name->toOne()),
+                                                                j_string($c.functionDefinition->printFunctionDefinition('')),
+                                                                if($message->isEmpty(), |j_null(), |meta::external::language::java::transform::generateJava($message->toOne(), $context.conventions, noDebug()))
+                                                                ]))
+                );
+              )
+             )
+             ->concatenate(
+                $c.properties->map(p|
+                  if (!$p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType),
+                    | let mul = $p->functionReturnMultiplicity()->toOne();
+                      if (!$mul->hasUpperBound() || ($mul->hasUpperBound() && ($mul->getUpperBound() > 1)),
+                          |let rawType = $p->functionReturnType().rawType->toOne();
+                            let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($rawType, $context.conventions);
+                            let variable = j_parameter(javaClass([], [], $typeAndPackages.first->javaPackage(), $typeAndPackages.second), 'val');
+                            j_for($variable, j_field(j_this($base), $p.name->toOne()),j_invoke($resultVar,'addAll',j_invoke($variable, 'validate',[], $listType)));,
+                          |j_if(j_ne(j_field(j_this($base), $p.name->toOne()),j_null()),
+                              j_invoke($resultVar,'addAll',j_invoke(j_field(j_this($base), $p.name->toOne()),'validate',[],$listType))
+                           );
+                      );,
+                    |[]
+                  )
+                )
+             )
+             ->concatenate(j_return($resultVar));
+  javaMethod('public', $listType, 'validate', [], $code);
+}
+
+function meta::protocols::generation::java::generateValidationResultClass(context:Context[1]):meta::external::language::java::metamodel::Class[0..1]
+{
+  if ($context.configuration.generateValidation,
+    | let res = javaClass(['public'], [], javaPackage($context.conventions.basePackageName), 'ValidationError');
+      $res ->addFields(
+                [
+                  javaField('public', javaString(), 'constraintId'),
+                  javaField('public', javaString(), 'definition'),
+                  javaField('public', javaString(), 'message')
+                ]
+            )
+            ->addConstructor(
+              javaConstructor('public', [j_parameter(javaString(), 'constraintId'), j_parameter(javaString(), 'definition'), j_parameter(javaString(), 'message')], 
+                  [
+                    j_assign(j_field(j_this($res), 'constraintId', javaString()), j_variable(javaString(), 'constraintId')),
+                    j_assign(j_field(j_this($res), 'definition', javaString()), j_variable(javaString(), 'definition')),
+                    j_assign(j_field(j_this($res), 'message', javaString()), j_variable(javaString(), 'message'))
+                  ]
+              )
+            );,
+    |[]
+  )
+}

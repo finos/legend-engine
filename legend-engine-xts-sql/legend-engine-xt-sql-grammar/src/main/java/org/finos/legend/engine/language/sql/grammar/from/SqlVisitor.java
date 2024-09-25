@@ -41,7 +41,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
     private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds]+))+");
 
-    private int positionalIndex = 1;
+    private long positionalIndex = 1;
 
     private SqlVisitor()
     {
@@ -1631,7 +1631,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         if (value < Integer.MAX_VALUE + 1L)
         {
             IntegerLiteral integerLiteral = new IntegerLiteral();
-            integerLiteral.value = (int) value;
+            integerLiteral.value = value;
 
             return integerLiteral;
         }
@@ -1693,7 +1693,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitPositionalParameter(SqlBaseParser.PositionalParameterContext context)
     {
         PositionalParameterExpression parameterExpression = new PositionalParameterExpression();
-        parameterExpression.index = Integer.parseInt(context.integerLiteral().getText());
+        parameterExpression.index = Long.parseLong(context.integerLiteral().getText());
 
         return parameterExpression;
     }

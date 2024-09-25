@@ -111,7 +111,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             else if (jsonNode.isInt())
             {
                 IntTypeValue typeValue = new IntTypeValue();
-                typeValue.value = jsonNode.intValue();
+                typeValue.value = jsonNode.longValue();
                 literalValue.value = typeValue;
             }
             else if (jsonNode.isLong())

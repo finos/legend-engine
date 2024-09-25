@@ -16,8 +16,9 @@ package org.finos.legend.engine.protocol.generation;
 
 import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
 import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
-import org.finos.legend.pure.generated.core_protocol_generation_generation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+
+import static org.finos.legend.pure.generated.core_protocol_generation_transform_ProtocolToMetamodel.Root_meta_protocols_generation_java_translation_generateProtocolToMetamodelTranslation_String_1__String_MANY__Project_1_;
 
 public class GenerateProtocolToMetamodelTranslator extends GenerateJavaProject
 {
@@ -37,6 +38,6 @@ public class GenerateProtocolToMetamodelTranslator extends GenerateJavaProject
     @Override
     protected Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport)
     {
-        return core_protocol_generation_generation.Root_meta_protocols_generation_java_translation_generateProtocolToMetamodelTranslation_String_1__String_MANY__Project_1_(argument.configJson, argument.dependencies, executionSupport);
+        return Root_meta_protocols_generation_java_translation_generateProtocolToMetamodelTranslation_String_1__String_MANY__Project_1_(argument.configJson, argument.dependencies, executionSupport);
     }
 }

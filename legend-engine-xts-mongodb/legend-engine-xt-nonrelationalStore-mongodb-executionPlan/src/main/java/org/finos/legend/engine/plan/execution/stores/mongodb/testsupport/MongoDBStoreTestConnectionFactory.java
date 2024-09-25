@@ -57,7 +57,7 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
 
             MongoDBURL serverUrl = new MongoDBURL();
             serverUrl.baseUrl = inMemoryServer.baseUrl;
-            serverUrl.port = inMemoryServer.port;
+            serverUrl.port = (long)inMemoryServer.port;
             testDataSourceSpec.serverURLs = Lists.mutable.of(serverUrl);
             testConnection.dataSourceSpecification = testDataSourceSpec;
 
