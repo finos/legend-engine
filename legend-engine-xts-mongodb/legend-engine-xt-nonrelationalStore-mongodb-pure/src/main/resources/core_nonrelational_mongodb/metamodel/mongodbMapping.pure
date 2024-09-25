@@ -32,8 +32,8 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
 {
     id: String[1];
     class: String[1];
-    root: Boolean[1];
-    distinct: Boolean[1];
+    root: Boolean[1] = false;
+    distinct: Boolean[1] = false;
     propertyMappings: MongoDBPropertyMapping[*];
     mainCollection: Collection[1];
 }

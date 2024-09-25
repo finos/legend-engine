@@ -44,7 +44,7 @@ Class meta::external::query::graphQL::metamodel::introspection::__Field
   description : String[0..1];
   args : meta::external::query::graphQL::metamodel::introspection::__InputValue[*];
   type : meta::external::query::graphQL::metamodel::introspection::__Type[1];
-  isDeprecated : Boolean[1];
+  isDeprecated : Boolean[1] = false;
   deprecationReason : String[0..1];
 }
 
@@ -60,7 +60,7 @@ Class meta::external::query::graphQL::metamodel::introspection::__EnumValue
 {
   name : String[1];
   description : String[0..1];
-  isDeprecated : Boolean[1];
+  isDeprecated : Boolean[1] = false;
   deprecationReason : String[0..1];
 }
 
