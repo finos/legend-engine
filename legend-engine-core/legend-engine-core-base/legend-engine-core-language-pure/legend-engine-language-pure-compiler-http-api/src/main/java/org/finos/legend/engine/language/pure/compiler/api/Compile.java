@@ -24,9 +24,11 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -115,6 +117,31 @@ public class Compile
             // This is an object in case we want to add more information on the lambda.
             result.put("returnType", typeName);
             return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
+            return handleException(uriInfo, identity, start, ex);
+        }
+    }
+
+    @POST
+    @Path("lambdaRelationType")
+    @ApiOperation(value = "Loads a given model and lambda. Returns the lambda relation type")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "lambda relation type")
+    public Response lambdaRelationType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        try
+        {
+            PureModelContext model = lambdaReturnTypeInput.model;
+            Lambda lambda = lambdaReturnTypeInput.lambda;
+            PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
+            RelationType relationType = org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(lambda, pureModel);
+            return Response.ok(relationType, MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
