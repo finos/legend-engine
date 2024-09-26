@@ -376,3 +376,32 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '   qw,9\n'+
                   '#', $res->sort(~str->ascending())->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+        [
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Johnson'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Hill'),
+            ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen'),
+            ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Roberts')
+        ]->project(~[
+            first : x | $x.firstName,
+            last  : x | $x.lastName
+        ])
+        ->extend(over(~first, ~last->ascending()), ~[leadLast:{p,w,r|$p->lead($r).last}, lagLast:{p,w,r|$p->lag($r).last}])
+        ->sort([ascending(~first), ascending(~last)]);
+    };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   first,last,leadLast,lagLast\n'+
+                  '   Anthony,Allen,Roberts,null\n'+
+                  '   Anthony,Roberts,null,Allen\n'+
+                  '   Peter,Hill,Johnson,null\n'+
+                  '   Peter,Johnson,Smith,Hill\n'+
+                  '   Peter,Smith,null,Johnson\n'+
+                  '#', $res->toString());
+}
