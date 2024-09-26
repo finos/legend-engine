@@ -209,6 +209,63 @@ public class PostgresServerTest
     }
 
     @Test
+    public void testSuccessAfterFailure() throws SQLException
+    {
+        Properties info = new Properties();
+        PGProperty.USER.set(info, "dummy");
+        PGProperty.PASSWORD.set(info, "dummy");
+        PGProperty.LOG_SERVER_ERROR_DETAIL.set(info, "false");
+
+        try (
+                Connection connection1 = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        info);
+                PreparedStatement statement1 = connection1.prepareStatement("SELECT * FROM service.\"/personServiceNonExistent\"");
+                PreparedStatement statement2 = connection1.prepareStatement("SELECT * FROM service.\"/personService\"")
+        )
+        {
+
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement1::executeQuery);
+            Assert.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
+            int rows2 = 0;
+            ResultSet resultSet2 = statement2.executeQuery();
+            while (resultSet2.next())
+            {
+                rows2++;
+            }
+            Assert.assertEquals(4, rows2);
+        }
+    }
+
+    @Test
+    public void testSuccessAfterFailureInSimple() throws SQLException
+    {
+        Properties info = new Properties();
+        PGProperty.USER.set(info, "dummy");
+        PGProperty.PASSWORD.set(info, "dummy");
+        PGProperty.PREFER_QUERY_MODE.set(info, "simple");
+        PGProperty.LOG_SERVER_ERROR_DETAIL.set(info, "false");
+
+        try (
+                Connection connection1 = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        info);
+                PreparedStatement statement1 = connection1.prepareStatement("SELECT * FROM service.\"/personServiceNonExistent\"");
+                PreparedStatement statement2 = connection1.prepareStatement("SELECT * FROM service.\"/personService\"")
+        )
+        {
+
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement1::executeQuery);
+            Assert.assertEquals("ERROR: IllegalArgumentException: No Service found for pattern '/personServiceNonExistent'", exception.getMessage());
+            int rows2 = 0;
+            ResultSet resultSet2 = statement2.executeQuery();
+            while (resultSet2.next())
+            {
+                rows2++;
+            }
+            Assert.assertEquals(4, rows2);
+        }
+    }
+
+    @Test
     public void testTableFunctionSyntax() throws SQLException
     {
         try (

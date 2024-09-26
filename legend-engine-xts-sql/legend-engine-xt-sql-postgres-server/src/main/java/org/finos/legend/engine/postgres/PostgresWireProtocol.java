@@ -72,7 +72,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
@@ -283,7 +283,7 @@ public class PostgresWireProtocol
         return properties;
     }
 
-    private static class ReadyForQueryCallback implements BiConsumer<Object, Throwable>
+    private static class ReadyForQueryCallback implements BiFunction<Object, Throwable, Object>
     {
 
         private final Channel channel;
@@ -296,7 +296,7 @@ public class PostgresWireProtocol
         }
 
         @Override
-        public void accept(Object result, Throwable t)
+        public Object apply(Object result, Throwable t)
         {
             if (t instanceof CompletionException)
             {
@@ -310,6 +310,7 @@ public class PostgresWireProtocol
             {
                 messages.sendReadyForQuery(channel);
             }
+            return null;
         }
     }
 
@@ -942,7 +943,8 @@ public class PostgresWireProtocol
         try
         {
             ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
-            session.sync().whenComplete(readyForQueryCallback);
+            CompletableFuture<Object> rfqFuture = session.sync().handle(readyForQueryCallback);
+            session.setActiveExecution(rfqFuture);
         }
         catch (Throwable t)
         {
@@ -1010,7 +1012,8 @@ public class PostgresWireProtocol
             {
                 composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
             }
-            composedFuture.whenComplete(new ReadyForQueryCallback(channel, messages));
+            CompletableFuture<Object> rfqFuture = composedFuture.handle(new ReadyForQueryCallback(channel, messages));
+            session.setActiveExecution(rfqFuture);
         }
         catch (Exception e)
         {
