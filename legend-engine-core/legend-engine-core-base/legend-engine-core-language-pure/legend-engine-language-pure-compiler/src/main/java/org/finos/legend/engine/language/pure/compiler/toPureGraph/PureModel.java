@@ -206,7 +206,9 @@ public class PureModel implements IPureModel
                     console,
                     null,
                     Sets.mutable.empty(),
-                    CompiledExtensionLoader.extensions()
+                    CompiledExtensionLoader.extensions(),
+                    null,
+                    pureModelProcessParameter.getExecutorService()
             );
 
             ForkJoinPool forkJoinPool = pureModelProcessParameter.getForkJoinPool();

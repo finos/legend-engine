@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -70,8 +71,12 @@ public class PureSession
 
     private final String PURE_OPTION_PREFIX = "pure.option.";
 
-
     public PureSession(SourceLocationConfiguration sourceLocationConfiguration, MutableList<RepositoryCodeStorage> repos)
+    {
+        this(sourceLocationConfiguration, repos, null);
+    }
+    
+    public PureSession(SourceLocationConfiguration sourceLocationConfiguration, MutableList<RepositoryCodeStorage> repos, ExecutorService executorService)
     {
         this.sourceLocationConfiguration = sourceLocationConfiguration;
 
@@ -81,7 +86,7 @@ public class PureSession
 
         this.repos = Lists.mutable.withAll(repos).with(new WelcomeCodeStorage(Paths.get(rootPath)));
 
-        this.functionExecution = new FunctionExecutionInterpreted(VoidExecutionActivityListener.VOID_EXECUTION_ACTIVITY_LISTENER);
+        this.functionExecution = new FunctionExecutionInterpreted(executorService);
 
         for (String property : System.getProperties().stringPropertyNames())
         {

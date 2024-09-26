@@ -41,6 +41,7 @@ import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
+import org.finos.legend.engine.server.core.concurrent.PureFunctionExecutionPool;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
@@ -96,8 +97,9 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                 configuration.swagger.getContextRoot() +
                         (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api")
         );
-
-        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, this.getRepositories(configuration.sourceLocationConfiguration, configuration.requiredRepositories));
+        
+        PureFunctionExecutionPool pureFunctionExecutionPool = new PureFunctionExecutionPool(configuration.pureFunctionExecutionPoolConfiguration, "Shared threadpool for parallel Pure function execution. For ex. parallelMap()");
+        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, this.getRepositories(configuration.sourceLocationConfiguration, configuration.requiredRepositories), pureFunctionExecutionPool.getExecutor());
 
         environment.jersey().register(new Concept(pureSession));
         environment.jersey().register(new RenameConcept(pureSession));
