@@ -285,7 +285,7 @@ function meta::external::dataquality::generateORNegatedQuery<T>(c:Class<T>[1], f
    let c2_negatedExprSequence = $c2.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
    let c1_c2_or_expr = $c1_negatedExprSequence->orFunctionExpression($c2_negatedExprSequence);
    
-   let final_expr = $constraints->slice(2, $constraints->size()).values->fold({c3, curr_or_exp |   
+   let final_expr = $constraints.values->drop(2)->fold({c3, curr_or_exp |
           let c3_negatedExprSequence = $c3.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
           $c3_negatedExprSequence->orFunctionExpression($curr_or_exp);}, $c1_c2_or_expr);
    
