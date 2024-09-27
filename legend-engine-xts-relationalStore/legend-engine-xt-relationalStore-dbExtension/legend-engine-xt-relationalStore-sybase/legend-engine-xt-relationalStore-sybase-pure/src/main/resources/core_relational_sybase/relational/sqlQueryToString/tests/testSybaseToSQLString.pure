@@ -135,7 +135,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::te
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, current_date()) - 1), current_date()) as "date" from tradeTable as "root"')
    ];
 
    $expected->map(p|
@@ -154,5 +154,5 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::te
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybase::testToSqlGenerationFirstDayOfQuarter_Sybase():Boolean[1]
 {
-   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Sybase, 'select dateadd(QUARTER, quarter("root".tradeDate) - 1, dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Sybase, 'select dateadd(QUARTER, datepart(QQ, "root".tradeDate) - 1, dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate)) as "date" from tradeTable as "root"');
 }
