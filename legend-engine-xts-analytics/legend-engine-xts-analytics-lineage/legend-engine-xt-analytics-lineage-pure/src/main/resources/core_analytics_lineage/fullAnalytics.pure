@@ -86,27 +86,28 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
    let modelToModelMappings = $mappings->init();
 
    let sourceMapping = $mappings->last()->toOne();
-   let funcBody = $f.expressionSequence->at(0)->evaluateAndDeactivate();
-   let updatedFuncBody = $funcBody->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions);
-   let propertyTrees = $updatedFuncBody->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions);
+   let funcBody = $f.expressionSequence->evaluateAndDeactivate();
+   let updatedFuncBody = $funcBody->map(e|$e->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions));
+   let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
+    
+   let combinedTrees = if( $propertyTrees->size()>1,|$propertyTrees->first()->toOne()->findAndAddChildrenAtTheEnd([],$propertyTrees->tail()),|$propertyTrees->toOne());
 
    let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && $mappings->size() == 1,
                                 |$updatedFuncBody,
-                                |$updatedFuncBody->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res);
+                                |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
 
    let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
    let relationTree = if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $r->isNotEmpty() && $modelToModelMappings->isEmpty(),
                             | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
-                            | scanRelations($propertyTrees->last()->toOne(), $sourceMapping));
-
+                            | scanRelations($combinedTrees->last()->toOne(), $sourceMapping));
    let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
    ^FunctionAnalytics
    (
-      databaseLineage = $f->toFlowDatabase($sourceMapping, $propertyTrees->last()->toOne(), $r)->toGraph(),
-      classLineage = $f->toFlowClass($propertyTrees->at(0), $classLineageMapping)->toGraph(),
-      functionTrees = $propertyTrees,
+      databaseLineage = $f->toFlowDatabase($sourceMapping, $combinedTrees, $r)->toGraph(),
+      classLineage = $f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(),
+      functionTrees = $combinedTrees,
       relationTree = $relationTree,
-      reportLineage = buildReportLineage($reprocessedFuncBody, $sourceMapping)
+      reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping)
    );
 }
 
@@ -147,6 +148,7 @@ Class meta::analytics::lineage::Column
 function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1]):ReportLineage[1]
 {
    let project = $funcBody->meta::pure::lineage::scanProject::scanProject();
+
    let groupedProject = $project.columns->groupBy(c| $c.first);
 
    let colPropertyTreePair = $groupedProject->keys()->map(gp|let propertiesPaths = $groupedProject->get($gp).values->map(c| $c.second.expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()))->removeDuplicates();
