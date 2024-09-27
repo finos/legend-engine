@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2022 Goldman Sachs
+ Copyright 2024 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -17,21 +17,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xts-relationalStore</artifactId>
+        <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
         <version>4.59.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XT - Relational Store - Generation</name>
+    <name>Legend Engine - XT - Relational Store - PURE</name>
 
     <modules>
-        <module>legend-engine-xt-relationalStore-http-api</module>
-        <module>legend-engine-xt-relationalStore-grammar</module>
-        <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-relationalStore-protocol</module>
-        <module>legend-engine-xt-relationalStore-pure</module>
-        <module>legend-engine-xt-relationalStore-testDataGeneration-http-api</module>
+        <module>legend-engine-xt-relationalStore-core-pure</module>
     </modules>
 </project>
