@@ -259,7 +259,7 @@ Class meta::external::query::graphQL::metamodel::sdl::typeSystem::Type extends m
 
 Class meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeReference
 {
-  nullable: Boolean[1];
+  nullable: Boolean[1] = false;
 }
 
 Class meta::external::query::graphQL::metamodel::sdl::typeSystem::ListTypeReference extends meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeReference

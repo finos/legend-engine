@@ -47,7 +47,7 @@ Class meta::external::format::flatdata::metamodel::FlatDataRecordField
 
 Class meta::external::format::flatdata::metamodel::FlatDataDataType
 {
-  optional: Boolean[1];
+  optional: Boolean[1] = false;
 }
 
 Class meta::external::format::flatdata::metamodel::FlatDataString extends FlatDataDataType
