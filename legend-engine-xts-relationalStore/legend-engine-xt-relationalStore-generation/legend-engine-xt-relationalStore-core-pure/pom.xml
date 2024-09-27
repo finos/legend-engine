@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - PAR/JAVA</name>
 

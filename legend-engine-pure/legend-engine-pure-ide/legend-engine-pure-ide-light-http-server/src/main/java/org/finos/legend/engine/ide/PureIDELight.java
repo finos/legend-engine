@@ -40,7 +40,7 @@ public class PureIDELight extends PureIDEServer
                 // --- MINIMUM -----
                 .with(this.buildCore("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                 .with(this.build("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-pure", "pure_ide", false))
-                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure", "relational"))
+                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-core-pure", "relational"))
                 .with(this.buildCore("legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-pure", "servicestore"))
                 .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure", "service"))
                 .with(this.buildCore("legend-engine-xts-json/legend-engine-xt-json-pure", "external_format_json"))
