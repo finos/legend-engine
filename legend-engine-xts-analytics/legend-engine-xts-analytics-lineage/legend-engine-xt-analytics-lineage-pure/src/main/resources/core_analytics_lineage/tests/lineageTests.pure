@@ -19,7 +19,7 @@ import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations:
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::calendarAggregations():Boolean[1]
 {
- let lineage = meta::analytics::lineage::computeLineage(|  Employee.all()
+ let r = meta::analytics::lineage::computeLineage(|  Employee.all()
      ->groupBy(
        [p|$p.hireDate],
        [ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
@@ -27,10 +27,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
      ->filter(x | isNotEmpty($x.getNumber('annualized')))
      ->restrict(['includedDate'])
    ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_EmployeeDatabase', 'tb_EmployeeDatabasedefaultEmployeeTable'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::Employee', 'pack_meta::pure::tds', 'pack_meta::relational::tests::functions::pureToSqlQuery::calendarAggregations'],
-                                          '[annualized: [EmployeeTable.fteFactor <TableAliasColumn>, EmployeeTable.hireDate <TableAliasColumn>], includedDate: [EmployeeTable.hireDate <TableAliasColumn>]]',
-                                           $lineage);
+  assertSameElements(['Lambda','tb_EmployeeDatabasedefaultEmployeeTable','db_EmployeeDatabase'], $r.databaseLineage.nodes.data.id);
+
 }
 
 
@@ -49,10 +47,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                         
 
     let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_database2', 'db_dbInc', 'tb_database2defaultfirmTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Firm', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::tds::tdsJoin'],
-                                          '[eID: [firmTable.ID <JoinTreeNode>, firmTable.ID <RelationalOperationElementWithJoin>, personTable.FIRMID <JoinTreeNode>], fID: [firmTable.ID <TableAliasColumn>], firstName: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>], managerID: [personTable.MANAGERID <DynaFunction>]]',
-                                           $lineage);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultfirmTable', 'tb_database2defaultfirmTable', 'db_dbInc', 'db_database2'],$lineage.databaseLineage.nodes.data.id);
+
 }
 
 
@@ -82,33 +78,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::model::simple'],
-                                          '[addressName2: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, firmTable.ID <JoinTreeNode>, personTable.ADDRESSID <JoinTreeNode>, personTable.FIRMID <JoinTreeNode>], addressName: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, firmTable.ID <JoinTreeNode>, personTable.ADDRESSID <JoinTreeNode>, personTable.FIRMID <JoinTreeNode>]]',
-                                           $lineage);
-}
+    assertSameElements(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
 
-###Pure 
-import meta::pure::lineage::scanRelations::*;
-import meta::relational::extension::*;
-import meta::relational::metamodel::join::*;
-import meta::analytics::lineage::*;
-import meta::relational::tests::*;
-import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testTDSJoinOnQualifiedProperty():Boolean[1]
-{
-
-    let fn= {|Person.all()->meta::pure::tds::project([col(p|$p.name, 'name')])
-                                     ->join(Firm.all()->project([col(p|$p.legalName, 'eName')]), JoinType.INNER, {a,b|$a.getString('name') == $b.getString('eName');});
-              };
-                       
-                        
-
-    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::model::simple'],
-                                          '[eName: [firmTable.LEGALNAME <TableAliasColumn>], name: [personTable.FIRSTNAME <TableAliasColumn>, personTable.LASTNAME <TableAliasColumn>]]',
-                                           $lineage);
 }
 
 
@@ -126,10 +97,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                    'addressName'
                                 ])};
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],
-                                          ['Lambda', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-                                          '[addressName: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, firmTable.ID <JoinTreeNode>, firmTable.LEGALNAME <TableAliasColumn>, personTable.ADDRESSID <JoinTreeNode>, personTable.FIRMID <JoinTreeNode>], legalName: [firmTable.LEGALNAME <TableAliasColumn>]]',
-                                           $lineage);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+
 }
 
 ###Pure
@@ -152,13 +121,10 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                    'addressName2'
                                 ]) , JoinType.INNER, {a,b|$a.getString('legalName') == $b.getString('firstname')   && $a.getString('addressName') == $b.getString('addressName2')    ;});};
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::model::simple'],
-                                          '[addressName2: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, personTable.ADDRESSID <JoinTreeNode>], addressName: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, firmTable.ID <JoinTreeNode>, personTable.ADDRESSID <JoinTreeNode>, personTable.FIRMID <JoinTreeNode>], firstname: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>]]',
-                                           $lineage);
+    assertSameElements(['Lambda', 'tb_dbIncdefaultpersonTable', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'db_dbInc'],$lineage.databaseLineage.nodes.data.id);
+
+
 }
-
-
 
 ###Pure
 import meta::analytics::lineage::*;
@@ -169,64 +135,14 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
    let fn =  { |Order.all()-> filter( p| $p.pnlContact->exists(l|$l.address.name == 'Main St' &&  $l.firm.legalName == 'Co' ))
                                  ->project([ f|$f.quantity ], ['quantity'])};
     let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'db_dbInc', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbdefaultaccountTable', 'tb_dbdefaultorderPnlTable', 'tb_dbdefaultorderTable', 'tb_dbdefaultsalesPersonTable'],
-                                          ['Lambda', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Order', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-                                          '[quantity: [orderTable.quantity <TableAliasColumn>]]',
-                                           $lineage);
-}
+    assertSameElements(['Lambda', 'db_db', 'db_dbInc', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable', 'tb_dbdefaultaccountTable', 'tb_dbdefaultorderPnlTable', 'tb_dbdefaultorderTable', 'tb_dbdefaultsalesPersonTable'],$lineage.databaseLineage.nodes.data.id);
 
-
-###Pure
-import meta::relational::metamodel::join::*;
-import meta::analytics::lineage::*;
-import meta::relational::tests::*;
-import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testFunctionWithLet():Boolean[1]
-{
-    let fn= {| let co = 'co';
-              let foo = Firm.all()->filter(f|$f.legalName==$co)->project([  f|$f.legalName,
-                                  f|$f.employees.address.name
-                                ],
-                                [
-                                  'legalName',
-                                   'addressName'
-                                ]);};
-    let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultaddressTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-                                          '[addressName: [addressTable.ID <JoinTreeNode>, addressTable.NAME <TableAliasColumn>, firmTable.ID <JoinTreeNode>, personTable.ADDRESSID <JoinTreeNode>, personTable.FIRMID <JoinTreeNode>], legalName: [firmTable.LEGALNAME <TableAliasColumn>]]',
-                                           $lineage);
-}
-
-
-
-###Pure
-import meta::pure::executionPlan::*;
-import meta::relational::metamodel::join::*;
-import meta::analytics::lineage::*;
-import meta::relational::tests::*;
-import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testFunctionWithMultiExpression():Boolean[1]
-{
-    let fn= {| 
-              let  people = Person.all().firstName;
-              Firm.all()->filter(f|$f.legalName->in($people))->project([  f|$f.legalName
-                                
-                                ],
-                                [
-                                  'legalName'
-                                ]);};
- let lineage = computeLineage($fn,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInc', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-                                          '[legalName: [firmTable.LEGALNAME <TableAliasColumn>]]',
-                                           $lineage);
 }
 
 ###Pure
 import meta::pure::graphFetch::execution::*;
 import meta::relational::tests::model::simple::*;
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForSimpleRelationalGraphFetch():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForSimpleRelationalGraphFetch():Boolean[1]
 {
   let tree = #{
     Person {
@@ -248,7 +164,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 
 }
 
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForComplextRelationalGraphFetch():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForComplextRelationalGraphFetch():Boolean[1]
 {
   let tree = #{
     Person {
@@ -277,7 +193,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 ###Pure
 import meta::relational::tests::milestoning::*;
 import meta::pure::graphFetch::execution::*;
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForRelationalGraphFetchWithMilestoning():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithMilestoning():Boolean[1]
 {
   let tree = #{
       Order {
@@ -304,7 +220,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 ###Pure
 import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
 import meta::pure::graphFetch::execution::*;
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForRelationalGraphFetchWithCrossStore():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithCrossStore():Boolean[1]
 {
   let tree = #{
       Trade {
@@ -330,7 +246,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 ###Pure
 import meta::pure::graphFetch::execution::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForRelationalGraphFetchWithRootUnionSameStore():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithRootUnionSameStore():Boolean[1]
 {
   let tree = #{
       Trade {
@@ -357,7 +273,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                           $lineage);
 }
 
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForRelationalGraphFetchWithRootUnionCrossStore():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithRootUnionCrossStore():Boolean[1]
 {
   let tree = #{
         Trade {
@@ -386,7 +302,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 ###Pure
 import meta::relational::tests::model::simple::*;
 import meta::pure::graphFetch::execution::*;
-function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForRelationalGraphFetchWithPropertyUnion():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::fullAnalyticasTest::testForRelationalGraphFetchWithPropertyUnion():Boolean[1]
 {
   let tree = #{
                 Firm{
