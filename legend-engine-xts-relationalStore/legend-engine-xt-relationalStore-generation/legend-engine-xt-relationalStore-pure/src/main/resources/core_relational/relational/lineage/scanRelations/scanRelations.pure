@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::externalFormat::metamodel::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
@@ -355,41 +356,30 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 
    let childTrees   = meta::pure::lineage::scanRelations::generatRelationalTrees($f, $m, $r, $vars, $debug, $extensions);
 
-
    let rootTree   = ^RelationTree
                      (
                         root = true,
                         children = $childTrees->sortBy(x:RelationTree[1] | if($x.join->isEmpty(), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']'), | $x.relation->cast(@NamedRelation).name->toOne() + '->' + $x.columns.name->joinStrings('[',',',']') + '->' + $x.join.name->toOne()))
                      );
-
    if($debug.debug, | print('Generated Root Tree - \n\n' + $rootTree->relationTreeAsString($debug.space) + '\n\n'), |[]);
 
    $rootTree;
 }
-function meta::pure::lineage::scanRelations::collectStoreMappingCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
+function meta::pure::lineage::scanRelations::collectStoreMappingCluster(cluster:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
 { 
   $cluster->match([
        sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database));  //TODO: Refactor to support additional store types
                                                         if($DBCluster->isNotEmpty() ,|  ^ClusterAndVars(cluster=$DBCluster->toOne() ),|[]);,
-                                            
-        pl:PlatformClusteredValueSpecification[1] |    $pl.val->processPlatformValueSpecification($inScopeVars,$extensions); , 
-       a:Any[*]| fail('Found unsupported cluster type '+ $a->type().name->toOne()) ;  [];
-  ]);
-
-}
-
-function meta::pure::lineage::scanRelations::processPlatformValueSpecification(val:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
-{    
-  $val->match([
+        pl:PlatformClusteredValueSpecification[1] |    $pl.val->collectStoreMappingCluster($inScopeVars,$extensions); ,
+        s:meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] | $s.value-> collectStoreMappingCluster($inScopeVars,$extensions),
        fn:SimpleFunctionExpression[1] |  if ($fn.func ==letFunction_String_1__T_m__T_m_ && $fn.parametersValues->at(1)->instanceOf(ClusteredValueSpecification), //TODO: This might need a more robust function processor for different functions if they become relevent
                                                      | let varName =  $fn.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString();
                                                       let value =  $fn.parametersValues->at(1)->cast(@ClusteredValueSpecification)->collectStoreMappingCluster($inScopeVars,$extensions);
                                                       ^ClusterAndVars(var=$varName,cluster=$value.cluster->last());
                                                       , 
                                                     |[]                                                   
-                                            );,         
-       
-       a:Any[*]| [];
+                                            );,  
+        a:Any[*]| fail('Found unsupported cluster type '+ $a->type().name->toOne()) ;  [];
   ]);
 
 }
@@ -411,16 +401,12 @@ function <<access.private>> meta::pure::lineage::scanRelations::generatRelationa
 {   
    let routed         = $f->routeFunction($m, $r, $extensions, $debug);
    let routedFunction = $routed->evaluateAndDeactivate()->toOne();
-   let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a |  
-
-                                                                                                if ($vs->isLetFunction(),
-                                                                                           |  let varName = $vs->meta::pure::router::utils::extractLetVariableName();
-                                                                                              let varExprs = $vs->findVariableExpressionsInValueSpecification();
-
+   let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a |    if ($vs->isLetFunction() ,
+                                                                                           |  let varName = $vs->meta::pure::router::utils::extractLetVariableName(); 
+                                                                                              let varExprs = $vs->findVariableExpressionsInValueSpecification(false);
                                                                                               let inScopeVars = $a->keyValues();
                                                                                               let unavailableVars = $varExprs.name->forAll(var | $var->in($inScopeVars.first));
-                                                                                              assert($unavailableVars, 'Unable to resolve var(s): '+ $varExprs.name->filter(var | !$var->in($inScopeVars.first))->joinStrings());
-
+                                                                                             assert($unavailableVars, 'Unable to resolve var(s): '+ $varExprs.name->filter(var | !$var->in($inScopeVars.first))->joinStrings());
                                                                                               let re    = $vs->reactivate($a);
                                                                                               $a->put($varName->toOne(), ^List<Any>(values=$re));,
 
@@ -428,22 +414,25 @@ function <<access.private>> meta::pure::lineage::scanRelations::generatRelationa
                                                                                         );
                                                                               }, $f->openVariableValues()->putAll($vars));
 
-                                                                              
-   let allClusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c|$c->  meta::pure::lineage::scanRelations::collectStoreMappingCluster($inScopeVars,$extensions) );   
+   let allClusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c|$c->  meta::pure::lineage::scanRelations::collectStoreMappingCluster($inScopeVars,$extensions) );
    let AllTrees =   $allClusters->fold({ v, a|    let fn = $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
                                                   let context = ^RelationalExecutionContext();
-                                                  let SQL =   $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression)->toSQLQuery($m, $a.vars, $context, noDebug(), $extensions)  ;    
+                                                  let SQL =   $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression)->toSQLQuery($m, $a.vars, $context, $debug, $extensions)  ;    
                                                   if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($SQL, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
   
                                                   let possibleClass = $fn.genericType.rawType->toOne();
-                                                 let updatedVars = if($v.var->isNotEmpty(),
+                                                 let updatedVars = if($v.var->isNotEmpty() && $SQL ->instanceOf(TdsSelectSqlQuery),
                                                                       | let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fn); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
                                                                         let tdsType =  $class->meta::relational::mapping::TDSSelectQueryToTDSResultType($SQL->cast(@TdsSelectSqlQuery),$context);
                                                                         let varName = $v.var->toOne();
                                                                         let varset = ^PlanSetPlaceHolder(name=$varName,tdsColumns = $tdsType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]]));
                                                                          $inScopeVars->put($varName,^List<Any>(values=$varset));,
-                                                                      |$a.vars);
-                                               let updatedTree=   generateRelationTreeFromRelationalOperationElement($SQL, noDebug(), $extensions)->concatenate($a.tree);
+                                                                      |  if( $v.var->isNotEmpty() && $fn->instanceOf(DataType),
+                                                                                 |  let varName = $v.var->toOne();
+                                                                                    $inScopeVars->put($varName,^List<Any>(values= ^VarSetPlaceHolder(varName= $v.var->toOne())));,
+                                                                                 |$a.vars));
+                                                                                 
+                                               let updatedTree=   generateRelationTreeFromRelationalOperationElement($SQL, $debug, $extensions)->concatenate($a.tree);
                                               ^RelationalTreeAndVars(tree= $updatedTree, vars=$updatedVars);
                                           }    , ^RelationalTreeAndVars(vars=$inScopeVars)).tree;
 
@@ -611,11 +600,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
                                                                 let alias         = if($tac.alias.name == $sourceAliasName, | $sourceOperation, |$targetOperation);
                                                                 let tree          = if($tac.alias.name == $sourceAliasName, | $sourceTree, |$targetTree);
                                                                 let sourceColumn  = $tac->extractSourceColumn($alias, $relationIndentifiers, $tree);
-
-                                                                if($sourceColumn->isEmpty(),
+                                                             if($sourceColumn->isEmpty()  || ($sourceColumn->size() > 1),
                                                                    |pair($tac, ^SQLNull()),
-                                                                   | assert( $sourceColumn.owner->cast(@NamedRelation)->isNotEmpty(), 'Expecting column to have an owner ' +$sourceColumn.name->makeString() + 'in ' + $j.joinName );
-                                                                     let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
+                                                                   | let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
                                                                      let newTableAliasColumn = ^TableAliasColumn(alias=^TableAlias(name = $namedRelation.name, relationalElement=$namedRelation), column = $sourceColumn->toOne(), columnName = $sourceColumn.name->toOne());
                                                                     pair($tac, $newTableAliasColumn);
                                                                 ););
@@ -635,7 +622,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
                                       |$nonNullPairs);
    let updatedAliases           = $updatedNonNullPairs.second.alias->removeDuplicatesBy(ta | $ta.name + '@' + $ta.relation->getRelationName());
 
-   if($updatedAliases->size() == 0,
+   if($updatedAliases->size() == 0 ,
       |if($debug.debug, | print($debug.space + 'Expect this case to arise when join does not reference any columns. Example join operation - true, false, 1 = 1\n');, |[]);
        let sourceRelation = $sourceOperation->extractSourceRelation($relationIndentifiers);
        let orgJoin        = $j.join;
@@ -700,7 +687,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::isNull(d:DynaFun
       |false);
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumn(tableAliasColumn:TableAliasColumn[1], sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
+function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumn(tableAliasColumn:TableAliasColumn[1], sourceOperation:RelationalOperationElement[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[*]
 {
    $sourceOperation->match([
                               v:ViewSelectSQLQuery[1]| if(getRelationName($v.view)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
@@ -714,20 +701,17 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                            ]);
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumnFromSelectSQLQuery(select : SelectSQLQuery[1], tableAliasColumn:TableAliasColumn[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
+function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumnFromSelectSQLQuery(select : SelectSQLQuery[1], tableAliasColumn:TableAliasColumn[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[*]
 {
    let reqTableAliasColumn = $select.columns->filter(col | let colName = $col->match([a:Alias[1] | $a.name,
                                                                                       tac:TableAliasColumn[1] | $tac.column.name]);
                                                            $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
 
-   assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString() +' in '  +$reqTableAliasColumn.column.name->joinStrings());
-
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
       |[],
       |let rootTree        = $select.data->toOne();
        let childTrees      = $rootTree->children()->map(child | $child->extractJoinChildren());
-       let sourceOperation = $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $reqTableAliasColumn.alias.name).alias->toOne();
-       $reqTableAliasColumn->toOne()->extractSourceColumn($sourceOperation, $relationIdentifiers, $sourceTree);
+       $reqTableAliasColumn->map(c|$c->extractSourceColumn( $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $c.alias.name).alias->toOne(), $relationIdentifiers, $sourceTree));
    );
 }
 
