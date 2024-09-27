@@ -210,22 +210,20 @@ public class PostgresWireProtocol
     private Properties properties;
 
     private Messages messages;
+    private CompletableFuture<?> activeExecution;
 
     public PostgresWireProtocol(SessionsFactory sessions,
-            /*Function<CoordinatorSessionSettings, AccessControl> getAcessControl,*/
-            /*Consumer<ChannelPipeline> addTransportHandler,*/
                                 AuthenticationProvider authService,
                                 GSSConfig gssConfig, Supplier<SslContext> getSslContext,
                                 Messages messages)
     {
         this.sessions = sessions;
-        //this.getAccessControl = getAcessControl;
-        //this.addTransportHandler = addTransportHandler;
         this.authService = authService;
         this.decoder = new PgDecoder(getSslContext);
         this.handler = new MessageHandler();
         this.gssConfig = gssConfig;
         this.messages = messages;
+        this.activeExecution = CompletableFuture.completedFuture(null);
     }
 
 
@@ -676,9 +674,8 @@ public class PostgresWireProtocol
             }*/
             paramTypes.add(dataType);
         }
-        CompletableFuture<?> parseCompletionFuture = session.parseAsync(statementName, query, paramTypes);
-        CompletableFuture<Void> parseMsgSentFuture = parseCompletionFuture.thenRun(() -> messages.sendParseComplete(channel));
-        session.setActiveExecution(parseMsgSentFuture);
+        this.activeExecution = this.activeExecution.thenRunAsync(() -> session.parse(statementName, query, paramTypes))
+                .thenRun(() -> messages.sendParseComplete(channel));
     }
 
     private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
@@ -805,9 +802,8 @@ public class PostgresWireProtocol
         }
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
-        CompletableFuture<?> bindCompletionFuture = session.bindAsync(portalName, statementName, params, resultFormatCodes);
-        CompletableFuture<Void> bindMsgSentFuture = bindCompletionFuture.thenRun(() -> messages.sendBindComplete(channel));
-        session.setActiveExecution(bindMsgSentFuture);
+        this.activeExecution = this.activeExecution.thenRunAsync(() -> session.bind(portalName, statementName, params, resultFormatCodes))
+                .thenRunAsync(() -> messages.sendBindComplete(channel));
     }
 
     private <T> List<T> createList(short size)
@@ -833,9 +829,9 @@ public class PostgresWireProtocol
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
-            CompletableFuture<DescribeResult> describeResultFuture = session.describeAsync((char) type, portalOrStatement);
-            CompletableFuture<Void> describeMsgSentFuture = describeResultFuture.thenAccept(describeResult ->
+            this.activeExecution = this.activeExecution.thenComposeAsync(ignored1 ->
             {
+                DescribeResult describeResult = session.describe((char) type, portalOrStatement);
                 try
                 {
                     PostgresResultSetMetaData fields = describeResult.getFields();
@@ -869,8 +865,8 @@ public class PostgresWireProtocol
                     OpenTelemetryUtil.ACTIVE_METADATA.add(-1);
                     span.end();
                 }
+                return CompletableFuture.completedFuture(describeResult);
             });
-            session.setActiveExecution(describeMsgSentFuture);
         }
     }
 
@@ -904,8 +900,7 @@ public class PostgresWireProtocol
             //
             // To ensure clients receive messages in the correct order we delay all writes
             // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
-
-            session.executeAsync(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages));
+            this.activeExecution = this.activeExecution.thenCompose(ignored1 -> session.execute(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages)));
         }
         catch (Exception e)
         {
@@ -943,8 +938,8 @@ public class PostgresWireProtocol
         try
         {
             ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
-            CompletableFuture<Object> rfqFuture = session.sync().handle(readyForQueryCallback);
-            session.setActiveExecution(rfqFuture);
+            this.activeExecution = this.activeExecution.thenRun(() -> session.sync())
+                    .handle(readyForQueryCallback);
         }
         catch (Throwable t)
         {
@@ -1007,13 +1002,12 @@ public class PostgresWireProtocol
             }
 
             List<String> queries = QueryStringSplitter.splitQuery(queryString);
-            CompletableFuture<?> composedFuture = CompletableFuture.completedFuture(null);
+            CompletableFuture<?> composedFuture = this.activeExecution;
             for (String query : queries)
             {
                 composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
             }
-            CompletableFuture<Object> rfqFuture = composedFuture.handle(new ReadyForQueryCallback(channel, messages));
-            session.setActiveExecution(rfqFuture);
+            this.activeExecution = composedFuture.handle(new ReadyForQueryCallback(channel, messages));
         }
         catch (Exception e)
         {
@@ -1045,8 +1039,7 @@ public class PostgresWireProtocol
             }
             try
             {
-                session.executeSimple(query, () -> new ResultSetReceiver(query, channel, true, null, messages));
-                return session.sync();
+                return session.executeSimple(query, () -> new ResultSetReceiver(query, channel, true, null, messages));
             }
             catch (Throwable t)
             {
