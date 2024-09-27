@@ -198,18 +198,15 @@ public class PostgresWireProtocol
     final PgDecoder decoder;
     final MessageHandler handler;
     private final SessionsFactory sessions;
-    /* private final Function<CoordinatorSessionSettings, AccessControl> getAccessControl;*/
     private final AuthenticationProvider authService;
     private final GSSConfig gssConfig;
-    /*  private final Consumer<ChannelPipeline> addTransportHandler;
-     */
+    private final Messages messages;
     private DelayableWriteChannel channel;
     Session session;
     private boolean ignoreTillSync = false;
     private AuthenticationContext authContext;
     private Properties properties;
 
-    private Messages messages;
     private CompletableFuture<?> activeExecution;
 
     public PostgresWireProtocol(SessionsFactory sessions,
@@ -668,14 +665,13 @@ public class PostgresWireProtocol
         {
             int oid = buffer.readInt();
             int dataType = PGTypes.fromOID(oid);
- /*           if (dataType == null) {
-                throw new IllegalArgumentException(
-                    String.format(Locale.ENGLISH, "Can't map PGType with oid=%d to Crate type", oid));
-            }*/
             paramTypes.add(dataType);
         }
-        this.activeExecution = this.activeExecution.thenRunAsync(() -> session.parse(statementName, query, paramTypes))
-                .thenRun(() -> messages.sendParseComplete(channel));
+        this.addTaskToQueue(() ->
+        {
+            session.parse(statementName, query, paramTypes);
+            messages.sendParseComplete(channel);
+        });
     }
 
     private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
@@ -802,8 +798,11 @@ public class PostgresWireProtocol
         }
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
-        this.activeExecution = this.activeExecution.thenRunAsync(() -> session.bind(portalName, statementName, params, resultFormatCodes))
-                .thenRunAsync(() -> messages.sendBindComplete(channel));
+        this.addTaskToQueue(() ->
+        {
+            session.bind(portalName, statementName, params, resultFormatCodes);
+            messages.sendBindComplete(channel);
+        });
     }
 
     private <T> List<T> createList(short size)
@@ -817,7 +816,7 @@ public class PostgresWireProtocol
      * <p>
      * Body: | 'S' = prepared statement or 'P' = portal | string nameOfPortalOrStatement
      */
-    private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws Exception
+    private void handleDescribeMessage(ByteBuf buffer, Channel channel)
     {
         OpenTelemetryUtil.TOTAL_METADATA.add(1);
         OpenTelemetryUtil.ACTIVE_METADATA.add(1);
@@ -829,7 +828,7 @@ public class PostgresWireProtocol
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
-            this.activeExecution = this.activeExecution.thenComposeAsync(ignored1 ->
+            this.addTaskToQueue(() ->
             {
                 DescribeResult describeResult = session.describe((char) type, portalOrStatement);
                 try
@@ -865,7 +864,6 @@ public class PostgresWireProtocol
                     OpenTelemetryUtil.ACTIVE_METADATA.add(-1);
                     span.end();
                 }
-                return CompletableFuture.completedFuture(describeResult);
             });
         }
     }
@@ -900,7 +898,7 @@ public class PostgresWireProtocol
             //
             // To ensure clients receive messages in the correct order we delay all writes
             // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
-            this.activeExecution = this.activeExecution.thenCompose(ignored1 -> session.execute(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages)));
+            this.composeTaskInQueue(() -> session.execute(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages)));
         }
         catch (Exception e)
         {
@@ -937,9 +935,8 @@ public class PostgresWireProtocol
         }
         try
         {
-            ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
-            this.activeExecution = this.activeExecution.thenRun(() -> session.sync())
-                    .handle(readyForQueryCallback);
+            this.addTaskToQueue(() -> session.sync());
+            this.handleRfq();
         }
         catch (Throwable t)
         {
@@ -1002,12 +999,12 @@ public class PostgresWireProtocol
             }
 
             List<String> queries = QueryStringSplitter.splitQuery(queryString);
-            CompletableFuture<?> composedFuture = this.activeExecution;
             for (String query : queries)
             {
-                composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
+                Supplier<CompletableFuture<Void>> runnable = () -> handleSingleQuery(query, channel);
+                this.composeTaskInQueue(runnable);
             }
-            this.activeExecution = composedFuture.handle(new ReadyForQueryCallback(channel, messages));
+            this.handleRfq();
         }
         catch (Exception e)
         {
@@ -1022,14 +1019,14 @@ public class PostgresWireProtocol
     }
 
 
-    private CompletableFuture<?> handleSingleQuery(String query, DelayableWriteChannel channel)
+    private CompletableFuture<Void> handleSingleQuery(String query, DelayableWriteChannel channel)
     {
 
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
-        try (Scope scope = span.makeCurrent())
+        try (Scope ignored = span.makeCurrent())
         {
-            CompletableFuture<?> result = new CompletableFuture<>();
+            CompletableFuture<Void> result = new CompletableFuture<>();
 
             if (query.isEmpty() || ";".equals(query))
             {
@@ -1092,5 +1089,22 @@ public class PostgresWireProtocol
                             new Oid("1.3.6.1.5.5.2")            // SPNEGO
                     }, GSSCredential.ACCEPT_ONLY);
         }
+    }
+
+    private void addTaskToQueue(Runnable action)
+    {
+        this.activeExecution = this.activeExecution.thenRunAsync(action);
+    }
+
+    private void composeTaskInQueue(Supplier<CompletableFuture<Void>> action)
+    {
+        this.activeExecution = this.activeExecution.thenComposeAsync(ignored -> action.get());
+    }
+
+    private void handleRfq()
+    {
+        ReadyForQueryCallback readyForQueryCallback = new ReadyForQueryCallback(channel, messages);
+        // handle will not propagate any previous exceptions, so future tasks will run
+        this.activeExecution = this.activeExecution.handle(readyForQueryCallback);
     }
 }

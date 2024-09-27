@@ -302,7 +302,7 @@ public class Session implements AutoCloseable
         }
     }
 
-    CompletableFuture<?> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
+    CompletableFuture<Void> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute").startSpan();
@@ -324,7 +324,7 @@ public class Session implements AutoCloseable
             if (preparedStatement == null)
             {
                 resultSetReceiver.allFinished();
-                return CompletableFuture.completedFuture(Boolean.TRUE);
+                return CompletableFuture.completedFuture(null);
             }
             preparedStatement.setMaxRows(maxRows);
             PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
@@ -345,7 +345,7 @@ public class Session implements AutoCloseable
     }
 
 
-    CompletableFuture<?> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
+    CompletableFuture<Void> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
     {
 
         if (LOGGER.isDebugEnabled())
