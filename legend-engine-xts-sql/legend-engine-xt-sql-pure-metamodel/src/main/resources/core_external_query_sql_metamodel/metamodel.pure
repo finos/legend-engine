@@ -184,7 +184,7 @@ Class meta::external::query::sql::metamodel::LikePredicate extends meta::externa
   <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> pattern: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> escape: meta::external::query::sql::metamodel::Expression[0..1];
-  <<equality.Key>> ignoreCase: Boolean[1];
+  <<equality.Key>> ignoreCase: Boolean[1] = false;
 }
 
 Class meta::external::query::sql::metamodel::SortItem extends meta::external::query::sql::metamodel::Node
