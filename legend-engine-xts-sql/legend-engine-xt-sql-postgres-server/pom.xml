@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.59.1-SNAPSHOT</version>
+        <version>4.60.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
