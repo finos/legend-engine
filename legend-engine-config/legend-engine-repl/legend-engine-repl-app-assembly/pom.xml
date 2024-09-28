@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-repl</artifactId>
-        <version>4.60.0</version>
+        <version>4.60.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-repl-app-assembly</artifactId>
