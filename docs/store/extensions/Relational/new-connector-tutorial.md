@@ -364,7 +364,7 @@ If your database supports it, we can alternatively launch a test instance at run
 The framework is set in a way that as you incrementally implement more features, more tests will start passing, instead of being ignored.
 You don't need to implement all the features before you can deploy and use the connector.
 
-10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. For full list, look at enum DynaFunctionRegistry in this [file](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-pure/src/main/resources/core_relational/relational/sqlQueryToString/dbExtension.pure).
+10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. For full list, look at enum DynaFunctionRegistry in this [file](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-core-pure/src/main/resources/core_relational/relational/sqlQueryToString/dbExtension.pure).
 Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure with the following
 
     ~~~java
