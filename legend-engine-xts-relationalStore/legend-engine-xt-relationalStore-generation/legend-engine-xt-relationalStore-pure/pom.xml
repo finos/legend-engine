@@ -28,5 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-core-pure</module>
+        <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
     </modules>
 </project>

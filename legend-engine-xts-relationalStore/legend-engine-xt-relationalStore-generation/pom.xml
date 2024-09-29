@@ -29,7 +29,6 @@
     <modules>
         <module>legend-engine-xt-relationalStore-http-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
-        <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-testDataGeneration-http-api</module>
