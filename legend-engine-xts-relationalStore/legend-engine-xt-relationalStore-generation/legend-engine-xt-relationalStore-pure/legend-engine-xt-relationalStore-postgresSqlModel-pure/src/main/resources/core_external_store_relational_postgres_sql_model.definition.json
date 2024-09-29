@@ -1,5 +1,5 @@
 {
-  "name": "core_external_query_sql_metamodel",
+  "name": "core_external_store_relational_postgres_sql_model",
   "pattern": "(meta::external::query::sql)(::.*)?",
   "dependencies": [
     "platform",

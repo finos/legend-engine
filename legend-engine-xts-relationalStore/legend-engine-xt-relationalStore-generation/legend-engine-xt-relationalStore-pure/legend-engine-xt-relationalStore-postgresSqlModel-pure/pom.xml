@@ -18,14 +18,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xts-sql</artifactId>
+        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
         <version>4.60.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-sql-pure-metamodel</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-postgresSqlModel-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - SQL - PAR/JAVA - Metamodel</name>
+    <name>Legend Engine - XT - Relational Store - Postgres SQL Model - PAR/JAVA</name>
 
     <build>
         <plugins>
@@ -36,10 +36,10 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>core_external_query_sql_metamodel</repository>
+                        <repository>core_external_store_relational_postgres_sql_model</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_query_sql_metamodel.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_external_store_relational_postgres_sql_model.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -88,7 +88,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_external_query_sql_metamodel</repository>
+                                <repository>core_external_store_relational_postgres_sql_model</repository>
                             </repositories>
                         </configuration>
                     </execution>

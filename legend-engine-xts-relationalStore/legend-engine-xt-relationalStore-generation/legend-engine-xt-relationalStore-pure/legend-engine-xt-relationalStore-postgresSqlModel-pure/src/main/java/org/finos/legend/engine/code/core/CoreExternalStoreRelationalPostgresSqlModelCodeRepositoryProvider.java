@@ -18,11 +18,11 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalQuerySQLMetamodelCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreExternalStoreRelationalPostgresSqlModelCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_query_sql_metamodel.definition.json");
+        return GenericCodeRepository.build("core_external_store_relational_postgres_sql_model.definition.json");
     }
 }
