@@ -13,20 +13,20 @@
 // limitations under the License.
 
 import meta::external::query::sql::metamodel::*;
-import meta::external::store::relational::sqlDialectGeneration::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
 
-Class meta::external::store::relational::sqlDialectGeneration::SqlDialectGenerationConfig
+Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTranslationConfig
 {
   dbConfig : DbConfig[1];
 }
 
-Class meta::external::store::relational::sqlDialectGeneration::DbConfig
+Class meta::external::store::relational::sqlDialectTranslation::DbConfig
 {
   dbType     : String[1];
   dbTimeZone : String[0..1];
 }
 
-function meta::external::store::relational::sqlDialectGeneration::generateSqlDialectForStatement(statement: Statement[1], config: SqlDialectGenerationConfig[1]): String[1]
+function meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForStatement(statement: Statement[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   $statement->match([
     q: Query[1]     | $q->generateSqlDialectForQuery($config),
@@ -34,7 +34,7 @@ function meta::external::store::relational::sqlDialectGeneration::generateSqlDia
   ])
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectGeneration::generateSqlDialectForQuery(query: Query[1], config: SqlDialectGenerationConfig[1]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForQuery(query: Query[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   fail('Not implemented yet!');
   '';

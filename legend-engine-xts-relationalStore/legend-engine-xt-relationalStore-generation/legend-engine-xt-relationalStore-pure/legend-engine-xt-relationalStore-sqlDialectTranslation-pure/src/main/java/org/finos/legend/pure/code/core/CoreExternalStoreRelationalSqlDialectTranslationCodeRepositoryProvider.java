@@ -18,11 +18,11 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalStoreRelationalSqlDialectGenerationCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreExternalStoreRelationalSqlDialectTranslationCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_store_relational_sql_dialect_generation.definition.json");
+        return GenericCodeRepository.build("core_external_store_relational_sql_dialect_translation.definition.json");
     }
 }

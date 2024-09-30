@@ -350,7 +350,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-sqlDialectGeneration-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-sqlDialectTranslation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Relational -->
