@@ -1,0 +1,60 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+
+//operations on booleans
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::testSetup(config:DbTestConfig[1]):Boolean[1]
+{
+   let records ='default\n'+
+                'personTable\n'+
+                'id, firstName, lastName, age, addressId, firmId, managerId\n'+
+                '1,Peter,Smith,23,1,1,2';
+
+   meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::db,
+                                                     $config, meta::relational::extension::relationalExtensions());
+  // if there is any error in creating table or inserting data > the test fails
+  true;
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::testCreateTableForAllColumnDataTypes(config:DbTestConfig[1]):Boolean[1]
+{
+  //insert empty data > ensure create table statement is properly translated for all column data types
+   meta::relational::dbTestRunner::doSetupOnConnection('', meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::dataTypeDB,
+                                                     $config, meta::relational::extension::relationalExtensions());
+  true;
+}
+
+###Relational
+Database meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::dataTypeDB
+(
+    Table dataTypTable(i INT,bi BIGINT, si SMALLINT, ti TINYINT,
+                f Float,d Double, dc Decimal(1,1) , num NUMERIC(1,1), real REAL,
+                var VARCHAR(10) , char CHAR(10),
+                date DATE, ts TIMESTAMP,
+                bit BIT, bin BINARY(100), varbin VARBINARY(100)
+                // arr ARRAY , dis DISTINCT , other OTHER,
+                //  json JSON , ss SEMISTRUCTURED
+              )
+)
+
+###Relational
+Database meta::relational::tests::dbSpecificTests::sqlQueryTests::ddl::db
+(
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+)

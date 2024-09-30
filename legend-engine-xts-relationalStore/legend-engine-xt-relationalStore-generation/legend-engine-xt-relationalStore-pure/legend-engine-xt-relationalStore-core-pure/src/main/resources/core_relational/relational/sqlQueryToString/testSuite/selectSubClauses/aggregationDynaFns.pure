@@ -1,7 +1,9 @@
+import meta::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
+import meta::relational::tests::model::simple::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
 {
@@ -167,7 +169,7 @@ function meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClaus
 
   let dynaFunc = ^DynaFunction(name = $func , parameters=[
     ^DynaFunction(name = 'greaterThan', parameters = [
-        ^TableAliasColumn(column = $column,alias = ^TableAlias(name = 'myTable', relationalElement = $table)), 
+        ^TableAliasColumn(column = $column,alias = ^TableAlias(name = 'myTable', relationalElement = $table)),
         ^Literal(value = $value)])]);
 
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
@@ -176,4 +178,57 @@ function meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClaus
 
   let expected = ^Literal(value=$expectedValue);
   runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::joinStrings::testJoinStrings(config:DbTestConfig[1]):Boolean[1]
+{
+   let result = executeViaPlan(|Firm.all()->project([
+                                                  f|$f.legalName,
+                                                  f|$f.employees->sortBy(#/Person/firstName#).firstName->joinStrings()
+                                              ],
+                                              [
+                                                  'legalName',
+                                                  'employeesFirstNamePerFirm'
+                           ]), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  runDataAssertion($result, $config,
+          | let tds = $result.values->at(0);
+            assertEquals([String, String], $result.values.columns.type);
+
+            let resultStrs = $tds.rows->map(r| if($r.values->at(0) == ^TDSNull(),
+                                                  |'Null',
+                                                  |$r.values->at(0)->cast(@String)->toOne() + ', ' + $r.values->at(1)->cast(@String)->toOne()
+                                                  ))->sort();
+              assertSameElements(['Firm A, Fabrice',
+                                  'Firm B, Oliver',
+                                  'Firm C, David',
+                                  'Firm X, Anthony,John,John,Peter'], $resultStrs);
+          );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::joinStrings::testJoinStringsWithSep(config:DbTestConfig[1]):Boolean[1]
+{
+   let result = executeViaPlan(|Firm.all()->project([
+                                                  f|$f.legalName,
+                                                  f|$f.employees->sortBy(#/Person/firstName#).firstName->joinStrings('|')
+                                              ],
+                                              [
+                                                  'legalName',
+                                                  'employeesFirstNamePerFirm'
+                           ]), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  runDataAssertion($result, $config,
+          | let tds = $result.values->at(0);
+            assertEquals([String, String], $result.values.columns.type);
+
+            let resultStrs = $tds.rows->map(r| if($r.values->at(0) == ^TDSNull(),
+                                                  |'Null',
+                                                  |$r.values->at(0)->cast(@String)->toOne() + ', ' + $r.values->at(1)->cast(@String)->toOne()
+                                                  ))->sort();
+              assertSameElements(['Firm A, Fabrice',
+                                  'Firm B, Oliver',
+                                  'Firm C, David',
+                                  'Firm X, Anthony|John|John|Peter'], $resultStrs);
+          );
 }
