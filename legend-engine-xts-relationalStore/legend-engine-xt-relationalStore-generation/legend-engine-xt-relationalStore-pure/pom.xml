@@ -30,5 +30,7 @@
         <module>legend-engine-xt-relationalStore-core-pure</module>
         <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-relationalStore-postgresSqlModel-pure</module>
+        <module>legend-engine-xt-relationalStore-sqlPlanning-pure</module>
+        <module>legend-engine-xt-relationalStore-sqlDialectGeneration-pure</module>
     </modules>
 </project>

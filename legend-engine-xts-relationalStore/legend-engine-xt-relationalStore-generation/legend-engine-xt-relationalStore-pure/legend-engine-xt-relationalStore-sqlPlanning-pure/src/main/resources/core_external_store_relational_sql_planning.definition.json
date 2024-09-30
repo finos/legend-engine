@@ -1,0 +1,8 @@
+{
+  "name": "core_external_store_relational_sql_planning",
+  "pattern": "(meta::external::store::relational::sqlPlanning)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_external_store_relational_postgres_sql_model"
+  ]
+}

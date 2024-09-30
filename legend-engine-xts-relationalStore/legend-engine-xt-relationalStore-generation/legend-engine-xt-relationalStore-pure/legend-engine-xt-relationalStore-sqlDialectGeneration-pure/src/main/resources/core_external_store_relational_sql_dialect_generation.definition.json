@@ -1,0 +1,8 @@
+{
+  "name": "core_external_store_relational_sql_dialect_generation",
+  "pattern": "(meta::external::store::relational::sqlDialectGeneration)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_external_store_relational_postgres_sql_model"
+  ]
+}
