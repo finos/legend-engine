@@ -85,7 +85,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::dummyNodeForCla
     ^PropertyPathNode( class = $c,  property= getDummyProperty());
 }
 
-function <<access.private>> meta::pure::lineage::scanProperties::findAndAddChildrenAtTheEnd(tree: PropertyPathTree[1], path: PropertyPathNode[*], toAdd: PropertyPathTree[*]):PropertyPathTree[1]
+function  meta::pure::lineage::scanProperties::findAndAddChildrenAtTheEnd(tree: PropertyPathTree[1], path: PropertyPathNode[*], toAdd: PropertyPathTree[*]):PropertyPathTree[1]
 {
    if($path->isEmpty(),
       | ^$tree(children += $toAdd),
