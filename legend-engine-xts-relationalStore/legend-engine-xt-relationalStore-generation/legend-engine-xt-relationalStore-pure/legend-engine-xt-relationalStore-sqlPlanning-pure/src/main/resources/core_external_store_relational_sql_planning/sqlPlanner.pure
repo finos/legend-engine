@@ -14,21 +14,22 @@
 
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlPlanning::*;
+import meta::pure::extension::*;
 
 Class meta::external::store::relational::sqlPlanning::SqlPlanningConfig
 {
   dbType : String[1];
 }
 
-function meta::external::store::relational::sqlPlanning::planSqlStatement(statement: Statement[1], config: SqlPlanningConfig[1]): Statement[1]
+function meta::external::store::relational::sqlPlanning::planSqlStatement(statement: Statement[1], config: SqlPlanningConfig[1], extensions: Extension[*]): Statement[1]
 {
   $statement->match([
-    q: Query[1]     | $q->planSqlQuery($config),
+    q: Query[1]     | $q->planSqlQuery($config, $extensions),
     s: Statement[1] | fail('Planning of sql statement of type - ' + $statement->type()->elementToPath() + ' not supported'); $statement;
   ])
 }
 
-function <<access.private>> meta::external::store::relational::sqlPlanning::planSqlQuery(query: Query[1], config: SqlPlanningConfig[1]): Query[1]
+function <<access.private>> meta::external::store::relational::sqlPlanning::planSqlQuery(query: Query[1], config: SqlPlanningConfig[1], extensions: Extension[*]): Query[1]
 {
   fail('Not implemented yet!');
   $query;

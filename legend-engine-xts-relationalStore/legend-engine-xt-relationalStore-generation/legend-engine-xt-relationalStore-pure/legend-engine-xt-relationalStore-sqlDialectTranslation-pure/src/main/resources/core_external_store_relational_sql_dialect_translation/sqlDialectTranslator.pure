@@ -14,6 +14,7 @@
 
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::pure::extension::*;
 
 Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTranslationConfig
 {
@@ -26,15 +27,15 @@ Class meta::external::store::relational::sqlDialectTranslation::DbConfig
   dbTimeZone : String[0..1];
 }
 
-function meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForStatement(statement: Statement[1], config: SqlDialectTranslationConfig[1]): String[1]
+function meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForStatement(statement: Statement[1], config: SqlDialectTranslationConfig[1], extensions: Extension[*]): String[1]
 {
   $statement->match([
-    q: Query[1]     | $q->generateSqlDialectForQuery($config),
-    s: Statement[1] | fail('Dialect generation for sql statement of type - ' + $statement->type()->elementToPath() + ' not supported'); '';
+    q: Query[1]     | $q->generateSqlDialectForQuery($config, $extensions),
+    s: Statement[1] | fail('Dialect translation for sql statement of type - ' + $statement->type()->elementToPath() + ' not supported'); '';
   ])
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForQuery(query: Query[1], config: SqlDialectTranslationConfig[1]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::generateSqlDialectForQuery(query: Query[1], config: SqlDialectTranslationConfig[1], extensions: Extension[*]): String[1]
 {
   fail('Not implemented yet!');
   '';
