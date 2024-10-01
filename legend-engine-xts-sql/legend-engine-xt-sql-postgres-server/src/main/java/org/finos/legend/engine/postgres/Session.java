@@ -60,9 +60,6 @@ public class Session implements AutoCloseable
     private final ExecutorService executorService;
     private final Identity identity;
 
-    private CompletableFuture<?> activeExecution;
-
-
     public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService, Identity identity)
     {
         this.executorService = executorService;
@@ -70,7 +67,6 @@ public class Session implements AutoCloseable
         this.identity = identity;
         OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
         OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
-        activeExecution = CompletableFuture.completedFuture(null);
     }
 
     public Identity getIdentity()
@@ -78,27 +74,13 @@ public class Session implements AutoCloseable
         return identity;
     }
 
-    public void setActiveExecution(CompletableFuture<?> activeExecution)
-    {
-        this.activeExecution = activeExecution;
-    }
-
-    public CompletableFuture<?> sync()
+    public void sync()
     {
         //TODO do we need to handle batch requests?
         LOGGER.info("Sync");
-        return activeExecution;
     }
 
-    public CompletableFuture<?> parseAsync(String statementName, String query, List<Integer> paramTypes)
-    {
-        LOGGER.debug("got request to parse");
-        activeExecution = activeExecution.thenRunAsync(() -> parse(statementName, query, paramTypes), executorService);
-        LOGGER.debug("done queuing parse");
-        return activeExecution;
-    }
-
-    private void parse(String statementName, String query, List<Integer> paramTypes)
+    void parse(String statementName, String query, List<Integer> paramTypes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -162,17 +144,7 @@ public class Session implements AutoCloseable
         return stmt.paramType[idx];
     }
 
-
-    public CompletableFuture<?> bindAsync(String portalName, String statementName, List<Object> params,
-                                          FormatCodes.FormatCode[] resultFormatCodes)
-    {
-        LOGGER.debug("got request to bind");
-        activeExecution = activeExecution.thenRunAsync(() -> bind(portalName, statementName, params, resultFormatCodes), executorService);
-        LOGGER.debug("done queuing bind");
-        return activeExecution;
-    }
-
-    private void bind(String portalName, String statementName, List<Object> params, FormatCodes.FormatCode[] resultFormatCodes)
+    void bind(String portalName, String statementName, List<Object> params, FormatCodes.FormatCode[] resultFormatCodes)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -198,17 +170,7 @@ public class Session implements AutoCloseable
         }
     }
 
-
-    public CompletableFuture<DescribeResult> describeAsync(char type, String portalOrStatement)
-    {
-        LOGGER.debug("got request to describe");
-        CompletableFuture<DescribeResult> describeCompletionFuture = activeExecution.thenApplyAsync(ignored -> describe(type, portalOrStatement), executorService);
-        activeExecution = describeCompletionFuture;
-        LOGGER.debug("done queuing describe");
-        return describeCompletionFuture;
-    }
-
-    private DescribeResult describe(char type, String portalOrStatement)
+    DescribeResult describe(char type, String portalOrStatement)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -340,19 +302,7 @@ public class Session implements AutoCloseable
         }
     }
 
-    CompletableFuture<?> executeAsync(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
-    {
-        LOGGER.debug("got request to execute");
-        activeExecution = activeExecution.thenComposeAsync(ignored ->
-        {
-            LOGGER.debug("execute: previous stage response is {}", ignored);
-            return execute(portalName, maxRows, resultSetReceiverProvider);
-        }, executorService);
-        LOGGER.debug("done queuing execute");
-        return activeExecution;
-    }
-
-    private CompletableFuture<?> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
+    CompletableFuture<Void> execute(String portalName, int maxRows, Function<String, ResultSetReceiver> resultSetReceiverProvider)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute").startSpan();
@@ -374,14 +324,13 @@ public class Session implements AutoCloseable
             if (preparedStatement == null)
             {
                 resultSetReceiver.allFinished();
-                return CompletableFuture.completedFuture(Boolean.TRUE);
+                return CompletableFuture.completedFuture(null);
             }
             preparedStatement.setMaxRows(maxRows);
             PreparedStatementExecutionTask task = new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver);
             // Task does not wait for any future since it is always chained asynchronously
             CompletableFuture.runAsync(task::call, executorService);
-            activeExecution = resultSetReceiver.completionFuture();
-            return activeExecution;
+            return resultSetReceiver.completionFuture();
         }
         catch (Exception e)
         {
@@ -396,7 +345,7 @@ public class Session implements AutoCloseable
     }
 
 
-    CompletableFuture<?> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
+    CompletableFuture<Void> executeSimple(String query, Supplier<ResultSetReceiver> resultSetReceiverProvider)
     {
 
         if (LOGGER.isDebugEnabled())
@@ -409,14 +358,9 @@ public class Session implements AutoCloseable
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
             span.addEvent("submit StatementExecutionTask");
-            activeExecution = activeExecution
-                    .thenComposeAsync(ignored ->
-                    {
-                        ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.get();
-                        Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
-                        return resultSetReceiver.completionFuture();
-                    }, executorService);
-            return activeExecution;
+            ResultSetReceiver resultSetReceiver = resultSetReceiverProvider.get();
+            Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
+            return resultSetReceiver.completionFuture();
         }
         catch (Exception e)
         {
