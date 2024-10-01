@@ -73,7 +73,7 @@ public class Drop implements Command
                 String tableName = tokens[2];
                 try (Statement statement = connection.createStatement())
                 {
-                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().dropTable(tableName, tokens[1]));
+                    statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().dropTable(tableName));
                     this.client.println("Dropped table: '" + tableName + "'");
                 }
             }

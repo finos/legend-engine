@@ -99,6 +99,7 @@ public class Client
         this.documentation = DocumentationGeneration.buildDocumentation();
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
+        replExtensions.forEach(e -> e.postInitialize(this));
 
         this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
         if (System.getProperty("legend.repl.initializationMessage") != null)

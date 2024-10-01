@@ -80,7 +80,9 @@ public class DataCubeHelpers
         {
             client.printDebug("---------------------------------------- PLAN ----------------------------------------");
         }
-        Root_meta_pure_executionPlan_ExecutionPlan _plan = legendInterface.generatePlan(pureModel, debug);
+        // TODO: Since H2 does not support pivot(), when pivot() is used, the debugger will fail as it defaults to use H2
+        // when we switch out to use DuckDB as the core testing DB, then this issue should be resolved
+        Root_meta_pure_executionPlan_ExecutionPlan _plan = legendInterface.generatePlan(pureModel, false);
         String planStr = PlanGenerator.serializeToJSON(_plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
         if (client != null && debug)
         {
