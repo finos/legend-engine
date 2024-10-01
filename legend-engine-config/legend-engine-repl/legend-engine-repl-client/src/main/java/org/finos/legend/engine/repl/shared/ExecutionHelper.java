@@ -82,8 +82,6 @@ public class ExecutionHelper
         PureModel pureModel = client.getLegendInterface().compile(pmcd);
 
         // Plan
-        // TODO: Since H2 does not support pivot(), when pivot() is used, the debugger will fail as it defaults to use H2
-        // when we switch out to use DuckDB as the core testing DB, then this issue would be resolved
         Root_meta_pure_executionPlan_ExecutionPlan plan = client.getLegendInterface().generatePlan(pureModel, client.isDebug());
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);

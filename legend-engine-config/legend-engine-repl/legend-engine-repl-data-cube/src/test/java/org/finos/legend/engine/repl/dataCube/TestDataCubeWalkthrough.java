@@ -22,8 +22,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.dataCube.commands.DataCubeWalkthrough;
+import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -51,6 +53,7 @@ public class TestDataCubeWalkthrough
     @Test
     public void testAllCommandsExecution()
     {
+        Assert.assertEquals(DataCubeSampleData.SPORT.tableName, this.walkthrough.getTableName());
         Lists.mutable.with(
                 walkthrough.query(DataCubeWalkthrough.DataCubeWalkthrough1.SELECT_ALL),
                 walkthrough.query(DataCubeWalkthrough.DataCubeWalkthrough1.FILTER),

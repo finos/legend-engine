@@ -18,6 +18,7 @@ import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeInfrastructureInfo;
+import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,6 +40,8 @@ public class DataCubeInfrastructure
                     {
                         DataCubeInfrastructureInfo info = new DataCubeInfrastructureInfo();
                         info.gridClientLicense = System.getProperty("legend.repl.dataCube.gridLicenseKey") == null ? "" : System.getProperty("legend.repl.dataCube.gridLicenseKey");
+                        info.simpleSampleDataTableName = DataCubeSampleData.TREE.tableName;
+                        info.complexSampleDataTableName = DataCubeSampleData.SPORT.tableName;
                         handleResponse(exchange, 200, state.objectMapper.writeValueAsString(info), state);
                     }
                     catch (Exception e)

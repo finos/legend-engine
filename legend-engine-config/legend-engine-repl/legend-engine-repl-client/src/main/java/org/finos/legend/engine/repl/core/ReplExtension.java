@@ -48,5 +48,15 @@ public interface ReplExtension extends LegendExtension
 
     MutableList<String> generateDynamicContent(String code);
 
-    void initialize(Client client);
+    default void initialize(Client client)
+    {
+    }
+
+    // This method is called after all extensions have been initialized
+    // This is useful for cases where we need to invoke initialization-type tasks from one extension
+    // that might depend on another extension. This is for now the preferred approach over specifying
+    // a dependency graph to determine the order of initialization.
+    default void postInitialize(Client client)
+    {
+    }
 }
