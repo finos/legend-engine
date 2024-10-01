@@ -37,7 +37,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,14 +100,7 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
             throw e;
         }
         FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
-        GenericType lastStatementReturnType = body.getLast()._genericType();
-        HelperModelBuilder.checkCompatibility(this.context, lastStatementReturnType._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
-
-        // concrete functions do not support type arguments (ie. the diamond within Pair<String, String>) in Engine grammar
-        // Hence, if the raw types are compatible per above checks, we will infer the type arguments from the expression itself
-        // and propagate it on the function return type to ensure the Pure graph is constructed correctly
-        fType._returnType()._typeArguments(lastStatementReturnType._typeArguments());
-
+        HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
         ctx.pop();
         targetFunc._expressionSequence(body);
         HelperFunctionBuilder.processFunctionSuites(function, targetFunc, this.context, ctx);

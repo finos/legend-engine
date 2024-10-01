@@ -76,7 +76,6 @@ public class CompileContext
             "meta::pure::metamodel::function::property",
             "meta::pure::metamodel::extension",
             "meta::pure::metamodel::import",
-            "meta::pure::metamodel::relation",
             "meta::pure::functions::date",
             "meta::pure::functions::string",
             "meta::pure::functions::collection",
