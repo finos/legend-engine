@@ -25,6 +25,7 @@ import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.commands.Execute;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.schema.Table;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
@@ -161,10 +162,14 @@ public class DataCubeWalkthrough implements Command
                     Statement statement = connection.createStatement())
             {
                 MutableList<Table> tables = getTables(connection);
-                this.tableName = tableName == null ? "table" + (tables.size() + 1) : tableName;
+                if (tables.anySatisfy(table -> table.name.equals(DataCubeSampleData.SPORT.tableName)))
+                {
+                    this.tableName = DataCubeSampleData.SPORT.tableName;
+                }
+                this.tableName = this.tableName == null ? "table" + (tables.size() + 1) : this.tableName;
                 // automatically create new table for walkthrough if it doesn't exist or somehow dropped between walkthrough steps
                 // NOTE: if the table has been replaced or changed somehow, the walkthrough will fail (we should consider resetting the table)
-                if (!tables.anySatisfy(t -> t.name.equals(this.tableName)))
+                if (!tables.anySatisfy(table -> table.name.equals(this.tableName)))
                 {
                     Path tempFile = Files.createTempFile("walkthrough-sample-data", ".csv");
                     FileOutputStream fos = new FileOutputStream(tempFile.toFile());
@@ -324,6 +329,11 @@ public class DataCubeWalkthrough implements Command
         private RelationalReplExtension getRelationalExtension()
         {
             return this.client.getReplExtensions().selectInstancesOf(RelationalReplExtension.class).getFirst();
+        }
+
+        public String getTableName()
+        {
+            return this.tableName;
         }
 
         private String query(MutableList<String> parts, Integer indexToHighlight)

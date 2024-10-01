@@ -56,7 +56,7 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     }
 
     @Override
-    public String dropTable(String tableName, String location)
+    public String dropTable(String tableName)
     {
         return "DROP TABLE " + tableName + ";";
     }

@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.repl.dataCube;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.repl.client.Client;
@@ -22,11 +24,13 @@ import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.dataCube.commands.*;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
 
 public class DataCubeReplExtension implements ReplExtension
 {
     private Client client;
     public REPLServer replServer;
+    public MutableMap<String, DataCubeSampleData> samples = Maps.mutable.empty();
 
     @Override
     public String type()
@@ -34,6 +38,7 @@ public class DataCubeReplExtension implements ReplExtension
         return "relational";
     }
 
+    @Override
     public void initialize(Client client)
     {
         this.client = client;
@@ -42,6 +47,22 @@ public class DataCubeReplExtension implements ReplExtension
         {
             this.replServer = new REPLServer(this.client);
             this.replServer.initialize();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void postInitialize(Client client)
+    {
+        this.client = client;
+
+        try
+        {
+            Lists.mutable.with(DataCubeSampleData.SPORT, DataCubeSampleData.TREE).forEach(sample -> this.samples.put(sample.name, sample));
+            this.samples.forEach(sample -> sample.load(this.client));
         }
         catch (Exception e)
         {
