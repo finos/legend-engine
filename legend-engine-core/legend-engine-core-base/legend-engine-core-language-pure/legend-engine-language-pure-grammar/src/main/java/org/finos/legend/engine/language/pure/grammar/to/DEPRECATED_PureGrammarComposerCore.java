@@ -89,6 +89,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Uni
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
@@ -741,6 +742,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             case "tdsOlapAggregation":
                 TdsOlapAggregation tdsOlapAggregation = (TdsOlapAggregation) iv.value;
                 return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this) + ")";
+            case "tdsAggregateValue":
+                TDSAggregateValue tdsAggregateValue = (TDSAggregateValue) iv.value;
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" +  convertString(tdsAggregateValue.name,true) + "," + tdsAggregateValue.mapFn.accept(this) + ", " + tdsAggregateValue.aggregateFn.accept(this) + ")";
+
             default:
                 PureGrammarComposerContext context = this.toContext();
                 Function2<Object, PureGrammarComposerContext, String> val = context.extraEmbeddedPureComposers.get(iv.type);
