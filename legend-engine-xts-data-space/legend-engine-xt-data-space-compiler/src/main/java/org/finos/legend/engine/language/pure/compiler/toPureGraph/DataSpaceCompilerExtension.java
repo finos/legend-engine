@@ -219,7 +219,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                             if (executableIds.add(executableId))
                             {
                                 return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
-                                        ._id(executable.id)
+                                        ._id(executableId)
                                         ._title(executable.title)
                                         ._description(executable.description)
                                         ._executionContextKey(executable.executionContextKey)
