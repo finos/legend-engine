@@ -789,7 +789,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::recurse_inlineQ
                               let qual = $p.value->cast(@PropertyPathNode).property->cast(@QualifiedProperty<Any>);
                               let qualifierTreeCurrent = $qual.expressionSequence->evaluateAndDeactivate()->toOne()->internal_scanProperties([], noVars(), $config,^Map<String,ScanPropertiesState>(), noDebug()).current;
                               let qualifierTree = $p.qualifierSubTree.children;
-                              $qualifierTree->map(t | $t->findAndAddChildrenAtTheEnd($qualifierTreeCurrent.values, $p.children)).children;findAndAddChildrenAtTheEnd($qualifierTree, $qualifierTreeCurrent.values, $p.children).children;
+                              $qualifierTree->map(t | $t->findAndAddChildrenAtTheEnd($qualifierTreeCurrent.values, $p.children)).children;
                            }
                         )->map(nt| $nt->recurse_inlineQualifiedPropertyNodes($config));
                      },
