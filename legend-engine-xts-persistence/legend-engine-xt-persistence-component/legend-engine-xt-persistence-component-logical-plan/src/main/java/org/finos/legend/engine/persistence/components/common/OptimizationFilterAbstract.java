@@ -29,11 +29,17 @@ public interface OptimizationFilterAbstract
     @Value.Parameter(order = 0)
     String fieldName();
 
-    @Value.Parameter(order = 1)
-    String lowerBoundPattern();
+    @Value.Default
+    default String lowerBoundPattern()
+    {
+        return "{" + fieldName() + "_legend_persistence_lower}";
+    }
 
-    @Value.Parameter(order = 2)
-    String upperBoundPattern();
+    @Value.Default
+    default String upperBoundPattern()
+    {
+        return "{" + fieldName() + "_legend_persistence_upper}";
+    }
 
     @Value.Default
     default boolean includesNullValues()
