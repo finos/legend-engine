@@ -2486,5 +2486,3 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::functionCaching::testMapp
          b: $src.c.b.d->func3($src.s2).val2
       }
 )
-
-
