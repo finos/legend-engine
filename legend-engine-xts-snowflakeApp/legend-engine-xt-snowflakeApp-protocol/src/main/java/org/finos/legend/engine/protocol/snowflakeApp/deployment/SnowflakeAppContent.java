@@ -30,7 +30,6 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
     public String grantStatement;
     public String applicationName;
     public String description;
-    public String ownership;
     public String creationTime;
     public String permissionScope;
     public MutableList<String> usedTables = Lists.mutable.empty();

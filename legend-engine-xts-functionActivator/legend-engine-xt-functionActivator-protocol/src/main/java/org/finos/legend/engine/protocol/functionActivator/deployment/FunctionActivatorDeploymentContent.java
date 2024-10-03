@@ -19,4 +19,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class FunctionActivatorDeploymentContent
 {
+    public String ownership;
 }
