@@ -19,7 +19,7 @@ import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::*;
 
-function meta::pure::graphFetch::tests::sourceTreeCalc::testSingleProperty():Boolean[1]
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSingleProperty():Boolean[1]
 {
    let tree = #{
       A {
