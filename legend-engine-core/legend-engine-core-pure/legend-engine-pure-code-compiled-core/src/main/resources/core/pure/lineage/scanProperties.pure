@@ -90,10 +90,13 @@ function  meta::pure::lineage::scanProperties::findAndAddChildrenAtTheEnd(tree: 
    if($path->isEmpty(),
       | ^$tree(children += $toAdd),
       | let first = $path->at(0);
-        let correctTree = $tree.children->filter(x | $x.value->instanceOf(PropertyPathNode) && ($x.value->cast(@PropertyPathNode).property == $first.property))->toOne();
-        let otherTrees = $tree.children->remove($correctTree);
-        ^$tree(
-           children = $otherTrees->concatenate($correctTree->findAndAddChildrenAtTheEnd($path->tail(), $toAdd))
+        let correctTree = $tree.children->filter(x | $x.value->instanceOf(PropertyPathNode) && ($x.value->cast(@PropertyPathNode).property == $first.property));
+        if($correctTree->isEmpty(),
+        |^$tree(children += $toAdd),
+        | let otherTrees = $tree.children->remove($correctTree->toOne());
+          ^$tree(
+           children = $otherTrees->concatenate($correctTree->toOne()->findAndAddChildrenAtTheEnd($path->tail(), $toAdd))
+          );
         );
    )
 }
@@ -788,8 +791,8 @@ function <<access.private>> meta::pure::lineage::scanProperties::recurse_inlineQ
                            {| 
                               let qual = $p.value->cast(@PropertyPathNode).property->cast(@QualifiedProperty<Any>);
                               let qualifierTreeCurrent = $qual.expressionSequence->evaluateAndDeactivate()->toOne()->internal_scanProperties([], noVars(), $config,^Map<String,ScanPropertiesState>(), noDebug()).current;
-                              let qualifierTree = $p.qualifierSubTree.children->toOne();
-                              findAndAddChildrenAtTheEnd($qualifierTree, $qualifierTreeCurrent.values, $p.children).children;
+                              let qualifierTree = $p.qualifierSubTree.children;
+                              $qualifierTree->map(t | $t->findAndAddChildrenAtTheEnd($qualifierTreeCurrent.values, $p.children)).children;
                            }
                         )->map(nt| $nt->recurse_inlineQualifiedPropertyNodes($config));
                      },
