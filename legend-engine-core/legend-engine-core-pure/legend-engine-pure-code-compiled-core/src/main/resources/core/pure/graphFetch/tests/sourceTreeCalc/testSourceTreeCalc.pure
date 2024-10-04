@@ -2492,7 +2492,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::sourceTreeCalc::testNestedQualifiedPropertyWithMultiExpression():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::sourceTreeCalc::testNestedQualifiedPropertyWithMultiExpression():Boolean[1]
 {
   let grammar = '###Pure\n'+
   'import meta::pure::graphFetch::*;\n'+
