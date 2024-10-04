@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGe
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.pure.v1.model.context.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -78,7 +79,7 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
             if (!(element._stereotypes().anySatisfy(stereotype ->
                     stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
             {

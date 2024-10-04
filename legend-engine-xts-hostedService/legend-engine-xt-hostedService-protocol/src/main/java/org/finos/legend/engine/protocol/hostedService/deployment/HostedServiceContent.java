@@ -21,7 +21,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 public class HostedServiceContent extends FunctionActivatorDeploymentContent
 {
     public String pattern;
-
     public GenerationInfo info;
     public PureModelContext serviceData;
 
@@ -30,15 +29,16 @@ public class HostedServiceContent extends FunctionActivatorDeploymentContent
         //jackson
     }
 
-    public HostedServiceContent(String pattern, GenerationInfo info)
+    public HostedServiceContent(String pattern, GenerationInfo info, String ownership)
     {
         this.pattern = pattern;
         this.info = info;
+        this.ownership = ownership;
     }
 
-    public HostedServiceContent(String pattern, GenerationInfo info, PureModelContext serviceData)
+    public HostedServiceContent(String pattern, GenerationInfo info, PureModelContext serviceData, String ownership)
     {
-        this(pattern, info);
+        this(pattern, info, ownership);
         this.serviceData = serviceData;
     }
 }
