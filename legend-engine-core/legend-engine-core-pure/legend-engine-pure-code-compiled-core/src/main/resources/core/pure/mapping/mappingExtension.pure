@@ -225,6 +225,14 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
    );
 }
 
+function meta::pure::router::routing::allSuperSetImplementationIds(idToClassMapping:Map<String, List<SetImplementation>>[1], id:String[1]):String[*]
+{
+    let setImplementation = $idToClassMapping->get($id).values;
+    $id->concatenate(if ($setImplementation->isEmpty() || $setImplementation.superSetImplementationId->isEmpty(),
+                         | [],
+                         | $idToClassMapping->allSuperSetImplementationIds($setImplementation.superSetImplementationId->toOne())));
+}
+
 function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
 {
     let cm = $m->classMappingById($i.inlineSetImplementationId);

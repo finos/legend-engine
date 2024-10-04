@@ -111,6 +111,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    graphFetchProperties : Property<Nil,Any|*>[*];
    pushDownEnumTransformations :Boolean[1] = false;
    currentWindow : WindowColumn[0..1];
+   idToClassMapping : Map<String, List<SetImplementation>>[1];
 }
 
 Class meta::relational::functions::pureToSqlQuery::FunctionParamScope
@@ -281,7 +282,12 @@ function  meta::relational::functions::pureToSqlQuery::relationalExecutionContex
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1]):State[1]
 {
-   ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+   ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=classMappings($mapping->toOne())->groupBy({x|$x.id}));
+}
+
+function meta::relational::functions::pureToSqlQuery::getClassMappingById(state: State[1], id: String[1]): SetImplementation[*]
+{
+  $state.idToClassMapping->get($id).values;
 }
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
@@ -1436,7 +1442,7 @@ function meta::relational::functions::pureToSqlQuery::doJoinToClass(relationalPr
        let joinTree = $relationalPropertyMapping.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode->toOne();
 
        let className = $c.name->toOne();
-       let classMappings = $state.mapping->toOne()->classMappingById($relationalPropertyMapping.targetSetImplementationId);
+       let classMappings = $state->getClassMappingById($relationalPropertyMapping.targetSetImplementationId);
        assertSize($classMappings, 1, 'Expected 1 class mapping for \'%s\' in \'%s\', found %d', [$className, $state.mapping.name->toOne(), $classMappings->size()]);
        let setImplementation = $classMappings->toOne()->match([a : meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] | $a.mainSetImplementation, s: SetImplementation[1] | $s])->cast(@RootRelationalInstanceSetImplementation);
 
@@ -1580,11 +1586,11 @@ function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(u
    let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation)->allPropertyMappings().sourceSetImplementationId->distinct();
    if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
        | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation)->_propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
-       | let propMappings = $relationalPropertyMappings->filter(r|$state.mapping->toOne()->classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds));
+       | let propMappings = $relationalPropertyMappings->filter(r|$state->getClassMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds));
          // Filtering overriden property mappings
          let propertyMappingToSuperSetIdsMap = $propMappings->map({pm |
             let pmSourceSetId = $pm.sourceSetImplementationId;
-            pair($pm, list($state.mapping->toOne()->allSuperSetImplementationIds($pmSourceSetId)->remove($pmSourceSetId)));
+            pair($pm, list($state.idToClassMapping->allSuperSetImplementationIds($pmSourceSetId)->remove($pmSourceSetId)));
          })->newMap();
          $propMappings->filter({pm |
             let pmSourceSetId = $pm.sourceSetImplementationId;
@@ -1714,14 +1720,14 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
 
                                                       let currentTreeNodeElement = $srcOperation.currentTreeNode.alias.relationalElement->toOne();
                                                       let extractParentMappingId = {rpm: RelationalPropertyMapping[1] |
-                                                         $state.mapping->toOne()->classMappingById($rpm.sourceSetImplementationId)->match([
+                                                         $state->getClassMappingById($rpm.sourceSetImplementationId)->match([
                                                             r:RootRelationalInstanceSetImplementation[1]     | $r.id,
                                                             e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.id
                                                          ])
                                                       };
 
                                                       let shouldUpdatePropertyMappings = if ($currentTreeNodeElement->isUnionOrNestedUnion(),
-                                                                                             | let allSourceSetIdsForUnionSets = $currentTreeNodeElement->resolveUnion().setImplementations->map(s | $state.mapping->toOne()->allSuperSetImplementationIds($s.id));
+                                                                                             | let allSourceSetIdsForUnionSets = $currentTreeNodeElement->resolveUnion().setImplementations->map(s | $state.idToClassMapping->allSuperSetImplementationIds($s.id));
                                                                                                !$relationalPropertyMappings->exists({rpm |
                                                                                                   !$extractParentMappingId->eval($rpm)->in($allSourceSetIdsForUnionSets)
                                                                                                });,
@@ -1732,7 +1738,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                             let union = $currentTreeNodeElement->resolveUnion();
                                                             let nullAlias = ^Alias(name = $property.name->toOne(), relationalElement = ^Literal(value = ^SQLNull()));
                                                             $union.setImplementations->map({currentSet |
-                                                               let superSetIds = $state.mapping->toOne()->allSuperSetImplementationIds($currentSet.id);
+                                                               let superSetIds = $state.idToClassMapping->allSuperSetImplementationIds($currentSet.id);
                                                                let filteredRpms = $relationalPropertyMappings->filter(rpm | $extractParentMappingId->eval($rpm)->in($superSetIds));
                                                                let newRpms = if ($filteredRpms->isNotEmpty(),
                                                                    | $filteredRpms,
@@ -1883,7 +1889,7 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
                             | $crossPropertyMappings->at(0).owner->toOne());
                          let targetSet = $crossPropertyMappings->at(0)->instanceOf(CrossSetImplementationReverseComplexPropertyMapping)->if(
                             | $crossPropertyMappings->at(0)->cast(@CrossSetImplementationReverseComplexPropertyMapping).targetSet->cast(@CrossSetImplementation)->convertCrossSetImplToRelationalSetImpl(),
-                            | $state.mapping->toOne()->classMappingById($crossPropertyMappings->at(0).targetSetImplementationId)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+                            | $state->getClassMappingById($crossPropertyMappings->at(0).targetSetImplementationId)->cast(@RootRelationalInstanceSetImplementation)->toOne());
                          let propertypairs = $crossPropertyMappings->at(0)->cast(@CrossSetImplementationComplexPropertyMapping).crossExperssionPropertyPairs;
                          let currentAlias = $oldSrcOperation.currentTreeNode.alias;
                          let targetAlias = $targetSet.mainTableAlias->createJoinTableAlias($nodeId, $state, [], $context, $extensions);
@@ -2199,7 +2205,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                                                                                                                              |[],
                                                                                                                                              |$t.currentPropertyMapping->match([
                                                                                                                                                  e:EmbeddedRelationalInstanceSetImplementation[1]| $e,
-                                                                                                                                                 p:PropertyMapping[1]| $state.mapping->toOne()->classMappingById($t.currentPropertyMapping.targetSetImplementationId->toOne())->toOne()
+                                                                                                                                                 p:PropertyMapping[1]| $state->getClassMappingById($t.currentPropertyMapping.targetSetImplementationId->toOne())->toOne()
                                                                                                                                                  ])
                                                                                                                                          )
                                                                                                                                    ));
@@ -8159,9 +8165,10 @@ function meta::relational::functions::pureToSqlQuery::replaceJoinTreeNodeWithLea
    ^$relationalPropertyMapping(relationalOperationElement = $updatedRelationalOperationElementWithJoin);
 }
 
-function meta::relational::functions::pureToSqlQuery::getRelation(setId:String[1], mapping:Mapping[1]):Relation[1]
+function meta::relational::functions::pureToSqlQuery::getRelation(setId:String[1], mapping:Mapping[1], state: State[0..1]):Relation[1]
 {
-   $mapping->classMappingById($setId)->match([r:RootRelationalInstanceSetImplementation[1] | $r, e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner])->toOne()->mainRelation();
+   let classMappings = if($state->isNotEmpty(), | $state->toOne()->getClassMappingById($setId), | $mapping->classMappingById($setId));
+   $classMappings->match([r:RootRelationalInstanceSetImplementation[1] | $r, e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner])->toOne()->mainRelation();
 }
 
 function meta::relational::functions::pureToSqlQuery::isOrderedSubsetOf(aliases1:Pair<String, RelationalOperationElement>[*], aliases2:Pair<String, RelationalOperationElement>[*]):Boolean[1]

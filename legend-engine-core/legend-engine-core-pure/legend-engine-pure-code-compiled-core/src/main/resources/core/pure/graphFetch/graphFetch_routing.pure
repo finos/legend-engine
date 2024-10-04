@@ -237,10 +237,11 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
                                                                        ])
                      );
 
-  $routedTree->ensureXStoreRequirementsAtCurrentLevel($rootGetAllExpression, [], [], $mapping, $extensions)->splitPropertyTrees($mapping, $extensions, $exeCtx)->cast(@RoutedRootGraphFetchTree<Any>);
+  let idToClassMapping = classMappings($mapping)->groupBy({x|$x.id});
+  $routedTree->ensureXStoreRequirementsAtCurrentLevel($rootGetAllExpression, [], [], $mapping, $extensions)->splitPropertyTrees($mapping, $idToClassMapping, $extensions, $exeCtx)->cast(@RoutedRootGraphFetchTree<Any>);
 }
 
-function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*], exeCtx: meta::pure::runtime::ExecutionContext[1]):RoutedGraphFetchTree[1]
+function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1], mapping: Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], extensions:meta::pure::extension::Extension[*], exeCtx: meta::pure::runtime::ExecutionContext[1]):RoutedGraphFetchTree[1]
 {
   let updatedSubTrees = $tree.subTrees->map(st | let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
                                                  let splitPropertyTreeWhenMultipleSetImpls = ($propertyTree.sets->size() > 1) && ($propertyTree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion));
@@ -252,17 +253,17 @@ function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1]
                                                       let sourceSetImplementation = $tree.sets->toOne();
                                                       let multipleExpressionForUnion = meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation($property.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingRoutedValueSpecification), $sourceSetImplementation, $exeCtx, $extensions);
                                                       $multipleExpressionForUnion->map(x | ^$propertyTree(property = ^$property(expressionSequence = $x), sets = $x.sets););,
-                                                    | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                    | let sourceSetImplementationIds = $idToClassMapping->allSuperSetImplementationIds($tree.sets->toOne().id);
                                                       $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($sourceSetImplementationIds))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));
                                                     );,
                                                  | if($splitPropertyTreeWhenMultiplePropertyMappings,
-                                                      | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                      | let sourceSetImplementationIds = $idToClassMapping->allSuperSetImplementationIds($tree.sets->toOne().id);
                                                         ^$propertyTree(propertyMapping = $propertyTree.propertyMapping->filter(pm | $pm.sourceSetImplementationId->in($sourceSetImplementationIds)));,
                                                       | $propertyTree
                                                       );
                                                  );
                                            );
-  ^$tree(subTrees = $updatedSubTrees->map(s | $s->cast(@RoutedGraphFetchTree)->splitPropertyTrees($mapping, $extensions, $exeCtx)));
+  ^$tree(subTrees = $updatedSubTrees->map(s | $s->cast(@RoutedGraphFetchTree)->splitPropertyTrees($mapping, $idToClassMapping, $extensions, $exeCtx)));
 }
 
 function meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation(routedVs: StoreMappingRoutedValueSpecification[1], sourceSetImplementation:SetImplementation[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]): StoreMappingRoutedValueSpecification[*]
