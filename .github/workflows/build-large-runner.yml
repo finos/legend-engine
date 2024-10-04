@@ -9,13 +9,18 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: "11"
+
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+        with:
+          theme: dark
 
       - name: Build
         run: mvn -B -e -T 4 install -DargLine="-Xmx12g"
