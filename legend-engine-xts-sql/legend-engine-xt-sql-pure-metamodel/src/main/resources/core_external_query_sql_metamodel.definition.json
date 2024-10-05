@@ -1,8 +1,0 @@
-{
-  "name": "core_external_query_sql_metamodel",
-  "pattern": "(meta::external::query::sql)(::.*)?",
-  "dependencies": [
-    "platform",
-    "core_functions_unclassified"
-  ]
-}

@@ -538,7 +538,7 @@ public class TestExtensions
                 .with("core_external_format_arrow")
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
-                .with("core_external_query_sql_metamodel")
+                .with("core_external_store_relational_postgres_sql_model")
                 .with("core_function_activator")
                 .with("core_functions_standard")
                 .with("core_functions_relation")
@@ -582,6 +582,8 @@ public class TestExtensions
                 .with("core_elasticsearch_seven_metamodel")
                 .with("core_nonrelational_mongodb")
                 .with("core_nonrelational_mongodb_java_platform_binding")
+                .with("core_external_store_relational_sql_planning")
+                .with("core_external_store_relational_sql_dialect_translation")
                 ;
     }
 }
