@@ -224,6 +224,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                                                          | $propertyMappings->map(pm |$pm->match([
                                                                                               rpm: RelationalPropertyMapping[1] | $rpm->meta::analytics::lineage::flowDatabase::getTables(),
                                                                                               ppm: PurePropertyMapping[1] | [],
+                                                                                              agr: meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1] |meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($agr)->cast(@RelationalPropertyMapping)->meta::analytics::lineage::flowDatabase::getTables();,
                                                                                               a: Any[*] | fail('Database lineage not support for given type of mapping: ' + $pm->typeName()); [];
                                                                                              ])),
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
