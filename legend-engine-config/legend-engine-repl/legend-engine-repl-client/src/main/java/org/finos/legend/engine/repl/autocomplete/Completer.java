@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.repl.autocomplete;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -38,9 +41,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.repl.autocomplete.handlers.*;
+import org.finos.legend.engine.repl.autocomplete.handlers.CastHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.DistinctHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.GroupByHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.JoinHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.OverHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.PivotHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
@@ -52,20 +68,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
-import java.util.List;
-import java.util.Objects;
-
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
-
 public class Completer
 {
-    private final String buildCodeContext;
     private final String header;
     private final int lineOffset;
     private final MutableMap<String, FunctionHandler> handlers;
-    private final java.util.function.Function<PureModelContextData, PureModel> compiler;
-    private MutableList<CompleterExtension> extensions;
+    private final Supplier<PureModel> pureModel;
+    private final MutableList<CompleterExtension> extensions;
 
     public Completer(String buildCodeContext)
     {
@@ -74,24 +83,26 @@ public class Completer
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
     {
-        this(buildCodeContext, extensions, x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
+        this(() -> Compiler.compile(PureGrammarParser.newInstance().parseModel(buildCodeContext), null, Identity.getAnonymousIdentity().getName()), extensions);
     }
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
-        this(buildCodeContext, extensions, legendInterface::compile);
+        this(() -> legendInterface.compile(legendInterface.parse(buildCodeContext)), extensions);
     }
 
-    private Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, java.util.function.Function<PureModelContextData, PureModel> compiler)
+    public Completer(PureModel pureModel, MutableList<CompleterExtension> extensions)
     {
-        this.compiler = compiler;
+        this(() -> pureModel, extensions);
+    }
+
+    private Completer(Supplier<PureModel> pureModel, MutableList<CompleterExtension> extensions)
+    {
+        this.pureModel = pureModel;
         this.extensions = extensions;
-        this.buildCodeContext = buildCodeContext;
-        this.header =
-                buildCodeContext +
-                        "\n###Pure\n" +
-                        "import meta::pure::functions::relation::*;\n" +
-                        "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
+        this.header = "\n###Pure\n" +
+                "import meta::pure::functions::relation::*;\n" +
+                "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
                 new CastHandler(),
@@ -134,13 +145,8 @@ public class Completer
             ValueSpecification vs = parseValueSpecification(ParserFixer.fixCode(value));
             ValueSpecification topExpression = findTopExpression(vs);
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
-
-            PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = this.compiler.apply(pureModelContextData);
-
             ProcessingContext processingContext = new ProcessingContext("");
-
-            return processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
+            return processValueSpecification(topExpression, currentExpression, pureModel.get(), processingContext);
         }
         catch (EngineException e)
         {
