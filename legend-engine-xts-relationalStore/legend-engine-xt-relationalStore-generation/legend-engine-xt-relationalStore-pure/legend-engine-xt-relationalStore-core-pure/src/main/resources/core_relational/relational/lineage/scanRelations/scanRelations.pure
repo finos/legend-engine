@@ -363,7 +363,7 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 function meta::pure::lineage::scanRelations::collectStoreMappingCluster(cluster:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
 { 
   $cluster->match([
-       sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database));  //TODO: Refactor to support additional store types
+       sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database) || $cvs.store->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareStore));  //TODO: Refactor to support additional store types
                                                         if($DBCluster->isNotEmpty() ,|  ^ClusterAndVars(cluster=$DBCluster->toOne() ),|[]);,
         pl:PlatformClusteredValueSpecification[1] |    $pl.val->collectStoreMappingCluster($inScopeVars,$extensions); ,
         s:meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] | $s.value-> collectStoreMappingCluster($inScopeVars,$extensions),
