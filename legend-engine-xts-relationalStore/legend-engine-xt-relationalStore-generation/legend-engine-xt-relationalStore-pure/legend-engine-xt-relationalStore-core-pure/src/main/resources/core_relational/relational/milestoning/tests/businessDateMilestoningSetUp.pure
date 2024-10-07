@@ -1234,6 +1234,59 @@ Mapping meta::relational::tests::milestoning::viewFilter::MilestoningWithFilters
    }
 )
 
+###Mapping
+import meta::relational::tests::milestoning::*;
+Mapping meta::relational::tests::milestoning::milestoningmapWithMappingExtensionsInc
+(
+
+   meta::relational::tests::milestoning::ProductWithConstraint1[product1] extends [product]: Relational{
+      val : [dbInclusion]ProductTable.name
+   }
+
+      meta::relational::tests::milestoning::Product[product] : Relational{
+      id : [dbInclusion]ProductTable.id
+   }
+
+)
+
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithMappingExtensions
+(
+  include  meta::relational::tests::milestoning::milestoningmapWithMappingExtensionsInc[dbInclusion->dbWithInclusion]
+  
+   meta::relational::tests::milestoning::OrderPnl[order] : Relational{
+      pnl : [dbWithInclusion]OrderTable.pnl
+   }
+
+  meta::relational::tests::milestoning::OrderPNLProduct: Relational
+  {
+      AssociationMapping
+        (
+          ascPnL[product,order] : [dbWithInclusion]@Order_Product,
+          ascProduct[order,product] : [dbWithInclusion]@Order_Product
+        )
+
+  }
+
+)
+
+###Relational
+Database meta::relational::tests::milestoning::dbWithInclusion(
+  include  meta::relational::tests::milestoning::dbInclusion
+  
+   Table OrderTable(id Integer PRIMARY KEY, orderDate DATE, prodFk Integer, pnl Integer)
+     Join Order_Product(OrderTable.prodFk=ProductTable.id)
+
+)
+
+
+###Relational
+Database meta::relational::tests::milestoning::dbInclusion(
+ 
+   Table ProductTable(id Integer PRIMARY KEY, orderDate DATE, name VARCHAR(255), prodFk Integer)
+)
+
+
 ###Relational
 Database meta::relational::tests::milestoning::ViewChainDb
 (

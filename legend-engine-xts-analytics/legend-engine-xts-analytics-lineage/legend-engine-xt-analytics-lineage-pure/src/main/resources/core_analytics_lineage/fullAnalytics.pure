@@ -236,7 +236,10 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                           ,
                      cl: Class<Any>[1]|if($disregardClass,
                                              |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, false, $extraChildren)),
-                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $m->rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren));
+                                             | 
+                                               let sets = $m->_classMappingByClass($cl)->map(s|$s->meta::pure::router::routing::resolveOperation($m));
+                                               let setsWithSuper = $sets->map(s|$s->allSuperSetImplementations($m))->concatenate($sets)->cast(@InstanceSetImplementation);
+                                                meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $setsWithSuper, false, $extraChildren));
                                        );,
                      a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, $disregardClass, $extraChildren))
                    ]);
