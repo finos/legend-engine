@@ -26,6 +26,7 @@ import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 import java.math.BigDecimal;
@@ -118,6 +119,13 @@ public class TestTDSInterpreted extends TestTDS
             {
                 double[] data = (double[]) dataAsObject;
                 result = !isNull[rowNum] ? newFloatLiteral(modelRepository, BigDecimal.valueOf(data[rowNum]), processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
+                break;
+            }
+            case DATETIME_AS_LONG:
+            {
+                PureDate[] data = (PureDate[]) dataAsObject;
+                PureDate value = data[rowNum];
+                result = value != null ? newDateLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
                 break;
             }
             default:

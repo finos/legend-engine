@@ -707,8 +707,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                                             |
                                            if($j.lateral == true,
                                             | $dbConfig.lateralJoinProcessor($j, $dbConfig, $format, $extensions),
-                                            |
-                                              $j.joinType->map(jt|$jt->meta::relational::functions::sqlQueryToString::default::processJoinType($dbConfig, $format, $extensions))->orElse('')
+                                            |   assert(!$j.join->instanceOf(AsOfJoin), |'AsOfJoins are not supported by H2!');
+                                                $j.joinType->map(jt|$jt->meta::relational::functions::sqlQueryToString::default::processJoinType($dbConfig, $format, $extensions))->orElse('')
                                                 + $j.alias
                                                     ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                     ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()

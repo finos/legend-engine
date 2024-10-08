@@ -87,6 +87,11 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      if($this.dbExtension.lateralJoinProcessor->isEmpty(), |meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault($j, $dbConfig, $format, $extensions), |$this.dbExtension.lateralJoinProcessor->toOne()->eval($j, $dbConfig, $format, $extensions));
    }: String[1];
 
+   joinProcessor(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*])
+   {
+     if($this.dbExtension.joinProcessor->isEmpty(),|meta::relational::functions::sqlQueryToString::default::processJoin($j, $dbConfig, $format, $extensions),|$this.dbExtension.joinProcessor->toOne()->eval($j, $dbConfig, $format, $extensions));
+   }: String[1];
+
    joinStringsProcessor(j:JoinStrings[1], sgc:SqlGenerationContext[1])
    {
      assert($this.dbExtension.joinStringsProcessor->isNotEmpty(), '[unsupported-api] Join strings operation not supported for Database Type: ' + $this.dbType->toString());
@@ -227,6 +232,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    semiStructuredElementProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    tableFunctionParamProcessor: meta::pure::metamodel::function::Function<{RelationalOperationElement[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
+   joinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
    selectSQLQueryWithCTEsProcessor: meta::pure::metamodel::function::Function<{SelectSQLQueryWithCommonTableExpressions[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];

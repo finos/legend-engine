@@ -116,6 +116,10 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             // Sort
             one("meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_ is not supported yet!\""),
 
+            // AsOfJoin
+            one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "\"meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_ is not supported yet!\""),
+
             // Composition
             one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_ is not supported yet!\""),

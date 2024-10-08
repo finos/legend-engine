@@ -423,6 +423,16 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
    + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
 }
 
+function meta::relational::functions::sqlQueryToString::default::processJoin(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+    assert(!$j.join->instanceOf(AsOfJoin), |'AsOfJoins are not supported in the generic generator!');
+    $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+                        + $j.alias
+                            ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                            ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                        + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+}
+
 function meta::relational::functions::sqlQueryToString::default::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], joinOrder:JoinType[*], extensions:Extension[*]):String[1]
 {
    let tableAlias = $joinTreeNode->match(
@@ -436,15 +446,11 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
                                        r:RootJoinTreeNode[1] |
                                              $tableAlias->toOne()
                                                 ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
-                                                ->processOperation($dbConfig, $format->indent(), $extensions),
+                                                ->processOperation($dbConfig, $format->indent(), $extensions);,
                                        j:JoinTreeNode[1] |
                                              if($j.lateral == true,
                                              | $dbConfig.lateralJoinProcessor($j, $dbConfig, $format, $extensions),
-                                             | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
-                                               + $j.alias
-                                                   ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
-                                                   ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-                                               + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+                                             | $dbConfig.joinProcessor($j, $dbConfig, $format, $extensions)
                                              );,
                                        a:Any[1] | ''
                                     ]

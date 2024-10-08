@@ -32,6 +32,16 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -40,7 +50,10 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Objects;
 
 public abstract class TestTDS
@@ -93,6 +106,11 @@ public abstract class TestTDS
                 case DOUBLE:
                 {
                     testTDS.dataByColumnName.put(col, new double[(int) this.rowCount]);
+                    break;
+                }
+                case DATETIME_AS_LONG:
+                {
+                    testTDS.dataByColumnName.put(col, new PureDate[(int) this.rowCount]);
                     break;
                 }
                 default:
@@ -148,6 +166,18 @@ public abstract class TestTDS
                             ((String[]) c.data())[i] = null;
                         }
                     }
+                    break;
+                case DATETIME_AS_LONG:
+                    PureDate[] dates = new PureDate[(int) this.rowCount];
+                    dataByColumnName.put(c.name(), dates);
+                    for (int i = 0; i < this.rowCount; i++)
+                    {
+                        long value = ((long[]) c.data())[i];
+                        dates[i] = value == Long.MIN_VALUE ? null : DateFunctions.fromDate(new Date(value / 1000000));
+                    }
+                    break;
+                default:
+                    throw new RuntimeException(c.dataType() + " not supported yet!");
             }
         });
     }
@@ -180,9 +210,6 @@ public abstract class TestTDS
                 case STRING:
                 {
                     this.dataByColumnName.put(p.getOne(), new String[(int) this.rowCount]);
-                    boolean[] array = new boolean[(int) this.rowCount];
-                    Arrays.fill(array, Boolean.TRUE);
-                    this.isNullByColumn.put(p.getOne(), array);
                     break;
                 }
                 case FLOAT:
@@ -194,6 +221,9 @@ public abstract class TestTDS
                     this.isNullByColumn.put(p.getOne(), array);
                     break;
                 }
+                case DATETIME_AS_LONG:
+                    this.dataByColumnName.put(p.getOne(), new PureDate[(int) this.rowCount]);
+                    break;
                 default:
                     throw new RuntimeException("ERROR " + columnType.get(p.getOne()) + " not supported yet!");
             }
@@ -226,6 +256,9 @@ public abstract class TestTDS
                 case STRING:
                     res.dataByColumnName.put(c.getOne(), new String[1]);
                     break;
+                case DATETIME_AS_LONG:
+                    res.dataByColumnName.put(c.getOne(), new PureDate[1]);
+                    break;
                 default:
                     throw new RuntimeException("ERROR " + columnType.get(c.getTwo()) + " not supported yet!");
             }
@@ -236,15 +269,15 @@ public abstract class TestTDS
     private static SinkFactory makeMySinkFactory()
     {
         return SinkFactory.arrays(
-                Byte.MIN_VALUE,
-                Short.MIN_VALUE,
-                Integer.MIN_VALUE,
-                Long.MIN_VALUE,
-                -Float.MAX_VALUE,
-                -Double.MAX_VALUE,
-                Byte.MIN_VALUE,
-                Character.MIN_VALUE,
-                "null",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 Long.MIN_VALUE,
                 Long.MIN_VALUE);
     }
@@ -253,7 +286,7 @@ public abstract class TestTDS
     {
         try
         {
-            return CsvReader.read(CsvSpecs.csv(), new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), SinkFactory.arrays());
+            return CsvReader.read(CsvSpecs.csv(), new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), makeMySinkFactory());
         }
         catch (Exception e)
         {
@@ -320,6 +353,11 @@ public abstract class TestTDS
                 nullAsObject[row] = nullAsObjectSrc[srcRow];
                 break;
             }
+            case DATETIME_AS_LONG:
+            {
+                ((PureDate[]) dataAsObject)[row] = ((PureDate[]) srcTDS.dataByColumnName.get(columnName))[srcRow];
+                break;
+            }
             default:
                 throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
         }
@@ -362,6 +400,11 @@ public abstract class TestTDS
                 {
                     copy = Arrays.copyOf((double[]) dataAsObject, (int) rowCount);
                     copyIsNull = Arrays.copyOf((boolean[]) isNullByColumn.get(columnName), (int) rowCount);
+                    break;
+                }
+                case DATETIME_AS_LONG:
+                {
+                    copy = Arrays.copyOf((PureDate[]) dataAsObject, (int) rowCount);
                     break;
                 }
                 default:
@@ -454,6 +497,21 @@ public abstract class TestTDS
                     copy.isNullByColumn.put(columnName, isNullTarget);
                     break;
                 }
+                case DATETIME_AS_LONG:
+                {
+                    PureDate[] src = (PureDate[]) dataAsObject;
+                    PureDate[] target = new PureDate[(int) copy.rowCount - size];
+                    int j = 0;
+                    for (int i = 0; i < copy.rowCount; i++)
+                    {
+                        if (!rows.contains(i))
+                        {
+                            target[j++] = src[i];
+                        }
+                    }
+                    copy.dataByColumnName.put(columnName, target);
+                    break;
+                }
                 default:
                     throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported yet!");
             }
@@ -512,6 +570,13 @@ public abstract class TestTDS
                     System.arraycopy((double[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
                     copy = _copy;
                     newIsNull = concatenate((boolean[]) isNullByColumn.get(columnName), (boolean[]) tds2.isNullByColumn.get(columnName));
+                    break;
+                }
+                case DATETIME_AS_LONG:
+                {
+                    PureDate[] _copy = Arrays.copyOf((PureDate[]) dataAsObject1, (int) result.rowCount);
+                    System.arraycopy((PureDate[]) dataAsObject2, 0, _copy, (int) rowCount, (int) tds2.rowCount);
+                    copy = _copy;
                     break;
                 }
                 default:
@@ -647,6 +712,11 @@ public abstract class TestTDS
                 {
                     copy.dataByColumnName.put(columnName, Arrays.copyOfRange((double[]) dataAsObject, from, to));
                     copy.isNullByColumn.put(columnName, Arrays.copyOfRange(isNull, from, to));
+                    break;
+                }
+                case DATETIME_AS_LONG:
+                {
+                    copy.dataByColumnName.put(columnName, Arrays.copyOfRange((PureDate[]) dataAsObject, from, to));
                     break;
                 }
                 default:
@@ -800,6 +870,30 @@ public abstract class TestTDS
                     }
                     break;
                 }
+                case DATETIME_AS_LONG:
+                {
+                    PureDate[] src = (PureDate[]) dataAsObject;
+                    PureDate val = src[start];
+                    int subStart = start;
+                    for (int i = start; i < end; i++)
+                    {
+                        if (!Objects.equals(src[i], val) || (Objects.equals(src[i], val) && i == end - 1))
+                        {
+                            int realEnd = (Objects.equals(src[i], val) && i == end - 1) ? end : i;
+                            if (sortInfos.size() > 1)
+                            {
+                                sort(copy, sortInfos.subList(1, sortInfos.size()), subStart, realEnd, ranges);
+                            }
+                            else
+                            {
+                                ranges.add(Tuples.pair(subStart, realEnd));
+                            }
+                            val = src[i];
+                            subStart = i;
+                        }
+                    }
+                    break;
+                }
             }
         }
         if (ranges.getLast() != null)
@@ -883,6 +977,22 @@ public abstract class TestTDS
                 this.reorder(copy, list.collect(Pair::getOne), start, end);
                 break;
             }
+            case DATETIME_AS_LONG:
+            {
+                PureDate[] src = (PureDate[]) dataAsObject;
+                MutableList<Pair<Integer, PureDate>> list = Lists.mutable.empty();
+                for (int i = start; i < end; i++)
+                {
+                    list.add(Tuples.pair(i, src[i]));
+                }
+                list.sortThisBy(Pair::getTwo);
+                if (sortInfo.direction == SortDirection.DESC)
+                {
+                    list.reverseThis();
+                }
+                this.reorder(copy, list.collect(Pair::getOne), start, end);
+                break;
+            }
             default:
                 throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported yet!");
         }
@@ -950,6 +1060,17 @@ public abstract class TestTDS
                     System.arraycopy(isNullResult, 0, isNull, start, end - start);
                     break;
                 }
+                case DATETIME_AS_LONG:
+                {
+                    PureDate[] src = (PureDate[]) dataAsObject;
+                    PureDate[] result = new PureDate[(int) copy.rowCount];
+                    for (int i = 0; i < indices.size(); i++)
+                    {
+                        result[i] = src[indices.get(i)];
+                    }
+                    System.arraycopy(result, 0, src, start, end - start);
+                    break;
+                }
                 default:
                     throw new RuntimeException("ERROR " + copy.columnType.get(columnName) + " not supported yet!");
             }
@@ -988,8 +1109,13 @@ public abstract class TestTDS
                     {
                         return isNull[finalI] ? "NULL" : ((double[]) dataAsObject)[finalI];
                     }
+                    case DATETIME_AS_LONG:
+                    {
+                        PureDate res = ((PureDate[]) dataAsObject)[finalI];
+                        return res == null ? "NULL" : DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.of("UTC")).format(res.getCalendar().toInstant());
+                    }
                     default:
-                        return "";
+                        throw new RuntimeException(columnType.get(columnName) + " is not supported yet!");
                 }
             }).makeString(", "));
         }
@@ -1068,6 +1194,11 @@ public abstract class TestTDS
                 case DOUBLE:
                 {
                     valid = valid && ((double[]) firstDataAsObject)[rowFirst] == ((double[]) secondDataAsObject)[rowSecond];
+                    break;
+                }
+                case DATETIME_AS_LONG:
+                {
+                    valid = valid && Objects.equals(((PureDate[]) firstDataAsObject)[rowFirst], (((PureDate[]) secondDataAsObject)[rowSecond]));
                     break;
                 }
                 default:
@@ -1233,6 +1364,10 @@ public abstract class TestTDS
                     {
                         return ((Double) ((double[]) tds.dataByColumnName.get(col.getOne()))[row]).toString().equals(col.getTwo());
                     }
+                    case DATETIME_AS_LONG:
+                    {
+                        return (((PureDate[]) tds.dataByColumnName.get(col.getOne()))[row]).toString().equals(col.getTwo());
+                    }
                     default:
                         throw new RuntimeException("ERROR " + columnType + " not supported yet!");
                 }
@@ -1273,6 +1408,11 @@ public abstract class TestTDS
                         {
                             return Tuples.pair(c, ((Double) ((double[]) valuesAsObject)[r.getOne()]).toString());
                         }
+                        case DATETIME_AS_LONG:
+                        {
+                            return Tuples.pair(c, (((PureDate[]) valuesAsObject)[r.getOne()]).toString());
+                        }
+
                         default:
                             throw new RuntimeException("ERROR " + columnType + " not supported yet!");
                     }
@@ -1318,7 +1458,6 @@ public abstract class TestTDS
                             if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
                             {
                                 values[i] = ((String[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
-                                isNull[i] = Boolean.FALSE;
                             }
                         }
                     }
@@ -1359,13 +1498,29 @@ public abstract class TestTDS
                     dataAsObject = values;
                     break;
                 }
+                case DATETIME_AS_LONG:
+                {
+                    PureDate[] values = new PureDate[size];
+                    for (int i = 0; i < size; i++)
+                    {
+                        for (int j = sortedByNonTransposeColumns.getTwo().get(i).getOne(); j < sortedByNonTransposeColumns.getTwo().get(i).getTwo(); j++)
+                        {
+                            if (newColInfo.match(sortedByNonTransposeColumns.getOne(), j))
+                            {
+                                values[i] = ((PureDate[]) sortedByNonTransposeColumns.getOne().dataByColumnName.get(newColInfo.getAggColumnName()))[j];
+                            }
+                        }
+                    }
+                    dataAsObject = values;
+                    break;
+                }
                 default:
                 {
                     throw new RuntimeException("ERROR " + newColInfo.getColumnType() + " not supported yet!");
                 }
             }
             tds.dataByColumnName.put(name, dataAsObject);
-            if (!newColInfo.getColumnType().equals(DataType.STRING))
+            if (!newColInfo.getColumnType().equals(DataType.STRING) && !newColInfo.getColumnType().equals(DataType.DATETIME_AS_LONG))
             {
                 tds.isNullByColumn.put(name, isNull);
             }
@@ -1381,4 +1536,40 @@ public abstract class TestTDS
     {
         return this.columnsOrdered.collect(col -> Tuples.pair(col, this.columnType.get(col)));
     }
+
+
+    public TestTDS sortForOuterJoin(boolean isLeft, LambdaFunction<?> lambdaFunction, ProcessorSupport processorSupport)
+    {
+        FunctionType fType = (FunctionType) Function.computeFunctionType(lambdaFunction, processorSupport);
+        ValueSpecification vs = lambdaFunction._expressionSequence().getFirst();
+        if (vs instanceof SimpleFunctionExpression)
+        {
+            SimpleFunctionExpression fe = (SimpleFunctionExpression) vs;
+            String funcName = fe._func().getName();
+            String truncatedFuncName = funcName.substring(0, funcName.indexOf("_"));
+            if (Sets.mutable.with("lessThan", "greaterThan", "lessThanEquals", "greaterThanEquals").contains(truncatedFuncName))
+            {
+                SortDirection sortDirection = Sets.mutable.with("lessThan", "lessThanEquals").contains(truncatedFuncName) ? SortDirection.ASC : SortDirection.DESC;
+                ValueSpecification left = fe._parametersValues().toList().get(0);
+                ValueSpecification right = fe._parametersValues().toList().get(1);
+                if (left instanceof SimpleFunctionExpression && right instanceof SimpleFunctionExpression)
+                {
+                    SimpleFunctionExpression leftF = (SimpleFunctionExpression) left;
+                    SimpleFunctionExpression rightF = (SimpleFunctionExpression) right;
+                    MutableList<String> signatureParameters = fType._parameters().collect(VariableExpressionAccessor::_name).toList();
+                    String leftName = (((VariableExpression) leftF._parametersValues().getFirst())._name());
+                    if (leftName.equals(signatureParameters.get(0)))
+                    {
+                        return this.sort(new SortInfo(isLeft ? leftF._func()._name() : rightF._func()._name(), sortDirection)).getOne();
+                    }
+                    else
+                    {
+                        return this.sort(new SortInfo(isLeft ? rightF._func()._name() : leftF._func()._name(), sortDirection)).getOne();
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
 }
