@@ -169,6 +169,52 @@ public class RelationNativeImplementation
         return (T) new RowContainer(RelationNativeImplementation.getTDS(w), actualOffset);
     }
 
+    public static <T, V> Relation<? extends Object> asOfJoin(Relation<? extends T> rel1, Relation<? extends V> rel2, Function3 pureFunction, LambdaFunction<?> _func, ExecutionSupport es)
+    {
+        return asOfJoin(rel1, rel2, pureFunction, _func, null, es);
+    }
+
+    public static <T, V> Relation<? extends Object> asOfJoin(Relation<? extends T> rel1, Relation<? extends V> rel2, Function3 matchFunction, LambdaFunction<?> _func, Function3 onFunction, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+
+        TestTDS tds1 = RelationNativeImplementation.getTDS(rel1).sortForOuterJoin(true, _func, ps);
+        TestTDS tds2 = RelationNativeImplementation.getTDS(rel2).sortForOuterJoin(false, _func, ps);
+
+        TestTDS result = tds1.join(tds2).newEmptyTDS();
+        for (int i = 0; i < tds1.getRowCount(); i++)
+        {
+            TestTDS oneRow = tds1.slice(i, i + 1);
+            TestTDS exploded = oneRow.join(tds2);
+            TestTDS res = filterTwoParam(exploded, matchFunction, es);
+            res = onFunction == null ? res : filterTwoParam(res, onFunction, es);
+            if (res.getRowCount() == 0)
+            {
+                result = result.concatenate(oneRow.join(tds2.newNullTDS()));
+            }
+            else
+            {
+                result = result.concatenate(res.slice(0, 1));
+            }
+        }
+        return new TDSContainer((TestTDSCompiled) result, ps);
+    }
+
+    private static TestTDS filterTwoParam(TestTDS tds, Function3 matchFunction, ExecutionSupport es)
+    {
+        MutableIntSet list = new IntHashSet();
+        for (int i = 0; i < tds.getRowCount(); i++)
+        {
+            RowContainer rc = new RowContainer((TestTDSCompiled) tds, i);
+            if (!(boolean) matchFunction.value(rc, rc, es))
+            {
+                list.add(i);
+            }
+        }
+        return tds.drop(list);
+    }
+
+
     public abstract static class ColFuncSpecTrans
     {
         public String newColName;

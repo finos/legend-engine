@@ -48,6 +48,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Filter(),
                 new Columns(),
                 new Concatenate(),
+                new AsOfJoin(),
                 new Join(),
                 new Extend(),
                 new ExtendArray(),
