@@ -73,6 +73,16 @@ function meta::pure::mapping::buildClassMappingsByClassMap(mapping:Mapping[1]):M
     $mappingsInScope->meta::pure::router::routing::potentiallyResolveOperation($mapping, $allClassMappings)->groupBy(i | $i.class);
 }
 
+function meta::pure::mapping::buildClassMappingsById(mapping:Mapping[1]):Map<String,List<SetImplementation>>[1]
+{
+   $mapping->classMappings()->groupBy(m|$m.id);
+}
+
+function meta::pure::mapping::getClassMappingById(idToClassMapping: Map<String,List<SetImplementation>>[1], id: String[1]): SetImplementation[*]
+{
+  $idToClassMapping->get($id).values;
+}
+
 function meta::pure::mapping::mergeMappings(mappings: Mapping[1..*]):Mapping[1]
 {
    if($mappings->distinct()->size()==1,
@@ -135,16 +145,6 @@ function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): Enumeration
 {
   $m.enumerationMappings->concatenate($m.includes->map(i | $i.included->allEnumerationMappings()))
 }
-
-
-
-
-
-
-
-
-
-
 
 function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1]):InstanceSetImplementation[*]
 {
@@ -223,6 +223,14 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
           |$classMapping
        );
    );
+}
+
+function meta::pure::router::routing::allSuperSetImplementationIds(idToClassMapping:Map<String, List<SetImplementation>>[1], id:String[1]):String[*]
+{
+    let setImplementation = $idToClassMapping->get($id).values;
+    $id->concatenate(if ($setImplementation->isEmpty() || $setImplementation.superSetImplementationId->isEmpty(),
+                         | [],
+                         | $idToClassMapping->allSuperSetImplementationIds($setImplementation.superSetImplementationId->toOne())));
 }
 
 function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
