@@ -227,7 +227,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
 
 function meta::pure::router::routing::allSuperSetImplementationIds(idToClassMapping:Map<String, List<SetImplementation>>[1], id:String[1]):String[*]
 {
-    let setImplementation = $idToClassMapping->get($id).values;
+    let setImplementation = getClassMappingById($idToClassMapping, $id);
     $id->concatenate(if ($setImplementation->isEmpty() || $setImplementation.superSetImplementationId->isEmpty(),
                          | [],
                          | $idToClassMapping->allSuperSetImplementationIds($setImplementation.superSetImplementationId->toOne())));
