@@ -1,3 +1,4 @@
+import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::duckDB::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -28,6 +29,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForDuckDB_JoinStrings_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
+      joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
@@ -35,6 +37,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator()
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+    $j.join->match(
+      [
+        join : AsOfJoin[1] | 'asof left join ' + $j.alias->map(a|^$a(name = '"' + $a.name + '"'))->toOne()->processOperation($dbConfig, $format->indent(), $extensions) +
+                             $format.separator() +
+                             'on (' + processOperation($join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')',
+        join : Join[1] |
+                $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+                        + $j.alias->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                            ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                        + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
+      ]
+    );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]

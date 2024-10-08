@@ -120,10 +120,11 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
           | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
                             $res.result.rows->map(x|
                                 range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
-                                                                      |let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
+                                                                      | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
                                                                         if ([
-                                                                            pair(|$type == 'Integer', |-2147483648),
-                                                                            pair(|$type == 'String', |'null')
+                                                                              pair(|$type == 'Integer', |-2147483648),
+                                                                              pair(|$type == 'String', |'null'),
+                                                                              pair(|$type == 'DateTime', |'')
                                                                             ],
                                                                             |fail();0;
                                                                         );,
@@ -591,7 +592,14 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
   let csv = $state.schema.name+'\n' + 
             $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
-            $tds->map(x|$cols->map(c|$c->eval($x)->toOne()->toString())->joinStrings(','))
+            $tds->map(
+              x | $cols->map(c|$c->eval($x)->toOne()->match(
+                                [
+                                  x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                  z : Any[1] | $z->toString()
+                                ]
+                ))->joinStrings(',')
+            )
             ->joinStrings('\n');
 
   ^$state

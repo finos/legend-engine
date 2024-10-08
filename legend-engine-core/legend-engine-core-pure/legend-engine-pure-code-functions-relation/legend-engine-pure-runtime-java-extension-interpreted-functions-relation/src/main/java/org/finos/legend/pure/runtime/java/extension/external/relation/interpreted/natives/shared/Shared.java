@@ -69,11 +69,27 @@ public abstract class Shared extends NativeFunction
     {
         try
         {
-            return CsvReader.read(CsvSpecs.csv(), new ByteArrayInputStream(csv.getBytes()), SinkFactory.arrays());
+            return CsvReader.read(CsvSpecs.csv(), new ByteArrayInputStream(csv.getBytes()), makeMySinkFactory());
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static SinkFactory makeMySinkFactory()
+    {
+        return SinkFactory.arrays(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                Long.MIN_VALUE,
+                Long.MIN_VALUE);
     }
 }

@@ -630,6 +630,21 @@ public class Handlers
         return result;
     };
 
+    public static final ParametersInference AsOfJoinInference = (parameters, ov, cc, pc) ->
+    {
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        ValueSpecification secondProcessedParameter = parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity one = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
+        updateTwoParamsLambdaDiffTypes(parameters.get(2), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
+        if (parameters.size() == 4)
+        {
+            updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
+        }
+        MutableList<ValueSpecification> base = Lists.mutable.with(firstProcessedParameter).with(secondProcessedParameter).with(parameters.get(2).accept(new ValueSpecificationBuilder(cc, ov, pc)));
+        return parameters.size() == 4 ? base.with(parameters.get(3).accept(new ValueSpecificationBuilder(cc, ov, pc))) : base;
+    };
+
+
     public static final ParametersInference JoinInference = (parameters, ov, cc, pc) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
@@ -1380,6 +1395,16 @@ public class Handlers
 
         register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 
+        register(m(
+                        grp(AsOfJoinInference,
+                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
+                        ),
+                        grp(AsOfJoinInference,
+                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
+                        )
+                )
+        );
+
         register(
                 m(
                         m(h("meta::pure::functions::collection::sort_T_m__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 1)),
@@ -1829,10 +1854,10 @@ public class Handlers
                 h("meta::pure::functions::math::sum_Number_MANY__Number_1_", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), "Number")));
 
         register(m(m(h("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))),
-                 m(h("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::wavgUtility::WavgRowMapper")))));
+                m(h("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "meta::pure::functions::math::wavgUtility::WavgRowMapper")))));
 
         register(h("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", false, ps -> res("meta::pure::functions::math::wavgUtility::WavgRowMapper", "one"), ps -> typeZeroOne(ps.get(0), "Number")));
-      
+
         register(h("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", false, ps -> res("Number", "one")));
 
         register(m(m(h("meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 4)),
@@ -2611,7 +2636,7 @@ public class Handlers
         map.put("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchOneMany(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1))));
         map.put("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Class", "MappingClass", "ClassProjection").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "KeyExpression".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::lang::subType_Any_m__T_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
-        map.put("meta::pure::functions::math::sign_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Number","Float","Integer","Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::sign_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Float", "Integer", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::abs_Float_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::abs_Integer_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::abs_Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
@@ -2683,7 +2708,7 @@ public class Handlers
         map.put("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::stdDevSample_Number_$1_MANY$__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && matchOneMany(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::stdDevSample_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
-        map.put("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil","Number","Float","Integer","Decimal").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil", "Number", "Float", "Integer", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Boolean".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::varianceSample_Number_MANY__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::sum_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));
@@ -2937,10 +2962,11 @@ public class Handlers
         map.put("meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
         map.put("meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "_Window".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()));
         map.put("meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()));
-        map.put("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil","Number","Integer","Decimal","Float").contains(ps.get(0)._genericType()._rawType()._name()) && Sets.immutable.with("Nil","Number","Integer","Decimal","Float").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && Sets.immutable.with("Nil", "Number", "Integer", "Decimal", "Float").contains(ps.get(0)._genericType()._rawType()._name()) && Sets.immutable.with("Nil", "Number", "Integer", "Decimal", "Float").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::wavg_WavgRowMapper_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "WavgRowMapper".equals(ps.get(0)._genericType()._rawType()._name())));
-        map.put("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","Number","Integer","Decimal","Float").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","Number","Integer","Decimal","Float").contains(ps.get(1)._genericType()._rawType()._name()));
-
+        map.put("meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Decimal", "Float").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Decimal", "Float").contains(ps.get(1)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || check(funcType(ps.get(2)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && ("Nil".equals(ft._returnType()._rawType()._name()) || "Boolean".equals(ft._returnType()._rawType()._name())) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 2 && isOne(nps.get(0)._multiplicity()) && isOne(nps.get(1)._multiplicity())))) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || check(funcType(ps.get(3)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && ("Nil".equals(ft._returnType()._rawType()._name()) || "Boolean".equals(ft._returnType()._rawType()._name())) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 2 && isOne(nps.get(0)._multiplicity()) && isOne(nps.get(1)._multiplicity())))));
+        map.put("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || check(funcType(ps.get(2)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && ("Nil".equals(ft._returnType()._rawType()._name()) || "Boolean".equals(ft._returnType()._rawType()._name())) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 2 && isOne(nps.get(0)._multiplicity()) && isOne(nps.get(1)._multiplicity())))));
         // ------------------------------------------------------------------------------------------------
         // Please do not update the following code manually! Please check with the team when introducing
         // new matchers as this might be complicated by modularization
