@@ -141,6 +141,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    )
 ]
 {
+  val:String[0..1];
 }
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ProductWithConstraint1b extends meta::relational::tests::milestoning::Product
@@ -297,6 +298,11 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::TradeP
 Association meta::relational::tests::milestoning::OrderProduct{
    ascProduct : Product[1];
    orders : Order[*];
+}
+
+Association meta::relational::tests::milestoning::OrderPNLProduct{
+   ascProduct : Product[1];
+   ascPnL    : OrderPnl[1];
 }
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::VehicleOwner

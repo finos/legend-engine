@@ -403,10 +403,29 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
 
   let mapping =  meta::relational::graphFetch::tests::union::propertyLevel::Mapping6;
 
-  let runtime = meta::external::store::relational::tests::testRuntime();let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+  let runtime = meta::external::store::relational::tests::testRuntime();
+  
+  let lineage = meta::analytics::lineage::computeLineage($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
   meta::analytics::lineage::assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultAddressSet1', 'tb_myDBdefaultAddressSet2', 'tb_myDBdefaultAddressSet3', 'tb_myDBdefaultFirmSet1', 'tb_myDBdefaultFirmSet2', 'tb_myDBdefaultFirmSet3', 'tb_myDBdefaultPersonSet1', 'tb_myDBdefaultPersonSet2', 'tb_myDBdefaultPersonSet3'],
                                           ['Lambda', 'meta::relational::tests::model::simple::Address', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
                                           '[Firm.employees.address.name: [AddressSet1.ID <JoinTreeNode>, AddressSet1.name <TableAliasColumn>, AddressSet2.ID <JoinTreeNode>, AddressSet2.name <TableAliasColumn>, AddressSet3.ID <JoinTreeNode>, AddressSet3.name <TableAliasColumn>, FirmSet1.ID <JoinTreeNode>, FirmSet2.ID <JoinTreeNode>, FirmSet3.ID <JoinTreeNode>, PersonSet1.ADDRESSID <JoinTreeNode>, PersonSet1.FirmID <JoinTreeNode>, PersonSet2.ADDRESSID <JoinTreeNode>, PersonSet2.FirmID <JoinTreeNode>, PersonSet3.ADDRESSID <JoinTreeNode>, PersonSet3.FirmID <JoinTreeNode>], Firm.employees.lastName: [FirmSet1.ID <JoinTreeNode>, FirmSet2.ID <JoinTreeNode>, FirmSet3.ID <JoinTreeNode>, PersonSet1.FirmID <JoinTreeNode>, PersonSet1.lastName_s1 <TableAliasColumn>, PersonSet2.FirmID <JoinTreeNode>, PersonSet2.lastName_s2 <TableAliasColumn>, PersonSet3.FirmID <JoinTreeNode>, PersonSet3.lastName_s3 <TableAliasColumn>], Firm.legalName: [FirmSet1.name <TableAliasColumn>, FirmSet2.name <TableAliasColumn>, FirmSet3.name <TableAliasColumn>]]',
                                           $lineage);
 }
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::pure::lineage::scanRelations::*;
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::test::testMilestoneInheriteance():Boolean[1]
+{
+   let query = {| meta::relational::tests::milestoning::ProductWithConstraint1.all(%2022-02-02)-> project([f|$f.ascPnL.pnl], ['OrderID'])};
+   let mapping = meta::relational::tests::milestoning::milestoningmapWithMappingExtensions;
+
+   let lineage = meta::analytics::lineage::computeLineage($query, $mapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInclusion', 'db_dbWithInclusion', 'tb_dbInclusiondefaultProductTable', 'tb_dbWithInclusiondefaultOrderTable'],
+                                          ['Lambda', 'meta::relational::tests::milestoning::OrderPnl', 'meta::relational::tests::milestoning::ProductWithConstraint1', 'pack_meta::relational::tests::milestoning'],
+                                          '[OrderID: [OrderTable.pnl <TableAliasColumn>, OrderTable.prodFk <JoinTreeNode>, ProductTable.id <JoinTreeNode>]]',
+                                          $lineage);
+}
+

@@ -101,3 +101,11 @@ function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::test
    let superMappingMainTable = B2Mapping->classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
    assertEquals($superMappingMainTable, $mainTable);
 }
+
+
+function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testSuperSetIdsAreCollected():Any[*]
+{
+   let sets  = meta::pure::mapping::allSuperSetImplementations( meta::relational::tests::mapping::extend::mainTable::C1Mapping->classMappingById('c1')->toOne()->cast(@PropertyMappingsImplementation),meta::relational::tests::mapping::extend::mainTable::C1Mapping);
+   assertSameElements(['a','b1'],$sets.id);
+   
+}
