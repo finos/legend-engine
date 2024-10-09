@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
@@ -42,12 +43,20 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
 {
     private final HostedServiceArtifactGenerator hostedServiceArtifactgenerator;
     private final HostedServiceDeploymentManager hostedServiceDeploymentManager;
+    private MutableList<FunctionActivatorValidator> extraValidators = Lists.mutable.empty();
+
 
     public HostedServiceService()
     {
 
         this.hostedServiceArtifactgenerator = new HostedServiceArtifactGenerator();
         this.hostedServiceDeploymentManager = new HostedServiceDeploymentManager();
+    }
+
+    public HostedServiceService(List<FunctionActivatorValidator> extraValidators)
+    {
+        this();
+        this.extraValidators = Lists.mutable.withAll(extraValidators);
     }
 
     @Override
@@ -87,6 +96,7 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         {
            errors.add(new HostedServiceError("HostedService can't be registered.", e));
         }
+        this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.addAll(v.validate(identity, activator)));
         return errors;
 
     }
@@ -112,9 +122,14 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     @Override
     public HostedServiceDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, List<HostedServiceDeploymentConfiguration> runtimeConfigs, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
-        HostedServiceArtifact artifact = new HostedServiceArtifact(activator._pattern(), generation, HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
-        return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
+        MutableList<? extends FunctionActivatorError> validationErrors = this.validate(identity, pureModel, activator, inputModel, routerExtensions);
+        if (validationErrors.isEmpty())
+        {
+            GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X", routerExtensions);
+            HostedServiceArtifact artifact = new HostedServiceArtifact(activator._pattern(), generation, HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData) inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), ((PureModelContextData) inputModel).origin != null ? (AlloySDLC) ((PureModelContextData) inputModel).origin.sdlcInfo : null);
+            return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
+        }
+        return new HostedServiceDeploymentResult(validationErrors.collect(v -> v.message));
     }
 
 

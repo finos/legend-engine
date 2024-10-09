@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.hostedService.deployment;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 
 public class HostedServiceDeploymentResult extends DeploymentResult
@@ -21,15 +22,16 @@ public class HostedServiceDeploymentResult extends DeploymentResult
     public String error;
     public String deployed;
     public String generationId;
+    public MutableList<String> errors;
 
     public HostedServiceDeploymentResult()
     {
         //jackson
     }
 
-    public HostedServiceDeploymentResult(String error)
+    public HostedServiceDeploymentResult(MutableList<String> errors)
     {
-        this.error = error;
+        this.errors = errors;
     }
 
     public HostedServiceDeploymentResult(String deployed, String generationId)

@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeGrantInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
@@ -47,6 +48,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
 {
     private ConnectionManagerSelector connectionManager;
     private SnowflakeAppDeploymentManager snowflakeDeploymentManager;
+    private MutableList<FunctionActivatorValidator> extraValidators = Lists.mutable.empty();
 
     @Override
     public MutableList<String> group()
@@ -73,6 +75,12 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
         this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(executor);
     }
 
+    public SnowflakeAppService(PlanExecutor executor, List<FunctionActivatorValidator> extraValidators)
+    {
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(executor);
+        this.extraValidators = Lists.mutable.withAll(extraValidators);
+    }
+
     @Override
     public FunctionActivatorInfo info(PureModel pureModel, String version)
     {
@@ -94,7 +102,9 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        return validate(identity, artifact);
+        MutableList<? extends FunctionActivatorError> errors = validate(identity, artifact);
+        this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.addAll(v.validate(identity, activator)));
+        return errors;
     }
 
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, SnowflakeAppArtifact artifact)
