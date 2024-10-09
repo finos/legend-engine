@@ -30,5 +30,5 @@ public interface FunctionActivatorValidator<T extends Root_meta_external_functio
 
     List<FunctionActivatorError> validate(Identity identity, T activator);
 
-    List<FunctionActivatorError> validate(Identity identity, V activator);
+    List<FunctionActivatorError> validate(Identity identity, V artifact);
 }
