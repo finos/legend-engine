@@ -47,14 +47,14 @@ public class TestCompleter
     @Test
     public void testArrowOnFunction()
     {
-        Assert.assertEquals("[cast , cast(], [distinct , distinct(], [drop , drop(], [select , select(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [pivot , pivot(], [join , join(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.col == 'oo')->")));
+        Assert.assertEquals("[cast , cast(], [distinct , distinct(], [drop , drop(], [select , select(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [pivot , pivot(], [join , join(], [asOfJoin , asOfJoin(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|$x.col == 'oo')->")));
         Assert.assertEquals("PARSER error at [6:1-23]: parsing error", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->limit(10)-").getEngineException().toPretty());
     }
 
     @Test
     public void testArrowRelation()
     {
-        Assert.assertEquals("[cast , cast(], [distinct , distinct(], [drop , drop(], [select , select(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [pivot , pivot(], [join , join(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->")));
+        Assert.assertEquals("[cast , cast(], [distinct , distinct(], [drop , drop(], [select , select(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [pivot , pivot(], [join , join(], [asOfJoin , asOfJoin(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->")));
         Assert.assertEquals("[select , select(], [size , size(], [slice , slice(], [sort , sort(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->s")));
     }
 
@@ -197,6 +197,24 @@ public class TestCompleter
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER,")));
         Assert.assertEquals("[k , k], [o , o]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t2}#, JoinKind.INNER, {a,b|$a.col == $b.")));
         Assert.assertEquals("COMPILATION error at [6:14-17]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
+    }
+
+    //------
+    // AsOfJoin
+    //------
+    @Test
+    public void testAsOfJoin()
+    {
+        Assert.assertEquals("[a::A , >{a::A]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>")));
+        Assert.assertEquals("[t , t}]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.")));
+        Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t}#, {a,b|$a.")));
+        Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t}#,")));
+        Assert.assertEquals("[k , k], [o , o]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.")));
+        Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, ")));
+        Assert.assertEquals("[k , k], [o , o]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$c.")));
+        Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$b.")));
+        Assert.assertEquals("[filter , filter(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$c.k == $b.col})->fil")));
+        Assert.assertEquals("COMPILATION error at [6:14-21]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t}#, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
     }
 
     //--------

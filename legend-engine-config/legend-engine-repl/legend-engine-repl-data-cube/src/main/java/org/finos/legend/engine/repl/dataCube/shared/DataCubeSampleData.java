@@ -67,8 +67,9 @@ public class DataCubeSampleData
                 statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().dropTable(tableName));
             }
             Path tempFile = Files.createTempFile("sample-data" + this.name, ".csv");
-            FileOutputStream fos = new FileOutputStream(tempFile.toFile());
-            IOUtils.copy(Objects.requireNonNull(inputStream, "Can't extract sample data '" + this.name + "' from " + this.csvFilePath), fos);
+            FileOutputStream outputStream = new FileOutputStream(tempFile.toFile());
+            IOUtils.copy(Objects.requireNonNull(inputStream, "Can't extract sample data '" + this.name + "' from " + this.csvFilePath), outputStream);
+            outputStream.close(); // explicitly close output stream to let database access this file, else this would throw `java.sql.SQLException: IO Error: File is already open in` error on Windows
             statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.toString()));
 
             // post check

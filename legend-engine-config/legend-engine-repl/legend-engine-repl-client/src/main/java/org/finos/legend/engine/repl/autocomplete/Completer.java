@@ -103,6 +103,7 @@ public class Completer
                 new PivotHandler(),
                 new SortHandler(),
                 new JoinHandler(),
+                new AsOfJoinHandler(),
                 new SelectHandler(),
                 new DistinctHandler(),
                 new OverHandler()
@@ -268,7 +269,7 @@ public class Completer
         if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             // May want to assert the mul to 1
-            return Lists.mutable.with("cast", "distinct", "drop", "select", "extend", "filter", "from", "groupBy", "pivot", "join", "limit", "rename", "size", "slice", "sort");
+            return Lists.mutable.with("cast", "distinct", "drop", "select", "extend", "filter", "from", "groupBy", "pivot", "join", "asOfJoin", "limit", "rename", "size", "slice", "sort");
         }
         else if (leftType._rawType().getName().equals("String"))
         {

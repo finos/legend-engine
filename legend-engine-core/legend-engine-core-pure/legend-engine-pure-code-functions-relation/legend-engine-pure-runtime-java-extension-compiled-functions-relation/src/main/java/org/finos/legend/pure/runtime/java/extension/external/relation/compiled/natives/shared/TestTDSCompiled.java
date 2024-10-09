@@ -28,6 +28,7 @@ import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 
@@ -106,6 +107,10 @@ public class TestTDSCompiled extends TestTDS
                 result = !isNull[rowNum] ? Double.valueOf(data[rowNum]) : null;
                 break;
             }
+            case DATETIME_AS_LONG:
+                PureDate[] data = (PureDate[]) dataAsObject;
+                result = data[rowNum];
+                break;
             default:
                 throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in getValue");
         }
@@ -162,6 +167,8 @@ public class TestTDSCompiled extends TestTDS
             case FLOAT:
             case DOUBLE:
                 return "Float";
+            case DATETIME_AS_LONG:
+                return "Date";
         }
         throw new RuntimeException("To Handle " + dataType);
     }

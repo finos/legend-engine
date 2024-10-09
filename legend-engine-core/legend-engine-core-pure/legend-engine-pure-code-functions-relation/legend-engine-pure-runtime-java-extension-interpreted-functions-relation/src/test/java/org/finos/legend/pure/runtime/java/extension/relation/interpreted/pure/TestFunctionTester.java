@@ -60,6 +60,34 @@ public class TestFunctionTester extends PureExpressionTest
     @org.junit.Test
     public void testFunction()
     {
+//        compileTestSource("fromString.pure",
+//                "function test():Any[*]\n" +
+//                        "{\n" +
+//                        "  let s1 = #TDS\n" +
+//                        "   key, time, value\n" +
+//                        "   6, 2000-10-25T06:35:00Z, 4300\n" +
+//                        "   1, 2000-10-25T06:30:00Z, 5000\n" +
+//                        "   4, 2000-10-25T06:33:00Z, 1200\n" +
+//                        "   3, 2000-10-25T06:32:00Z, 3000\n" +
+//                        "   2, 2000-10-25T06:31:00Z, 4000\n" +
+//                        "   5, 2000-10-25T06:34:00Z, 3200\n" +
+//                        "   #;\n" +
+//                        "  let s2 = #TDS\n" +
+//                        "   key2, time2, value2\n" +
+//                        "   2, 2000-10-25T06:31:20Z, 3000\n" +
+//                        "   1, 2000-10-25T06:30:10Z, 2000\n" +
+//                        "   4, 2000-10-25T06:33:40Z, 1400\n" +
+//                        "   3, 2000-10-25T06:32:30Z, 3200\n" +
+//                        "   6, 2000-10-25T06:35:10Z, 2900\n" +
+//                        "   5, 2000-10-25T06:34:50Z, 3200\n" +
+//                        "   #;\n" +
+//                        "   let res = $s1->asOfJoin($s2, {x,y|$x.time < $y.time2}, {x,y|$x.key == $y.key2});\n" +
+//                        "   print($res->sort(~key->ascending())->toString(), 1);\n" +
+//                        "}");
+//        functionExecution.getConsole().setPrintStream(System.out);
+//        this.execute("test():Any[*]");
+//        runtime.delete("fromString.pure");
+
 
 //        compileTestSource("fromString.pure",
 //                "function test():Any[*]\n" +

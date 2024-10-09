@@ -25,49 +25,60 @@ public class TestTestTDS
     @org.junit.Test
     public void testSort()
     {
-        String initialTDS = "id, name, otherOne\n" +
-                "4, Simple, D\n" +
-                "4, Simple, A\n" +
-                "3, Ephrim, C\n" +
-                "2, Bla, B\n" +
-                "3, Ok, D\n" +
-                "3, Nop, E\n" +
-                "2, Neema, F\n" +
-                "1, Pierre, F";
+        String initialTDS = "id, name, otherOne, date\n" +
+                "4, Simple, D, 2002-10-25T06:30:00Z\n" +
+                "4, Simple, A, 2010-10-25T06:30:00Z\n" +
+                "3, Ephrim, C, 2000-10-10T06:30:00Z\n" +
+                "2, Bla, B, 2000-10-25T06:30:00Z\n" +
+                "3, Ok, D, 2000-01-25T06:30:00Z\n" +
+                "3, Nop, E, 2020-02-15T10:30:00Z\n" +
+                "2, Neema, F, 1975-09-29T08:30:00Z\n" +
+                "1, Pierre, F, 2100-02-05T02:30:00Z";
         TestTDS tds = new TestTDSImpl(initialTDS);
 
         TestTDS t = tds.sort(Lists.mutable.with(new SortInfo("id", SortDirection.ASC), new SortInfo("name", SortDirection.ASC))).getOne();
-        Assert.assertEquals("id, name, otherOne\n" +
-                "1, Pierre, F\n" +
-                "2, Bla, B\n" +
-                "2, Neema, F\n" +
-                "3, Ephrim, C\n" +
-                "3, Nop, E\n" +
-                "3, Ok, D\n" +
-                "4, Simple, D\n" +
-                "4, Simple, A", t.toString());
+        Assert.assertEquals("id, name, otherOne, date\n" +
+                "1, Pierre, F, 2100-02-05T02:30:00Z\n" +
+                "2, Bla, B, 2000-10-25T06:30:00Z\n" +
+                "2, Neema, F, 1975-09-29T08:30:00Z\n" +
+                "3, Ephrim, C, 2000-10-10T06:30:00Z\n" +
+                "3, Nop, E, 2020-02-15T10:30:00Z\n" +
+                "3, Ok, D, 2000-01-25T06:30:00Z\n" +
+                "4, Simple, D, 2002-10-25T06:30:00Z\n" +
+                "4, Simple, A, 2010-10-25T06:30:00Z", t.toString());
 
         TestTDS t2 = tds.sort(Lists.mutable.with(new SortInfo("id", SortDirection.ASC), new SortInfo("name", SortDirection.ASC), new SortInfo("otherOne", SortDirection.ASC))).getOne();
-        Assert.assertEquals("id, name, otherOne\n" +
-                "1, Pierre, F\n" +
-                "2, Bla, B\n" +
-                "2, Neema, F\n" +
-                "3, Ephrim, C\n" +
-                "3, Nop, E\n" +
-                "3, Ok, D\n" +
-                "4, Simple, A\n" +
-                "4, Simple, D", t2.toString());
+        Assert.assertEquals("id, name, otherOne, date\n" +
+                "1, Pierre, F, 2100-02-05T02:30:00Z\n" +
+                "2, Bla, B, 2000-10-25T06:30:00Z\n" +
+                "2, Neema, F, 1975-09-29T08:30:00Z\n" +
+                "3, Ephrim, C, 2000-10-10T06:30:00Z\n" +
+                "3, Nop, E, 2020-02-15T10:30:00Z\n" +
+                "3, Ok, D, 2000-01-25T06:30:00Z\n" +
+                "4, Simple, A, 2010-10-25T06:30:00Z\n" +
+                "4, Simple, D, 2002-10-25T06:30:00Z", t2.toString());
 
         TestTDS t3 = tds.sort(Lists.mutable.with(new SortInfo("id", SortDirection.DESC), new SortInfo("name", SortDirection.ASC), new SortInfo("otherOne", SortDirection.DESC))).getOne();
-        Assert.assertEquals("id, name, otherOne\n" +
-                "4, Simple, D\n" +
-                "4, Simple, A\n" +
-                "3, Ephrim, C\n" +
-                "3, Nop, E\n" +
-                "3, Ok, D\n" +
-                "2, Bla, B\n" +
-                "2, Neema, F\n" +
-                "1, Pierre, F", t3.toString());
+        Assert.assertEquals("id, name, otherOne, date\n" +
+                "4, Simple, D, 2002-10-25T06:30:00Z\n" +
+                "4, Simple, A, 2010-10-25T06:30:00Z\n" +
+                "3, Ephrim, C, 2000-10-10T06:30:00Z\n" +
+                "3, Nop, E, 2020-02-15T10:30:00Z\n" +
+                "3, Ok, D, 2000-01-25T06:30:00Z\n" +
+                "2, Bla, B, 2000-10-25T06:30:00Z\n" +
+                "2, Neema, F, 1975-09-29T08:30:00Z\n" +
+                "1, Pierre, F, 2100-02-05T02:30:00Z", t3.toString());
+
+        TestTDS t4 = tds.sort(Lists.mutable.with(new SortInfo("date", SortDirection.DESC), new SortInfo("name", SortDirection.ASC), new SortInfo("otherOne", SortDirection.DESC))).getOne();
+        Assert.assertEquals("id, name, otherOne, date\n" +
+                "1, Pierre, F, 2100-02-05T02:30:00Z\n" +
+                "3, Nop, E, 2020-02-15T10:30:00Z\n" +
+                "4, Simple, A, 2010-10-25T06:30:00Z\n" +
+                "4, Simple, D, 2002-10-25T06:30:00Z\n" +
+                "2, Bla, B, 2000-10-25T06:30:00Z\n" +
+                "3, Ephrim, C, 2000-10-10T06:30:00Z\n" +
+                "3, Ok, D, 2000-01-25T06:30:00Z\n" +
+                "2, Neema, F, 1975-09-29T08:30:00Z", t4.toString());
 
         Assert.assertEquals(initialTDS, tds.toString());
     }
@@ -380,20 +391,39 @@ public class TestTestTDS
     @org.junit.Test
     public void testSentinel()
     {
-        String resTDS = "id,name,id2,col,other\n" +
-                "1,George,1,More George 1,1\n" +
-                "1,George,1,More George 2,2\n" +
-                "2,Pierre,-2147483648,null,-2147483648\n" +
-                "3,Sachin,-2147483648,null,-2147483648\n" +
-                "4,David,4,More David,1";
+        String resTDS = "id,name,id2,col,other, date\n" +
+                "1,George,1,More George 1,1, 2000-10-31T01:30:00.000-05:00\n" +
+                "1,George,1,More George 2,2, 2000-10-25T01:30:00.000-05:00\n" +
+                "2,Pierre,-2147483648,null,-2147483648,\n" +
+                "3,Sachin,-2147483648,null,-2147483648,\n" +
+                "4,David,4,More David,1, 2020-10-31T01:30:00.000-05:00";
 
         TestTDS res = new TestTDSImpl(resTDS);
 
-        Assert.assertEquals("id, name, id2, col, other\n" +
-                "1, George, 1, More George 1, 1\n" +
-                "1, George, 1, More George 2, 2\n" +
-                "2, Pierre, NULL, NULL, NULL\n" +
-                "3, Sachin, NULL, NULL, NULL\n" +
-                "4, David, 4, More David, 1", res.toString());
+        Assert.assertEquals("id, name, id2, col, other, date\n" +
+                "1, George, 1, More George 1, 1, 2000-10-31T06:30:00Z\n" +
+                "1, George, 1, More George 2, 2, 2000-10-25T06:30:00Z\n" +
+                "2, Pierre, NULL, NULL, NULL, NULL\n" +
+                "3, Sachin, NULL, NULL, NULL, NULL\n" +
+                "4, David, 4, More David, 1, 2020-10-31T06:30:00Z", res.toString());
+    }
+
+
+    @org.junit.Test
+    public void testDate()
+    {
+        String resTDS = "id,date,val\n" +
+                "1, 2000-10-25T06:30:00Z, 1\n" +
+                "1, 2000-10-31T01:31:00.000-05:00, 1\n" +
+                "1,, 1\n" +
+                "1, 2000-10-31T01:33:00.000-05:00, 1\n";
+
+        TestTDS res = new TestTDSImpl(resTDS);
+
+        Assert.assertEquals("id, date, val\n" +
+                "1, 2000-10-25T06:30:00Z, 1\n" +
+                "1, 2000-10-31T06:31:00Z, 1\n" +
+                "1, NULL, 1\n" +
+                "1, 2000-10-31T06:33:00Z, 1", res.toString());
     }
 }

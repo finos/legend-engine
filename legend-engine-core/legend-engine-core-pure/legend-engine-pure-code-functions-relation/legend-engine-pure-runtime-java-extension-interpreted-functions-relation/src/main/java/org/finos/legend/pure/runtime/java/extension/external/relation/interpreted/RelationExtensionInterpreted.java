@@ -22,6 +22,7 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.AsOfJoin;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Columns;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Concatenate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.CumulativeDistribution;
@@ -106,7 +107,10 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("percentRank_Relation_1___Window_1__T_1__Float_1_", PercentRank::new),
                 Tuples.pair("denseRank_Relation_1___Window_1__T_1__Integer_1_", DenseRank::new),
                 Tuples.pair("ntile_Relation_1__T_1__Integer_1__Integer_1_", NTile::new),
-                Tuples.pair("cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", CumulativeDistribution::new)
+                Tuples.pair("cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_", CumulativeDistribution::new),
+                Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", AsOfJoin::new),
+                Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", AsOfJoin::new)
+
         );
     }
 
