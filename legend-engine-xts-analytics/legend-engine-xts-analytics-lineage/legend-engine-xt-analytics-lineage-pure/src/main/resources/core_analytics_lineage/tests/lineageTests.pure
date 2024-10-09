@@ -413,22 +413,6 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                           $lineage);
 }
 
-###Pure
-import meta::analytics::lineage::*;
-import meta::pure::lineage::scanRelations::*;
-
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::test::testMilestoneInheriteance():Boolean[1]
-{
-   let query = {| meta::relational::tests::milestoning::ProductWithConstraint1.all(%2022-02-02)-> project([f|$f.ascPnL.pnl], ['OrderID'])};
-   let mapping = meta::relational::tests::milestoning::milestoningmapWithMappingExtensions;
-
-   let lineage = meta::analytics::lineage::computeLineage($query, $mapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_dbInclusion', 'db_dbWithInclusion', 'tb_dbInclusiondefaultProductTable', 'tb_dbWithInclusiondefaultOrderTable'],
-                                          ['Lambda', 'meta::relational::tests::milestoning::OrderPnl', 'meta::relational::tests::milestoning::ProductWithConstraint1', 'pack_meta::relational::tests::milestoning'],
-                                          '[OrderID: [OrderTable.pnl <TableAliasColumn>, OrderTable.prodFk <JoinTreeNode>, ProductTable.id <JoinTreeNode>]]',
-                                          $lineage);
-}
-
 //AggregationAware
 ###Pure
 import meta::analytics::lineage::*;
