@@ -347,14 +347,9 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 }
 
 
-
-
-
 function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[1]
 {
-
-
-   let childTrees   = meta::pure::lineage::scanRelations::generatRelationalTrees($f, $m, $r, $vars, $debug, $extensions);
+   let childTrees   = meta::pure::lineage::scanRelations::generatRelationalTrees($f, $m, $r, $vars, $debug, $extensions).tree;
 
    let rootTree   = ^RelationTree
                      (
@@ -368,7 +363,7 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 function meta::pure::lineage::scanRelations::collectStoreMappingCluster(cluster:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):ClusterAndVars[*]
 { 
   $cluster->match([
-       sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database));  //TODO: Refactor to support additional store types
+       sc:StoreMappingClusteredValueSpecification[1] |   let DBCluster = $sc->filter(cvs | $cvs.store->instanceOf(Database) || $cvs.store->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareStore));  //TODO: Refactor to support additional store types
                                                         if($DBCluster->isNotEmpty() ,|  ^ClusterAndVars(cluster=$DBCluster->toOne() ),|[]);,
         pl:PlatformClusteredValueSpecification[1] |    $pl.val->collectStoreMappingCluster($inScopeVars,$extensions); ,
         s:meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] | $s.value-> collectStoreMappingCluster($inScopeVars,$extensions),
@@ -397,7 +392,7 @@ Class meta::pure::lineage::scanRelations::RelationalTreeAndVars
 
 }
 
-function <<access.private>> meta::pure::lineage::scanRelations::generatRelationalTrees(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug:DebugContext[1], extensions:Extension[*]):RelationTree[*]
+function <<access.private>> meta::pure::lineage::scanRelations::generatRelationalTrees(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug:DebugContext[1], extensions:Extension[*]):RelationalTreeAndVars[1]
 {   
    let routed         = $f->routeFunction($m, $r, $extensions, $debug);
    let routedFunction = $routed->evaluateAndDeactivate()->toOne();
@@ -414,27 +409,32 @@ function <<access.private>> meta::pure::lineage::scanRelations::generatRelationa
                                                                                         );
                                                                               }, $f->openVariableValues()->putAll($vars));
 
-   let allClusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c|$c->  meta::pure::lineage::scanRelations::collectStoreMappingCluster($inScopeVars,$extensions) );
-   let AllTrees =   $allClusters->fold({ v, a|    let fn = $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
-                                                  let context = ^RelationalExecutionContext();
-                                                  let SQL =   $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression)->toSQLQuery($m, $a.vars, $context, $debug, $extensions)  ;    
-                                                  if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($SQL, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
-  
-                                                  let possibleClass = $fn.genericType.rawType->toOne();
-                                                 let updatedVars = if($v.var->isNotEmpty() && $SQL ->instanceOf(TdsSelectSqlQuery),
-                                                                      | let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fn); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
-                                                                        let tdsType =  $class->meta::relational::mapping::TDSSelectQueryToTDSResultType($SQL->cast(@TdsSelectSqlQuery),$context);
-                                                                        let varName = $v.var->toOne();
-                                                                        let varset = ^PlanSetPlaceHolder(name=$varName,tdsColumns = $tdsType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]]));
-                                                                         $inScopeVars->put($varName,^List<Any>(values=$varset));,
-                                                                      |  if( $v.var->isNotEmpty() && $fn->instanceOf(DataType),
-                                                                                 |  let varName = $v.var->toOne();
-                                                                                    $inScopeVars->put($varName,^List<Any>(values= ^VarSetPlaceHolder(varName= $v.var->toOne())));,
-                                                                                 |$a.vars));
-                                                                                 
-                                               let updatedTree=   generateRelationTreeFromRelationalOperationElement($SQL, $debug, $extensions)->concatenate($a.tree);
-                                              ^RelationalTreeAndVars(tree= $updatedTree, vars=$updatedVars);
-                                          }    , ^RelationalTreeAndVars(vars=$inScopeVars)).tree;
+   let allClusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c|$c->meta::pure::lineage::scanRelations::collectStoreMappingCluster($inScopeVars,$extensions) );
+   $allClusters->fold({ v, a|    $v.cluster->cast(@StoreMappingClusteredValueSpecification).store->match([
+                                                                           d:Database[1] |  let fn = $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
+                                                                                            let context = ^RelationalExecutionContext();
+                                                                                            let SQL =   $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression)->toSQLQuery($m, $a.vars, $context, $debug, $extensions)  ;    
+                                                                                            if($debug.debug, | print('Generated SQL Query - ' + sqlQueryToStringPretty($SQL, DatabaseType.H2, 'GMT', [], $extensions) + '\n\n'), |[]);
+                                            
+                                                                                            let possibleClass = $fn.genericType.rawType->toOne();
+                                                                                            let updatedVars = if($v.var->isNotEmpty() && $SQL ->instanceOf(TdsSelectSqlQuery),
+                                                                                                                | let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fn); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+                                                                                                                  let tdsType =  $class->meta::relational::mapping::TDSSelectQueryToTDSResultType($SQL->cast(@TdsSelectSqlQuery),$context);
+                                                                                                                  let varName = $v.var->toOne();
+                                                                                                                  let varset = ^PlanSetPlaceHolder(name=$varName,tdsColumns = $tdsType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]]));
+                                                                                                                  $inScopeVars->put($varName,^List<Any>(values=$varset));,
+                                                                                                                |  if( $v.var->isNotEmpty() && $fn->instanceOf(DataType),
+                                                                                                                          |  let varName = $v.var->toOne();
+                                                                                                                              $inScopeVars->put($varName,^List<Any>(values= ^VarSetPlaceHolder(varName= $v.var->toOne())));,
+                                                                                                                          |$a.vars));
+                                                                                                                          
+                                                                                            let updatedTree=   generateRelationTreeFromRelationalOperationElement($SQL, $debug, $extensions)->concatenate($a.tree);
+                                                                                           ^RelationalTreeAndVars(tree= $updatedTree, vars=$updatedVars);,
+                                                                           ag:meta::pure::mapping::aggregationAware::AggregationAwareStore[1] | let fn = $v.cluster->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression); 
+                                                                                            let reprocessedFunction = meta::pure::mapping::aggregationAware::reprocessFunction($fn, $inScopeVars, [], $m, $debug);
+                                                                                            meta::pure::lineage::scanRelations::generatRelationalTrees(^FunctionDefinition<{->Any[1]}>(expressionSequence = $reprocessedFunction.expressionSequence), $m, $r, $vars, $debug, $extensions);
+                                                                        ]);
+                                       }, ^RelationalTreeAndVars(vars=$inScopeVars));
 
 }
 

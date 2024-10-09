@@ -413,3 +413,68 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                           $lineage);
 }
 
+//AggregationAware
+###Pure
+import meta::analytics::lineage::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::extension::*;
+import meta::relational::tests::aggregationAware::mapping::*;
+import meta::relational::tests::aggregationAware::domain::*;
+import meta::relational::tests::aggregationAware::*;
+function <<test.Test>> meta::analytics::lineage::tests::testLineageForSimpleAggregationAwareQuery():Boolean[1]
+{
+  let query = {|
+    Wholesales.all()->groupBy(
+        [x|1],
+        [agg(x|$x.revenue.price, y|$y->sum())],
+        ['Name', 'Total Price Sum']
+    )
+  };
+  let mapping = mappingWithMonthCannotBeAggregated;
+  let runtime = runtime();
+
+  let lineage = computeLineage($query, $mapping, $runtime, relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_aggregationAwareStore', 'tb_aggregationAwareStorebase_viewSalesTable'],
+                                        ['Lambda', 'meta::relational::tests::aggregationAware::domain::Revenue', 'meta::relational::tests::aggregationAware::domain::Wholesales', 'pack_meta::relational::tests::aggregationAware::domain'],
+                                        '[Name: [], Total Price Sum: [SalesTable.revenue <TableAliasColumn>]]',
+                                          $lineage);
+
+  let relationTree = 'root\n' +
+                      '  ------> (t) SalesTable_Day [revenue]\n';
+  assertEquals($relationTree, meta::pure::lineage::scanRelations::relationTreeAsString($lineage.relationTree));
+}
+
+function <<test.Test>> meta::analytics::lineage::tests::testLineageForComplexAggregationAwareQuery():Boolean[1]
+{
+  let query = {|
+    meta::relational::tests::aggregationAware::domain::Wholesales.all()
+    ->groupBy([x | $x.product.productId,
+        x | $x.discount,
+        x | $x.salesDate.date,
+        x | $x.salesDate.fiscalMonth,
+        x | $x.salesDate.fiscalYear],
+              [agg(x | $x.revenue.price, y | $y->sum())],
+              ['Product ID',
+                  'Discount',
+                  'Product Date/Date',
+                  'Product Date/Fiscal Month/Value',
+                  'Product Date/Fiscal Year/Value',
+                  'Revenue/Total Price Sum']
+        );
+  };
+  let mapping = simpleMapping;
+  let runtime = runtime();
+
+  let lineage = computeLineage($query, $mapping, $runtime, relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_aggregationAwareStore', 'tb_aggregationAwareStorebase_viewCalendar', 'tb_aggregationAwareStorebase_viewProduct', 'tb_aggregationAwareStorebase_viewSalesTable'],
+                                        ['Lambda', 'meta::relational::tests::aggregationAware::domain::FiscalCalendar', 'meta::relational::tests::aggregationAware::domain::Product', 'meta::relational::tests::aggregationAware::domain::Revenue', 'meta::relational::tests::aggregationAware::domain::Wholesales', 'pack_meta::relational::tests::aggregationAware::domain'],
+                                        '[Discount: [SalesTable.discount <TableAliasColumn>], Product Date/Date: [Calendar.dt_date <JoinTreeNode>, Calendar.dt_date <TableAliasColumn>, SalesTable.sales_date <JoinTreeNode>], Product Date/Fiscal Month/Value: [Calendar.dt_date <JoinTreeNode>, Calendar.fiscal_month <TableAliasColumn>, SalesTable.sales_date <JoinTreeNode>], Product Date/Fiscal Year/Value: [Calendar.dt_date <JoinTreeNode>, Calendar.fiscal_year <TableAliasColumn>, SalesTable.sales_date <JoinTreeNode>], Product ID: [Product.prod_id <JoinTreeNode>, Product.prod_id <TableAliasColumn>, SalesTable.product_id <JoinTreeNode>], Revenue/Total Price Sum: [SalesTable.revenue <TableAliasColumn>]]',
+                                          $lineage);
+  
+  let relationTree = 'root\n' +
+                      '  ------> (t) SalesTable [discount, product_id, revenue, sales_date]\n' +
+                      '    ------> (t) Calendar(equal_rootsales_date_Calendar_d#3_d_m2dt_date) [dt_date, fiscal_month, fiscal_year]\n' +
+                      '    ------> (t) Product(equal_rootproduct_id_Product_d#4prod_id) [prod_id]\n';
+
+  assertEquals($relationTree, meta::pure::lineage::scanRelations::relationTreeAsString($lineage.relationTree));
+}
