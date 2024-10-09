@@ -107,7 +107,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
       classLineage = $f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(),
       functionTrees = $combinedTrees,
       relationTree = $relationTree,
-      reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping)
+      reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap())
    );
 }
 
@@ -144,10 +144,14 @@ Class meta::analytics::lineage::Column
    database: String[1];
 }
 
-
 function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1]):ReportLineage[1]
 {
-   let project = $funcBody->meta::pure::lineage::scanProject::scanProject();
+    meta::analytics::lineage::buildReportLineage($funcBody, $mapping,^Map<String, List<Any>>());
+}
+
+function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1], vars:Map<String, List<Any>>[1]):ReportLineage[1]
+{
+   let project = $funcBody->meta::pure::lineage::scanProject::scanProject($vars);
    let groupedProject = $project.columns->groupBy(c| $c.first);
 
    let colPropertyTreePair = $groupedProject->keys()->map(gp|let propertiesPaths = $groupedProject->get($gp).values->map(c| $c.second.expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()))->removeDuplicates();

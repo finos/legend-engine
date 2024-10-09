@@ -24,7 +24,12 @@ Class meta::pure::lineage::scanProject::Project
 
 function meta::pure::lineage::scanProject::scanProject(f:ValueSpecification[1]):Project[*]
 {
-   $f->scanProjectRecursive([],[]);
+   $f->scanProjectRecursive([],[],^Map<String, List<Any>>());
+}
+
+function meta::pure::lineage::scanProject::scanProject(f:ValueSpecification[1],vars:Map<String, List<Any>>[1]):Project[*]
+{
+   $f->scanProjectRecursive([],[],$vars);
 }
 
 Class <<access.private>> meta::pure::lineage::scanProject::Unknown
@@ -32,10 +37,10 @@ Class <<access.private>> meta::pure::lineage::scanProject::Unknown
 
 }
 
-function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursive(val:Any[1], project:Project[*], processed:Function<Any>[*]):Project[*]
+function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursive(val:Any[1], project:Project[*], processed:Function<Any>[*],vars:Map<String, List<Any>>[1]):Project[*]
 {
    $val->match([
-      l:FunctionDefinition<Any>[1]| $l.expressionSequence->map(e|$e->scanProjectRecursive($project, $processed)),
+      l:FunctionDefinition<Any>[1]| $l.expressionSequence->map(e|$e->scanProjectRecursive($project, $processed,$vars)),
       n:NativeFunction<Any>[1]| $project,
       fe:FunctionExpression[1]| let res = if ($fe.func->isNotEmpty(),
                                     | let dispatch = [
@@ -53,7 +58,7 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                                [
                                                                  i:InstanceValue[1] |
                                                                   let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
-                                                                  let colSpecs = $cols->map(c | $c->reactivate()->cast(@BasicColumnSpecification<Any>));
+                                                                  let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@BasicColumnSpecification<Any>));
                                                                   ^Project(projectfuncEntryPoint = $fe,
                                                                            columns = zip($colSpecs.name, $colSpecs.func->cast(@FunctionDefinition<Any>)));,
                                                                  a:Any[*]|[]
@@ -80,18 +85,18 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
                                      let res = $dispatch->filter(d|$funcFullPath == $d.first);
                                      if ($res->isEmpty(),
-                                         |let params = $fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed));
+                                         |let params = $fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed,$vars));
                                           if($processed->contains($fe.func->toOne()) || $fe.func->toOne()->elementToPath()->startsWith('meta::'),
                                              |[],
-                                             |$fe.func->toOne()->scanProjectRecursive($project, $processed->concatenate($fe.func->toOne()))
+                                             |$fe.func->toOne()->scanProjectRecursive($project, $processed->concatenate($fe.func->toOne()),$vars)
                                           )->concatenate($params);,
                                          |$res->toOne().second->eval()
                                      );,
-                                    |$fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed))
+                                    |$fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed,$vars))
                                 ),
-      i:InstanceValue[1]|$i.values->map(a|$a->scanProjectRecursive($project, $processed)),
+      i:InstanceValue[1]|$i.values->map(a|$a->scanProjectRecursive($project, $processed,$vars)),
       p:VariableExpression[1]|$project,
-      p:KeyExpression[1]|$p.expression->scanProjectRecursive($project, $processed),
+      p:KeyExpression[1]|$p.expression->scanProjectRecursive($project, $processed,$vars),
       p:Mapping[1]|$project,
       c:Class<Any>[1]|$project,
       p:Property<Nil,Any|*>[1]|$project,

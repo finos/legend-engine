@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::lineage::scanProject::*;
+import meta::pure::executionPlan::*;
 import meta::pure::lineage::scanExecutes::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::*;
 
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProject():Any[1]
 {
@@ -111,4 +115,16 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::t
    let x = meta::pure::lineage::scanProject::test::executeWithGroupBy__Any_1_->scanExecutes();
    let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
    assertEquals(['tradeDate', 'quantity', 'count'], $p.columns.first);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::milestone::test::testColWithMilestoneVar():Boolean[1]
+{
+  let fn = { date:Date[1]|meta::relational::tests::milestoning::Product.all($date)->project([
+                                  col(f|$f.classification($date).type,'type')
+                                ]
+                               )};
+   
+  let vars = $fn->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
+   let p = $fn->toOne()->evaluateAndDeactivate().expressionSequence->last()->toOne()->meta::pure::lineage::scanProject::scanProject($vars->newMap());
+   assertEquals(['type'], $p.columns.first);
 }
