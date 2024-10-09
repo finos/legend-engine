@@ -199,12 +199,12 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
    //    1. buildUnion is called as part of building the target of an association (in which case the 'source' flag is false)
    //    2. Used in the 'importDataFlow' use case on the source (getAll on the type itself)
    let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
-   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping->toOne(), $avoidModeledProperties);
+   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping->toOne(), $avoidModeledProperties, $state.idToClassMapping);
    let missingFks = $targetCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$targetCols->indexOf($c)->toString(), $z))));
    let mappedFkPropertyNames = $targetCols.first.values.first->removeDuplicates();
 
    let queriesWithKeysManaged = $simpleAllQueries.select->managePrimaryKeys($setImpls, $state);
-   let canJoinsBeSimplyMerged = $relationalPropertyMappings->filter(r | $r->getJoinTreeNode()->isNotEmpty())->canJoinTreeNodesBeSimplyMergedUsingOrOperation($state.mapping->toOne());
+   let canJoinsBeSimplyMerged = $relationalPropertyMappings->filter(r | $r->getJoinTreeNode()->isNotEmpty())->canJoinTreeNodesBeSimplyMergedUsingOrOperation($state.mapping->toOne(), $state);
    let allQueries = $simpleAllQueries.select->map(q|let offset = $simpleAllQueries.select->indexOf($q);
                                                     // Add all columns if joins will be pushed into target union. This is to avoid subsequent complexity of consistently adding missing columns in nested subselects.
                                                     if(!$canJoinsBeSimplyMerged && ($relationalPropertyMappings.sourceSetImplementationId->removeDuplicates()->size() == 1),
@@ -321,10 +321,10 @@ Class meta::relational::functions::pureToSqlQuery::union::FKListModeledAndNonMod
 
 function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSet(relationalPropertyMappings:RelationalPropertyMapping[*], source:Boolean[1], mapping:Mapping[1]):FKListModeledAndNonModeled[*]
 {
-   findFkListForEachSet($relationalPropertyMappings, $source, $mapping, false)
+   findFkListForEachSet($relationalPropertyMappings, $source, $mapping, false, newMap([]->cast(@Pair<String, List<SetImplementation>>)))
 }
 
-function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSet(relationalPropertyMappings:RelationalPropertyMapping[*], source:Boolean[1], mapping:Mapping[1], avoidModeledProperties: Boolean[1]):FKListModeledAndNonModeled[*]
+function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSet(relationalPropertyMappings:RelationalPropertyMapping[*], source:Boolean[1], mapping:Mapping[1], avoidModeledProperties: Boolean[1], idToClassMapping:Map<String, List<SetImplementation>>[1]):FKListModeledAndNonModeled[*]
 {
    let setImplementationId = if($source, |$relationalPropertyMappings.sourceSetImplementationId, |$relationalPropertyMappings.targetSetImplementationId)->removeDuplicates();
    let propertyMappingBySetIds = $relationalPropertyMappings->groupBy(r|if($source, |$r.sourceSetImplementationId, |$r.targetSetImplementationId));
@@ -365,9 +365,9 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
    print(if(!$context.debug, |'', | $context.space+'*>Build SQL query out many set implementations (and join) (propertyMappings:'+$relationalPropertyMappings->size()->toString()+'):\n'));
 
    let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
-   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping->toOne(), $avoidModeledProperties);
+   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping->toOne(), $avoidModeledProperties, $state.idToClassMapping);
    let srcMap = $sourceCols->buildColumnToNameMapForMappedFks();
-   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping->toOne(), $avoidModeledProperties);
+   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping->toOne(), $avoidModeledProperties, $state.idToClassMapping);
    let targetMap = $targetCols->buildColumnToNameMapForMappedFks();
 
    let sourceAlias = $srcOperation.currentTreeNode.alias;
@@ -426,7 +426,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    // New Queries
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-   let targetSetImplementations = $targetSetImplementationIds->map(t|$state.mapping->toOne()->classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+   let targetSetImplementations = $targetSetImplementationIds->map(t|$state->getClassMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
 
    print(if(!$context.debug, |'', | $context.space+'  - sourceSetImplIds: ['+$sourceSetImplementationIds->joinStrings(',')+']\n'+$context.space+'  - targetSetImplIds: ['+$targetSetImplementationIds->joinStrings(',')+']\n'));
 
@@ -457,7 +457,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
    
    let relationalPropertyMappingsWithJoinTreeNodes = $relationalPropertyMappings->filter(x | $x->getJoinTreeNode()->isNotEmpty());
    
-   let canJoinBeSimplyMerged = $relationalPropertyMappingsWithJoinTreeNodes->canJoinTreeNodesBeSimplyMergedUsingOrOperation($mapping);
+   let canJoinBeSimplyMerged = $relationalPropertyMappingsWithJoinTreeNodes->canJoinTreeNodesBeSimplyMergedUsingOrOperation($mapping, $state);
    let reprocessedAliasesAndRelationalPropertyMappings =  if(!$canJoinBeSimplyMerged && $sourceAlias.relationalElement->isUnionOrNestedUnion(),
                                                             | let reprocessedValues = $relationalPropertyMappingsWithJoinTreeNodes->pushChainedJoinsIntoSourceUnion($mapping, $sourceAlias, $sourceSetImplementationIds, $parentSourceOperation, $nodeId, $state->toOne(), $context, $extensions);
                                                               pair(pair($reprocessedValues.first, $targetAlias), $reprocessedValues.second);,
@@ -476,14 +476,14 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
                                                                               let join = $joinTreeNode.join; 
 
                                                                               let relations = if($reprocessedSourceAlias != $sourceAlias, 
-                                                                                                | let targetRelation = $x.targetSetImplementationId->getRelation($mapping);
+                                                                                                | let targetRelation = $x.targetSetImplementationId->getRelation($mapping, $state);
                                                                                                   let sourceRelation = $joinTreeNode->getSourceRelationFromTargetRelation($targetRelation);
                                                                                                   pair($sourceRelation, $targetRelation);,
                                                                                                 | if($reprocessedTargetAlias != $targetAlias,
-                                                                                                  | let sourceRelation = $x.sourceSetImplementationId->getRelation($mapping);
+                                                                                                  | let sourceRelation = $x.sourceSetImplementationId->getRelation($mapping, $state);
                                                                                                     let targetRelation = $joinTreeNode->getTargetRelationFromSourceRelation($sourceRelation);
                                                                                                     pair($sourceRelation, $targetRelation);,
-                                                                                                  | pair($x.sourceSetImplementationId->getRelation($mapping), $x.targetSetImplementationId->getRelation($mapping));
+                                                                                                  | pair($x.sourceSetImplementationId->getRelation($mapping, $state), $x.targetSetImplementationId->getRelation($mapping, $state));
                                                                                                 )
                                                                                               );
                                                                               let sourceRelation = $relations.first;
@@ -614,7 +614,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
    let sourceRelationalElement = $sourceAlias.relationalElement;
    let updatedRelationalPropertyMappings = $relationalPropertyMappings->map(x | $x->replaceJoinTreeNodeWithLeafNode());
 
-   let missingColumns = $updatedRelationalPropertyMappings->identifyMissingColumns($mapping, true);
+   let missingColumns = $updatedRelationalPropertyMappings->identifyMissingColumns($mapping, true, $state);
    let sourceUnionWithJoinsApplied = if($sourceRelationalElement->isNestedUnion(),
                                         | let sourceSelect = $sourceRelationalElement->cast(@SelectSQLQuery);
                                           let sourceSelectData = $sourceSelect.data->toOne(); 
@@ -657,13 +657,13 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                                                                 let newRelOpElement = ^$originalRelOpElement(joinTreeNode=^$joinTreeNode(childrenData=[]));
                                                                                 ^$rpm(relationalOperationElement=$newRelOpElement);
                                                                           );
-  let missingColumns = $updatedRelationalPropertyMappings->identifyMissingColumns($mapping, false);
+  let missingColumns = $updatedRelationalPropertyMappings->identifyMissingColumns($mapping, false, $state);
 
   let newRootNodes = $relationalPropertyMappings->zip($targetAlias.relationalElement->cast(@UnionAll).queries)
                                                 ->map(x | let rpm = $x.first;
                                                           let unionSelect = $x.second;
                                                           let joinTreeNode = $rpm->getJoinTreeNode()->toOne();
-                                                          let sourceRelation = $rpm.sourceSetImplementationId->getRelation($mapping)->cast(@NamedRelation);
+                                                          let sourceRelation = $rpm.sourceSetImplementationId->getRelation($mapping, $state)->cast(@NamedRelation);
                                                           let joinedRelation = $joinTreeNode.join->otherTable($sourceRelation).relationalElement->cast(@NamedRelation)->toOne();
                                                           let processedRelation = $joinedRelation->processRelation([], $nodeId, false, 0, false, $parentSourceOperation.milestoningContext, $state, $debugContext, $extensions);
                                                           let newAlias = ^TableAlias(name='root', relationalElement=$processedRelation);
@@ -674,7 +674,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                                                                       | applyJoinInTree($swc.select.data->toOne(), $swc.currentTreeNode->toOne(), $joinTreeNode->children()->toOne(), $parentSourceOperation->toOne(), buildNodeId($nodeId, '_ch'), JoinType.LEFT_OUTER, true, true, [], $state, $debugContext, $extensions);
                                                                                     );
                                                           let newRootNode = $swcWithJoinApplied.select.data->toOne();
-                                                          let targetRelation = $rpm.targetSetImplementationId->getRelation($mapping)->cast(@NamedRelation);
+                                                          let targetRelation = $rpm.targetSetImplementationId->getRelation($mapping, $state)->cast(@NamedRelation);
                                                           let newTargetAlias = ^TableAlias(name = $targetRelation.name, relationalElement = $unionSelect);
                                                           let leafNode = $newRootNode->getLeafNodes()->toOne();
                                                           if($leafNode->instanceOf(RootJoinTreeNode),
@@ -693,7 +693,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
   );
   
   let realiasedMissingColumns = $missingColumns->realiasMissingColumnsToAddToUnionQueries($missingColumns->map(c|'root'), $targetSetImplementationIds);
-  let targetSetImpls = $targetSetImplementationIds->map(t|$state.mapping->toOne()->classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+  let targetSetImpls = $targetSetImplementationIds->map(t|$state->getClassMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
   let milestoningColumns = $newUnion.queries->map(q|let unionRootAlias = $q.data.alias->toOne();
                                                     let unionRootRelation = $unionRootAlias.relationalElement->findMainNamedRelation(); 
                                                     let columns = $unionRootRelation->match([t:Table[1]|$t.milestoning->getAllTemporalColumns().values, r:NamedRelation[1]|[]]); 
@@ -703,9 +703,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
   pair($newAlias, $updatedRelationalPropertyMappings->list());
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::identifyMissingColumns(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], source:Boolean[1]):Pair<List<TableAliasColumn>, String>[*]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::identifyMissingColumns(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], source:Boolean[1], state:State[1]):Pair<List<TableAliasColumn>, String>[*]
 {
-   $relationalPropertyMappings->map(x | let sourceAndTargetRelations = concatenate($x.sourceSetImplementationId->getRelation($mapping), $x.targetSetImplementationId->getRelation($mapping));
+   $relationalPropertyMappings->map(x | let sourceAndTargetRelations = concatenate($x.sourceSetImplementationId->getRelation($mapping, $state), $x.targetSetImplementationId->getRelation($mapping, $state));
                                         $x->getJoinTreeNode()
                                           ->extractTableAliasColumns()
                                           ->filter(y | !$y.alias.relationalElement->in($sourceAndTargetRelations))
@@ -741,11 +741,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
    };
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::canJoinTreeNodesBeSimplyMergedUsingOrOperation(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::union::canJoinTreeNodesBeSimplyMergedUsingOrOperation(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], state:State[0..1]):Boolean[1]
 {
    let lists = $relationalPropertyMappings->map(x | let joinTreeNode = $x->getJoinTreeNode()->toOne();
                                                     let flattenedJoinTreeNodes = $joinTreeNode->extractLine();
-                                                    let sourceRelation = $x.sourceSetImplementationId->getRelation($mapping)->cast(@NamedRelation);
+                                                    let sourceRelation = $x.sourceSetImplementationId->getRelation($mapping, $state)->cast(@NamedRelation);
                                                     let sourceAlias = $flattenedJoinTreeNodes->head().join->toOne()->otherTable($sourceRelation)->toOne();
                                                     $flattenedJoinTreeNodes->tail()->fold({x,a | $a->concatenate($x.join->otherTableFromAlias($a->last()->toOne()))}, $sourceAlias)->init()->map(x | pair($x.name, $x.relationalElement))->list();
    );
