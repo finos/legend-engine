@@ -69,14 +69,17 @@ function <<access.private>> meta::pure::lineage::scanColumns::scanColumns(p:Prop
                                       let propertyMappings = $nsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()));
                                       print(if($debug.debug,|$debug.space + 'property mappings:'+$propertyMappings->map(pm|$pm.sourceSetImplementationId+' -> '+$pm.targetSetImplementationId)->joinStrings('\n                    '+$debug.space)+'\n',|''));
                                       let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
-
+                                      let resolvedMappings = $propertyMappings->map(pm |  if($pm->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping),
+                                                                                            | meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($pm),
+                                                                                            | $pm);
+                                                                                   );
                                       if ($isDataTypeProperty,
-                                          | ^ColResWithState(colRes=^ColRes(columns = $propertyMappings
+                                          | ^ColResWithState(colRes=^ColRes(columns = $resolvedMappings
                                                                             ->filter(pm|$pm->instanceOf(RelationalPropertyMapping))
                                                                             ->cast(@RelationalPropertyMapping)->map(pm|$pm->getColumns()), sets=$sets),
                                                              classToSets=$classToSets,
                                                              idToSet=$idToSet);,
-                                          | $propertyMappings->fold({pm, state|meta::pure::lineage::scanColumns::processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $state, ^$debug(space=$debug.space+'    '))},
+                                          | $resolvedMappings->fold({pm, state|meta::pure::lineage::scanColumns::processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $state, ^$debug(space=$debug.space+'    '))},
                                                                 ^meta::pure::lineage::scanColumns::ColResWithState(classToSets=$classToSets, idToSet=$idToSet));
                                       );,
                              q:QualifiedProperty<Any>[1]|
