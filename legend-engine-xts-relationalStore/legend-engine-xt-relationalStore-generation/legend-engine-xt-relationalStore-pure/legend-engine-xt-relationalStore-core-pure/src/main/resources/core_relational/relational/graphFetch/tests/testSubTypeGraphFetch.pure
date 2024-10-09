@@ -486,6 +486,26 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping(): Boolean[1]
 {
+  meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMappingImpl(false, 
+    '[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
+    '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
+    '{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
+    '{"name":"City1","Id":4,"landmark":null},' +
+    '{"name":"City2","Id":5,"landmark":null},' +
+    '{"name":"City3","Id":6,"landmark":null}]')
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMappingChecked(): Boolean[1]
+{
+  meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMappingImpl(true, 
+    '[{"defects":[],"value":{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1"}},' +
+    '{"defects":[],"value":{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2"}},' + 
+    '{"defects":[],"value":{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3"}},' + 
+    '{"defects":[],"value":{"name":"City1"}},{"defects":[],"value":{"name":"City2"}},{"defects":[],"value":{"name":"City3"}}]');
+}
+
+function meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMappingImpl(checked:Boolean[1], expected:String[1]): Boolean[1]
+{
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
                     '    Id,\n'+
@@ -508,16 +528,13 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
   let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping;
   let runtime = meta::external::store::relational::tests::testRuntime();
 
-  let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
+  let query1 = if ($checked,
+                  | {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetchChecked($tree)->serialize($tree)},
+                  | {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)});
+                  
   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
-  assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
-                         '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
-                         '{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
-                         '{"name":"City1","Id":4,"landmark":null},' +
-                         '{"name":"City2","Id":5,"landmark":null},' +
-                         '{"name":"City3","Id":6,"landmark":null}]',
-                         $result1);
+  assertJsonStringsEqual($expected, $result1);
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping(): Boolean[1]
