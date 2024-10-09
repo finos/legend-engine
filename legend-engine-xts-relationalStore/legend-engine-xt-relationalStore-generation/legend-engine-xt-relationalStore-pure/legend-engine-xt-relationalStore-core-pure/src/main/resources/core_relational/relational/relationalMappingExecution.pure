@@ -626,7 +626,7 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
 
            let mapping = $keyInformation.static.mapping;
 
-           let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false, processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+           let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false, processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($mapping));
 
            let sourceDb = $keyInformation.static.runtime.connectionStores->filter(c|$c.connection==$keyInformation.sourceConnection).element;
            let db = if($sourceDb->isEmpty() || !$sourceDb->toOne()->instanceOf(Database),|[],|$sourceDb->toOne())->cast(@Database);
@@ -652,7 +652,7 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
 
 function meta::relational::mapping::generatePropertySql(setImplementation: RelationalInstanceSetImplementation[1], property:Property<Nil,Any|*>[1], joinType:JoinType[1], propertyPkFilterValues: Any[*], mapping:Mapping[1], runtime: Runtime[1], db:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):Pair<RelationalInstanceSetImplementation, SQLQuery>[1]
 {
-   let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false,  processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+   let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false,  processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($mapping));
 
    let srcSetImplementation = $setImplementation->match([
 								 s:RootRelationalInstanceSetImplementation[1]|$s,
