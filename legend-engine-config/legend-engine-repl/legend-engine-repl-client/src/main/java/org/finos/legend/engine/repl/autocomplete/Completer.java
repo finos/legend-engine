@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.autocomplete;
 
+import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -60,12 +61,11 @@ import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCT
 
 public class Completer
 {
-    private final String buildCodeContext;
     private final String header;
     private final int lineOffset;
     private final MutableMap<String, FunctionHandler> handlers;
-    private final java.util.function.Function<PureModelContextData, PureModel> compiler;
-    private MutableList<CompleterExtension> extensions;
+    private final Supplier<PureModel> pureModel;
+    private final MutableList<CompleterExtension> extensions;
 
     public Completer(String buildCodeContext)
     {
@@ -74,24 +74,26 @@ public class Completer
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions)
     {
-        this(buildCodeContext, extensions, x -> Compiler.compile(x, null, Identity.getAnonymousIdentity().getName()));
+        this(() -> Compiler.compile(PureGrammarParser.newInstance().parseModel(buildCodeContext), null, Identity.getAnonymousIdentity().getName()), extensions);
     }
 
     public Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
-        this(buildCodeContext, extensions, legendInterface::compile);
+        this(() -> legendInterface.compile(legendInterface.parse(buildCodeContext)), extensions);
     }
 
-    private Completer(String buildCodeContext, MutableList<CompleterExtension> extensions, java.util.function.Function<PureModelContextData, PureModel> compiler)
+    public Completer(PureModel pureModel, MutableList<CompleterExtension> extensions)
     {
-        this.compiler = compiler;
+        this(() -> pureModel, extensions);
+    }
+
+    private Completer(Supplier<PureModel> pureModel, MutableList<CompleterExtension> extensions)
+    {
+        this.pureModel = pureModel;
         this.extensions = extensions;
-        this.buildCodeContext = buildCodeContext;
-        this.header =
-                buildCodeContext +
-                        "\n###Pure\n" +
-                        "import meta::pure::functions::relation::*;\n" +
-                        "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
+        this.header = "\n###Pure\n" +
+                "import meta::pure::functions::relation::*;\n" +
+                "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
         this.handlers = Lists.mutable.with(
                 new CastHandler(),
@@ -134,13 +136,8 @@ public class Completer
             ValueSpecification vs = parseValueSpecification(ParserFixer.fixCode(value));
             ValueSpecification topExpression = findTopExpression(vs);
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
-
-            PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = this.compiler.apply(pureModelContextData);
-
             ProcessingContext processingContext = new ProcessingContext("");
-
-            return processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
+            return processValueSpecification(topExpression, currentExpression, pureModel.get(), processingContext);
         }
         catch (EngineException e)
         {
