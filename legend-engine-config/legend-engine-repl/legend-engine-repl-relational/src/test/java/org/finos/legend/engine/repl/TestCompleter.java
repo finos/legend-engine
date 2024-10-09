@@ -67,16 +67,16 @@ public class TestCompleter
     @Test
     public void testErrors()
     {
-        Assert.assertEquals("PARSER error at [6:21]: Unexpected token", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(*").getEngineException().toPretty());
+        Assert.assertEquals("PARSER error at [5:21]: Unexpected token", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(*").getEngineException().toPretty());
         Assert.assertEquals("PARSER error at [6:1-21]: parsing error", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->select(!").getEngineException().toPretty());
-        Assert.assertEquals("COMPILATION error at [6:1-12]: The store 'a::As' can't be found.", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::As.t}#->select(~").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:1-12]: The store 'a::As' can't be found.", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::As.t}#->select(~").getEngineException().toPretty());
     }
 
     @Test
     public void testDeepWithCompilationError()
     {
-        Assert.assertEquals("COMPILATION error at [6:26-49]: Can't find a match for function 'plus(Any[2])'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'p'+$x.col->startsWith('x'))->fr").getEngineException().toPretty());
-        Assert.assertEquals("COMPILATION error at [6:22-24]: Can't find type 'x'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(~x:x.").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:26-49]: Can't find a match for function 'plus(Any[2])'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->filter(x|'p'+$x.col->startsWith('x'))->fr").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:22-24]: Can't find type 'x'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(~x:x.").getEngineException().toPretty());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class TestCompleter
     @Test
     public void testExtendWithOverError()
     {
-        Assert.assertEquals("COMPILATION error at [6:55-56]: Can't find variable class for variable 'p' in the graph", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(over(~Name->descending()), {p,f,r|$p->lead($r).").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:55-56]: Can't find variable class for variable 'p' in the graph", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->extend(over(~Name->descending()), {p,f,r|$p->lead($r).").getEngineException().toPretty());
     }
 
     //---------
@@ -196,7 +196,7 @@ public class TestCompleter
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER, {a,b|$a.")));
         Assert.assertEquals("", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER,")));
         Assert.assertEquals("[k , k], [o , o]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t2}#, JoinKind.INNER, {a,b|$a.col == $b.")));
-        Assert.assertEquals("COMPILATION error at [6:14-17]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:14-17]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
     }
 
     //------
@@ -214,7 +214,7 @@ public class TestCompleter
         Assert.assertEquals("[k , k], [o , o]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$c.")));
         Assert.assertEquals("[col , col], [val , val]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$b.")));
         Assert.assertEquals("[filter , filter(]", checkResultNoException(new Completer("###Relational\nDatabase a::A(Table t2(k VARCHAR(200), o INT) Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t2}#, {a,b|$a.col == $b.k}, {b,c|$c.k == $b.col})->fil")));
-        Assert.assertEquals("COMPILATION error at [6:14-21]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t}#, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
+        Assert.assertEquals("COMPILATION error at [5:14-21]: \"The relation contains duplicates: [val, col]\"", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))", Lists.mutable.with(new RelationalCompleterExtension())).complete("#>{a::A.t}#->asOfJoin(#>{a::A.t}#, {a,b|$a.val == $b.val})->").getEngineException().toPretty());
     }
 
     //--------

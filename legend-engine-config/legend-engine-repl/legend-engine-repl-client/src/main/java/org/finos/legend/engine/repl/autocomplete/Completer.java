@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.repl.autocomplete;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
@@ -41,22 +39,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.repl.autocomplete.handlers.CastHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.DistinctHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.GroupByHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.JoinHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.OverHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.PivotHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SelectHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.SortHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
@@ -67,6 +52,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+
+import java.util.List;
+import java.util.Objects;
+
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 
 public class Completer
 {
