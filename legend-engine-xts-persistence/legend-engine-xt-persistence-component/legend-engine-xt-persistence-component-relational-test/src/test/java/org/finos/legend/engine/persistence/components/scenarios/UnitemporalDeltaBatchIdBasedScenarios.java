@@ -104,7 +104,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_OPTIMIZATION_FILTERS()
     {
-        OptimizationFilter filter = OptimizationFilter.of("id", "{ID_LOWER_BOUND}", "{ID_UPPER_BOUND}");
+        OptimizationFilter filter = OptimizationFilter.of("id");
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchId.builder()
@@ -118,7 +118,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_OPTIMIZATION_FILTERS__INCLUDES_NULL_VALUES()
     {
-        OptimizationFilter filter = OptimizationFilter.of("id", "{ID_LOWER_BOUND}", "{ID_UPPER_BOUND}").withIncludesNullValues(true);
+        OptimizationFilter filter = OptimizationFilter.of("id").withIncludesNullValues(true);
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
             .transactionMilestoning(BatchId.builder()
@@ -132,7 +132,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_MISSING_OPTIMIZATION_FILTER()
     {
-        OptimizationFilter filter = OptimizationFilter.of("unknown_column", "{ID_LOWER_BOUND}", "{ID_UPPER_BOUND}");
+        OptimizationFilter filter = OptimizationFilter.of("unknown_column");
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchId.builder()
@@ -146,7 +146,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_OPTIMIZATION_FILTER_UNSUPPORTED_DATATYPE()
     {
-        OptimizationFilter filter = OptimizationFilter.of("name", "{NAME_LOWER_BOUND}", "{NAME_UPPER_BOUND}");
+        OptimizationFilter filter = OptimizationFilter.of("name");
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchId.builder()

@@ -586,10 +586,10 @@ public abstract class RelationalIngestorAbstract
         finally
         {
             executor.close();
+            // post Cleanup
+            postCleanup();
         }
 
-        // post Cleanup
-        postCleanup();
         LOGGER.info("Ingestion completed");
         return result;
     }

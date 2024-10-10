@@ -211,8 +211,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addOptimizationFilters(OptimizationFilter.of(expiryDateName, expiryDateName + "_lower", expiryDateName + "_upper"))
-            .addOptimizationFilters(OptimizationFilter.of(idName, idName + "_lower", idName + "_upper"))
+            .addOptimizationFilters(OptimizationFilter.of(expiryDateName))
+            .addOptimizationFilters(OptimizationFilter.of(idName))
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();

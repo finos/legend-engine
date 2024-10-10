@@ -241,7 +241,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET \"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
                 "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 WHERE " +
-                "(sink.\"batch_id_out\" = 999999999) AND ((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) " +
+                "(sink.\"batch_id_out\" = 999999999) AND ((sink.\"id\" >= '{id_legend_persistence_lower}') AND (sink.\"id\" <= '{id_legend_persistence_upper}')) " +
                 "AND (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") " +
                 "AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")))";
 
@@ -252,7 +252,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging\" as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND " +
                 "(sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-                "((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')))))";
+                "((sink.\"id\" >= '{id_legend_persistence_lower}') AND (sink.\"id\" <= '{id_legend_persistence_upper}')))))";
 
         Assertions.assertEquals(PostgresTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(PostgresTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -272,7 +272,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
             "SET \"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 WHERE " +
-            "(sink.\"batch_id_out\" = 999999999) AND (((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) OR (sink.\"id\" IS NULL)) " +
+            "(sink.\"batch_id_out\" = 999999999) AND (((sink.\"id\" >= '{id_legend_persistence_lower}') AND (sink.\"id\" <= '{id_legend_persistence_upper}')) OR (sink.\"id\" IS NULL)) " +
             "AND (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") " +
             "AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")))";
 
@@ -283,7 +283,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
             "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND " +
             "(sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "(((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) OR (sink.\"id\" IS NULL)))))";
+            "(((sink.\"id\" >= '{id_legend_persistence_lower}') AND (sink.\"id\" <= '{id_legend_persistence_upper}')) OR (sink.\"id\" IS NULL)))))";
 
         Assertions.assertEquals(PostgresTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(PostgresTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));

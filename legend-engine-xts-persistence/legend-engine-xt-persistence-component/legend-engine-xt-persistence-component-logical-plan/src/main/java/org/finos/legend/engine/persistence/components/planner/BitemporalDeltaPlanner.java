@@ -56,6 +56,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,6 @@ import java.util.stream.Collectors;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
@@ -110,7 +110,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
 
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().filterExistingRecords())
         {
-            this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets);
+            this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets, options().ingestRunId());
             this.stagingDatasetWithoutDuplicates = Optional.of(this.stagingDataset);
         }
         else
@@ -173,22 +173,23 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
 
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)
         {
-            this.tempDataset = LogicalPlanUtils.getTempDataset(datasets);
+            this.tempDataset = LogicalPlanUtils.getTempDataset(datasets, options().ingestRunId());
             if (deleteIndicatorField.isPresent())
             {
-                this.tempDatasetWithDeleteIndicator = LogicalPlanUtils.getTempDatasetWithDeleteIndicator(datasets, deleteIndicatorField.get());
+                this.tempDatasetWithDeleteIndicator = LogicalPlanUtils.getTempDatasetWithDeleteIndicator(datasets, deleteIndicatorField.get(), options().ingestRunId());
             }
         }
     }
 
-    private Dataset getStagingDatasetWithoutDuplicates(Datasets datasets)
+    private Dataset getStagingDatasetWithoutDuplicates(Datasets datasets, String ingestRunId)
     {
-        String tableName = stagingDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        String stagingTableName = stagingDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        String tempDatasetName = TableNameGenUtils.generateTableName(stagingTableName, STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME, ingestRunId);
         return datasets.stagingDatasetWithoutDuplicates().orElse(DatasetDefinition.builder()
             .schema(stagingDataset().schema())
             .database(stagingDataset().datasetReference().database())
             .group(stagingDataset().datasetReference().group())
-            .name(tableName + UNDERSCORE + STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME)
+            .name(tempDatasetName)
             .alias(STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME)
             .build());
     }

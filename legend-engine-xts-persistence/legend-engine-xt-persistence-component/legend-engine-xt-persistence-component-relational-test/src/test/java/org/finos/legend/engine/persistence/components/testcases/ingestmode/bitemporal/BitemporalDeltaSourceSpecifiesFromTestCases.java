@@ -90,6 +90,7 @@ public abstract class BitemporalDeltaSourceSpecifiesFromTestCases extends BaseTe
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplits(operations, dataSplitRangesOneToTwo);
@@ -155,6 +156,7 @@ public abstract class BitemporalDeltaSourceSpecifiesFromTestCases extends BaseTe
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplitsFilterDuplicates(operations, dataSplitRangesOneToTwo);

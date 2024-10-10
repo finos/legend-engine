@@ -309,8 +309,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     @Override
     public void verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
-        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempName = "`mydb`.`main_legend_persistence_temp_lp_yosulf`";
+        String tempWithDeleteIndicatorName = "`mydb`.`main_legend_persistence_tempWithDeleteIndicator_lp_yosulf`";
 
         String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
                 "(`id` INTEGER NOT NULL," +
@@ -765,9 +765,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     @Override
     public void verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplitsFilterDuplicates(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
-        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String stageWithoutDuplicatesName = operations.get(0).preActionsSql().get(4).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempName = "`mydb`.`main_legend_persistence_temp_lp_yosulf`";
+        String tempWithDeleteIndicatorName = "`mydb`.`main_legend_persistence_tempWithDeleteIndicator_lp_yosulf`";
+        String stageWithoutDuplicatesName = "`mydb`.`staging_legend_persistence_stageWithoutDuplicates_lp_yosulf`";
 
         String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
                 "(`id` INTEGER NOT NULL," +
@@ -929,9 +929,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
 
-        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`main_legend_persistence_temp`"), operations.get(0).postCleanupSql().get(0));
-        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`main_legend_persistence_tempWithDeleteIndicator`"), operations.get(0).postCleanupSql().get(1));
-        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`staging_legend_persistence_stageWithoutDuplicates`"), operations.get(0).postCleanupSql().get(2));
+        Assertions.assertEquals(getDropTempTableQuery(tempName), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery(tempWithDeleteIndicatorName), operations.get(0).postCleanupSql().get(1));
+        Assertions.assertEquals(getDropTempTableQuery(stageWithoutDuplicatesName), operations.get(0).postCleanupSql().get(2));
 
         Assertions.assertEquals(2, operations.size());
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
