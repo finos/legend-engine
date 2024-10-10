@@ -20,8 +20,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.hostedService.generation.control.HostedServiceOwnerValidationService;
-import org.finos.legend.engine.language.hostedService.generation.control.HostedServiceOwnerValidator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
@@ -35,10 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -87,22 +82,6 @@ public class HostedServiceArtifactGenerator
     {
         //TODO fix multiEnv
         return core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_generation_computeLineage_HostedService_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-    }
-
-    public boolean validateOwner(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> service = getOwnerValidatorService(activator,pureModel);
-        return  service.isOwner(identity, activator._ownership());
-    }
-
-    public HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> getOwnerValidatorService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModel pureModel)
-    {
-        HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> service = HostedServiceOwnerValidationService.extensions().select(c -> c.supports(activator._ownership())).getFirst();
-        if (service == null)
-        {
-            throw new RuntimeException(activator._ownership().getClass().getSimpleName() + "is not yet supported as an ownership model!");
-        }
-        return service;
     }
 
     public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)

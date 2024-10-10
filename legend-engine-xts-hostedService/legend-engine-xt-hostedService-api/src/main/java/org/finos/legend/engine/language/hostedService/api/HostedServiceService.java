@@ -88,7 +88,6 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         MutableList<HostedServiceError> errors =  Lists.mutable.empty();
         try
         {
-            this.hostedServiceArtifactgenerator.validateOwner(identity, pureModel, activator, routerExtensions);
             core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_validator_validateService_HostedService_1__Boolean_1_(activator, pureModel.getExecutionSupport()); //returns true or errors out
 
         }
