@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.dataCube.server.model;
+package org.finos.legend.engine.application.query.model;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataCubeQuery
 {
+    public String id;
     public String name;
-    public String query;
-    // NOTE: this is an information that is needed for initialization
-    // we might want to move this to the source
-    public List<DataCubeQueryColumn> columns;
+    public String description;
 
-    // NOTE: we don't need to process the config, so we will leave it as raw JSON
-    public Map<String, ?> configuration;
+    public Map<String, ?> query;
+    public Map<String, ?> source;
+    public Map<String, ?> executionContext;
+
+    public Long lastUpdatedAt;
+    public Long createdAt;
+    public Long lastOpenAt;
+
+    // We make it clear that we only allow a single owner
+    public String owner;
 }

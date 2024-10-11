@@ -34,6 +34,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.repl.dataCube.server.REPLServerHelpers.*;
@@ -254,13 +255,14 @@ public class DataCubeQueryBuilder
                     try
                     {
                         DataCubeQuery query = state.getQuery();
+                        Map<String, ?> source = state.getSource();
+                        Map<String, ?> executionContext = state.getExecutionContext();
                         if (query != null)
                         {
                             DataCubeGetBaseQueryResult result = new DataCubeGetBaseQueryResult();
-                            result.timestamp = state.startTime;
                             result.query = query;
-                            result.partialQuery = DataCubeHelpers.parseQuery(query.partialQuery, false);
-                            result.sourceQuery = DataCubeHelpers.parseQuery(query.source.query, false);
+                            result.source = source;
+                            result.executionContext = executionContext;
                             handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                         }
                         else

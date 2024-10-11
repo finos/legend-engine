@@ -20,6 +20,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -41,7 +42,6 @@ import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQuery;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQueryColumn;
-import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQuerySourceREPLExecutedQuery;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
@@ -104,6 +104,8 @@ public class REPLServerHelpers
 
         private PureModelContextData currentPureModelContextData;
         private DataCubeQuery query;
+        private Map<String, ?> source;
+        private Map<String, ?> executionContext;
 
         public REPLServerState(Client client, ObjectMapper objectMapper, PlanExecutor planExecutor, LegendInterface legendInterface)
         {
@@ -116,16 +118,9 @@ public class REPLServerHelpers
         private void initialize(PureModelContextData pureModelContextData, List<DataCubeQueryColumn> columns)
         {
             this.currentPureModelContextData = pureModelContextData;
-
             this.startTime = System.currentTimeMillis();
-            this.query = new DataCubeQuery();
-            this.query.name = "New Report";
-            this.query.configuration = null; // initially, the config is not initialized
 
-            // process source
-            DataCubeQuerySourceREPLExecutedQuery source = new DataCubeQuerySourceREPLExecutedQuery();
-            source.columns = columns;
-
+            // execution context
             // try to extract the runtime for the query
             // remove any usage of multiple from(), only add one to the end
             // TODO: we might need to account for other variants of ->from(), such as when mapping is specified
@@ -173,33 +168,37 @@ public class REPLServerHelpers
                 fn.parameters.set(0, currentExpression);
                 currentExpression = fn;
             }
+            Map<String, Object> executionContext = Maps.mutable.empty();
+            executionContext.put("_type", "repl");
+            executionContext.put("runtime", runtime);
+            executionContext.put("mapping", mapping);
+            this.executionContext = executionContext;
 
-            this.query.partialQuery = "";
-            source.query = currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
-            source.runtime = runtime;
-            source.mapping = mapping;
-            this.query.source = source;
+            // source
+            Map<String, Object> source = Maps.mutable.empty();
+            executionContext.put("_type", "repl");
+            executionContext.put("timestamp", this.startTime);
+            executionContext.put("query", currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+            this.source = source;
 
-            // build the partial query
+            // query
+            DataCubeQuery query = new DataCubeQuery();
+            query.name = "New Report";
+            query.configuration = null; // initially, the config is not initialized
+            query.columns = columns;
             // NOTE: for this, the initial query is going to be a select all
             AppliedFunction partialFn = new AppliedFunction();
             partialFn.function = "select";
             ColSpecArray colSpecArray = new ColSpecArray();
-            colSpecArray.colSpecs = ListIterate.collect(source.columns, col ->
+            colSpecArray.colSpecs = ListIterate.collect(query.columns, col ->
             {
                 ColSpec colSpec = new ColSpec();
                 colSpec.name = col.name;
                 return colSpec;
             });
             partialFn.parameters = Lists.mutable.with(new ClassInstance("colSpecArray", colSpecArray, null));
-            this.query.partialQuery = partialFn.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
-
-            // build the full query
-            AppliedFunction fullFn = new AppliedFunction();
-            fullFn.function = "from";
-            fullFn.parameters = mapping != null ? Lists.mutable.with(partialFn, new PackageableElementPtr(mapping), new PackageableElementPtr(runtime)) : Lists.mutable.with(partialFn, new PackageableElementPtr(runtime));
-            partialFn.parameters = Lists.mutable.with(currentExpression).withAll(partialFn.parameters);
-            this.query.query = fullFn.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
+            query.query = partialFn.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
+            this.query = query;
         }
 
         public void initializeFromTable(PureModelContextData pureModelContextData)
@@ -269,6 +268,16 @@ public class REPLServerHelpers
         public DataCubeQuery getQuery()
         {
             return this.query;
+        }
+
+        public Map<String, ?> getSource()
+        {
+            return this.source;
+        }
+
+        public Map<String, ?> getExecutionContext()
+        {
+            return this.executionContext;
         }
     }
 
