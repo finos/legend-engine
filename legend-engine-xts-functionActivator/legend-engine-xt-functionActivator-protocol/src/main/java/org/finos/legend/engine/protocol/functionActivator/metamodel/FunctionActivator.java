@@ -32,4 +32,5 @@ public abstract class FunctionActivator extends PackageableElement
     public PackageableElementPointer function;
     public DeploymentConfiguration activationConfiguration;
     public Ownership ownership;
+    public List<PostDeploymentAction> actions = Collections.emptyList();
 }

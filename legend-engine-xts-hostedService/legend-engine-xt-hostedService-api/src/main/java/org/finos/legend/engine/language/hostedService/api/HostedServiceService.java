@@ -26,14 +26,11 @@ import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDe
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceDeploymentManager;
-import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.*;
 
@@ -125,12 +122,14 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         MutableList<? extends FunctionActivatorError> validationErrors = this.validate(identity, pureModel, activator, inputModel, routerExtensions);
         if (validationErrors.isEmpty())
         {
-            GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X", routerExtensions);
-            HostedServiceArtifact artifact = new HostedServiceArtifact(activator._pattern(), generation, HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData) inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), ((PureModelContextData) inputModel).origin != null ? (AlloySDLC) ((PureModelContextData) inputModel).origin.sdlcInfo : null);
-            return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
+            HostedServiceArtifact artifact = this.hostedServiceArtifactgenerator.renderServiceArtifact(pureModel, activator, inputModel, "vX_X_X", routerExtensions);
+            HostedServiceDeploymentResult result = this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
+            if (result.successful)
+            {
+                result.actionResults = this.hostedServiceDeploymentManager.deployActions(identity, artifact);
+            }
+            return result;
         }
         return new HostedServiceDeploymentResult(validationErrors.collect(v -> v.message));
     }
-
-
 }
