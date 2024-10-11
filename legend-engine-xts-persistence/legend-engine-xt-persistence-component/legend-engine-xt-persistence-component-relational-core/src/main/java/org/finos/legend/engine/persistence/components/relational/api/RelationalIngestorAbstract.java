@@ -660,7 +660,7 @@ public abstract class RelationalIngestorAbstract
             .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
-        generatorResult = generator.generateOperationsForCreate(enrichedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
+        generatorResult = generator.generateOperationsForCreate(planner);
 
         return enrichedDatasets;
     }
