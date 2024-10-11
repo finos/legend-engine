@@ -282,6 +282,18 @@ public abstract class RelationalIngestorAbstract
         initializeLock();
     }
 
+    // TODO: introduce a new API or change the above existing one to accept a Datasets object?
+    public void create(Datasets datasets)
+    {
+        LOGGER.info("Invoked create method, will create the datasets");
+        if (!datasetsInitialized)
+        {
+            enrichDatasetsAndGenerateOperationsForCreate(datasets);
+        }
+        createAllDatasets();
+        initializeLock();
+    }
+
     /*
     - Evolve Schema of Target table based on schema changes in staging table
     */
@@ -594,6 +606,64 @@ public abstract class RelationalIngestorAbstract
         return result;
     }
 
+    private Datasets enrichDatasetsAndGenerateOperationsForCreate(Datasets datasets)
+    {
+        LOGGER.info("Initializing Datasets for create()");
+
+        // Validation: init(Connection) must have been invoked
+        if (this.executor == null)
+        {
+            throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
+        }
+
+        // 1. Case handling
+        enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion(), enableConcurrentSafety());
+
+        // 2. Initialize transformer
+        transformer = new RelationalTransformer(relationalSink(), transformOptions());
+        resourcesBuilder = Resources.builder();
+
+        // 3. Derive main dataset schema
+        if (enableSchemaEvolution())
+        {
+            if (executor.datasetExists(enrichedDatasets.mainDataset()))
+            {
+                enrichedDatasets = enrichedDatasets.withMainDataset(executor.constructDatasetFromDatabase(enrichedDatasets.mainDataset()));
+                mainDatasetExists = true;
+            }
+            else
+            {
+                enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets.mainDataset(), enrichedDatasets.stagingDataset(), enrichedIngestMode));
+            }
+        }
+        else
+        {
+            enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets.mainDataset(), enrichedDatasets.stagingDataset(), enrichedIngestMode));
+        }
+
+        // 4. generate sql plans
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(enrichedIngestMode)
+            .relationalSink(relationalSink())
+            .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
+            .enableSchemaEvolution(enableSchemaEvolution())
+            .enableConcurrentSafety(enableConcurrentSafety())
+            .caseConversion(caseConversion())
+            .executionTimestampClock(executionTimestampClock())
+            .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
+            .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
+            .batchIdPattern(BATCH_ID_PATTERN)
+            .ingestRequestId(ingestRequestId())
+            .batchSuccessStatusValue(batchSuccessStatusValue())
+            .ingestRunId(getRunId())
+            .build();
+
+        planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
+        generatorResult = generator.generateOperationsForCreate(enrichedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
+
+        return enrichedDatasets;
+    }
 
     private Datasets enrichDatasetsAndGenerateOperations(Datasets datasets)
     {
@@ -626,11 +696,18 @@ public abstract class RelationalIngestorAbstract
             resourcesBuilder.stagingDataSetEmpty(isStagingDatasetEmpty);
         }
 
-        // 5. Check if main Dataset Exists
-        mainDatasetExists = executor.datasetExists(enrichedDatasets.mainDataset());
-        if (mainDatasetExists && enableSchemaEvolution())
+        // 5. Derive main dataset schema
+        if (enableSchemaEvolution())
         {
-            enrichedDatasets = enrichedDatasets.withMainDataset(executor.constructDatasetFromDatabase(enrichedDatasets.mainDataset()));
+            if (executor.datasetExists(enrichedDatasets.mainDataset()))
+            {
+                enrichedDatasets = enrichedDatasets.withMainDataset(executor.constructDatasetFromDatabase(enrichedDatasets.mainDataset()));
+                mainDatasetExists = true;
+            }
+            else
+            {
+                enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets.mainDataset(), enrichedDatasets.stagingDataset(), enrichedIngestMode));
+            }
         }
         else
         {
