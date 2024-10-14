@@ -14,17 +14,10 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import java.util.List;
 import java.util.Map;
 
 public class DataCubeQuery
 {
-    public String name;
     public String query;
-    // NOTE: this is an information that is needed for initialization
-    // we might want to move this to the source
-    public List<DataCubeQueryColumn> columns;
-
-    // NOTE: we don't need to process the config, so we will leave it as raw JSON
     public Map<String, ?> configuration;
 }

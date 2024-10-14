@@ -49,7 +49,10 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
 
@@ -71,29 +74,6 @@ public class REPLServerHelpers
         }
     }
 
-    public static Map<String, String> getQueryParams(HttpExchange exchange)
-    {
-        String query = exchange.getRequestURI().getQuery();
-        Map<String, String> result = new HashMap<>();
-        if (query == null)
-        {
-            return result;
-        }
-        for (String param : query.split("&"))
-        {
-            String[] entry = param.split("=");
-            if (entry.length > 1)
-            {
-                result.put(entry[0], entry[1]);
-            }
-            else
-            {
-                result.put(entry[0], "");
-            }
-        }
-        return result;
-    }
-
     public static class REPLServerState
     {
         public final Client client;
@@ -105,7 +85,6 @@ public class REPLServerHelpers
         private PureModelContextData currentPureModelContextData;
         private DataCubeQuery query;
         private Map<String, ?> source;
-        private Map<String, ?> executionContext;
 
         public REPLServerState(Client client, ObjectMapper objectMapper, PlanExecutor planExecutor, LegendInterface legendInterface)
         {
@@ -120,7 +99,7 @@ public class REPLServerHelpers
             this.currentPureModelContextData = pureModelContextData;
             this.startTime = System.currentTimeMillis();
 
-            // execution context
+            // -------------------- SOURCE --------------------
             // try to extract the runtime for the query
             // remove any usage of multiple from(), only add one to the end
             // TODO: we might need to account for other variants of ->from(), such as when mapping is specified
@@ -168,29 +147,22 @@ public class REPLServerHelpers
                 fn.parameters.set(0, currentExpression);
                 currentExpression = fn;
             }
-            Map<String, Object> executionContext = Maps.mutable.empty();
-            executionContext.put("_type", "repl");
-            executionContext.put("runtime", runtime);
-            executionContext.put("mapping", mapping);
-            this.executionContext = executionContext;
-
-            // source
             Map<String, Object> source = Maps.mutable.empty();
-            executionContext.put("_type", "repl");
-            executionContext.put("timestamp", this.startTime);
-            executionContext.put("query", currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+            source.put("_type", "repl");
+            source.put("timestamp", this.startTime);
+            source.put("query", currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+            source.put("runtime", runtime);
+            source.put("mapping", mapping);
             this.source = source;
 
-            // query
+            // -------------------- QUERY --------------------
             DataCubeQuery query = new DataCubeQuery();
-            query.name = "New Report";
             query.configuration = null; // initially, the config is not initialized
-            query.columns = columns;
             // NOTE: for this, the initial query is going to be a select all
             AppliedFunction partialFn = new AppliedFunction();
             partialFn.function = "select";
             ColSpecArray colSpecArray = new ColSpecArray();
-            colSpecArray.colSpecs = ListIterate.collect(query.columns, col ->
+            colSpecArray.colSpecs = ListIterate.collect(columns, col ->
             {
                 ColSpec colSpec = new ColSpec();
                 colSpec.name = col.name;
@@ -273,11 +245,6 @@ public class REPLServerHelpers
         public Map<String, ?> getSource()
         {
             return this.source;
-        }
-
-        public Map<String, ?> getExecutionContext()
-        {
-            return this.executionContext;
         }
     }
 

@@ -49,7 +49,7 @@ public class DataCubeQueryStoreManager
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
 
-    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "owner", "createdAt", "lastUpdatedAt", "lastOpenAt");
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "createdAt", "lastUpdatedAt", "lastOpenAt");
     private static final int GET_QUERIES_LIMIT = 50;
 
     private final MongoClient mongoClient;
@@ -119,11 +119,10 @@ public class DataCubeQueryStoreManager
 
     public static void validateQuery(DataCubeQuery query)
     {
-        validateNonEmptyQueryField(query.id, "DataCube query ID is missing or empty");
-        validateNonEmptyQueryField(query.name, "DataCube query name is missing or empty");
-        validateNonNullQueryField(query.query, "DataCube query is missing");
-        validateNonNullQueryField(query.source, "DataCube query source is missing");
-        validateNonNullQueryField(query.executionContext, "DataCube query execution context is missing");
+        validateNonEmptyQueryField(query.id, "Query ID is missing or empty");
+        validateNonEmptyQueryField(query.name, "Query name is missing or empty");
+        validateNonNullQueryField(query.query, "Query is missing");
+        validateNonNullQueryField(query.source, "Query source is missing");
     }
 
     public List<DataCubeQuery> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
@@ -139,10 +138,6 @@ public class DataCubeQueryStoreManager
             if (querySearchTermSpecification.exactMatchName != null && querySearchTermSpecification.exactMatchName)
             {
                 Bson filter = Filters.eq("name", querySearchTermSpecification.searchTerm);
-                if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
-                {
-                    filter = Filters.or(filter, Filters.eq("owner", querySearchTermSpecification.searchTerm));
-                }
                 filters.add(filter);
             }
             else
@@ -150,23 +145,13 @@ public class DataCubeQueryStoreManager
                 Bson idFilter = Filters.eq("id", querySearchTermSpecification.searchTerm);
                 Bson nameFilter = Filters.regex("name", Pattern.quote(querySearchTermSpecification.searchTerm), "i");
                 Bson filter = Filters.or(idFilter, nameFilter);
-                if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
-                {
-                    filter = Filters.or(idFilter, nameFilter, Filters.regex("owner", Pattern.quote(querySearchTermSpecification.searchTerm), "i"));
-                }
                 filters.add(filter);
             }
-        }
-        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
-        {
-            filters.add(Filters.in("owner", currentUser, null));
         }
 
         List<DataCubeQuery> queries = new ArrayList<>();
         List<Bson> aggregateLists = new ArrayList<>();
-        aggregateLists.add(Aggregates.addFields(new Field<>("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))));
         aggregateLists.add(Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)));
-        aggregateLists.add(Aggregates.sort(Sorts.descending("isCurrentUser")));
         if (searchSpecification.sortByOption != null)
         {
             aggregateLists.add(Aggregates.sort(Sorts.descending(getSortByField(searchSpecification.sortByOption))));
@@ -263,9 +248,7 @@ public class DataCubeQueryStoreManager
     public DataCubeQuery createQuery(DataCubeQuery query, String currentUser) throws JsonProcessingException
     {
         validateQuery(query);
-
-        // Force the current user as owner regardless of user input
-        query.owner = currentUser;
+        // TODO: store ownership information
 
         List<DataCubeQuery> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), this::documentToQuery).toList();
         if (!matchingQueries.isEmpty())
@@ -298,13 +281,7 @@ public class DataCubeQueryStoreManager
         }
         DataCubeQuery currentQuery = matchingQueries.get(0);
 
-        // Make sure only the owner can update the query
-        // NOTE: if the query is created by an anonymous user previously, set the current user as the owner
-        if (currentQuery.owner != null && !currentQuery.owner.equals(currentUser))
-        {
-            throw new ApplicationQueryException("Only owner can update the query", Response.Status.FORBIDDEN);
-        }
-        query.owner = currentUser;
+        // TODO: check ownership
         query.createdAt = currentQuery.createdAt;
         query.lastUpdatedAt = Instant.now().toEpochMilli();
         query.lastOpenAt = Instant.now().toEpochMilli();
@@ -325,11 +302,7 @@ public class DataCubeQueryStoreManager
         }
         DataCubeQuery currentQuery = matchingQueries.get(0);
 
-        // Make sure only the owner can delete the query
-        if (currentQuery.owner != null && !currentQuery.owner.equals(currentUser))
-        {
-            throw new ApplicationQueryException("Only owner can delete the query", Response.Status.FORBIDDEN);
-        }
+        // TODO: check ownership
         this.getQueryCollection().findOneAndDelete(Filters.eq("id", queryId));
     }
 }

@@ -256,13 +256,11 @@ public class DataCubeQueryBuilder
                     {
                         DataCubeQuery query = state.getQuery();
                         Map<String, ?> source = state.getSource();
-                        Map<String, ?> executionContext = state.getExecutionContext();
                         if (query != null)
                         {
                             DataCubeGetBaseQueryResult result = new DataCubeGetBaseQueryResult();
                             result.query = query;
                             result.source = source;
-                            result.executionContext = executionContext;
                             handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                         }
                         else

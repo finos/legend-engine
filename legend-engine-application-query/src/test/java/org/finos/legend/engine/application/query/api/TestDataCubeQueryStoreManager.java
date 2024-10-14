@@ -73,16 +73,6 @@ public class TestDataCubeQueryStoreManager
             return this;
         }
 
-        TestDataCubeQuerySearchSpecificationBuilder withIncludeOwner(Boolean includeOwner)
-        {
-            if (this.searchTermSpecification == null)
-            {
-                this.searchTermSpecification = new QuerySearchTermSpecification();
-            }
-            this.searchTermSpecification.includeOwner = includeOwner;
-            return this;
-        }
-
         TestDataCubeQuerySearchSpecificationBuilder withSortByOption(QuerySearchSortBy sortByOption)
         {
             this.sortByOption = sortByOption;
@@ -104,18 +94,15 @@ public class TestDataCubeQueryStoreManager
     {
         public String id;
         public String name;
-        public String owner;
         public String description = "description";
         public Map<String, Object> query = Maps.mutable.empty();
         public Map<String, Object> source = Maps.mutable.empty();
-        public Map<String, Object> executionContext = Maps.mutable.empty();
 
-        static TestQueryBuilder create(String id, String name, String owner)
+        static TestQueryBuilder create(String id, String name)
         {
             TestQueryBuilder queryBuilder = new TestQueryBuilder();
             queryBuilder.id = id;
             queryBuilder.name = name;
-            queryBuilder.owner = owner;
             return queryBuilder;
         }
 
@@ -124,11 +111,9 @@ public class TestDataCubeQueryStoreManager
             DataCubeQuery query = new DataCubeQuery();
             query.id = this.id;
             query.name = this.name;
-            query.owner = this.owner;
             query.description = this.description;
             query.query = this.query;
             query.source = this.source;
-            query.executionContext = this.executionContext;
             return query;
         }
     }
@@ -166,23 +151,23 @@ public class TestDataCubeQueryStoreManager
     @Test
     public void testValidateQuery()
     {
-        Function0<DataCubeQuery> _createTestQuery = () -> TestQueryBuilder.create("1", "query1", "testUser").build();
+        Function0<DataCubeQuery> _createTestQuery = () -> TestQueryBuilder.create("1", "query1").build();
         DataCubeQuery goodQuery = _createTestQuery.get();
         DataCubeQueryStoreManager.validateQuery(goodQuery);
 
         // ID
         DataCubeQuery queryWithInvalidId = _createTestQuery.get();
         queryWithInvalidId.id = null;
-        Assert.assertEquals("DataCube query ID is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidId)).getMessage());
+        Assert.assertEquals("Query ID is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidId)).getMessage());
         queryWithInvalidId.id = "";
-        Assert.assertEquals("DataCube query ID is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidId)).getMessage());
+        Assert.assertEquals("Query ID is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidId)).getMessage());
 
         // Name
         DataCubeQuery queryWithInvalidName = _createTestQuery.get();
         queryWithInvalidName.name = null;
-        Assert.assertEquals("DataCube query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidName)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidName)).getMessage());
         queryWithInvalidId.name = "";
-        Assert.assertEquals("DataCube query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidName)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> DataCubeQueryStoreManager.validateQuery(queryWithInvalidName)).getMessage());
 
         // TODO?: validate content
     }
@@ -191,7 +176,7 @@ public class TestDataCubeQueryStoreManager
     public void testSearchQueries() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
+        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1").build();
         storeManager.createQuery(newQuery, currentUser);
         List<DataCubeQuery> queries = storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
@@ -207,9 +192,9 @@ public class TestDataCubeQueryStoreManager
     public void testMatchExactNameQuery() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery newQuery = TestQueryBuilder.create("1", "Test Query 1", currentUser).build();
-        DataCubeQuery newQueryTwo = TestQueryBuilder.create("2", "Test Query 12", currentUser).build();
-        DataCubeQuery newQueryThree = TestQueryBuilder.create("3", "Test Query 13", currentUser).build();
+        DataCubeQuery newQuery = TestQueryBuilder.create("1", "Test Query 1").build();
+        DataCubeQuery newQueryTwo = TestQueryBuilder.create("2", "Test Query 12").build();
+        DataCubeQuery newQueryThree = TestQueryBuilder.create("3", "Test Query 13").build();
         storeManager.createQuery(newQuery, currentUser);
         storeManager.createQuery(newQueryTwo, currentUser);
         storeManager.createQuery(newQueryThree, currentUser);
@@ -223,8 +208,8 @@ public class TestDataCubeQueryStoreManager
     public void testGetQueriesWithLimit() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("2", "query2").build(), currentUser);
         Assert.assertEquals(1, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withLimit(1).build(), currentUser).size());
         Assert.assertEquals(2, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
         Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withLimit(0).build(), currentUser).size());
@@ -234,10 +219,10 @@ public class TestDataCubeQueryStoreManager
     public void testGetQueriesWithSortBy() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).build();
-        DataCubeQuery testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).build();
-        DataCubeQuery testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).build();
-        DataCubeQuery testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).build();
+        DataCubeQuery testQuery1 = TestQueryBuilder.create("1", "query1").build();
+        DataCubeQuery testQuery2 = TestQueryBuilder.create("2", "query2").build();
+        DataCubeQuery testQuery3 = TestQueryBuilder.create("3", "query3").build();
+        DataCubeQuery testQuery4 = TestQueryBuilder.create("4", "query4").build();
 
         // create in order 1 -> 4 -> 2 -> 3
         storeManager.createQuery(testQuery1, currentUser);
@@ -251,7 +236,7 @@ public class TestDataCubeQueryStoreManager
         Assert.assertEquals(4, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());
         Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
 
-        storeManager.updateQuery("2", TestQueryBuilder.create("2", "query2NewlyUpdated", currentUser).build(), currentUser);
+        storeManager.updateQuery("2", TestQueryBuilder.create("2", "query2NewlyUpdated").build(), currentUser);
         Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
 
         storeManager.getQuery("1");
@@ -262,40 +247,13 @@ public class TestDataCubeQueryStoreManager
     public void testGetQueriesWithSearchText() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("3", "query2", currentUser).build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("2", "query2").build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("3", "query2").build(), currentUser);
         Assert.assertEquals(3, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
         Assert.assertEquals(1, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).size());
         Assert.assertEquals(2, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).size());
         Assert.assertEquals(3, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).size());
-    }
-
-
-    @Test
-    public void testGetQueriesWithSearchTextSpec() throws Exception
-    {
-        String currentUser = "user1";
-        String user2 = "user2";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("3", "query3", user2).build(), user2);
-        Assert.assertEquals(1, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(2, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(3, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
-    }
-
-    @Test
-    public void testGetQueriesForCurrentUser() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), "testUser1");
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
-        Assert.assertEquals(2, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(2, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).size());
-        Assert.assertEquals(1, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).size());
     }
 
     @Test
@@ -308,7 +266,7 @@ public class TestDataCubeQueryStoreManager
     public void testCreateSimpleQuery() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
+        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1").build();
         DataCubeQuery createdQuery = storeManager.createQuery(newQuery, currentUser);
         Assert.assertEquals("1", createdQuery.id);
         Assert.assertEquals("query1", createdQuery.name);
@@ -322,35 +280,23 @@ public class TestDataCubeQueryStoreManager
     public void testCreateInvalidQuery()
     {
         String currentUser = "testUser";
-        Assert.assertEquals("DataCube query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.createQuery(TestQueryBuilder.create("1", null, currentUser).build(), currentUser)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.createQuery(TestQueryBuilder.create("1", null).build(), currentUser)).getMessage());
     }
 
     @Test
     public void testCreateQueryWithSameId() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        Assert.assertEquals("Query with ID '1' already existed", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser)).getMessage());
-    }
-
-    @Test
-    public void testForceCurrentUserToBeOwnerWhenCreatingQuery() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", null).build(), currentUser);
-        Assert.assertEquals(currentUser, storeManager.getQuery("1").owner);
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", "testUser2").build(), currentUser);
-        Assert.assertEquals(currentUser, storeManager.getQuery("2").owner);
-        storeManager.createQuery(TestQueryBuilder.create("3", "query1", "testUser2").build(), null);
-        Assert.assertNull(storeManager.getQuery("3").owner);
+        storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser);
+        Assert.assertEquals("Query with ID '1' already existed", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser)).getMessage());
     }
 
     @Test
     public void testUpdateQuery() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        storeManager.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser);
+        storeManager.updateQuery("1", TestQueryBuilder.create("1", "query2").build(), currentUser);
         Assert.assertEquals("query2", storeManager.getQuery("1").name);
     }
 
@@ -358,46 +304,21 @@ public class TestDataCubeQueryStoreManager
     public void testUpdateWithInvalidQuery()
     {
         String currentUser = "testUser";
-        Assert.assertEquals("DataCube query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("1", null, currentUser).build(), currentUser)).getMessage());
-    }
-
-    @Test
-    public void testPreventUpdateQueryId() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", null).build(), null);
-        Assert.assertEquals("Updating query ID is not supported", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("2", "query1", "testUser2").build(), currentUser)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("1", null).build(), currentUser)).getMessage());
     }
 
     @Test
     public void testUpdateNotFoundQuery()
     {
         String currentUser = "testUser";
-        Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser));
-    }
-
-    @Test
-    public void testAllowUpdateQueryWithoutOwner() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", null).build(), null);
-        storeManager.updateQuery("1", TestQueryBuilder.create("1", "query2", null).build(), currentUser);
-        Assert.assertEquals(currentUser, storeManager.getQuery("1").owner);
-    }
-
-    @Test
-    public void testForbidUpdateQueryOfAnotherUser() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        Assert.assertEquals("Only owner can update the query", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("1", "query1", "testUser2").build(), "testUser2")).getMessage());
+        Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.updateQuery("1", TestQueryBuilder.create("1", "query1").build(), currentUser));
     }
 
     @Test
     public void testDeleteQuery() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("1", "query1").build(), currentUser);
         storeManager.deleteQuery("1", currentUser);
         Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
     }
@@ -410,27 +331,10 @@ public class TestDataCubeQueryStoreManager
     }
 
     @Test
-    public void testAllowDeleteQueryWithoutOwner() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", null).build(), null);
-        storeManager.deleteQuery("1", currentUser);
-        Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
-    }
-
-    @Test
-    public void testForbidDeleteQueryOfAnotherUser() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
-        Assert.assertEquals("Only owner can delete the query", Assert.assertThrows(ApplicationQueryException.class, () -> storeManager.deleteQuery("1", "testUser2")).getMessage());
-    }
-
-    @Test
     public void testCreateSimpleQueryContainsTimestamps() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
+        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1").build();
         DataCubeQuery createdQuery = storeManager.createQuery(newQuery, currentUser);
         Assert.assertNotNull(createdQuery.lastUpdatedAt);
         Assert.assertNotNull(createdQuery.createdAt);
@@ -440,7 +344,7 @@ public class TestDataCubeQueryStoreManager
     public void testSearchQueriesContainTimestamps() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
+        DataCubeQuery newQuery = TestQueryBuilder.create("1", "query1").build();
         storeManager.createQuery(newQuery, currentUser);
         List<DataCubeQuery> queries = storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
@@ -453,32 +357,21 @@ public class TestDataCubeQueryStoreManager
     public void testSearchQueriesWithSearchByQueryId() throws Exception
     {
         String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("26929514-237c-11ed-861d-0242ac120002", "query_a", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("26929515-237c-11bd-851d-0243ac120002", "query_b", currentUser).build(), currentUser);
-        storeManager.createQuery(TestQueryBuilder.create("23929515-235c-11ad-851d-0143ac120002", "query_c", currentUser).build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("26929514-237c-11ed-861d-0242ac120002", "query_a").build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("26929515-237c-11bd-851d-0243ac120002", "query_b").build(), currentUser);
+        storeManager.createQuery(TestQueryBuilder.create("23929515-235c-11ad-851d-0143ac120002", "query_c").build(), currentUser);
         Assert.assertEquals(3, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser).size());
         Assert.assertEquals(1, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad-851d-0143ac120002").build(), currentUser).size());
         Assert.assertEquals(0, storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad").build(), currentUser).size());
     }
 
     @Test
-    public void testSearchQueriesSortedByCurrentUserFirst() throws Exception
-    {
-        String currentUser = "testUser";
-        storeManager.createQuery(TestQueryBuilder.create("1", "query1", "testUser1").build(), "testUser1");
-        storeManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
-        List<DataCubeQuery> queries = storeManager.searchQueries(new TestDataCubeQuerySearchSpecificationBuilder().build(), currentUser);
-        Assert.assertEquals(2, queries.size());
-        Assert.assertEquals(currentUser, queries.get(0).owner);
-    }
-
-    @Test
     public void testGetQueries() throws Exception
     {
         String currentUser = "testUser";
-        DataCubeQuery testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).build();
-        DataCubeQuery testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).build();
-        DataCubeQuery testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).build();
+        DataCubeQuery testQuery1 = TestQueryBuilder.create("1", "query1").build();
+        DataCubeQuery testQuery2 = TestQueryBuilder.create("2", "query2").build();
+        DataCubeQuery testQuery3 = TestQueryBuilder.create("3", "query3").build();
         storeManager.createQuery(testQuery1, currentUser);
         storeManager.createQuery(testQuery2, currentUser);
         storeManager.createQuery(testQuery3, currentUser);

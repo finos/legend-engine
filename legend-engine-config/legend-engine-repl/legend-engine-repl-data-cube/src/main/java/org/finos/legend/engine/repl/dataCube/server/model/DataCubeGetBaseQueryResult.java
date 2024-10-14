@@ -20,5 +20,4 @@ public class DataCubeGetBaseQueryResult
 {
     public DataCubeQuery query;
     public Map<String, ?> source;
-    public Map<String, ?> executionContext;
 }

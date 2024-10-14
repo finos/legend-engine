@@ -27,12 +27,10 @@ public class DataCubeQuery
 
     public Map<String, ?> query;
     public Map<String, ?> source;
-    public Map<String, ?> executionContext;
 
     public Long lastUpdatedAt;
     public Long createdAt;
     public Long lastOpenAt;
 
-    // We make it clear that we only allow a single owner
-    public String owner;
+    // TODO: ownership
 }
