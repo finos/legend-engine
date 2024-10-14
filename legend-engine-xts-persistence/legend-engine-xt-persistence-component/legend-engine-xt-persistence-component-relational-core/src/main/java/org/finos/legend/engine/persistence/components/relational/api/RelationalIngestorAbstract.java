@@ -282,14 +282,10 @@ public abstract class RelationalIngestorAbstract
         initializeLock();
     }
 
-    // TODO: introduce a new API or change the above existing one to accept a Datasets object?
     public void create(Datasets datasets)
     {
-        LOGGER.info("Invoked create method, will create the datasets");
-        if (!datasetsInitialized)
-        {
-            enrichDatasetsAndGenerateOperationsForCreate(datasets);
-        }
+        LOGGER.info("Invoked create(datasets) method, will initialize and create the datasets");
+        enrichDatasetsAndGenerateOperationsForCreate(datasets);
         createAllDatasets();
         initializeLock();
     }
