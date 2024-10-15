@@ -197,7 +197,7 @@ public class TestDataCubeHelpers
     {
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
-        testTypeahead(expectedResult, code, "#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)");
+        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)", false));
     }
 
     @Test
@@ -216,11 +216,11 @@ public class TestDataCubeHelpers
         testTypeahead(expectedResult, code, null);
     }
 
-    private void testTypeahead(String expectedResult, String code, String baseQueryCode)
+    private void testTypeahead(String expectedResult, String code, Lambda lambda)
     {
         try
         {
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, baseQueryCode, pureModelContextData, completerExtensions, legendInterface)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, lambda, pureModelContextData, completerExtensions, legendInterface)));
         }
         catch (IOException e)
         {

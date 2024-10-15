@@ -150,7 +150,7 @@ public class DataCubeQueryBuilder
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeQueryTypeaheadInput input = state.objectMapper.readValue(requestBody, DataCubeQueryTypeaheadInput.class);
                         PureModelContextData data = state.getCurrentPureModelContextData();
-                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, DataCubeHelpers.getQueryCode(input.baseQuery, false), data, state.client.getCompleterExtensions(), state.legendInterface);
+                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, input.baseQuery, data, state.client.getCompleterExtensions(), state.legendInterface);
                         handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result.getCompletion()), state);
                     }
                     catch (Exception e)
@@ -177,8 +177,7 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetQueryRelationReturnTypeInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryRelationReturnTypeInput.class);
-                        Lambda lambda = input.query; // if no lambda is specified, we're executing the initial query
-                        PureModelContextData data = DataCubeHelpers.injectNewFunction(state.getCurrentPureModelContextData(), lambda).getOne();
+                        PureModelContextData data = DataCubeHelpers.injectNewFunction(state.getCurrentPureModelContextData(), input.query).getOne();
                         handleResponse(exchange, 200, state.objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(state.legendInterface, data)), state);
                     }
                     catch (Exception e)
@@ -212,10 +211,11 @@ public class DataCubeQueryBuilder
                                 .withElements(ListIterate.select(currentData.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
                                 .build();
                         String graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
+
                         graphCode += "\n###Pure\n" +
                                 "import meta::pure::functions::relation::*;\n" +
                                 "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
-                        graphCode += DataCubeHelpers.getQueryCode(input.baseQuery, false) + "\n";
+                        graphCode += DataCubeHelpers.getQueryCode(input.baseQuery.body.get(0), false) + "\n";
                         int lineOffset = StringUtils.countMatches(graphCode, "\n");
                         graphCode += input.code;
                         graphCode += "\n}";

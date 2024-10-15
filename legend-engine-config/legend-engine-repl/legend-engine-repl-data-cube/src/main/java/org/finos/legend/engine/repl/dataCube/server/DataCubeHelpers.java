@@ -141,7 +141,7 @@ public class DataCubeHelpers
         return valueSpecification.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(pretty != null && pretty ? RenderStyle.PRETTY : RenderStyle.STANDARD).build());
     }
 
-    public static CompletionResult getCodeTypeahead(String code, String baseQueryCode, PureModelContextData data, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
+    public static CompletionResult getCodeTypeahead(String code, Lambda lambda, PureModelContextData data, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
         try
         {
@@ -151,6 +151,7 @@ public class DataCubeHelpers
                     .withElements(ListIterate.select(data.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
                     .build();
             String graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
+            String baseQueryCode = lambda != null ? getQueryCode(lambda.body.get(0), false) : null;
             String queryCode = (baseQueryCode != null ? baseQueryCode : "") + code;
             Completer completer = new Completer(graphCode, extensions, legendInterface);
             CompletionResult result = completer.complete(queryCode);
