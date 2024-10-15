@@ -642,8 +642,13 @@ public abstract class RelationalIngestorAbstract
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(enrichedIngestMode)
             .relationalSink(relationalSink())
+            .cleanupStagingData(cleanupStagingData())
+            .collectStatistics(collectStatistics())
+            .writeStatistics(writeStatistics())
             .skipMainAndMetadataDatasetCreation(skipMainAndMetadataDatasetCreation())
             .enableSchemaEvolution(enableSchemaEvolution())
+            .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
+            .ignoreCaseForSchemaEvolution(ignoreCaseForSchemaEvolution())
             .enableConcurrentSafety(enableConcurrentSafety())
             .caseConversion(caseConversion())
             .executionTimestampClock(executionTimestampClock())
@@ -652,6 +657,7 @@ public abstract class RelationalIngestorAbstract
             .batchIdPattern(BATCH_ID_PATTERN)
             .ingestRequestId(ingestRequestId())
             .batchSuccessStatusValue(batchSuccessStatusValue())
+            .sampleRowCount(sampleRowCount())
             .ingestRunId(getRunId())
             .build();
 
