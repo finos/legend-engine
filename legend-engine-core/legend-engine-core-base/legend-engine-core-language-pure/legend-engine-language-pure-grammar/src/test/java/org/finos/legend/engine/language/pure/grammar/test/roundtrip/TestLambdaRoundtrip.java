@@ -435,6 +435,12 @@ public class TestLambdaRoundtrip
         testLambda("|%9999-12-30T19:00:00.0000->someDateFn()", "|someDateFn(%9999-12-30T19:00:00.0000)");
     }
 
+    @Test
+    public void testLambdaEndingOnComment()
+    {
+        testLambda("|1 + 1// comment here", "|1 + 1");
+    }
+
     static void testLambda(String text)
     {
         testLambda(text, text);

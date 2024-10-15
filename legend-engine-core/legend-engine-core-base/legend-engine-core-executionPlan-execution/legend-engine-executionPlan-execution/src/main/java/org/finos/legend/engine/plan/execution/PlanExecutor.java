@@ -368,7 +368,7 @@ public class PlanExecutor
         return buildDefaultExecutionState(executionPlan, vars, null);
     }
 
-    private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
+    public ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
         ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, null, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
 

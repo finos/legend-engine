@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import static org.finos.legend.engine.repl.relational.shared.ResultHelper.prettyGridPrint;
+import static org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResultGridPrintUtility.prettyGridPrint;
 
 public class DataCube__DEV__runDuckDBSelectSQL implements Command
 {
