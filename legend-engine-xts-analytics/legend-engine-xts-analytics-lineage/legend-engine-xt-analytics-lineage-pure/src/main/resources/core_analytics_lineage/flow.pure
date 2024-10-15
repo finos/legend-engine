@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::store::set::*;
+import meta::core::runtime::*;
 import meta::analytics::lineage::flow::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
@@ -21,12 +23,14 @@ Class meta::analytics::lineage::flow::Flow
    functions : FunctionDefinition<Any>[*];
    systems : System[*];
    packages : Package[*];
-   databases : Database[*];
+   databases : meta::pure::store::set::SetBasedStore[*];
    tables : NamedRelation[*];
    properties : Property<Nil,Any|*>[*];
    classes : Class<Any>[*];
    groups : Group[*];
    links : FlowEdge[*];
+   services: String[*];
+   
 }
 
 Class meta::analytics::lineage::flow::Group
@@ -97,7 +101,7 @@ Class meta::analytics::lineage::flow::ClassNode extends FlowNode
 
 Class meta::analytics::lineage::flow::DatabaseNode extends FlowNode
 {
-   <<equality.Key>> db : Database[1];
+   <<equality.Key>> db : SetBasedStore[1];
 }
 
 Class meta::analytics::lineage::flow::NamedRelationNode extends FlowNode
@@ -125,6 +129,11 @@ Class meta::analytics::lineage::flow::PackageNode extends FlowNode
    <<equality.Key>> package : Package[1];
 }
 
+Class meta::analytics::lineage::flow::ServiceNode extends FlowNode
+{
+   <<equality.Key>> service : String[1];
+}
+
 function meta::analytics::lineage::flow::merge(flows:Flow[*]):Flow[1]
 {
    ^Flow
@@ -136,7 +145,8 @@ function meta::analytics::lineage::flow::merge(flows:Flow[*]):Flow[1]
       packages = $flows.packages->removeDuplicates(),
       classes = $flows.classes->removeDuplicates(),
       properties = $flows.properties->removeDuplicates(),
-      links = $flows.links->removeDuplicates()
+      links = $flows.links->removeDuplicates(),
+      services = $flows.services->removeDuplicates()
    )
 }
 
@@ -156,7 +166,9 @@ function meta::analytics::lineage::flow::removeNode(flow:Flow[1],node:FlowNode[1
       packages = if($node->instanceOf(PackageNode),|$flow.packages->filter(p|$p!=$node->cast(@PackageNode).package),|$flow.packages),
       classes = if($node->instanceOf(ClassNode),|$flow.classes->filter(c|$c!=$c->cast(@ClassNode).class),|$flow.classes),
       properties = if($node->instanceOf(PropertyNode),|$flow.properties->filter(p|$p!=$p->cast(@PropertyNode).property),|$flow.properties),
-      links = $flow.links->filter(l|!$l->in($in))->filter(l|!$l->in($out))->concatenate($in.source->fold({x,y:FlowEdge[*]|$y->concatenate($out.target->map(e|^FlowEdge(source=$x, target=$e, lineageMaturity=maturity($x, $e, $maturityTests))))},[]))
+      links = $flow.links->filter(l|!$l->in($in))->filter(l|!$l->in($out))->concatenate($in.source->fold({x,y:FlowEdge[*]|$y->concatenate($out.target->map(e|^FlowEdge(source=$x, target=$e, lineageMaturity=maturity($x, $e, $maturityTests))))},[])),
+      services = if($node->instanceOf(ServiceNode),|$flow.services->filter(p|$p!=$p->cast(@ServiceNode).service),|$flow.services)
+
    );
 }
 

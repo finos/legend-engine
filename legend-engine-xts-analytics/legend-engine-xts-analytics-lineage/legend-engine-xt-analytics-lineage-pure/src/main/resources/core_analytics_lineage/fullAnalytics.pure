@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::service::metamodel::mapping::*;
+import meta::external::store::service::metamodel::runtime::*;
+import meta::external::store::service::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
 import meta::pure::lineage::scanRelations::*;
@@ -87,7 +90,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
 
    let sourceMapping = $mappings->last()->toOne();
    let funcBody = $f.expressionSequence->evaluateAndDeactivate();
-   let updatedFuncBody = $funcBody->map(e|$e->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions));
+   let updatedFuncBody = $funcBody->map(e|$e->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name ')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions));
    let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
     
    let combinedTrees = if( $propertyTrees->size()>1,|$propertyTrees->first()->toOne()->findAndAddChildrenAtTheEnd([],$propertyTrees->tail()),|$propertyTrees->toOne());
@@ -190,31 +193,66 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
                                | $connections->toOne()->cast(@DatabaseConnection),
                                | []);,
                           | []);
+  
+  
+   $mappings->map(m| let flowDB =  $propertyTree->toFlowDatabase($m, [], false, []);
+                      $flowDB->map(d|$d->match( [ r:meta::analytics::lineage::FlowRelationalStore[1]|     
+                                                      let tables = $r.relation;
+                                                      let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
+                                                      let maturityTests = maturityTests();
+                                                    ^Flow(
+                                                        functions = if($tables->size() == 0 && $dbs->size() == 0, | [], | $f),
+                                                        databases = $dbs,
+                                                        tables = $tables->cast(@NamedRelation),
+                                                        links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
+                                                                              let tbNode = ^NamedRelationNode(relation=$t->cast(@NamedRelation));
+                                                                              let fNode = ^FunctionNode(func=$f);
+                                                                              let dbNode = ^DatabaseNode(db=$db);
+                                                                              [
+                                                                                ^FlowEdge(source=$tbNode, target=$fNode, lineageMaturity=maturity($tbNode, $fNode, $maturityTests)),
+                                                                                ^FlowEdge(source=$dbNode, target=$tbNode, lineageMaturity=maturity($dbNode, $tbNode, $maturityTests))
+                                                                              ];
+                                                                      )
+                                                        );,
 
-   $mappings->map(m|
-         let tables = $propertyTree->toFlowDatabase($m, [], false, [])->cast(@NamedRelation)->removeDuplicates();
-         let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
-         let maturityTests = maturityTests();
-         ^Flow(
-            functions = if($tables->size() == 0 && $dbs->size() == 0, | [], | $f),
-            databases = $dbs,
-            tables = $tables->cast(@NamedRelation),
-            links = $tables->map(t|let db = $t->map(r|$r->schema()).database->toOne();
-                                   let tbNode = ^NamedRelationNode(relation=$t->cast(@NamedRelation));
-                                   let fNode = ^FunctionNode(func=$f);
-                                   let dbNode = ^DatabaseNode(db=$db);
-                                   [
-                                     ^FlowEdge(source=$tbNode, target=$fNode, lineageMaturity=maturity($tbNode, $fNode, $maturityTests)),
-                                     ^FlowEdge(source=$dbNode, target=$tbNode, lineageMaturity=maturity($dbNode, $tbNode, $maturityTests))
-                                   ];
-                           )
-         );
-   )->merge();
+                                                  s:meta::analytics::lineage::FlowService[1]|let serviceUrls = $s.services->map( service| let url= $runtime->toOne()->connectionByElement($service.owner)->cast(@ServiceStoreConnection).baseUrl + $service.resolveFullPathRecursively();
+                                                                                                                                                   let serviceNode = ^ServiceNode(service=$url);
+                                                                                                                                                   let dbNode = ^DatabaseNode(db=$service.owner); 
+                                                                                                                                                   let fNode = ^FunctionNode(func=$f);
+                                                                                                                                                   ^Flow(services=$url, 
+                                                                                                                                                        functions = $f,
+                                                                                                                                                        databases = $service.owner,
+                                                                                                                                                       links = [^FlowEdge(source=$serviceNode, target=$dbNode),
+                                                                                                                                                                ^FlowEdge(source=$dbNode, target=$fNode)]
+                                                                                                                                                          );    
+                                                                                                                                    );
+                                                                                              
+                                    
+                                               ]);
+
+
+    ) ;)->merge();
 }
 
-function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*]):NamedRelation[*]
+Class meta::analytics::lineage::FlowStore
 {
-    $p.value->match([
+
+
+}
+Class meta::analytics::lineage::FlowRelationalStore extends meta::analytics::lineage::FlowStore
+{
+  relation:NamedRelation[*];
+}
+
+Class meta::analytics::lineage::FlowService extends meta::analytics::lineage::FlowStore
+{
+
+  services:meta::external::store::service::metamodel::Service[*]; 
+  
+}
+
+function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTree[1], m:Mapping[1], sets:SetImplementation[*], disregardClass:Boolean[1], extraChildren:PropertyPathTree[*]):meta::analytics::lineage::FlowStore[*]
+{  $p.value->match([
                      pr:PropertyPathNode[1]|
                           let possiblePropertyTargetClasses = $p.children.value->map(vv|$vv->match([
                              v:PropertyPathNode[1]|$v.class,
@@ -226,9 +264,11 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
                                                          | $propertyMappings->map(pm |$pm->match([
-                                                                                              rpm: RelationalPropertyMapping[1] | $rpm->meta::analytics::lineage::flowDatabase::getTables(),
+                                                                                              rpm: RelationalPropertyMapping[1] |^FlowRelationalStore(relation= $rpm->meta::analytics::lineage::flowDatabase::getTables()),
                                                                                               ppm: PurePropertyMapping[1] | [],
-                                                                                              agr: meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1] |meta::pure::router::routing::reprocessAggregationAwarePropertyMapping($agr)->cast(@RelationalPropertyMapping)->meta::analytics::lineage::flowDatabase::getTables();,
+                                                                                              s:ServiceStorePropertyMapping[1] | 
+                                                                                               let service =  $s.owner->cast(@RootServiceInstanceSetImplementation).servicesMapping.service;
+                                                                                                ^meta::analytics::lineage::FlowService(services=$service);,
                                                                                               a: Any[*] | fail('Database lineage not support for given type of mapping: ' + $pm->typeName()); [];
                                                                                              ])),
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
@@ -250,7 +290,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                    ]);
 }
 
-function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], extraChildren:PropertyPathTree[*]): NamedRelation[*]
+function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDataTypeProperty(p:PropertyPathTree[1], pm: PropertyMapping[1], possiblePropertyTargetClasses: Class<Any>[*], m:Mapping[1], extraChildren:PropertyPathTree[*]): meta::analytics::lineage::FlowStore[*]
 {
    let targetSetImplementationId = $pm->match([
       i: InlineEmbeddedRelationalInstanceSetImplementation[1]|
@@ -263,13 +303,11 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDa
             | $targetSiId);
    ]);
 
-   let potentialTablesFromJoin = $pm->match([
-      r:RelationalPropertyMapping[1]|
-         if($targetSetImplementationId->contains($r.targetSetImplementationId),
-            | $r->meta::analytics::lineage::flowDatabase::getTables(),
-            | []),
-      a:Any[1]|[]
-   ]);
+   let potentialTablesFromJoin = $pm->match([ r:RelationalPropertyMapping[1]|if($targetSetImplementationId->contains($r.targetSetImplementationId),
+                                                                                    |^meta::analytics::lineage::FlowRelationalStore(relation=$r->meta::analytics::lineage::flowDatabase::getTables()),
+                                                                                    | []),
+                                              a:Any[1]|[]
+                                             ]);
 
    let tablesFromChildren = meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)
    ->map(c|$c->toFlowDatabase($m, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren));
