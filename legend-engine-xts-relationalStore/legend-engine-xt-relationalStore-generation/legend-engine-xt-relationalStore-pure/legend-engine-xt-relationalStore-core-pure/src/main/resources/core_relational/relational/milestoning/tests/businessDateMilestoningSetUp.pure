@@ -746,6 +746,21 @@ Mapping meta::relational::tests::milestoning::milestoningMapWithEmbeddedSimple
 
 )
 
+Mapping meta::relational::tests::milestoning::milestoningMapWithEmbeddedDuplicateProperty
+(
+   meta::relational::tests::milestoning::Product : Relational{
+
+        id : [db]ProductTable.id,
+        name : [db]ProductTable.name,
+
+        classification(
+           type : [db]@StockProduct_ClassificationSystem  | ProductClassificationSystemTable.name
+        ),
+      classification : [db]@StockProduct_ClassificationSystem 
+   }
+)
+
+
 Mapping meta::relational::tests::milestoning::isolationFocusedMapping
 (
 
