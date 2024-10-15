@@ -89,14 +89,6 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         },
                         (service, context) ->
                         {
-
-                        },
-                        (service, context) ->
-                        {
-
-                        },
-                        (service, context) ->
-                        {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getPackageableElement(service);
 
                             pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));

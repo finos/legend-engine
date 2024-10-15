@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.compiler.test;
+package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.FixedSizeSet;
 import org.eclipse.collections.api.set.MutableSet;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.DependencyManagement;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.multimap.list.FastListMultimap;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -41,6 +45,7 @@ import org.junit.Test;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestDependencyManagement
 {
@@ -58,7 +63,7 @@ public class TestDependencyManagement
     private final java.lang.Class<Binding> BINDING_CLASS = Binding.class;
 
     @Test
-    public void testDependencyManagementConstructor()
+    public void testProcessDependencyGraph()
     {
         MutableMap<java.lang.Class<? extends PackageableElement>, Collection<java.lang.Class<? extends PackageableElement>>> dependencyGraph = Maps.mutable.empty();
         dependencyGraph.put(SECTION_INDEX_CLASS, Lists.fixedSize.empty());
@@ -70,7 +75,8 @@ public class TestDependencyManagement
         dependencyGraph.put(PACKAGEABLE_RUNTIME_CLASS, Lists.fixedSize.with(MAPPING_CLASS, PACKAGEABLE_CONNECTION_CLASS));
         dependencyGraph.put(FUNCTION_CLASS, Lists.fixedSize.with(DATA_ELEMENT_CLASS, CLASS_CLASS, ASSOCIATION_CLASS, MAPPING_CLASS, BINDING_CLASS));
 
-        DependencyManagement dependencyManagement = new DependencyManagement(dependencyGraph);
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        dependencyManagement.processDependencyGraph(dependencyGraph);
 
         dependencyGraph.put(MEASURE_CLASS, Lists.fixedSize.empty());
         dependencyGraph.put(BINDING_CLASS, Lists.fixedSize.empty());
@@ -93,7 +99,8 @@ public class TestDependencyManagement
         dependencyGraph.put(PACKAGEABLE_RUNTIME_CLASS, Lists.fixedSize.with(MAPPING_CLASS, PACKAGEABLE_CONNECTION_CLASS));
         dependencyGraph.put(FUNCTION_CLASS, Lists.fixedSize.with(DATA_ELEMENT_CLASS, CLASS_CLASS, ASSOCIATION_CLASS, MAPPING_CLASS, BINDING_CLASS));
 
-        DependencyManagement dependencyManagement = new DependencyManagement(dependencyGraph);
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        dependencyManagement.processDependencyGraph(dependencyGraph);
         try
         {
             dependencyManagement.detectCircularDependency();
@@ -118,7 +125,8 @@ public class TestDependencyManagement
         dependencyGraph.put(PACKAGEABLE_RUNTIME_CLASS, Lists.fixedSize.with(MAPPING_CLASS, PACKAGEABLE_CONNECTION_CLASS));
         dependencyGraph.put(FUNCTION_CLASS, Lists.fixedSize.with(DATA_ELEMENT_CLASS, CLASS_CLASS, ASSOCIATION_CLASS, MAPPING_CLASS, BINDING_CLASS));
 
-        DependencyManagement dependencyManagement = new DependencyManagement(dependencyGraph);
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        dependencyManagement.processDependencyGraph(dependencyGraph);
         dependencyManagement.detectCircularDependency();
 
         MutableMap<java.lang.Class<? extends PackageableElement>, Set<java.lang.Class<? extends PackageableElement>>> expectedDependencyToDependents = Maps.mutable.empty();
@@ -169,7 +177,8 @@ public class TestDependencyManagement
         dependencyGraph.put(PACKAGEABLE_RUNTIME_CLASS, Lists.fixedSize.with(MAPPING_CLASS, PACKAGEABLE_CONNECTION_CLASS));
         dependencyGraph.put(FUNCTION_CLASS, Lists.fixedSize.with(DATA_ELEMENT_CLASS, CLASS_CLASS, ASSOCIATION_CLASS, MAPPING_CLASS, BINDING_CLASS));
 
-        DependencyManagement dependencyManagement = new DependencyManagement(dependencyGraph);
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        dependencyManagement.processDependencyGraph(dependencyGraph);
         dependencyManagement.detectCircularDependency();
 
         MutableSet<MutableSet<java.lang.Class<? extends PackageableElement>>> expectedDisjointDependencyGraphs = Sets.mutable.empty();
@@ -180,5 +189,128 @@ public class TestDependencyManagement
         expectedDisjointDependencyGraphs.add(disjointDependencyGraph2);
         expectedDisjointDependencyGraphs.add(disjointDependencyGraph3);
         Assert.assertEquals(expectedDisjointDependencyGraphs, dependencyManagement.getDisjointDependencyGraphs());
+    }
+
+    @Test
+    public void testTopologicallySortElements()
+    {
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        Mapping m1 = new Mapping();
+        m1._package = "test";
+        m1.name = "M1";
+        Mapping m2 = new Mapping();
+        m2._package = "test";
+        m2.name = "M2";
+        Mapping m3 = new Mapping();
+        m3._package = "test";
+        m3.name = "M3";
+        Mapping m4 = new Mapping();
+        m4._package = "test";
+        m4.name = "M4";
+        Mapping m5 = new Mapping();
+        m5._package = "test";
+        m5.name = "M5";
+        Mapping m6 = new Mapping();
+        m6._package = "test";
+        m6.name = "M6";
+        Mapping m7 = new Mapping();
+        m7._package = "test";
+        m7.name = "M7";
+        FixedSizeList<PackageableElement> testMappings = Lists.fixedSize.with(m1, m2, m3, m4, m5, m6, m7);
+
+        DependencyManagement.PackageableElementsByDependencyLevel packageableElementsByDependencyLevel = dependencyManagement.new PackageableElementsByDependencyLevel(testMappings.stream()
+                .map(m -> Tuples.pair(m, m.getPath()))
+                .collect(Collectors.toList()));
+        FastListMultimap<java.lang.Class<? extends PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElements = FastListMultimap.newMultimap(Tuples.pair(Mapping.class, packageableElementsByDependencyLevel));
+
+        MutableMap<String, MutableSet<String>> mappingPrerequisiteGraphs = Maps.mutable.empty();
+        mappingPrerequisiteGraphs.put(m2.getPath(), Sets.fixedSize.with(m1.getPath()));
+        mappingPrerequisiteGraphs.put(m3.getPath(), Sets.fixedSize.with(m1.getPath()));
+        mappingPrerequisiteGraphs.put(m4.getPath(), Sets.fixedSize.with(m3.getPath()));
+        mappingPrerequisiteGraphs.put(m5.getPath(), Sets.fixedSize.with(m3.getPath()));
+        mappingPrerequisiteGraphs.put(m6.getPath(), Sets.fixedSize.with(m4.getPath()));
+        mappingPrerequisiteGraphs.put(m7.getPath(), Sets.fixedSize.with(m4.getPath()));
+        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
+
+        FastListMultimap<java.lang.Class<? extends PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = dependencyManagement.topologicallySortElements(classToElements, elementPrerequisitesByClass);
+        MutableList<DependencyManagement.PackageableElementsByDependencyLevel> allMappingsByDependencyLevel = classToElementsSortedByDependencyLevel.get(Mapping.class);
+        DependencyManagement.PackageableElementsByDependencyLevel mappingsInFirstLevel = allMappingsByDependencyLevel.get(0);
+        FixedSizeList<Pair<PackageableElement, String>> independentElementAndPathPairsInFirstLevel = mappingsInFirstLevel.getIndependentElementAndPathPairs();
+        Assert.assertEquals(1, independentElementAndPathPairsInFirstLevel.size());
+        Assert.assertEquals(m1.getPath(), independentElementAndPathPairsInFirstLevel.get(0).getTwo());
+
+        DependencyManagement.PackageableElementsByDependencyLevel mappingsInSecondLevel = allMappingsByDependencyLevel.get(1);
+        FixedSizeList<Pair<PackageableElement, String>> independentElementAndPathPairsInSecondLevel = mappingsInSecondLevel.getIndependentElementAndPathPairs();
+        FixedSizeSet<String> elementPathsInSecondLevel = Sets.fixedSize.with(independentElementAndPathPairsInSecondLevel.get(0).getTwo(), independentElementAndPathPairsInSecondLevel.get(1).getTwo());
+        Assert.assertEquals(2, elementPathsInSecondLevel.size());
+        Assert.assertTrue(elementPathsInSecondLevel.contains(m2.getPath()));
+        Assert.assertTrue(elementPathsInSecondLevel.contains(m3.getPath()));
+
+        DependencyManagement.PackageableElementsByDependencyLevel mappingsInThirdLevel = allMappingsByDependencyLevel.get(2);
+        FixedSizeList<Pair<PackageableElement, String>> independentElementAndPathPairsInThirdLevel = mappingsInThirdLevel.getIndependentElementAndPathPairs();
+        FixedSizeSet<String> elementPathsInThirdLevel = Sets.fixedSize.with(independentElementAndPathPairsInThirdLevel.get(0).getTwo(), independentElementAndPathPairsInThirdLevel.get(1).getTwo());
+        Assert.assertEquals(2, elementPathsInThirdLevel.size());
+        Assert.assertTrue(elementPathsInThirdLevel.contains(m4.getPath()));
+        Assert.assertTrue(elementPathsInThirdLevel.contains(m5.getPath()));
+
+        DependencyManagement.PackageableElementsByDependencyLevel mappingsInFourthLevel = allMappingsByDependencyLevel.get(3);
+        FixedSizeList<Pair<PackageableElement, String>> independentElementAndPathPairsInFourthLevel = mappingsInFourthLevel.getIndependentElementAndPathPairs();
+        FixedSizeSet<String> elementPathsInFourthLevel = Sets.fixedSize.with(independentElementAndPathPairsInFourthLevel.get(0).getTwo(), independentElementAndPathPairsInFourthLevel.get(1).getTwo());
+        Assert.assertEquals(2, elementPathsInFourthLevel.size());
+        Assert.assertTrue(elementPathsInFourthLevel.contains(m6.getPath()));
+        Assert.assertTrue(elementPathsInFourthLevel.contains(m7.getPath()));
+    }
+
+    @Test
+    public void testCircularDependencyInElements()
+    {
+        DependencyManagement dependencyManagement = new DependencyManagement();
+        Mapping m1 = new Mapping();
+        m1._package = "test";
+        m1.name = "M1";
+        Mapping m2 = new Mapping();
+        m2._package = "test";
+        m2.name = "M2";
+        Mapping m3 = new Mapping();
+        m3._package = "test";
+        m3.name = "M3";
+        Mapping m4 = new Mapping();
+        m4._package = "test";
+        m4.name = "M4";
+        Mapping m5 = new Mapping();
+        m5._package = "test";
+        m5.name = "M5";
+        Mapping m6 = new Mapping();
+        m6._package = "test";
+        m6.name = "M6";
+        Mapping m7 = new Mapping();
+        m7._package = "test";
+        m7.name = "M7";
+        FixedSizeList<PackageableElement> testMappings = Lists.fixedSize.with(m1, m2, m3, m4, m5, m6, m7);
+
+        DependencyManagement.PackageableElementsByDependencyLevel packageableElementsByDependencyLevel = dependencyManagement.new PackageableElementsByDependencyLevel(testMappings.stream()
+                .map(m -> Tuples.pair(m, m.getPath()))
+                .collect(Collectors.toList()));
+        FastListMultimap<java.lang.Class<? extends PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElements = FastListMultimap.newMultimap(Tuples.pair(Mapping.class, packageableElementsByDependencyLevel));
+
+        MutableMap<String, MutableSet<String>> mappingPrerequisiteGraphs = Maps.mutable.empty();
+        mappingPrerequisiteGraphs.put(m2.getPath(), Sets.fixedSize.with(m1.getPath()));
+        mappingPrerequisiteGraphs.put(m3.getPath(), Sets.fixedSize.with(m1.getPath(), m7.getPath()));
+        mappingPrerequisiteGraphs.put(m4.getPath(), Sets.fixedSize.with(m3.getPath()));
+        mappingPrerequisiteGraphs.put(m5.getPath(), Sets.fixedSize.with(m3.getPath()));
+        mappingPrerequisiteGraphs.put(m6.getPath(), Sets.fixedSize.with(m4.getPath()));
+        mappingPrerequisiteGraphs.put(m7.getPath(), Sets.fixedSize.with(m4.getPath()));
+        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
+
+        String expectedErrorMessage = "Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.\nCycle: test::M7 -> test::M4 -> test::M3 -> test::M7";
+        try
+        {
+            dependencyManagement.topologicallySortElements(classToElements, elementPrerequisitesByClass);
+            Assert.fail("Expected compilation error with message: " + expectedErrorMessage + "; but no error occurred");
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals(expectedErrorMessage, e.getMessage());
+        }
     }
 }

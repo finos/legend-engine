@@ -61,7 +61,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_Val
 
 import java.util.Collections;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import static org.finos.legend.pure.generated.core_persistence_persistence_validation.Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_;
 import static org.finos.legend.pure.generated.core_persistence_persistence_validations_rules.Root_meta_pure_persistence_validation_commonRules_Extension_MANY__ValidationRuleSet_1_;
@@ -119,12 +118,6 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             purePersistenceContext._platform(HelperPersistenceContextBuilder.buildPersistencePlatform(persistenceContext.platform, context));
                             purePersistenceContext._serviceParameters(ListIterate.collect(persistenceContext.serviceParameters, sp -> HelperPersistenceContextBuilder.buildServiceParameter(sp, context)));
                             purePersistenceContext._sinkConnection(HelperPersistenceContextBuilder.buildConnection(persistenceContext.sinkConnection, context));
-                        },
-                        (persistenceContext, context) ->
-                        {
-                        },
-                        (persistenceContext, context) ->
-                        {
                         },
                         // use the final compiler pass to invoke validation extensions
                         (persistenceContext, context) ->
