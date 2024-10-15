@@ -1515,12 +1515,12 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[*]");
+                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]");
         test("Class test::A\n" +
                 "{\n" +
                 "   names : String[0..1];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]");
+                "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]");
     }
 
     @Test
@@ -1555,7 +1555,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
+                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[*]"));
 
         partialCompilationTest("Class test::A\n" +
                 "{\n" +
@@ -1568,7 +1568,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "]\n" +
                 "{\n" +
                 "   names : String[*];\n" +
-                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Fourth Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [8:17-18]: Constraint must be of type 'Boolean'"));
+                "}", Lists.fixedSize.with("COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]", "COMPILATION error at [8:17-18]: Constraint must be of type 'Boolean'"));
     }
 
     @Test
@@ -1667,7 +1667,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     public void testUnknownFunction()
     {
         test("Class test::Person[$this.lastName->ranDoMFuncTion()]{lastName:String[1];}",
-                "COMPILATION error at [1:36-49]: Can't resolve the builder for function 'ranDoMFuncTion' - stack:[Class 'test::Person' Fourth Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
+                "COMPILATION error at [1:36-49]: Can't resolve the builder for function 'ranDoMFuncTion' - stack:[Class 'test::Person' Third Pass, Constraint 0, new lambda, Applying ranDoMFuncTion]");
     }
 
     @Test

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
@@ -31,6 +33,11 @@ public abstract class Processor<T extends PackageableElement>
         return Collections.emptyList();
     }
 
+    public RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getPrerequisiteElements(PackageableElement element, CompileContext context)
+    {
+        return processPrerequisiteElements(castElement(element), context);
+    }
+
     public final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(PackageableElement element, CompileContext context)
     {
         return processElementFirstPass(castElement(element), context);
@@ -44,21 +51,6 @@ public abstract class Processor<T extends PackageableElement>
     public final void processThirdPass(PackageableElement element, CompileContext context)
     {
         processElementThirdPass(castElement(element), context);
-    }
-
-    public final void processFourthPass(PackageableElement element, CompileContext context)
-    {
-        processElementFourthPass(castElement(element), context);
-    }
-
-    public final void processFifthPass(PackageableElement element, CompileContext context)
-    {
-        processElementFifthPass(castElement(element), context);
-    }
-
-    public final void processSixthPass(PackageableElement element, CompileContext context)
-    {
-        processElementSixthPass(castElement(element), context);
     }
 
     @Override
@@ -79,6 +71,8 @@ public abstract class Processor<T extends PackageableElement>
         return "<Processor class=" + getElementClass().getName() + " @" + Integer.toHexString(hashCode()) + ">";
     }
 
+    protected abstract RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context);
+
     protected abstract org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processElementFirstPass(T element, CompileContext context);
 
     protected void processElementSecondPass(T element, CompileContext context)
@@ -90,22 +84,6 @@ public abstract class Processor<T extends PackageableElement>
     {
         // nothing by default
     }
-
-    protected void processElementFourthPass(T element, CompileContext context)
-    {
-        // nothing by default
-    }
-
-    protected void processElementFifthPass(T element, CompileContext context)
-    {
-        // nothing by default
-    }
-
-    protected void processElementSixthPass(T element, CompileContext context)
-    {
-        // nothing by default
-    }
-
 
     private T castElement(PackageableElement element)
     {
@@ -135,6 +113,12 @@ public abstract class Processor<T extends PackageableElement>
             }
 
             @Override
+            protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context)
+            {
+                return Lists.fixedSize.empty();
+            }
+
+            @Override
             protected org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processElementFirstPass(T element, CompileContext context)
             {
                 return firstPass.apply(element, context);
@@ -154,7 +138,7 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
                                                                            BiConsumer<? super T, CompileContext> secondPass)
     {
-        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, null, null, null);
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, null, null, null, null);
     }
 
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
@@ -171,36 +155,16 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiConsumer<? super T, CompileContext> secondPass,
                                                                            BiConsumer<? super T, CompileContext> thirdPass)
     {
-        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, null, null);
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, null, null, null);
     }
 
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
                                                                            BiConsumer<? super T, CompileContext> secondPass,
                                                                            BiConsumer<? super T, CompileContext> thirdPass,
-                                                                           BiConsumer<? super T, CompileContext> fourthPass)
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
     {
-        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass);
-    }
-
-    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
-                                                                           Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
-                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
-                                                                           BiConsumer<? super T, CompileContext> secondPass,
-                                                                           BiConsumer<? super T, CompileContext> thirdPass,
-                                                                           BiConsumer<? super T, CompileContext> fourthPass)
-    {
-        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, fourthPass, null);
-    }
-
-    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
-                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
-                                                                           BiConsumer<? super T, CompileContext> secondPass,
-                                                                           BiConsumer<? super T, CompileContext> thirdPass,
-                                                                           BiConsumer<? super T, CompileContext> fourthPass,
-                                                                           BiConsumer<? super T, CompileContext> fifthPass)
-    {
-        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, fifthPass);
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, null, null, prerequisiteElementsPass);
     }
 
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
@@ -208,68 +172,115 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
                                                                            BiConsumer<? super T, CompileContext> secondPass,
                                                                            BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+    {
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, null, null, prerequisiteElementsPass);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass)
+    {
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, null, null);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass)
+    {
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, fourthPass, null, null);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+    {
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, null, prerequisiteElementsPass);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+    {
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, fourthPass, null, prerequisiteElementsPass);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
                                                                            BiConsumer<? super T, CompileContext> fourthPass,
                                                                            BiConsumer<? super T, CompileContext> fifthPass)
     {
-        Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
-        return new Processor<T>()
-        {
-            @Override
-            public Class<T> getElementClass()
-            {
-                return elementClass;
-            }
-
-            @Override
-            public Collection<? extends Class<? extends PackageableElement>> getPrerequisiteClasses()
-            {
-                return resolvedPrerequisiteClasses;
-            }
-
-            @Override
-            protected org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processElementFirstPass(T element, CompileContext context)
-            {
-                return firstPass.apply(element, context);
-            }
-
-            @Override
-            protected void processElementSecondPass(T element, CompileContext context)
-            {
-                if (secondPass != null)
-                {
-                    secondPass.accept(element, context);
-                }
-            }
-
-            @Override
-            protected void processElementThirdPass(T element, CompileContext context)
-            {
-                if (thirdPass != null)
-                {
-                    thirdPass.accept(element, context);
-                }
-            }
-
-            @Override
-            protected void processElementFourthPass(T element, CompileContext context)
-            {
-                if (fourthPass != null)
-                {
-                    fourthPass.accept(element, context);
-                }
-            }
-
-            @Override
-            protected void processElementFifthPass(T element, CompileContext context)
-            {
-                if (fifthPass != null)
-                {
-                    fifthPass.accept(element, context);
-                }
-            }
-        };
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, fifthPass, null);
     }
 
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiConsumer<? super T, CompileContext> fifthPass)
+    {
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, fourthPass, fifthPass, null);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiConsumer<? super T, CompileContext> fifthPass,
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
+    {
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, fifthPass, prerequisiteElementsPass);
+    }
+
+    /**
+     * @deprecated This will soon be removed as part of Engine compiler cleanup in the next release
+     */
+    @Deprecated
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
                                                                            Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
                                                                            BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
@@ -277,7 +288,7 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiConsumer<? super T, CompileContext> thirdPass,
                                                                            BiConsumer<? super T, CompileContext> fourthPass,
                                                                            BiConsumer<? super T, CompileContext> fifthPass,
-                                                                           BiConsumer<? super T, CompileContext> sixthPass)
+                                                                           BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
     {
         Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
         return new Processor<T>()
@@ -292,6 +303,16 @@ public abstract class Processor<T extends PackageableElement>
             public Collection<? extends Class<? extends PackageableElement>> getPrerequisiteClasses()
             {
                 return resolvedPrerequisiteClasses;
+            }
+
+            @Override
+            protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElements(T element, CompileContext context)
+            {
+                if (prerequisiteElementsPass != null)
+                {
+                    return prerequisiteElementsPass.apply(element, context);
+                }
+                return Lists.fixedSize.empty();
             }
 
             @Override
@@ -316,32 +337,15 @@ public abstract class Processor<T extends PackageableElement>
                 {
                     thirdPass.accept(element, context);
                 }
-            }
 
-            @Override
-            protected void processElementFourthPass(T element, CompileContext context)
-            {
                 if (fourthPass != null)
                 {
                     fourthPass.accept(element, context);
                 }
-            }
 
-            @Override
-            protected void processElementFifthPass(T element, CompileContext context)
-            {
                 if (fifthPass != null)
                 {
                     fifthPass.accept(element, context);
-                }
-            }
-
-            @Override
-            protected void processElementSixthPass(T element, CompileContext context)
-            {
-                if (sixthPass != null)
-                {
-                    sixthPass.accept(element, context);
                 }
             }
         };

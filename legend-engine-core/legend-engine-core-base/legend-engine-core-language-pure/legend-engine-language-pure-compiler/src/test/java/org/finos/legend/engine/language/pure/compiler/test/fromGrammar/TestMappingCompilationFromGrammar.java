@@ -65,7 +65,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [15:1-21:1]: Cycle detected in mapping include hierarchy: test::M1 -> test::M1");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.\nCycle: test::M1 -> test::M1");
         test(models +
                 "###Mapping\n" +
                 "Mapping test::M1 (\n" +
@@ -83,7 +83,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [15:1-21:1]: Cycle detected in mapping include hierarchy: test::M1 -> test::M2 -> test::M1");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping");
         test(models +
                 "###Mapping\n" +
                 "import test::*;\n" +
@@ -110,8 +110,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [16:1-22:1]: Cycle detected in mapping include hierarchy: test::M1 -> " +
-                "test::M2 -> test::M3 -> test::M1");
+                "\n", "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping");
     }
 
     @Test
@@ -1615,11 +1614,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
 
     @Test
     public void testOperationWithSubtype()
-
-
     {
-
-
         String model = "###Pure\n" +
                 "Class example::Person\n" +
                 "{\n" +
@@ -1911,8 +1906,6 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   }\n" +
                 "\n" +
                 ")\n", "COMPILATION error at [56:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
-
-
     }
 
     @Test

@@ -39,7 +39,6 @@ public class BindingCompiler
 {
     private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
     private final ConcurrentHashMap<String, Root_meta_external_format_shared_binding_Binding> bindingIndex = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ExternalFormatSchemaSet> srcSchemaIndex = new ConcurrentHashMap<>();
 
     public BindingCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
     {
@@ -48,7 +47,7 @@ public class BindingCompiler
 
     public Processor<Binding> getProcessor()
     {
-        return Processor.newProcessor(Binding.class, Collections.singletonList(ExternalFormatSchemaSet.class), this::firstPass, this::secondPass, this::thirdPass, this::fourthPass);
+        return Processor.newProcessor(Binding.class, Collections.singletonList(ExternalFormatSchemaSet.class), this::firstPass, this::secondPass, this::thirdPass);
     }
 
     public Root_meta_external_format_shared_binding_Binding getCompiledBinding(String fullPath)
@@ -111,15 +110,7 @@ public class BindingCompiler
         {
             throw new EngineException("Content type and SchemaSet format do not match", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
         }
-    }
 
-    // Fourth pass - ensure correlation using the extension
-    private void fourthPass(Binding srcBinding, CompileContext context)
-    {
-        String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
-        Root_meta_external_format_shared_binding_Binding compiled = bindingIndex.get(path);
-
-        ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
         Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(compiled, context);
         if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_FailedBindingDetail)
         {

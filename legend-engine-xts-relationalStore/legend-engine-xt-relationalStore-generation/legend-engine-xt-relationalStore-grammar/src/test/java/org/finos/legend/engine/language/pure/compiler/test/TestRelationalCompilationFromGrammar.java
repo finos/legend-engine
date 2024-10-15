@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class TestRelationalCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -2760,5 +2761,86 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    accountNumber: [demo::stores::Db]First.Source.accountNumber\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testFilterFromNonIncludedDatabase()
+    {
+        test("###Relational\n" +
+                "Database app::myDb\n" +
+                "(\n" +
+                "    include app::dbInc\n" +
+                "    Table myTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)\n" +
+                "    View myView\n" +
+                "    (\n" +
+                "       maxTradeEventDate : max(myTable.eventDate)\n" +
+                "    )\n" +
+                "    Filter EventFilter(myTable.eventType = 'myevent')\n" +
+                ")\n\n" +
+                "Database app::dbInc\n" +
+                "(\n" +
+                "    Table tradeEventTable(EVENT_ID INT PRIMARY KEY, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT)\n" +
+                "    View tradeEventViewMaxTradeEventDate\n" +
+                "    (\n" +
+                "       ~filter [app::myDb]EventFilter\n" +
+                "       maxTradeEventDate : max(tradeEventTable.eventDate)\n" +
+                "    )\n" +
+                ")");
+    }
+
+    @Test
+    public void testDuplicateNameForJoins()
+    {
+        test("###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LEGALNAME VARCHAR(200),\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    CEOID INTEGER\n" +
+                "  )\n" +
+                "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
+                "  Join Firm_Person(firmTable.ADDRESSID = personTable.ADDRESSID)\n" +
+                ")", null, Collections.singletonList("COMPILATION error at [22:3-63]: Found joins with duplicate names: Firm_Person"));
+    }
+
+    @Test
+    public void testDuplicateNameForFilters()
+    {
+        test("###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LEGALNAME VARCHAR(200),\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    CEOID INTEGER\n" +
+                "  )\n" +
+                "  Filter FirmFilter(firmTable.LEGALNAME = 'myevent')\n" +
+                "  Filter FirmFilter(firmTable.ADDRESSID = 1)\n" +
+                ")", null, Collections.singletonList("COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
 }

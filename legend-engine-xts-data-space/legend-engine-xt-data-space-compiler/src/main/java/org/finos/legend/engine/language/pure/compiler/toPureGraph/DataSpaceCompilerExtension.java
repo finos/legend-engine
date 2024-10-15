@@ -98,7 +98,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     {
         return Collections.singletonList(Processor.newProcessor(
                 DataSpace.class,
-                Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class),
+                Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class),
                 (dataSpace, context) ->
                 {
                     Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl(dataSpace.name, null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpace"))._name(dataSpace.name);
@@ -151,14 +151,6 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' Second Pass")));
                         dataSpaceExecutionContextIndex.get(executionContext.name)._testData(data);
                     });
-                },
-                (dataSpace, context) ->
-                {
-
-                },
-                (dataSpace, context) ->
-                {
-
                 },
                 (dataSpace, context) ->
                 {
@@ -300,12 +292,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         }
                         metamodel._supportInfo(supportInfo);
                     }
-                },
-                (dataSpace, context) ->
-                {
-                    // Move checking mapping/runtime utilized in the function within the curated template query does not align with the mapping/runtime applied in the execution context
-                    // to the sixth pass because function body and parameter are processed in the fifthPassBuilder (see https://github.com/finos/legend-engine/pull/2918)
-                    // if we do the checking in the fifth pass, function body and parameter will be an empty list
+
                     if (dataSpace.executables != null)
                     {
                         dataSpace.executables.forEach(executable ->

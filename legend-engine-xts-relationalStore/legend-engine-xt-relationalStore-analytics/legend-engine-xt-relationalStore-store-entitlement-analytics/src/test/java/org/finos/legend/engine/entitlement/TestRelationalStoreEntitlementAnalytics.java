@@ -27,12 +27,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.generated.core_relational_store_entitlement_utility_relationalTableAnalyzer;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -127,12 +129,30 @@ public class TestRelationalStoreEntitlementAnalytics
     }
 
     @Test
-    public void testCircularDatabaseRetrievability()
+    public void testDependencyDatabaseRetrievability()
     {
         String pureModelString = getResourceAsString("models/relationalModel.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
         PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         Store store = pureModel.getStore("store::CovidDataStoreA");
         Assert.assertEquals(core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size(), 2);
+    }
+
+    @Test
+    public void testCircularDependencyInDatabases()
+    {
+        String pureModelString = getResourceAsString("models/databaseCircularDependency.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
+        String expectedErrorMessage = "COMPILATION error: Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database";
+        try
+        {
+            Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+            Assert.fail("Expected compilation error with message: " + expectedErrorMessage + "; but no error occurred");
+        }
+        catch (EngineException e)
+        {
+            MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(),
+                    e.getErrorType()), CoreMatchers.startsWith(expectedErrorMessage));
+        }
     }
 }
