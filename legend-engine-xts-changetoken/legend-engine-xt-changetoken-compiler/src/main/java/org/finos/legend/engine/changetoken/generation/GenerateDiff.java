@@ -81,20 +81,6 @@ public class GenerateDiff
         PureModelContextData pureModelContextData = pureModelContextDataBuilder.build();
         executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(classLoader), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
         pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
-        JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(new MixedProcessorSupport(pureModel.getExecutionSupport().getProcessorSupport()), new EmptyCodeStorage(), false, null, false, pureModel.getExecutionSupport().getCompiledExtensions(), "ChangeTokens", null, false);
-        MutableSet<String> allTypes = pureModel.getModelClasses().collect(a ->
-                core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_fullPackageName_PackageableElement_1__String_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) a, "::", pureModel.getExecutionSupport())).toSet();
-        MutableList<StringJavaSource> javaSources = Lists.mutable.empty();
-        javaSources.addAllIterable(javaSourceCodeGenerator.generatePureCoreHelperClasses(javaSourceCodeGenerator.getProcessorContext()));
-        javaSources.addAllIterable(javaSourceCodeGenerator.generateCode(allTypes));
-        try
-        {
-            compiler.compile(javaSources);
-        }
-        catch (PureJavaCompileException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     private static PureMap toPureMap(Map objectNode)
