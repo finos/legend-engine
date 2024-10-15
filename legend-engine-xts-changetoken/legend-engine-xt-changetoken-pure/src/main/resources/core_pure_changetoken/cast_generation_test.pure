@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::compiler::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::json::*;
+import meta::pure::changetoken::*;
 import meta::pure::changetoken::cast_generation::*;
 import meta::pure::changetoken::tests::*;
 
@@ -53,4 +59,48 @@ function <<access.private>> meta::pure::changetoken::tests::assertExtractTypeMul
     let multiplicity = $typeMultiplicity.second;
     assertEquals($min, $multiplicity->getLowerBound());
     assertEquals($max, if($multiplicity->hasUpperBound(), | $multiplicity->getUpperBound(), | []));
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromJson(json: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $json->jsonToVersions('@type')->setupSuiteFromVersions();
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromVersions(versions: Versions[1]): meta::external::language::java::metamodel::Class[1]
+{
+  let project = generateCastFromVersions(true, false, true, '@type', 'version', $versions, 'TestCast');
+  let classes = allClasses($project);
+  $classes->toOne();
+}
+
+function meta::pure::changetoken::tests::upcast(class: meta::external::language::java::metamodel::Class[1], json: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('upcast', $json->parseJSON()->inlineJsonValue(), javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::downcast(class: meta::external::language::java::metamodel::Class[1], json: String[1], targetVersion: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('downcast', [$json->parseJSON()->inlineJsonValue(), j_string($targetVersion)], javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::expect(class: meta::external::language::java::metamodel::Class[1], json: String[1]): Boolean[1]
+{
+  let ret = compileAndExecuteJava($class, ^CompilationConfiguration(classpath=[]), ^ExecutionConfiguration(class='org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.TestCast', method='test'));
+  assert($ret.compilationResult.errors->isEmpty(), | $ret.compilationResult.errors->joinStrings('expected no errors, got: \'', '\', \'', '\''));
+  assert($ret.compilationResult.successful, | 'expected successful compilation');
+  assert($ret.executionResult->toOne().error->isEmpty(), | 'expected no execution error, got: ' + $ret.executionResult->toOne().error->toOne());
+  assert($ret.executionResult->toOne().successful, | 'expected successful execution');
+  assert(!$ret.executionResult->isEmpty(), | 'expected non-empty execution result');
+  let retJson = $ret.executionResult->toOne().returnValue->toOne()->toCompactJSONString();
+  assert($retJson->parseJSON()->sort()->toCompactJSONString() == $json->parseJSON()->sort()->toCompactJSONString(), | 'unexpected return value, got: ' + $retJson);
+}
+
+function <<access.private>> meta::pure::changetoken::tests::toCompactJSONString(json:JavaValue[1]):String[1]
+{
+    $json->match([
+                  s:JavaObject[1] | '"' + $s.string->meta::json::escape() + '"',
+                  n:JavaNull[1] | 'null',
+                  a:JavaIterable[1] | $a.values->map(v | $v->toCompactJSONString())->joinStrings('[', ',', ']'),
+                  o:JavaMap[1] | $o.keyValuePairs->map(kv | $kv.first->toCompactJSONString() + ':' + $kv.second->toCompactJSONString())->joinStrings('{', ',', '}')
+                 ])
 }

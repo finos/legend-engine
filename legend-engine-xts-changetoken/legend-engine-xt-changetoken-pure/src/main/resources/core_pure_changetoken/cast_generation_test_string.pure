@@ -1,0 +1,77 @@
+import meta::pure::changetoken::tests::string::*;
+import meta::pure::changetoken::tests::*;
+
+function meta::pure::changetoken::tests::string::setupSuite(): meta::external::language::java::metamodel::Class[1]
+{
+  setupSuiteFromJson('{\n' +
+                '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
+                '  \"versions\": [\n' +
+                '    {\n' +
+                '      \"@type\": \"meta::pure::changetoken::Version\",\n' +
+                '      \"version\": \"ftdm:abcdefg123\"\n' +
+                '    },\n' +
+                '    {\n' +
+                '      \"@type\": \"meta::pure::changetoken::Version\",\n' +
+                '      \"version\": \"ftdm:abcdefg456\",\n' +
+                '      \"prevVersion\": \"ftdm:abcdefg123\",\n' +
+                '      \"changeTokens\": [\n' +
+                '        {\n' +
+                '          \"@type\": \"meta::pure::changetoken::AddField\",\n' +
+                '          \"fieldName\": \"abc\",\n' +
+                '          \"fieldType\": \"String[1]\",\n' +
+                '          \"defaultValue\": {\n' +
+                '            \"@type\": \"meta::pure::changetoken::ConstValue\",\n' +
+                '            \"value\": \"one \\\" two\"\n' +
+                '          },\n' +
+                '          \"safeCast\": true,\n' +
+                '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
+                '        }\n' +
+                '      ]\n' +
+                '    }\n' +
+                '  ]\n' +
+                '}\n'); 
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any[*]
+{
+  setupSuite()->upcast('{\n' +
+                        '  \"version\":\"ftdm:abcdefg123\", \n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n' +
+                        '  ]\n' +
+                        '}')->expect('{\n' +
+                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '  ],\n' +
+                        '  \"abc\": \"one \\\" two\"\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): Any[*]
+{
+  setupSuite()->downcast('{\n' +
+                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '  ],\n' +
+                        '  \"abc\": \"one \\\" two\"\n' +
+                        '}', 'ftdm:abcdefg123')->expect('{\n' +
+                        '  \"version\":\"ftdm:abcdefg123\", \n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n' +
+                        '  ]\n' +
+                        '}\n');
+}

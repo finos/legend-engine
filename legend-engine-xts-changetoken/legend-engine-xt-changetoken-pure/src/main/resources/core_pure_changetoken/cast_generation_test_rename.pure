@@ -1,0 +1,78 @@
+import meta::pure::changetoken::tests::rename::*;
+import meta::pure::changetoken::tests::*;
+
+function meta::pure::changetoken::tests::rename::setupSuite(): meta::external::language::java::metamodel::Class[1]
+{
+  setupSuiteFromJson('{\n' +
+                '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
+                '  \"versions\": [\n' +
+                '    {\n' +
+                '      \"@type\": \"meta::pure::changetoken::Version\",\n' +
+                '      \"version\": \"ftdm:abcdefg123\"\n' +
+                '    },\n' +
+                '    {\n' +
+                '      \"@type\": \"meta::pure::changetoken::Version\",\n' +
+                '      \"version\": \"ftdm:abcdefg456\",\n' +
+                '      \"prevVersion\": \"ftdm:abcdefg123\",\n' +
+                '      \"changeTokens\": [\n' +
+                '        {\n' +
+                '          \"@type\": \"meta::pure::changetoken::RenameField\",\n' +
+                '          \"oldFieldName\": [\n' +
+                '            \"abc\"\n' +
+                '          ],\n' +
+                '          \"newFieldName\": [\n' +
+                '            \"xyz\"\n' +
+                '          ],\n' +
+                '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
+                '        }\n' +
+                '      ]\n' +
+                '    }\n' +
+                '  ]\n' +
+                '}\n'); 
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcast(): Any[*]
+{
+  setupSuite()->upcast('{\n' +
+                        '  \"version\":\"ftdm:abcdefg123\", \n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
+                        '  ],\n' +
+                        '  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n' +
+                        '}')->expect('{\n' +
+                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
+                        '  ],\n' +
+                        '  \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncast(): Any[*]
+{
+  setupSuite()->downcast('{\n' +
+                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
+                        '  ],\n' +
+                        '  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n' +
+                        '}', 'ftdm:abcdefg123')->expect('{\n' +
+                        '  \"version\":\"ftdm:abcdefg123\", \n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
+                        '  \"innerNestedArray\":[\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
+                        '  ],\n' +
+                        '  \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n' +
+                        '}\n');
+}
