@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import meta::pure::changetoken::tests::string::*;
+import meta::pure::changetoken::tests::custom::object::*;
 import meta::pure::changetoken::tests::*;
 
-function meta::pure::changetoken::tests::string::setupSuite(): meta::external::language::java::metamodel::Class[1]
+function meta::pure::changetoken::tests::custom::object::setupSuite(): meta::external::language::java::metamodel::Class[1]
 {
   setupSuiteFromJson('{\n' +
                 '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
@@ -32,10 +32,20 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '        {\n' +
                 '          \"@type\": \"meta::pure::changetoken::AddField\",\n' +
                 '          \"fieldName\": \"abc\",\n' +
-                '          \"fieldType\": \"String[1]\",\n' +
+                '          \"fieldType\": \"Custom[1]\",\n' +
                 '          \"defaultValue\": {\n' +
                 '            \"@type\": \"meta::pure::changetoken::ConstValue\",\n' +
-                '            \"value\": \"one \\\" two\"\n' +
+                '            \"value\": {\n' +
+                '              \"range\": {\n' +
+                '                \"min\": -1,\n' +
+                '                \"max\": 1,\n' +
+                '                \"@type\": \"intMinMax\",\n' +
+                '                \"round\": 0.5\n' +
+                '              },\n' +
+                '              \"@type\": \"Custom\",\n' +
+                '              \"restricted\": true,\n' +
+                '              \"value\": 0\n' +
+                '            }\n' +
                 '          },\n' +
                 '          \"safeCast\": true,\n' +
                 '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
@@ -43,10 +53,10 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '      ]\n' +
                 '    }\n' +
                 '  ]\n' +
-                '}\n');
+                '}');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::object::testUpcast(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -60,26 +70,26 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::object::testDowncast(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}\n' +
                         '}', 'ftdm:abcdefg123'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -92,17 +102,17 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): A
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncastNonDefault(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::object::testDowncastNonDefault(): Any[*]
 {
         exception(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"two \\\" one\"\n' +
+                        '  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.0}, \"value\":1}\n' +
                         '}', 'ftdm:abcdefg123'),
-                'Cannot remove non-default value:two \" one');
+                'Cannot remove non-default value:{@type=Custom, restricted=true, range={min=-1, round=0.0, max=1, @type=intMinMax}, value=1}');
 }

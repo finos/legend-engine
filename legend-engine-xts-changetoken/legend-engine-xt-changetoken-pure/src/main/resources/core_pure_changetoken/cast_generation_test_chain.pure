@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import meta::pure::changetoken::tests::string::*;
+import meta::pure::changetoken::tests::chain::*;
 import meta::pure::changetoken::tests::*;
 
-function meta::pure::changetoken::tests::string::setupSuite(): meta::external::language::java::metamodel::Class[1]
+function meta::pure::changetoken::tests::chain::setupSuite(): meta::external::language::java::metamodel::Class[1]
 {
   setupSuiteFromJson('{\n' +
                 '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
@@ -32,10 +32,28 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '        {\n' +
                 '          \"@type\": \"meta::pure::changetoken::AddField\",\n' +
                 '          \"fieldName\": \"abc\",\n' +
-                '          \"fieldType\": \"String[1]\",\n' +
+                '          \"fieldType\": \"Integer[1]\",\n' +
                 '          \"defaultValue\": {\n' +
                 '            \"@type\": \"meta::pure::changetoken::ConstValue\",\n' +
-                '            \"value\": \"one \\\" two\"\n' +
+                '            \"value\": 100\n' +
+                '          },\n' +
+                '          \"safeCast\": true,\n' +
+                '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
+                '        }\n' +
+                '      ]\n' +
+                '    },\n' +
+                '    {\n' +
+                '      \"@type\": \"meta::pure::changetoken::Version\",\n' +
+                '      \"version\": \"ftdm:abcdefg789\",\n' +
+                '      \"prevVersion\": \"ftdm:abcdefg456\",\n' +
+                '      \"changeTokens\": [\n' +
+                '        {\n' +
+                '          \"@type\": \"meta::pure::changetoken::AddField\",\n' +
+                '          \"fieldName\": \"def\",\n' +
+                '          \"fieldType\": \"Integer[1]\",\n' +
+                '          \"defaultValue\": {\n' +
+                '            \"@type\": \"meta::pure::changetoken::ConstValue\",\n' +
+                '            \"value\": 200\n' +
                 '          },\n' +
                 '          \"safeCast\": true,\n' +
                 '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
@@ -46,7 +64,12 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::chain::testVersions(): Any[*]
+{
+        expect(setupSuite()->versions(), '["ftdm:abcdefg123", "ftdm:abcdefg456", "ftdm:abcdefg789"]');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::chain::testUpcast(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -58,28 +81,28 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any
                         '  ]\n' +
                         '}'),
                 '{\n' +
-                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"version\":\"ftdm:abcdefg789\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": 100, \"def\": 200\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::chain::testDowncast(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
-                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"version\":\"ftdm:abcdefg789\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": 100, \"def\": 200\n' +
                         '}', 'ftdm:abcdefg123'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -92,17 +115,17 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): A
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncastNonDefault(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::chain::testDowncastNonDefault(): Any[*]
 {
         exception(setupSuite()->downcast('{\n' +
-                        '  \"version\":\"ftdm:abcdefg456\",\n' +
+                        '  \"version\":\"ftdm:abcdefg789\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100, \"def\": 200}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"two \\\" one\"\n' +
+                        '  \"abc\": 100, \"def\": 300\n' +
                         '}', 'ftdm:abcdefg123'),
-                'Cannot remove non-default value:two \" one');
+                'Cannot remove non-default value:300');
 }

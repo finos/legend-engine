@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2024 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import meta::pure::changetoken::tests::string::*;
+import meta::pure::changetoken::tests::custom::array::boolean::*;
 import meta::pure::changetoken::tests::*;
 
-function meta::pure::changetoken::tests::string::setupSuite(): meta::external::language::java::metamodel::Class[1]
+function meta::pure::changetoken::tests::custom::array::boolean::setupSuite(): meta::external::language::java::metamodel::Class[1]
 {
   setupSuiteFromJson('{\n' +
                 '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
@@ -32,10 +32,10 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '        {\n' +
                 '          \"@type\": \"meta::pure::changetoken::AddField\",\n' +
                 '          \"fieldName\": \"abc\",\n' +
-                '          \"fieldType\": \"String[1]\",\n' +
+                '          \"fieldType\": \"Boolean[*]\",\n' +
                 '          \"defaultValue\": {\n' +
                 '            \"@type\": \"meta::pure::changetoken::ConstValue\",\n' +
-                '            \"value\": \"one \\\" two\"\n' +
+                '            \"value\": [true]\n' +
                 '          },\n' +
                 '          \"safeCast\": true,\n' +
                 '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
@@ -46,7 +46,7 @@ function meta::pure::changetoken::tests::string::setupSuite(): meta::external::l
                 '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::array::boolean::testUpcast(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -60,26 +60,26 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testUpcast(): Any
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": [true]\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::array::boolean::testDowncast(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"one \\\" two\"\n' +
+                        '  \"abc\": [true]\n' +
                         '}', 'ftdm:abcdefg123'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -92,17 +92,17 @@ function <<test.Test>> meta::pure::changetoken::tests::string::testDowncast(): A
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::string::testDowncastNonDefault(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::custom::array::boolean::testDowncastNonDefault(): Any[*]
 {
         exception(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
                         '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"one \\\" two\"}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": [true]}]\n' +
                         '  ],\n' +
-                        '  \"abc\": \"two \\\" one\"\n' +
+                        '  \"abc\":[false]\n' +
                         '}', 'ftdm:abcdefg123'),
-                'Cannot remove non-default value:two \" one');
+                'Cannot remove non-default value:[false]');
 }

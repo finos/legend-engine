@@ -12,10 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import meta::pure::changetoken::tests::rename::*;
+import meta::pure::changetoken::tests::rename::field::renamed::class::*;
 import meta::pure::changetoken::tests::*;
 
-function meta::pure::changetoken::tests::rename::setupSuite(): meta::external::language::java::metamodel::Class[1]
+function meta::pure::changetoken::tests::rename::field::renamed::class::setupSuite(): meta::external::language::java::metamodel::Class[1]
 {
   setupSuiteFromJson('{\n' +
                 '  \"@type\": \"meta::pure::changetoken::Versions\",\n' +
@@ -38,6 +38,11 @@ function meta::pure::changetoken::tests::rename::setupSuite(): meta::external::l
                 '            \"xyz\"\n' +
                 '          ],\n' +
                 '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
+                '        },\n' +
+                '        {\n' +
+                '          \"@type\": \"meta::pure::changetoken::RenamedClass\",\n' +
+                '          \"newName\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                '          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n' +
                 '        }\n' +
                 '      ]\n' +
                 '    }\n' +
@@ -45,7 +50,7 @@ function meta::pure::changetoken::tests::rename::setupSuite(): meta::external::l
                 '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testUpcast(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -59,17 +64,17 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcast(): Any
                         '}'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
                         '  ],\n' +
                         '  \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastType(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testUpcastType(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -93,7 +98,7 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastType():
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastMissing(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testUpcastMissing(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -107,25 +112,25 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastMissing
                         '}'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
                         '  ],\n' +
                         '  \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncast(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testDowncast(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
                         '  ],\n' +
                         '  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n' +
                         '}', 'ftdm:abcdefg123'),
@@ -141,7 +146,7 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncast(): A
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastType(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testDowncastType(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
@@ -165,15 +170,15 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastType(
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastMissing(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testDowncastMissing(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n' +
                         '  ],\n' +
                         '  \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n' +
                         '}', 'ftdm:abcdefg123'),
@@ -189,7 +194,7 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastMissi
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastExistingTheSame(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testUpcastExistingTheSame(): Any[*]
 {
         expect(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -203,25 +208,25 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastExistin
                         '}'),
                 '{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n' +
                         '  ],\n' +
                         '  \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n' +
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastExistingTheSame(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testDowncastExistingTheSame(): Any[*]
 {
         expect(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n' +
                         '  ],\n' +
                         '  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"8d\"}\n' +
                         '}', 'ftdm:abcdefg123'),
@@ -237,7 +242,7 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastExist
                         '}\n');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastExistingTheDifferent(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testUpcastExistingTheDifferent(): Any[*]
 {
         exception(setupSuite()->upcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg123\", \n' +
@@ -252,15 +257,15 @@ function <<test.Test>> meta::pure::changetoken::tests::rename::testUpcastExistin
                 'Cannot overwrite with different value:{@type=Custom, value=9d}');
 }
 
-function <<test.Test>> meta::pure::changetoken::tests::rename::testDowncastExistingTheDifferent(): Any[*]
+function <<test.Test>> meta::pure::changetoken::tests::rename::field::renamed::class::testDowncastExistingTheDifferent(): Any[*]
 {
         exception(setupSuite()->downcast('{\n' +
                         '  \"version\":\"ftdm:abcdefg456\",\n' +
-                        '  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n' +
-                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n' +
+                        '  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n' +
+                        '  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n' +
                         '  \"innerNestedArray\":[\n' +
-                        '    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n' +
-                        '    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n' +
+                        '    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n' +
+                        '    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n' +
                         '  ],\n' +
                         '  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"9d\"}\n' +
                         '}', 'ftdm:abcdefg123'),
