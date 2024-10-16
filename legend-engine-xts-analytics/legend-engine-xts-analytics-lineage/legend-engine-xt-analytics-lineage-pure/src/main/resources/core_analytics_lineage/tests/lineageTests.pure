@@ -493,3 +493,24 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                         '[type: [ProductClassificationSystemTable.id <JoinTreeNode>, ProductClassificationSystemTable.name <RelationalOperationElementWithJoin>, ProductTable.classificationSystemId <JoinTreeNode>]]',
                                           $lineage);
 }
+
+###Pure
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMapWithPath():Boolean[1]
+{
+  let lineage = meta::analytics::lineage::computeLineage( | Person.all()
+     ->filter(x | $x->map(#/Person/firm/legalName#) != 'Goldman Sachs')
+     ->project([
+                p|$p.lastName
+              ],
+              [
+                'employeeLastName'
+              ])
+    ,
+    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'tb_dbIncdefaultfirmTable','tb_dbIncdefaultpersonTable','db_dbInc'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Firm','meta::relational::tests::model::simple::Person','pack_meta::relational::tests::model::simple'],
+                                          '[employeeLastName: [personTable.LASTNAME <TableAliasColumn>]]',
+                                           $lineage);
+}
