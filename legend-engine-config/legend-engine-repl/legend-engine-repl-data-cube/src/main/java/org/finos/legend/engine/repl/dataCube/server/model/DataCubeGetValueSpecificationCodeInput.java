@@ -14,19 +14,10 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-import java.io.IOException;
-
-public class DataCubeQueryConfigurationDeserializer extends JsonDeserializer<String>
+public class DataCubeGetValueSpecificationCodeInput
 {
-    @Override
-    public String deserialize(JsonParser jp, DeserializationContext ctx) throws IOException
-    {
-        TreeNode tree = jp.getCodec().readTree(jp);
-        return tree.toString();
-    }
+    public ValueSpecification value;
+    public Boolean pretty;
 }

@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.dataCube.server.DataCubeHelpers;
 import org.finos.legend.engine.repl.dataCube.server.model.*;
@@ -34,6 +33,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.repl.dataCube.server.REPLServerHelpers.*;
@@ -42,7 +42,7 @@ import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCT
 
 public class DataCubeQueryBuilder
 {
-    public static class ParseQuery implements DataCubeServerHandler
+    public static class ParseValueSpecification implements DataCubeServerHandler
     {
         @Override
         public HttpHandler getHandler(REPLServerState state)
@@ -69,7 +69,7 @@ public class DataCubeQueryBuilder
         }
     }
 
-    public static class GetQueryCode implements DataCubeServerHandler
+    public static class GetValueSpecificationCode implements DataCubeServerHandler
     {
         @Override
         public HttpHandler getHandler(REPLServerState state)
@@ -83,8 +83,8 @@ public class DataCubeQueryBuilder
                         InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
-                        DataCubeGetQueryCodeInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryCodeInput.class);
-                        handleResponse(exchange, 200, DataCubeHelpers.getQueryCode(input.query, input.pretty), state);
+                        DataCubeGetValueSpecificationCodeInput input = state.objectMapper.readValue(requestBody, DataCubeGetValueSpecificationCodeInput.class);
+                        handleResponse(exchange, 200, DataCubeHelpers.getQueryCode(input.value, input.pretty), state);
                     }
                     catch (Exception e)
                     {
@@ -95,7 +95,7 @@ public class DataCubeQueryBuilder
         }
     }
 
-    public static class GetQueryCodeBatch implements DataCubeServerHandler
+    public static class GetValueSpecificationCodeBatch implements DataCubeServerHandler
     {
         @Override
         public HttpHandler getHandler(REPLServerState state)
@@ -109,9 +109,9 @@ public class DataCubeQueryBuilder
                         InputStreamReader inputStreamReader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
-                        DataCubeGetQueryCodeBatchInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryCodeBatchInput.class);
+                        DataCubeGetValueSpecificationCodeBatchInput input = state.objectMapper.readValue(requestBody, DataCubeGetValueSpecificationCodeBatchInput.class);
                         DataCubeGetQueryCodeBatchResult result = new DataCubeGetQueryCodeBatchResult();
-                        MapAdapter.adapt(input.queries).forEachKeyValue((key, value) ->
+                        MapAdapter.adapt(input.values).forEachKeyValue((key, value) ->
                         {
                             try
                             {
@@ -148,8 +148,7 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeQueryTypeaheadInput input = state.objectMapper.readValue(requestBody, DataCubeQueryTypeaheadInput.class);
-                        PureModelContextData data = state.getCurrentPureModelContextData();
-                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, DataCubeHelpers.getQueryCode(input.baseQuery, false), data, state.client.getCompleterExtensions(), state.legendInterface);
+                        CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, input.baseQuery, input.isolated ? null : state.getCurrentPureModelContextData(), state.client.getCompleterExtensions(), state.legendInterface);
                         handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result.getCompletion()), state);
                     }
                     catch (Exception e)
@@ -176,9 +175,7 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetQueryRelationReturnTypeInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryRelationReturnTypeInput.class);
-                        Lambda lambda = input.query; // if no lambda is specified, we're executing the initial query
-                        PureModelContextData data = DataCubeHelpers.injectNewFunction(state.getCurrentPureModelContextData(), lambda).getOne();
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(state.legendInterface, data)), state);
+                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(state.legendInterface, input.query, input.isolated ? null : state.getCurrentPureModelContextData())), state);
                     }
                     catch (Exception e)
                     {
@@ -204,17 +201,21 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetQueryCodeRelationReturnTypeInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryCodeRelationReturnTypeInput.class);
-                        PureModelContextData currentData = state.getCurrentPureModelContextData();
-                        PureModelContextData newData = PureModelContextData.newBuilder()
-                                .withOrigin(currentData.getOrigin())
-                                .withSerializer(currentData.getSerializer())
-                                .withElements(ListIterate.select(currentData.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
-                                .build();
-                        String graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
-                        graphCode += "\n###Pure\n" +
-                                "import meta::pure::functions::relation::*;\n" +
-                                "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
-                        graphCode += DataCubeHelpers.getQueryCode(input.baseQuery, false) + "\n";
+
+                        String graphCode = "";
+                        if (!input.isolated)
+                        {
+                            PureModelContextData currentData = state.getCurrentPureModelContextData();
+                            PureModelContextData newData = PureModelContextData.newBuilder()
+                                    .withOrigin(currentData.getOrigin())
+                                    .withSerializer(currentData.getSerializer())
+                                    .withElements(ListIterate.select(currentData.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
+                                    .build();
+                            graphCode += PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
+                            graphCode += "\n###Pure\n";
+                        }
+                        graphCode += "function " + REPL_RUN_FUNCTION_SIGNATURE + "{\n";
+                        graphCode += DataCubeHelpers.getQueryCode(input.baseQuery.body.get(0), false) + "\n";
                         int lineOffset = StringUtils.countMatches(graphCode, "\n");
                         graphCode += input.code;
                         graphCode += "\n}";
@@ -254,13 +255,12 @@ public class DataCubeQueryBuilder
                     try
                     {
                         DataCubeQuery query = state.getQuery();
+                        Map<String, ?> source = state.getSource();
                         if (query != null)
                         {
                             DataCubeGetBaseQueryResult result = new DataCubeGetBaseQueryResult();
-                            result.timestamp = state.startTime;
                             result.query = query;
-                            result.partialQuery = DataCubeHelpers.parseQuery(query.partialQuery, false);
-                            result.sourceQuery = DataCubeHelpers.parseQuery(query.source.query, false);
+                            result.source = source;
                             handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                         }
                         else

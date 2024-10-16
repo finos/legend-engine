@@ -14,19 +14,12 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-import java.util.List;
+import java.util.Map;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = DataCubeQuerySourceREPLExecutedQuery.class, name = "REPLExecutedQuery")
-})
-public abstract class DataCubeQuerySource
+public class DataCubeGetValueSpecificationCodeBatchInput
 {
-    public String query;
-    public String mapping;
-    public String runtime;
-    public List<DataCubeQueryColumn> columns;
+    public Map<String, ValueSpecification> values;
+    public Boolean pretty;
 }

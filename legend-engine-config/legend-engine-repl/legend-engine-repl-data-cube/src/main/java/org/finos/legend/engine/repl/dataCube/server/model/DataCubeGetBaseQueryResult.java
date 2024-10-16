@@ -14,12 +14,10 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import java.util.Map;
 
 public class DataCubeGetBaseQueryResult
 {
     public DataCubeQuery query;
-    public Long timestamp;
-    public ValueSpecification partialQuery;
-    public ValueSpecification sourceQuery;
+    public Map<String, ?> source;
 }

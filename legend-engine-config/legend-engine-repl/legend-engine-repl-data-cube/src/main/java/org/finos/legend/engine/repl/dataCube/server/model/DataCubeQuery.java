@@ -14,18 +14,10 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.Map;
 
 public class DataCubeQuery
 {
-    public String name;
     public String query;
-    public String partialQuery;
-    public DataCubeQuerySource source;
-
-    // NOTE: we don't need to process the config, so we will leave it as raw JSON
-    @JsonRawValue
-    @JsonDeserialize(using = DataCubeQueryConfigurationDeserializer.class)
-    public String configuration;
+    public Map<String, ?> configuration;
 }

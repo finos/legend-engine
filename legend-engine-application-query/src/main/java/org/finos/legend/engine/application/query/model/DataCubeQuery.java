@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.dataCube.server.model;
+package org.finos.legend.engine.application.query.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class DataCubeGetQueryCodeInput
+import java.util.Map;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DataCubeQuery
 {
-    public ValueSpecification query;
-    public Boolean pretty;
+    public String id;
+    public String name;
+    public String description;
+
+    public Map<String, ?> query;
+    public Map<String, ?> source;
+
+    public Long lastUpdatedAt;
+    public Long createdAt;
+    public Long lastOpenAt;
+
+    // TODO: ownership
 }
