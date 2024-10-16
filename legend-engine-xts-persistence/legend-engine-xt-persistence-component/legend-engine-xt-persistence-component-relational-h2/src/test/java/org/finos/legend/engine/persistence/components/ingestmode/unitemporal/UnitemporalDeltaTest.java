@@ -214,8 +214,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addOptimizationFilters(OptimizationFilter.of(expiryDateName, expiryDateName + "_lower", expiryDateName + "_upper"))
-            .addOptimizationFilters(OptimizationFilter.of(idName, idName + "_lower", idName + "_upper"))
+            .addOptimizationFilters(OptimizationFilter.of(expiryDateName))
+            .addOptimizationFilters(OptimizationFilter.of(idName))
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -250,6 +250,15 @@ class UnitemporalDeltaTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform Pass4 with lower bound equals upper bound -------------------------
+        String dataPass4 = basePathForInput + "with_optimization_filter/staging_data_pass4.csv";
+        String expectedDataPass4 = basePathForExpected + "with_optimization_filter/expected_pass4.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass4);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test
