@@ -88,7 +88,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
     {
         ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{";
-        String fullCode = prefix + code + "}";
+        String fullCode = prefix + code + "\n}";
         ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(lambdaWalkerSourceInformation)
                 // NOTE: as we prepend the lambda with this prefix, we need to subtract this prefix length from the column offset
                 .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
