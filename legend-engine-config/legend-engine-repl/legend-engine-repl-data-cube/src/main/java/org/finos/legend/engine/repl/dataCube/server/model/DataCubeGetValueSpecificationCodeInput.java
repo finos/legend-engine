@@ -16,8 +16,8 @@ package org.finos.legend.engine.repl.dataCube.server.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-public class DataCubeGetQueryCodeInput
+public class DataCubeGetValueSpecificationCodeInput
 {
-    public ValueSpecification query;
+    public ValueSpecification value;
     public Boolean pretty;
 }

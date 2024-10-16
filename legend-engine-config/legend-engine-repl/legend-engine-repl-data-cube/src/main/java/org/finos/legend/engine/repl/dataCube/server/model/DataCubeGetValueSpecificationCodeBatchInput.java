@@ -18,8 +18,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 
 import java.util.Map;
 
-public class DataCubeGetQueryCodeBatchInput
+public class DataCubeGetValueSpecificationCodeBatchInput
 {
-    public Map<String, ValueSpecification> queries;
+    public Map<String, ValueSpecification> values;
     public Boolean pretty;
 }

@@ -19,4 +19,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 public class DataCubeGetQueryRelationReturnTypeInput
 {
     public Lambda query;
+    public Boolean isolated = false;
 }

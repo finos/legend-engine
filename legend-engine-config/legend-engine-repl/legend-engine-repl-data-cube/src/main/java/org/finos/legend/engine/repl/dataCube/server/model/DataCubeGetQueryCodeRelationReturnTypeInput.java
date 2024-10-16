@@ -20,4 +20,5 @@ public class DataCubeGetQueryCodeRelationReturnTypeInput
 {
     public String code;
     public Lambda baseQuery;
+    public Boolean isolated = false;
 }

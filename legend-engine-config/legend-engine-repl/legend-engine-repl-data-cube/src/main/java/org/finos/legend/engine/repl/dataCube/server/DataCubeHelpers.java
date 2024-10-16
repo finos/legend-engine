@@ -35,6 +35,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -50,6 +51,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -125,6 +127,20 @@ public class DataCubeHelpers
         }
     }
 
+    public static RelationType getRelationReturnType(LegendInterface legendInterface, Lambda lambda, PureModelContextData data)
+    {
+        PureModelContextData pmcd;
+        if (data != null)
+        {
+            pmcd = DataCubeHelpers.injectNewFunction(data, lambda).getOne();
+        }
+        else
+        {
+            pmcd = PureModelContextData.newBuilder().withElement(wrapLambda(lambda)).build();
+        }
+        return getRelationReturnType(legendInterface, pmcd);
+    }
+
     public static RelationType getRelationReturnType(LegendInterface legendInterface, PureModelContextData data)
     {
         PureModel pureModel = legendInterface.compile(data);
@@ -145,12 +161,16 @@ public class DataCubeHelpers
     {
         try
         {
-            PureModelContextData newData = PureModelContextData.newBuilder()
-                    .withOrigin(data.getOrigin())
-                    .withSerializer(data.getSerializer())
-                    .withElements(ListIterate.select(data.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
-                    .build();
-            String graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
+            String graphCode = "";
+            if (data != null)
+            {
+                PureModelContextData newData = PureModelContextData.newBuilder()
+                        .withOrigin(data.getOrigin())
+                        .withSerializer(data.getSerializer())
+                        .withElements(ListIterate.select(data.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
+                        .build();
+                graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
+            }
             String baseQueryCode = lambda != null ? getQueryCode(lambda.body.get(0), false) : null;
             String queryCode = (baseQueryCode != null ? baseQueryCode : "") + code;
             Completer completer = new Completer(graphCode, extensions, legendInterface);
@@ -165,6 +185,17 @@ public class DataCubeHelpers
         {
             return new CompletionResult(Lists.mutable.empty());
         }
+    }
+
+    public static Function wrapLambda(Lambda lambda)
+    {
+        Function func = new Function();
+        func.name = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::") + 2);
+        func._package = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(0, REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::"));
+        func.returnType = M3Paths.Any;
+        func.returnMultiplicity = new Multiplicity(0, null);
+        func.body = lambda.body;
+        return func;
     }
 
     /**

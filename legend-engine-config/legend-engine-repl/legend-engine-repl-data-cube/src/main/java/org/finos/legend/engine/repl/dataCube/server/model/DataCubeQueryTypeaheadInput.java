@@ -20,4 +20,5 @@ public class DataCubeQueryTypeaheadInput
 {
     public String code;
     public Lambda baseQuery;
+    public Boolean isolated = false;
 }
