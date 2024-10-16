@@ -49,7 +49,7 @@ Class <<access.private>> meta::pure::changetoken::tests::SampleClass
 }
 
 // This is test Versions: AddField with ConstValue(^Map<String, Any>()->put('@type', 'Custom')->put('restricted', true)->put('value', 0)->put('range', ^Map<String, Any>()->put('@type', 'intMinMax')->put('min', -1)->put('max', 1)->put('round', 0.5)))
-function <<access.private>> meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
+function meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
 {
     ^Versions(
             versions=[
