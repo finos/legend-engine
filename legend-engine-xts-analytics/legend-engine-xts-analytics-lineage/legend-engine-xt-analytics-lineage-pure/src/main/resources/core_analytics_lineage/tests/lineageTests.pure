@@ -497,7 +497,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 ###Pure
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::test::relational::testMapWithPath():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testMapWithPath():Boolean[1]
 {
   let lineage = meta::analytics::lineage::computeLineage( | Person.all()
      ->filter(x | $x->map(#/Person/firm/legalName#) != 'Goldman Sachs')
