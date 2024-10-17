@@ -10,6 +10,7 @@
     "core_functions_standard",
     "core_functions_unclassified",
     "core_relational",
+    "core_servicestore",
     "core"
   ]
 }

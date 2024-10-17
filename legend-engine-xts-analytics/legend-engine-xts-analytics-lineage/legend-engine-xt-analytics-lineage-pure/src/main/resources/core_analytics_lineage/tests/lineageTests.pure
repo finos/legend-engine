@@ -493,3 +493,27 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                         '[type: [ProductClassificationSystemTable.id <JoinTreeNode>, ProductClassificationSystemTable.name <RelationalOperationElementWithJoin>, ProductTable.classificationSystemId <JoinTreeNode>]]',
                                           $lineage);
 }
+
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::external::store::service::tests::router::*;
+import meta::external::store::service::tests::runtime::*;
+import meta::external::store::service::tests::mapping::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::service::tests::domain::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::servicestore::testServiceStoreimple():Boolean[1]
+{
+   let tree = #{
+      S_Trade {
+         s_tradeId,
+         s_traderDetails,
+         s_tradeDetails
+      }
+   }#;
+   
+   let query  = {|S_Trade.all()->graphFetch($tree)->serialize($tree)};
+   let lineage = $query->computeLineage(serviceStoreMapping(), serviceStoreRuntime(), serviceStoreTestExtensions());
+  assertLineage(['Lambda', 'http://127.0.0.1:9090/api/user/serviceStore/test/trades/allTradesService', 'service_meta::external::store::service::tests::store::TradeProductServiceStore'],
+                ['Lambda', 'meta::external::store::service::tests::domain::S_Trade', 'pack_meta::external::store::service::tests::domain'],'[S_Trade.s_tradeDetails: [], S_Trade.s_tradeId: [], S_Trade.s_traderDetails: []]',$lineage);
+}

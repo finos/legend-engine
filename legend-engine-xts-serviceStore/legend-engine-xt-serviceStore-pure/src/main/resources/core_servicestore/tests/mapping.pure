@@ -144,18 +144,13 @@ function meta::external::store::service::tests::mapping::serviceStoreMapping():M
 
    let serviceStore        = meta::external::store::service::tests::store::TradeProductServiceStore();
 
-   //Generated in compilation phase using schema binding details
-   let tradeSetPropMappings= [
-      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_tradeId')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = ''),
-      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_traderDetails')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = ''),
-      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_tradeDetails')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = '')
-   ];
-   let tradeServiceSetImpl = ^RootServiceInstanceSetImplementation(
+let tradeServiceSetImpl = ^RootServiceInstanceSetImplementation(
                                  id = 's_trade_set',
                                  root = true,
                                  class = meta::external::store::service::tests::domain::S_Trade,
-                                 parent = $baseMapping,
-                                 propertyMappings = $tradeSetPropMappings);
+                                 parent = $baseMapping
+                                 );
+
 
    let tradeService         = $serviceStore.getServiceStoreElementById('TradeServices')->cast(@ServiceGroup).getServiceStoreElementById('AllTradeService')->cast(@Service);
    let transform3           = {| 'CSV'};
@@ -168,6 +163,14 @@ function meta::external::store::service::tests::mapping::serviceStoreMapping():M
                                               requestBuildInfo = ^ServiceRequestBuildInfo(requestParametersBuildInfo = ^ServiceRequestParametersBuildInfo(parameterBuildInfoList = $parameterBuildInfo),
                                                                                           requestBodyBuildInfo = $requestBodyBuildInfo));
    $tradeServiceSetImpl->mutateAdd('servicesMapping', $tradeServicesMapping);
+
+   let tradeSetPropMappings= [
+      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_tradeId')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = '', owner =$tradeServiceSetImpl),
+      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_traderDetails')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = '',owner=$tradeServiceSetImpl),
+      ^ServiceStorePropertyMapping(property = S_Trade.properties->filter(p | $p.name == 's_tradeDetails')->toOne(), sourceSetImplementationId = 's_trade_set', targetSetImplementationId = '',owner=$tradeServiceSetImpl)
+   ];
+   $tradeServiceSetImpl->mutateAdd('propertyMappings', $tradeSetPropMappings);
+
 
    let prodServiceSetImpl  = ^RootServiceInstanceSetImplementation(
                                  id = 's_prod_set',

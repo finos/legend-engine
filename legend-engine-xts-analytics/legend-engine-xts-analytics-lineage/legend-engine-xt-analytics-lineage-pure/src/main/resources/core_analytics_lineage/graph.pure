@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+import meta::external::store::service::metamodel::*;
 import meta::analytics::lineage::flow::*;
 import meta::analytics::lineage::graph::*;
 import meta::json::*;
@@ -88,7 +89,7 @@ function meta::analytics::lineage::graph::toGraph(flow:Flow[1], base:Flow[0..1])
    let groupNodesIndex = $groupNodes->groupBy(g|$g.data.id);
    let index = $flow.groups->map(g|$g.nodes->map(n|pair($n->toId(), $groupNodesIndex->get($g->toId())->toOne().values->at(0))))->newMap();
 
-   let nodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages)->map(o|$o->toNode($index,$base));
+   let nodes = $flow.groups->concatenate($flow.functions)->concatenate($flow.systems)->concatenate($flow.tables)->concatenate($flow.databases)->concatenate($flow.properties)->concatenate($flow.classes)->concatenate($flow.packages)->concatenate($flow.services)->map(o|$o->toNode($index,$base));
    let nodesById = $nodes->groupBy(t|$t.data.id);
 
    ^Graph
@@ -139,7 +140,10 @@ function <<access.private>> meta::analytics::lineage::graph::toId(a:Any[1]):Stri
          a:Database[1]|'db_'+$a.name->toOne(),
          a:DatabaseNode[1]|$a.db->toId(),
          a:NamedRelation[1]|let schema = $a->schema(); 'tb_'+$schema.database.name->toOne()+$schema.name+$a.name;,
-         a:NamedRelationNode[1]|$a.relation->toId()
+         a:NamedRelationNode[1]|$a.relation->toId(),
+         s:ServiceStore[1]|'service_'+$s->elementToPath(),
+         s:String[1] |$s,
+         s:ServiceNode[1]| $s.service
       ]
    )
 }
@@ -173,7 +177,10 @@ function <<access.private>> meta::analytics::lineage::graph::toName(a:Any[1]):St
          a:System[1]|$a.name,
          a:Group[1]|$a.name,
          a:Database[1]|$a.name->toOne(),
-         a:NamedRelation[1]|$a.name;
+         a:NamedRelation[1]|$a.name,
+         s:ServiceStore[1]|$s.name->toOne(),
+         s:String[1]|$s
+        
       ]
    )
 }
