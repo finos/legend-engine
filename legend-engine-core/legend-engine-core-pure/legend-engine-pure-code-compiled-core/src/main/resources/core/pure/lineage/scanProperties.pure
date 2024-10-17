@@ -479,6 +479,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::processFunction
   let fromParams = makeScanPropertiesState(emptyPath(), $paramPaths.result, $visitedFunctions);
       $fn->match([
           {f0:Function<Any>[0] | $fromParams},
+          {p:Path<Nil,Any|*>[1]| makeScanPropertiesState(emptyPath(), $p->scanPath(emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions)},
           {f:Function<Any>[1] |
 
                if($f.name->isEmpty() || !isPackageOk($f),
