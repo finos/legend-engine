@@ -406,11 +406,20 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions();
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
+        // initialize-lock
+        LogicalPlan initializeLockLogicalPlan = planner.buildLogicalPlanForInitializeLock(Resources.builder().build());
+        Optional<SqlPlan> initializeLockSqlPlan = Optional.empty();
+        if (initializeLockLogicalPlan != null)
+        {
+            initializeLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(initializeLockLogicalPlan));
+        }
+
         return GeneratorResult.builder()
             .preActionsSqlPlan(preActionsSqlPlan)
             .ingestSqlPlan(SqlPlan.builder().build())
             .metadataIngestSqlPlan(SqlPlan.builder().build())
             .postActionsSqlPlan(SqlPlan.builder().build())
+            .initializeLockSqlPlan(initializeLockSqlPlan)
             .build();
     }
 
