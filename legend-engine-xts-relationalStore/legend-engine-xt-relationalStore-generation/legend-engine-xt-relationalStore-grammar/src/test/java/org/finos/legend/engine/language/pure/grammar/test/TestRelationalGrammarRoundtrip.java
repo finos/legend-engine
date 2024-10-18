@@ -818,6 +818,63 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     }
 
     @Test
+    public void testQuotedTableAndColumnNames()
+    {
+        test("###Relational\n" +
+                "Database local::TestDB\n" +
+                "(\n" +
+                "  Table \"small table\"\n" +
+                "  (\n" +
+                "    city VARCHAR(0),\n" +
+                "    country VARCHAR(0),\n" +
+                "    year BIGINT,\n" +
+                "    treePlanted BIGINT\n" +
+                "  )\n" +
+                "  Table sport\n" +
+                "  (\n" +
+                "    Athlete VARCHAR(0),\n" +
+                "    Age BIGINT,\n" +
+                "    Country VARCHAR(0),\n" +
+                "    Year BIGINT,\n" +
+                "    Date DATE,\n" +
+                "    Sport VARCHAR(0),\n" +
+                "    Gold BIGINT,\n" +
+                "    Silver BIGINT,\n" +
+                "    Bronze BIGINT,\n" +
+                "    Total BIGINT\n" +
+                "  )\n" +
+                "  Table tree2\n" +
+                "  (\n" +
+                "    city VARCHAR(0),\n" +
+                "    country VARCHAR(0),\n" +
+                "    year BIGINT,\n" +
+                "    treePlanted BIGINT\n" +
+                "  )\n" +
+                "  Table tree3\n" +
+                "  (\n" +
+                "    city VARCHAR(0),\n" +
+                "    country VARCHAR(0),\n" +
+                "    \"year / solo\" BIGINT,\n" +
+                "    treePlanted BIGINT\n" +
+                "  )\n" +
+                "  Table tree4\n" +
+                "  (\n" +
+                "    city VARCHAR(0),\n" +
+                "    country VARCHAR(0),\n" +
+                "    \"year / solo\" BIGINT,\n" +
+                "    treePlanted BIGINT\n" +
+                "  )\n" +
+                "  Table tree5\n" +
+                "  (\n" +
+                "    city VARCHAR(0),\n" +
+                "    country VARCHAR(0),\n" +
+                "    \"year/solo\" BIGINT,\n" +
+                "    treePlanted BIGINT\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
     public void testMappingWithRelationalTestCSV()
     {
         test("###Mapping\n" +
