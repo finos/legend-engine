@@ -14,15 +14,22 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.AlterTable;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.tabletypes.IcebergTableType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.AlterOperation;
+import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 public class AlterVisitor implements LogicalPlanVisitor<Alter>
 {
@@ -30,7 +37,19 @@ public class AlterVisitor implements LogicalPlanVisitor<Alter>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Alter current, VisitorContext context)
     {
-        AlterTable alterTable = new AlterTable(AlterOperation.valueOf(current.operation().name()));
+        List<TableType> types = new ArrayList<>();
+        Optional<DatasetAdditionalProperties> datasetAdditionalProperties = current.dataset().datasetAdditionalProperties();
+        if (datasetAdditionalProperties.isPresent())
+        {
+            if (datasetAdditionalProperties.get().tableOrigin().isPresent())
+            {
+                if (datasetAdditionalProperties.get().tableOrigin().get().equals(TableOrigin.ICEBERG))
+                {
+                    types.add(new IcebergTableType());
+                }
+            }
+        }
+        AlterTable alterTable = new AlterTable(AlterOperation.valueOf(current.operation().name()), types);
         for (Optimizer optimizer : context.optimizers())
         {
             alterTable = (AlterTable) optimizer.optimize(alterTable);

@@ -15,12 +15,17 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.AlterOperation;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
+import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.COLUMN;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.DROP;
@@ -31,10 +36,12 @@ public class AlterTable implements DDLStatement
     private final AlterOperation operation;
     private Table table;
     private Column columnToAlter;
+    private final List<TableType> types;
 
-    public AlterTable(AlterOperation operation)
+    public AlterTable(AlterOperation operation, List<TableType> types)
     {
         this.operation = operation;
+        this.types = types;
     }
 
     public Table getTable()
@@ -54,6 +61,9 @@ public class AlterTable implements DDLStatement
     {
         validate();
         builder.append(Clause.ALTER.get());
+
+        // Table Type
+        SqlGen.genSqlList(builder, types, WHITE_SPACE, WHITE_SPACE);
 
         builder.append(WHITE_SPACE + Clause.TABLE.get());
 
@@ -102,6 +112,10 @@ public class AlterTable implements DDLStatement
         if (node instanceof Table)
         {
             table = (Table) node;
+        }
+        else if (node instanceof TableType)
+        {
+            types.add((TableType) node);
         }
         else if (node instanceof Column)
         {
