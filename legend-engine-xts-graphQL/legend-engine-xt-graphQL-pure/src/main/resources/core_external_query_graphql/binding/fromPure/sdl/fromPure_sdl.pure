@@ -98,7 +98,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
       ->distinct()
       ->filter(t | $t->instanceOf(Class));
 
-  let extendedClasses = $allTypes->map(t | $t->validGeneralizations());
+  let extendedClasses = $allTypes->map(t | $t->validGeneralizations())->removeDuplicates();
 
   // Build types
   let graphQLTypes = $allTypes->map(c |
@@ -301,11 +301,12 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
   let isQueryClass = $c->hasGraphQLStereotype('Query');
   let temporalStereotypes = $c->getTemporalStereotypes();
+  let extended = if($isExtended, | [$c.name], | []);
   $nonBuiltInScalars
     ->concatenate(
       ^ObjectTypeDefinition(
         name = $c.name->toOne(),
-        implements = if($isExtended, | $c.name, | $c->validGeneralizations()->map(g | $g.name))->map(n | $n->toInterfaceTypeName()),
+        implements = $extended->concatenate($c->hierarchicalAllGeneralizations()->map(g | $g.name))->map(n | $n->toInterfaceTypeName()),
         directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
         fields = $props
                     ->map(p |
@@ -351,7 +352,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   let temporalStereotypes = $c->getTemporalStereotypes();
   ^InterfaceTypeDefinition(
     name = $c.name->toOne()->toInterfaceTypeName(),
-    implements = $c->validGeneralizations()->map(g | $g.name)->map(n | $n->toInterfaceTypeName()),
+    implements = $c->hierarchicalAllGeneralizations()->map(g | $g.name)->map(n | $n->toInterfaceTypeName()),
     directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
     fields = $props
                 ->map(p |

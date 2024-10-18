@@ -137,7 +137,7 @@ function {doc.doc = 'Recursively get all explicitly defined generalizations.'}
     meta::pure::functions::meta::hierarchicalAllGeneralizations(type : Type[1]) : Class<Any>[*]
 {
   let oneLevel = $type->validGeneralizations();
-  $oneLevel->concatenate($oneLevel->map(c | $c->validGeneralizations()))->removeDuplicates();
+  $oneLevel->concatenate($oneLevel->map(c | $c->hierarchicalAllGeneralizations()))->removeDuplicates();
 }
 
 function {doc.doc = 'Get all inherited properties on the provided class'}

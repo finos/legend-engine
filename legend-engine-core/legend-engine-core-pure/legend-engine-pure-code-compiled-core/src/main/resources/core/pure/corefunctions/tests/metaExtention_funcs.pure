@@ -28,6 +28,26 @@ Class meta::pure::functions::meta::tests::packageA::ClassB
    
 }
 
+Class meta::pure::functions::meta::tests::packageA::Child extends meta::pure::functions::meta::tests::packageA::Parent
+{
+   
+}
+
+Class meta::pure::functions::meta::tests::packageA::Parent extends meta::pure::functions::meta::tests::packageA::GrandParent
+{
+   
+}
+
+Class meta::pure::functions::meta::tests::packageA::GrandParent extends meta::pure::functions::meta::tests::packageA::GreatGrandParent
+{
+   
+}
+
+Class meta::pure::functions::meta::tests::packageA::GreatGrandParent 
+{
+   
+}
+
 function <<access.private>> meta::pure::functions::meta::tests::packageA::myFunc():Boolean[1]
 {
    true

@@ -355,3 +355,9 @@ function <<test.Test>> meta::pure::functions::meta::tests::testTypeNameAndPath()
   assertEquals( meta::pure::functions::tests::model::GeographicEntityType.CITY->typePath(),'meta::pure::functions::tests::model::GeographicEntityType');
 
 }
+
+function <<test.Test>> meta::pure::functions::meta::tests::testAllGeneralizations(): Boolean[1]
+{
+  assertEquals(['Parent'], meta::pure::functions::meta::validGeneralizations(meta::pure::functions::meta::tests::packageA::Child)->map(t | $t.name));
+  assertEquals(['Parent', 'GrandParent', 'GreatGrandParent'], meta::pure::functions::meta::hierarchicalAllGeneralizations(meta::pure::functions::meta::tests::packageA::Child)->map(t | $t.name));
+}
