@@ -107,8 +107,12 @@ public class PureGrammarParserUtility
 
     public static String fromIdentifier(ParserRuleContext identifier)
     {
-        String text = identifier.getText();
-        return text.startsWith("'") ? PureGrammarParserUtility.fromGrammarString(text, true) : text;
+        return fromIdentifier(identifier.getText(), false);
+    }
+
+    public static String fromIdentifier(String text, boolean doubleQuotes)
+    {
+        return text.startsWith(doubleQuotes ? "\"" : "'") ? PureGrammarParserUtility.fromGrammarString(text, true) : text;
     }
 
     public static String validatePath(String path, SourceInformation sourceInformation)

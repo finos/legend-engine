@@ -347,7 +347,7 @@ public class HelperRelationalGrammarComposer
     private static String renderDatabaseTableColumn(Column column, List<String> primaryKeys, int baseIndentation)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append(column.name).append(" ");
+        builder.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(column.name, true)).append(" ");
         if (column.type instanceof Char)
         {
             builder.append("CHAR(").append(((Char) column.type).size).append(")");
