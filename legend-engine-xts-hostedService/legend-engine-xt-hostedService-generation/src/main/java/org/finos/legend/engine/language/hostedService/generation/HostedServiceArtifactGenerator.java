@@ -20,24 +20,31 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.functionActivator.postDeployment.PostDeploymentActionLoader;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.lineage.Lineage;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -52,6 +59,13 @@ public class HostedServiceArtifactGenerator
         ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
         Lineage lineage = new Lineage();
         return new GenerationInfoData(plan, lineage);
+    }
+
+    public static HostedServiceArtifact renderServiceArtifact(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
+        Lineage lineage = new Lineage();
+        return new HostedServiceArtifact(activator._pattern(), new GenerationInfoData(plan, lineage), HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), renderActions(activator), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
     }
 
     public static ExecutionPlan generatePlan(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion,Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -99,6 +113,11 @@ public class HostedServiceArtifactGenerator
     public static String fullName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement e)
     {
         return e._package + "::" + e.name;
+    }
+
+    public static List<ActionContent> renderActions(Root_meta_external_function_activator_FunctionActivator activator)
+    {
+        return PostDeploymentActionLoader.generateActions(activator);
     }
 
 }

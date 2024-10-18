@@ -28,14 +28,27 @@
     <name>Legend Engine - XT - Function Activator - Protocol</name>
 
     <dependencies>
+        <!--ENGINE-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
+        <!--ENGINE-->
+
+        <!--ECLIPSE-->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!--ECLIPSE-->
+
+        <!--JACKSON-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
+        <!--JACKSON-->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
