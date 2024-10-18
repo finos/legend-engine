@@ -197,6 +197,46 @@ public class BaseTest
         return executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, verifyStagingFilters);
     }
 
+    protected IngestorResult executePlansAndVerifyResultsUsingLightweightCreate(IngestMode ingestMode, Datasets datasets,
+                                                                                String[] schema, String expectedDataPath, Map<String, Object> expectedStats,
+                                                                                Clock executionTimestampClock, boolean verifyStagingFilters) throws Exception
+    {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .collectStatistics(true)
+            .enableConcurrentSafety(true)
+            .cleanupStagingData(false)
+            .build();
+
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.create(datasets);
+        ingestor.initDatasets(datasets);
+        executor.begin();
+        IngestorResult result = ingestor.ingest().get(0);
+        executor.commit();
+        ingestor.cleanUp();
+
+        Map<StatisticName, Object> actualStats = result.statisticByName();
+
+        // Verify the database data
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        // Verify statistics
+        verifyStats(expectedStats, actualStats);
+
+        // Verify StagingFilters
+        if (verifyStagingFilters)
+        {
+            verifyLatestStagingFilters(ingestor, datasets);
+        }
+
+        // Return result (including updated datasets)
+        return result;
+    }
+
     protected IngestorResult executePlansAndVerifyResults(RelationalIngestor ingestor, Datasets datasets, String[] schema,
                                                           String expectedDataPath, Map<String, Object> expectedStats, boolean verifyStagingFilters) throws Exception
     {
