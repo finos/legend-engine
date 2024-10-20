@@ -70,7 +70,7 @@ public class DB implements Command
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
                 this.client.println(
-                        getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
+                        getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> PureGrammarComposerUtility.convertIdentifier(col.name, true) + " " + col.type).makeString(", ") + ")").makeString("\n")
                 );
             }
             return true;
