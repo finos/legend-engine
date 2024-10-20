@@ -47,7 +47,7 @@ public class XmlReader
     private static final int EVENT_BUFFER_SIZE = 4096;
     private static final int DEFAULT_CAPTURE_CAPACITY = 4096;
 
-    private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newFactory();
+    private static final XMLInputFactory XML_INPUT_FACTORY = createInputFactory();
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
     private final XMLEventReader reader;
@@ -56,6 +56,14 @@ public class XmlReader
 
     private EventBuffer eventBuffer;
     private ReadState currentState;
+
+    private static XmlInputFactory createInputFactory()
+    {
+        XMLInputFactory factory = XMLInputFactory.newFactory();
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        retun factory;
+    }
+    
 
     private XmlReader(XMLEventReader reader, Function<XMLStreamException, ? extends RuntimeException> exceptionHandler)
     {
