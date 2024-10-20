@@ -44,7 +44,6 @@
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
@@ -53,7 +52,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
@@ -62,39 +60,27 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
 </project>
