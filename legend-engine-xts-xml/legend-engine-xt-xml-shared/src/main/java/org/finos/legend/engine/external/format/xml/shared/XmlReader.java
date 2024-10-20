@@ -57,11 +57,11 @@ public class XmlReader
     private EventBuffer eventBuffer;
     private ReadState currentState;
 
-    private static XmlInputFactory createInputFactory()
+    private static XMLInputFactory createInputFactory()
     {
         XMLInputFactory factory = XMLInputFactory.newFactory();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-        retun factory;
+        return factory;
     }
     
 
