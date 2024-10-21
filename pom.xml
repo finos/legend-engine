@@ -2414,16 +2414,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2455,11 +2445,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-core-extension</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2820,11 +2805,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-json</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2976,11 +2956,6 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
-                <version>${legend.pure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>

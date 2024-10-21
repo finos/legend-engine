@@ -204,11 +204,6 @@
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
-            <version>${legend.pure.version}</version>
-        </dependency>
 
         <!-- ENGINE -->
         <dependency>
