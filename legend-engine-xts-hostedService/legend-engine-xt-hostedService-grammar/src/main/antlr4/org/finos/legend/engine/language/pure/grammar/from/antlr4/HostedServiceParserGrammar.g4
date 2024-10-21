@@ -50,8 +50,23 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceActivationConfiguration
                                                     | serviceLineage
                                                     | serviceModel
+                                                    | postDeploymentActions
                                                 )*
                                             BRACE_CLOSE
+;
+postDeploymentActions:                  POST_DEPLOYMENT_ACTIONS COLON
+                                        BRACKET_OPEN
+                                            (postDeploymentAction (COMMA postDeploymentAction)*)?
+                                        BRACKET_CLOSE
+                                        SEMI_COLON
+;
+postDeploymentAction:                   actionType (actionBody)?
+;
+actionBody:                             ISLAND_OPEN actionValue
+;
+actionValue:                            (ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE | ISLAND_END)*
+;
+actionType:                             VALID_STRING
 ;
 stereotypes:                            LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
 ;
