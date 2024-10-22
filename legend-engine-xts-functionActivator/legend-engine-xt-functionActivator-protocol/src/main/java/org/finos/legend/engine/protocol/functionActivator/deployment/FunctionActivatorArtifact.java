@@ -16,7 +16,10 @@ package org.finos.legend.engine.protocol.functionActivator.deployment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,6 +27,7 @@ public class FunctionActivatorArtifact
 {
     public FunctionActivatorDeploymentContent content;
     public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
+    public List<ActionContent> actions = Lists.mutable.empty();
 
     public String version;
 

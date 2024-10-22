@@ -85,6 +85,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-generation</artifactId>
+        </dependency>
 
 <!--        <dependency>-->
 <!--            <groupId>org.finos.legend.engine</groupId>-->

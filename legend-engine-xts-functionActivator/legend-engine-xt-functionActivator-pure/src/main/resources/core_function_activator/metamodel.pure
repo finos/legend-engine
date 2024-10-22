@@ -1,10 +1,12 @@
 import meta::external::function::activator::*;
+import meta::external::function::activator::postDeploymentAction::*;
 
 Class meta::external::function::activator::FunctionActivator extends PackageableElement
 {
   {doc.doc = 'The function that needs to be activated.'} function : PackageableFunction<Any>[1];
   {doc.doc = 'The activation configuration.'} activationConfiguration : DeploymentConfiguration[0..1];
   {doc.doc = 'The ownership criteria.'} ownership : Ownership[1];
+  {doc.doc = 'Optional action that can be executed after deployment'} actions : meta::external::function::activator::postDeploymentAction::PostDeploymentAction[*];
   
 }
 
@@ -31,6 +33,17 @@ Class meta::external::function::activator::Ownership
 Class meta::external::function::activator::DeploymentOwnership extends meta::external::function::activator::Ownership
 {
   id: String[1];
+}
+
+Class meta::external::function::activator::postDeploymentAction::PostDeploymentAction
+{
+    automated: Boolean[0..1];
+    properties: PostDeploymentActionProperties[1];
+}
+
+Class meta::external::function::activator::postDeploymentAction::PostDeploymentActionProperties
+{
+
 }
 
 // This section needs to be code generated from the section above 

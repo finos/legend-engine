@@ -736,7 +736,16 @@
                 <artifactId>legend-engine-xt-functionActivator-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>

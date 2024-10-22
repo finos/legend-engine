@@ -44,6 +44,7 @@ import org.finos.legend.engine.language.hostedService.grammar.from.HostedService
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.memsqlFunction.grammar.to.MemSqlFunctionGrammarComposer;
+import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -378,6 +379,7 @@ public class TestExtensions
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
+                .with(PostDeploymentActionGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(MemSqlFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)

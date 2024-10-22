@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.functionActivator.deployment;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.functionActivator.postDeployment.PostDeploymentActionLoader;
 import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.PostDeploymentActionResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
@@ -31,4 +34,14 @@ public interface DeploymentManager<U extends FunctionActivatorArtifact, V extend
     public V deploy(Identity identity, U artifact, List<W> availableRuntimeConfigurations);
 
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact);
+
+    public default List<PostDeploymentActionResult> deployActions(Identity identity, U artifact)
+    {
+        List<PostDeploymentActionResult> actionResults = Lists.mutable.empty();
+        PostDeploymentActionLoader.extensions().forEach((ex) ->
+        {
+            actionResults.addAll(ex.processAction(identity, artifact));
+        });
+        return actionResults;
+    }
 }

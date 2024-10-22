@@ -38,6 +38,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGramm
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer.renderActions;
 
 public class HostedServiceGrammarComposer implements PureGrammarComposerExtension
 {
@@ -88,6 +89,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
                 "   function : " + app.function.path + ";\n" +
                 (app.documentation == null ? "" : "   documentation : '" + app.documentation + "';\n") +
                 "   autoActivateUpdates : " + app.autoActivateUpdates + ";\n" +
+                (app.actions.isEmpty() ? "" : renderActions(app.actions) + "\n") +
                 "}";
     }
 
