@@ -1023,6 +1023,15 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithJoinDB2(
    assertEquals('select "root".LEGALNAME as "legalName", "personTable_d#4_d_m1".FIRSTNAME as "employeesFirstName", sum(1) as "sum" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME,"personTable_d#4_d_m1".FIRSTNAME', $sql);
 }
 
+function <<test.Test>> meta::relational::tests::groupBy::testReprocessGroupByAliasSQLServer():Boolean[1]
+{
+   let fn  = {|meta::relational::tests::model::simple::Order.all()
+                 ->groupBy([x | $x.pnlContact.lastName,x | $x.pnlContact.firm.legalName],[agg(x | $x.quantity, y | $y->sum())],['last name','legal name','quantity'])};
+
+   let sql = toSQLString($fn, MappingWithInnerJoinAndEmbeddedMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select "salesPersonTable_d#4".lastName as "last name", "salesPersonTable_d#4".firm_name as "legal name", sum("root".quantity) as "quantity" from orderTable as "root" left outer join (select "salesPersonTable_d#4".ACCOUNT_ID as ACCOUNT_ID, "PersonFirmView_d#4_l".lastName as lastName, "PersonFirmView_d#4_l".firm_name as firm_name from salesPersonTable as "salesPersonTable_d#4" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmTable_d#4_l_d#4_l_m3".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmTable_d#4_l_d#4_l_m3" on ("firmTable_d#4_l_d#4_l_m3".ID = "root".FIRMID)) as "PersonFirmView_d#4_l" on ("salesPersonTable_d#4".PERSON_ID = "PersonFirmView_d#4_l".PERSON_ID)) as "salesPersonTable_d#4" on ("root".accountID = "salesPersonTable_d#4".ACCOUNT_ID) group by "salesPersonTable_d#4".lastName,"salesPersonTable_d#4".firm_name', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::groupBy::testObjectLevelGroupByWTDSLevelGroupByWTDSExtend():Boolean[1]
 {
 
