@@ -14,15 +14,79 @@ import meta::pure::metamodel::constraint::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 
 
+Class meta::external::dataquality::MilestoningContext
+{
+  rootBusinessTemporal: Boolean[1];
+  rootProcessingTemporal: Boolean[1];
+  nonRootBusinessTemporal: Boolean[1];
+  nonRootProcessingTemporal: Boolean[1];
 
-function meta::external::dataquality::executeDataQualityValidation(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*]): LambdaFunction<Any>[1]
+  businessTemporal(){
+      $this.rootBusinessTemporal || $this.nonRootBusinessTemporal
+  }:Boolean[1];
+
+  processingTemporal(){
+      $this.rootProcessingTemporal || $this.nonRootProcessingTemporal
+  }:Boolean[1];  
+}
+
+function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*]): LambdaFunction<Any>[1]
+{
+  generateDataQualityQuery($dataquality, $limit, true);
+}
+
+
+function meta::external::dataquality::getMilestoningContext(tree:RootGraphFetchTree<Any>[1]): MilestoningContext[1]
+{
+  let properties = getAllProperties($tree);
+  let propertyTypes = $properties.genericType.rawType;
+
+  ^MilestoningContext(
+      rootBusinessTemporal = $tree.class->meta::pure::milestoning::isBusinessTemporal(),
+      rootProcessingTemporal = $tree.class->meta::pure::milestoning::isProcessingTemporal(),
+      nonRootBusinessTemporal = $propertyTypes->exists(t | $t->meta::pure::milestoning::isBusinessTemporal()),
+      nonRootProcessingTemporal = $propertyTypes->exists(t | $t->meta::pure::milestoning::isProcessingTemporal())  
+  );
+}
+
+function meta::external::dataquality::addMilestoningParameters(tree:GraphFetchTree[1]):GraphFetchTree[1]
+{
+  $tree->match([
+    p:PropertyGraphFetchTree[1] | 
+      let parameters = if ($p.parameters->isEmpty(), 
+        | let isBusinessTemporal = $p.property.genericType.rawType->toOne()->meta::pure::milestoning::isBusinessTemporal();
+          let isProcessingTemporal = $p.property.genericType.rawType->toOne()->meta::pure::milestoning::isProcessingTemporal();
+          getTemporalParameters($isProcessingTemporal, $isBusinessTemporal);,
+        | $p.parameters
+      );
+
+      ^$p(
+          subTrees = $p.subTrees->map(t | addMilestoningParameters($t)),
+          parameters = $parameters,
+          subTypeTrees = $p.subTypeTrees->map(t | addMilestoningParameters($t))->cast(@SubTypeGraphFetchTree)
+      );,  
+    g:GraphFetchTree[1] | 
+      ^$g(
+          subTrees = $g.subTrees->map(t | addMilestoningParameters($t)),
+          subTypeTrees = $g.subTypeTrees->map(t | addMilestoningParameters($t))->cast(@SubTypeGraphFetchTree)
+      )
+  ])
+}
+
+function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*], useFrom:Boolean[1]): LambdaFunction<Any>[1]
 { 
    $dataquality.validationTree->validateTreeForNestedConstraints(true);
+
+   let milestonedTree = $dataquality.validationTree->addMilestoningParameters();
+
    // 1. enrich tree with selected constraint properties
-   let enrichedTree = $dataquality.validationTree->ensureFunctionRequirementsForDataQuality($dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
+   let enrichedTree = $milestonedTree->ensureFunctionRequirementsForDataQuality($dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
+
+   let milestoningContext = getMilestoningContext($enrichedTree);
 
    // 2. build query
-   let getAll = $dataquality.validationTree.class->createGetAllParameterized();
+   let getAll = $dataquality.validationTree.class->createGetAll($milestoningContext.rootProcessingTemporal, $milestoningContext.rootBusinessTemporal);
+
    let getExpr = if ($dataquality.filter->isNotEmpty(), 
                             | $dataquality.validationTree.class->generateFilterQuery($getAll, $dataquality.filter->toOne());,
                             | $getAll);
@@ -43,8 +107,8 @@ function meta::external::dataquality::executeDataQualityValidation(dataquality:m
                                                     multiplicity = ZeroMany,
                                                     importGroup=system::imports::coreImport);
   // 2.1
-  let serialized = ^SimpleFunctionExpression(func=serialize_T_MANY__RootGraphFetchTree_1__String_1_,
-                                             functionName=serialize_T_MANY__RootGraphFetchTree_1__String_1_.name,
+  let serialized = ^SimpleFunctionExpression(func=serialize_Checked_MANY__RootGraphFetchTree_1__String_1_,
+                                             functionName=serialize_Checked_MANY__RootGraphFetchTree_1__String_1_.name,
                                              importGroup=system::imports::coreImport,
                                              genericType=^GenericType(rawType=String),
                                              multiplicity=ZeroMany,
@@ -55,19 +119,15 @@ function meta::external::dataquality::executeDataQualityValidation(dataquality:m
   let deactivatedMapping = ^InstanceValue(values=$mappingAndRuntime.first->evaluateAndDeactivate(), genericType=^GenericType(rawType=Mapping), multiplicity=PureOne) ;
   let deactivatedRuntime = ^InstanceValue(values=$mappingAndRuntime.second->evaluateAndDeactivate(), genericType=^GenericType(rawType=NonExecutableValueSpecification), multiplicity=PureOne);
                                             
-  let from = ^SimpleFunctionExpression(func=from_T_m__Mapping_1__Runtime_1__T_m_,
+  let from = if ($useFrom, | ^SimpleFunctionExpression(func=from_T_m__Mapping_1__Runtime_1__T_m_,
                                        functionName=from_T_m__Mapping_1__Runtime_1__T_m_.name,
                                        importGroup=system::imports::coreImport,
                                        genericType=^GenericType(rawType=String),
                                        multiplicity=ZeroMany,
-                                       parametersValues=[$serialized, $deactivatedMapping, $deactivatedRuntime])->evaluateAndDeactivate();
+                                       parametersValues=[$serialized, $deactivatedMapping, $deactivatedRuntime])->evaluateAndDeactivate(), | $serialized);
 
   // 3. build lambda
-  if ($dataquality.validationTree.class->meta::pure::milestoning::isTemporal(),
-      | $dataquality.validationTree.class->createLambdaParameterized($from),
-      | let lambda = {| ''};
-        ^$lambda(expressionSequence = [$from]);
-      );
+  createLambda($from, $milestoningContext.processingTemporal, $milestoningContext.businessTemporal);
 }
 
 function meta::external::dataquality::validateTreeForNestedConstraints(node:GraphFetchTree[1], isRoot:Boolean[1]): Boolean[1]
@@ -127,118 +187,58 @@ function <<access.private>> meta::external::dataquality::createGetAll<T>(c: Clas
    ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
 }
 
-function <<access.private>> meta::external::dataquality::createGetAllParameterized<T>(c: Class<T>[1]):FunctionExpression[1]
+function <<access.private>> meta::external::dataquality::getAllProperties(tree:GraphFetchTree[1]):AbstractProperty<Any>[*]
 {
-  if ($c->meta::pure::milestoning::isBiTemporal(),
-      | $c->createGetAllBiTemporal(),
-      | $c->createGetAllUniTemporal());
+  let properties = $tree->match([
+    p:PropertyGraphFetchTree[1] | $p.property,
+    g:GraphFetchTree[1] | []
+  ]);
+
+  $tree.subTrees->concatenate($tree.subTypeTrees)
+    ->map(t | $t->getAllProperties())
+    ->concatenate($properties);
 }
 
-function <<access.private>> meta::external::dataquality::createGetAllUniTemporal<T>(c: Class<T>[1]):FunctionExpression[1]
+function meta::external::dataquality::createLambda(body:ValueSpecification[1], processingTemporal:Boolean[1], businessTemporal:Boolean[1]):LambdaFunction<Any>[1]
 {
-  if ($c->meta::pure::milestoning::isProcessingTemporal(),
-      | $c->createGetAllProcessingTemporal(),
-      | $c->createGetAllBusinessTemporal());
+  let parameters = getTemporalParameters($processingTemporal, $businessTemporal);
+  let functionType = ^FunctionType(returnMultiplicity = $body.multiplicity, returnType = $body.genericType, parameters = $parameters);
+
+  let lambda = newLambdaFunction($functionType);
+  ^$lambda(expressionSequence = $body);
 }
 
-function <<access.private>> meta::external::dataquality::createLambdaParameterized<T>(c: Class<T>[1], from: SimpleFunctionExpression[1]):LambdaFunction<Any>[1]
+function <<access.private>> meta::external::dataquality::createGetAll<T>(c: Class<T>[1], processingTemporal:Boolean[1], businessTemporal:Boolean[1]):FunctionExpression[1]
 {
-  if ($c->meta::pure::milestoning::isBiTemporal(),
-      | $from->createLambdaBiTemporal(),
-      | $c->createLambdaUniTemporal($from));
-}
+  let func = [
+    pair($processingTemporal && $businessTemporal, getAll_Class_1__Date_1__Date_1__T_MANY_),
+    pair($processingTemporal || $businessTemporal, getAll_Class_1__Date_1__T_MANY_),
+    pair(true, getAll_Class_1__T_MANY_)
+  ]->filter(t | $t.first == true)->at(0).second;
 
-function <<access.private>> meta::external::dataquality::createLambdaUniTemporal<T>(c: Class<T>[1], from: SimpleFunctionExpression[1]):LambdaFunction<Any>[1]
-{
-  if ($c->meta::pure::milestoning::isProcessingTemporal(),
-      | $from->createLambdaProcessingTemporal(),
-      | $from->createLambdaBusinessTemporal());
-}
+  let parameters = getTemporalParameters($processingTemporal, $businessTemporal);
 
-function <<access.private>> meta::external::dataquality::createLambdaProcessingTemporal(from: SimpleFunctionExpression[1]):LambdaFunction<Any>[1]
-{
-  let lambda = {processingDate: Date[1] | ''};
-  ^$lambda(expressionSequence = [$from]);
-}
-
-function <<access.private>> meta::external::dataquality::createLambdaBusinessTemporal(from: SimpleFunctionExpression[1]):LambdaFunction<Any>[1]
-{
-  let lambda = {businessDate: Date[1] | ''};
-  ^$lambda(expressionSequence = [$from]);
-}
-
-function <<access.private>> meta::external::dataquality::createLambdaBiTemporal<T>(from: SimpleFunctionExpression[1]):LambdaFunction<Any>[1]
-{
-  let lambda = {businessDate: Date[1], processingDate: Date[1] | ''};
-  ^$lambda(expressionSequence = [$from]);
-}
-
-
-function <<access.private>> meta::external::dataquality::createGetAllBiTemporal<T>(c: Class<T>[1]):FunctionExpression[1]
-{
-  let getAllExpression = ^SimpleFunctionExpression
+  ^SimpleFunctionExpression
    (
-      func = getAll_Class_1__Date_1__Date_1__T_MANY_,
-      functionName = getAll_Class_1__Date_1__Date_1__T_MANY_.name,
+      func = $func,
+      functionName = $func.name,
       importGroup = system::imports::coreImport,
       genericType = ^GenericType(rawType = $c),
       multiplicity = ZeroMany,
-      parametersValues = [
-                          ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
+      parametersValues = ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
                                           multiplicity = PureOne,
                                           values = $c
-                                       ),
-                          ^VariableExpression(name='processingDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)->evaluateAndDeactivate(),
-                          ^VariableExpression(name='businessDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)->evaluateAndDeactivate()
-                          ]
+                                       )->concatenate($parameters)
     )->evaluateAndDeactivate();
-   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
-   let lambda = {|[]};
-   ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
 }
 
-function <<access.private>> meta::external::dataquality::createGetAllBusinessTemporal<T>(c: Class<T>[1]):FunctionExpression[1]
+function <<access.private>> meta::external::dataquality::getTemporalParameters(processingTemporal:Boolean[1], businessTemporal:Boolean[1]):VariableExpression[*]
 {
-  let getAllExpression = ^SimpleFunctionExpression
-   (
-      func = getAll_Class_1__Date_1__T_MANY_,
-      functionName = getAll_Class_1__Date_1__T_MANY_.name,
-      importGroup = system::imports::coreImport,
-      genericType = ^GenericType(rawType = $c),
-      multiplicity = ZeroMany,
-      parametersValues = [
-                          ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
-                                          multiplicity = PureOne,
-                                          values = $c
-                                       ),
-                          ^VariableExpression(name='businessDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)
-                          ]
-    )->evaluateAndDeactivate();
-   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
-   let lambda = {|[]};
-   ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
-}
 
-function <<access.private>> meta::external::dataquality::createGetAllProcessingTemporal<T>(c: Class<T>[1]):FunctionExpression[1]
-{
-  let getAllExpression = ^SimpleFunctionExpression
-   (
-      func = getAll_Class_1__Date_1__T_MANY_,
-      functionName = getAll_Class_1__Date_1__T_MANY_.name,
-      importGroup = system::imports::coreImport,
-      genericType = ^GenericType(rawType = $c),
-      multiplicity = ZeroMany,
-      parametersValues = [
-                          ^InstanceValue( genericType = ^GenericType(rawType = Class, typeArguments = ^GenericType(rawType = $c)),
-                                          multiplicity = PureOne,
-                                          values = $c
-                                       ),
-                          ^VariableExpression(name='processingDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)
-                          ]
-    )->evaluateAndDeactivate();
-   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = $c))));
-   let lambda = {|[]};
-   ^$lambda(classifierGenericType=$classifierGenericType, expressionSequence = $getAllExpression).expressionSequence->at(0)->cast(@FunctionExpression);
+  [
+    pair($processingTemporal, ^VariableExpression(name='processingDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)->evaluateAndDeactivate()),
+    pair($businessTemporal, ^VariableExpression(name='businessDate', genericType=^GenericType(rawType=Date), multiplicity=PureOne)->evaluateAndDeactivate())
+  ]->filter(f | $f.first).second->evaluateAndDeactivate();
 }
 
 function meta::external::dataquality::generateFilterQuery<T>(c:Class<T>[1], f: FunctionExpression[1], filter:LambdaFunction<{T[1]->Boolean[1]}>[1]):FunctionExpression[1] {
@@ -252,18 +252,35 @@ function meta::external::dataquality::generateFilterQuery<T>(c:Class<T>[1], f: F
       parametersValues =
       [  $f,
          ^InstanceValue (
-            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='that', genericType=^GenericType(rawType = $c), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='x', genericType=^GenericType(rawType = $c), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = ^$dummyLambda
-            (
-               classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='that', genericType=^GenericType(rawType = $c), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
-               expressionSequence = $filter.expressionSequence->evaluateAndDeactivate()
-            )
+            values = lambda(functionType('x', $c, PureOne, Boolean, ZeroMany), $filter.expressionSequence->evaluateAndDeactivate()->replaceVariableWithVariable('this', 'x'))
          )
      ]
    )->evaluateAndDeactivate();
 }
 
+
+function meta::external::dataquality::lambda(functionType:FunctionType[1], expressionSequence:ValueSpecification[*]):LambdaFunction<Any>[1]
+{
+  let lambda = meta::pure::functions::meta::newLambdaFunction($functionType);
+  ^$lambda(expressionSequence = $expressionSequence->toOneMany());
+}
+
+function meta::external::dataquality::functionType(name:String[1], type:Type[1], multiplicity:Multiplicity[1], returnType:Type[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  functionType($name, ^GenericType(rawType = $type), $multiplicity, ^GenericType(rawType = $returnType), $returnMultiplicity);
+}
+
+function meta::external::dataquality::functionType(name:String[1], type:GenericType[1], multiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  ^FunctionType(parameters = ^VariableExpression(genericType = $type, name = $name, multiplicity = $multiplicity), returnMultiplicity = $returnMultiplicity, returnType = $returnType);
+}
+
+function meta::external::dataquality::functionType(parameters:VariableExpression[*], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  ^FunctionType(parameters = $parameters, returnMultiplicity = $returnMultiplicity, returnType = $returnType);
+}
 
 
 function meta::external::dataquality::generateConstraintsNegatedORQuery<T>(c:Class<T>[1], f: FunctionExpression[1], constraints: List<Constraint>[1]):FunctionExpression[1] {
@@ -288,8 +305,7 @@ function meta::external::dataquality::generateORNegatedQuery<T>(c:Class<T>[1], f
    let final_expr = $constraints.values->drop(2)->fold({c3, curr_or_exp |
           let c3_negatedExprSequence = $c3.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression();
           $c3_negatedExprSequence->orFunctionExpression($curr_or_exp);}, $c1_c2_or_expr);
-   
-   let dummyLambda = {|'ok'};
+
    ^SimpleFunctionExpression
    (
       func = filter_T_MANY__Function_1__T_MANY_,
@@ -301,15 +317,39 @@ function meta::external::dataquality::generateORNegatedQuery<T>(c:Class<T>[1], f
          ^InstanceValue (
             genericType = $c1.functionDefinition.classifierGenericType->toOne(),
             multiplicity = PureOne,
-            values = ^$dummyLambda
-            (
-               classifierGenericType = $c1.functionDefinition.classifierGenericType,
-               expressionSequence = $final_expr->evaluateAndDeactivate()
-            )
+            values = lambda(functionType('x', $c, PureOne, Boolean, ZeroMany), $final_expr->evaluateAndDeactivate()->replaceVariableWithVariable('this', 'x'))
          )
      ]
    )->evaluateAndDeactivate();
  
+}
+
+function meta::external::dataquality::replaceVariableWithVariable(v:ValueSpecification[1..*], from:String[1], to:String[1]):ValueSpecification[1..*]
+{
+  $v->map(a | $a->replaceVariableWithVariable($from, $to))
+}
+
+function meta::external::dataquality::replaceVariableWithVariable(v:ValueSpecification[1], from:String[1], to:String[1]):ValueSpecification[1]
+{
+  $v->match([
+    v:VariableExpression[1] | if ($v.name == $from, | ^$v(name = $to), | $v),
+    s:SimpleFunctionExpression[1] | ^$s(parametersValues = $s.parametersValues->map(p | replaceVariableWithVariable($p, $from, $to))),
+    i:InstanceValue[1] | ^$i(values = $i.values->map(v | $v->replaceVariableWithVariable($from, $to)))
+  ])
+}
+
+function meta::external::dataquality::replaceVariableWithVariable(l:FunctionDefinition<Any>[1], from:String[1], to:String[1]):FunctionDefinition<Any>[1]
+{
+  ^$l(expressionSequence = $l.expressionSequence->replaceVariableWithVariable($from, $to))
+}
+
+function meta::external::dataquality::replaceVariableWithVariable(a:Any[1], from:String[1], to:String[1]):Any[1]
+{
+  $a->match([
+    v:ValueSpecification[1] | $v->replaceVariableWithVariable($from, $to),
+    l:LambdaFunction<Any>[1] | $l->replaceVariableWithVariable($from, $to),
+    a:Any[1] | $a
+  ])
 }
 
 
@@ -317,7 +357,7 @@ function meta::external::dataquality::generateConstraintNegatedQuery<T>(c:Class<
 {
    let constraintExprSequence = $constraint.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne();
    let negatedExprSequence = $constraintExprSequence->negatedFunctionExpression();
-   let dummyLambda = {|'ok'};
+
    ^SimpleFunctionExpression
    (
       func = filter_T_MANY__Function_1__T_MANY_,
@@ -329,11 +369,7 @@ function meta::external::dataquality::generateConstraintNegatedQuery<T>(c:Class<
          ^InstanceValue (
             genericType = $constraint.functionDefinition.classifierGenericType->toOne(),
             multiplicity = PureOne,
-            values = ^$dummyLambda
-            (
-               classifierGenericType = $constraint.functionDefinition.classifierGenericType,
-               expressionSequence = $negatedExprSequence
-            )
+            values = lambda(functionType('x', $c, PureOne, Boolean, ZeroMany), $negatedExprSequence->evaluateAndDeactivate()->replaceVariableWithVariable('this', 'x'))
          )
      ]
    )->evaluateAndDeactivate();
@@ -432,8 +468,7 @@ function meta::external::dataquality::getEnrichedTreeForStructuralValidations(va
 function meta::external::dataquality::generateDQMetaDataForDQValidation(dataquality:meta::external::dataquality::DataQuality<Any>[1]): DataQualityRule[*]
 {
    let enrichedTree = ensureFunctionRequirementsForDataQuality($dataquality.validationTree, $dataquality.validationTree.constraints, $dataquality.validationTree.class, [], true)->cast(@RootGraphFetchTree<Any>);
-   let dqRules = $dataquality.validationTree->nodeToDqRule(true, '')->concatenate($enrichedTree->nodeToDqRule(false, ''));
-   $dqRules;
+   $dataquality.validationTree->nodeToDqRule(true, '')->concatenate($enrichedTree->nodeToDqRule(false, ''));
 }
 
 function meta::external::dataquality::nodeToDqRule(node:GraphFetchTree[1], processOnlyConstraints:Boolean[1], path:String[*]):DataQualityRule[*]
@@ -466,5 +501,5 @@ function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(no
 
 function <<access.private>> meta::external::dataquality::constraintToDqRule(constraint:Constraint[1], path:String[1]):DataQualityRule[1]
 {
-  ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions('')->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
+  ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->replaceVariableWithVariable('this', 'x')->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions('')->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
 }

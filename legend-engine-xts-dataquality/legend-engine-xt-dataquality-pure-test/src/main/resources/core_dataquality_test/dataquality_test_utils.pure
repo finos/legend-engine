@@ -1,0 +1,66 @@
+import meta::pure::extension::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::dataquality::tests::*;
+import meta::external::dataquality::*;
+
+function meta::external::dataquality::tests::loadDataQuality(tree:String[1]):DataQuality<Any>[1]
+{
+  let model = readFile('/core_dataquality_test/dataquality_test_model.pure')->toOne();
+  let extra = readFile('/core_dataquality_test/dataquality_test_model_legend.txt')->toOne();
+
+  let dq = 
+    '###DataQualityValidation\n' +
+    'DataQualityValidation meta::external::dataquality::tests::domain::Validation' +
+    '{' +
+    '    context: fromMappingAndRuntime(meta::external::dataquality::tests::domain::dataqualitymappings, meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '    validationTree: ' + $tree + ';' +
+    '}';
+
+  let code = $model + '\n' + $extra + '\n' + $dq;
+  
+  let compiled = meta::legend::compileLegendGrammar($code);
+
+  $compiled->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::Validation')->toOne()->cast(@DataQuality<Any>);
+}
+
+function meta::external::dataquality::tests::doTest(tree:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let dataQuality = loadDataQuality($tree);
+
+  let actual = meta::external::dataquality::generateDataQualityQuery($dataQuality, [], false);
+  
+  assertLambdaAndJSONEquals($expected, $actual);
+}
+
+function meta::external::dataquality::tests::doTest(tree:String[1], expected:FunctionDefinition<Any>[1], assertLambda:Boolean[1], assertJson:Boolean[1]):Boolean[1]
+{
+  let dataQuality = loadDataQuality($tree);
+
+  let actual = meta::external::dataquality::generateDataQualityQuery($dataQuality, [], false);
+  
+  if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
+  if ($assertJson, | assertLambdaJSONEquals($expected, $actual), | true);
+}
+
+
+
+function meta::external::dataquality::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:LambdaFunction<Any>[1]): Boolean[1]
+{
+  assertLambdaEquals($expected, $actual);
+  assertLambdaJSONEquals($expected, $actual);
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
+}
+
+function meta::external::dataquality::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  assertEquals($expected->functionJSON(), $actual->functionJSON());
+}
+
+function meta::external::dataquality::tests::functionJSON(func:FunctionDefinition<Any>[1]): String[1]
+{
+  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(defaultExtensions())->meta::json::toJSON(100);
+}
