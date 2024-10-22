@@ -17,19 +17,24 @@ package org.finos.legend.engine.language.hostedService.grammar.from;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.antlr.v4.runtime.CharStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.from.IPostDeploymentActionGrammarParserExtension;
+import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.from.PostDeploymentActionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.HostedServiceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.PostDeploymentAction;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -114,7 +119,36 @@ public class HostedServiceTreeWalker
         HostedServiceParserGrammar.ServiceAutoActivateUpdatesContext autoActivateUpdatesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceAutoActivateUpdates(), "autoActivateUpdates", hostedService.sourceInformation);
         hostedService.autoActivateUpdates = autoActivateUpdatesContext != null && Boolean.parseBoolean(autoActivateUpdatesContext.BOOLEAN().getText());
 
+        HostedServiceParserGrammar.PostDeploymentActionsContext postDeploymentActionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.postDeploymentActions(), "actions", hostedService.sourceInformation);
+        hostedService.actions =  postDeploymentActionsContext == null  ? Lists.mutable.empty() : this.visitPostDeploymentActions(postDeploymentActionsContext);
         return hostedService;
+    }
+
+    private List<PostDeploymentAction> visitPostDeploymentActions(HostedServiceParserGrammar.PostDeploymentActionsContext ctx)
+    {
+        List<HostedServiceParserGrammar.PostDeploymentActionContext> specifications = ctx.postDeploymentAction();
+        List<IPostDeploymentActionGrammarParserExtension> extensions = IPostDeploymentActionGrammarParserExtension.getExtensions();
+        List<Function<PostDeploymentActionSourceCode, PostDeploymentAction>> parsers = ListIterate.flatCollect(extensions, IPostDeploymentActionGrammarParserExtension::getExtraPostDeploymentActionParsers);
+        return ListIterate.collect(specifications, spec -> visitPostDeploymentAction(spec, parsers));
+    }
+
+    public PostDeploymentAction  visitPostDeploymentAction(HostedServiceParserGrammar.PostDeploymentActionContext spec, List<Function<PostDeploymentActionSourceCode, PostDeploymentAction>> parsers)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(spec);
+        PostDeploymentActionSourceCode code = new PostDeploymentActionSourceCode(
+                spec.actionBody().actionValue().getText(),
+                spec.actionType().getText(),
+                sourceInformation,
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, spec.getStart())
+        );
+
+        PostDeploymentAction processor = IPostDeploymentActionGrammarParserExtension.process(code, parsers);
+
+        if (processor == null)
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(spec), EngineErrorType.PARSER);
+        }
+        return processor;
     }
 
     private List<TaggedValue> visitTaggedValues(HostedServiceParserGrammar.TaggedValuesContext ctx)

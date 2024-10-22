@@ -41,6 +41,8 @@ SERVICE_POST_VALIDATION_DESCRIPTION:        'description';
 SERVICE_POST_VALIDATION_PARAMETERS:         'params';
 SERVICE_POST_VALIDATION_ASSERTIONS:         'assertions';
 
+// -------------------------------------- POST_DEPLOYMENT_ACTIONS-------------------------
+POST_DEPLOYMENT_ACTIONS:                    'actions';
 
 // -------------------------------------- EXECUTION_ENVIRONMENT-------------------------
 
