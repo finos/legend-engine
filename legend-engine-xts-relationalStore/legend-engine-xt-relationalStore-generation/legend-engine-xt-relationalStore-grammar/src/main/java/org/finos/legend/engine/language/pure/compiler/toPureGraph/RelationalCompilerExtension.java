@@ -874,7 +874,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 MutableList<Join> joins = nameToJoins.get(name);
                 if (joins.size() > 1)
                 {
-                    warnings.add(new Warning(joins.getLast().sourceInformation, "Found joins with duplicate names: " + name));
+                    joins.forEach(join -> warnings.add(new Warning(join.sourceInformation, "Found joins with duplicate names: " + name)));
                 }
             });
         }
@@ -893,7 +893,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 MutableList<Filter> filters = nameToFilters.get(name);
                 if (filters.size() > 1)
                 {
-                    warnings.add(new Warning(filters.getLast().sourceInformation, "Found filters with duplicate names: " + name));
+                    filters.forEach(filter -> warnings.add(new Warning(filter.sourceInformation, "Found filters with duplicate names: " + name)));
                 }
             });
         }

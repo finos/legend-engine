@@ -20,9 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFifthPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFourthPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementThirdPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -38,7 +36,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.junit.Assert;
@@ -111,8 +108,6 @@ public class TestLegendServicePostValidationRunner
         Root_meta_legend_service_metamodel_Service compiledService = (Root_meta_legend_service_metamodel_Service) service.accept(new PackageableElementFirstPassBuilder(compileContext));
         service.accept(new PackageableElementSecondPassBuilder(compileContext));
         service.accept(new PackageableElementThirdPassBuilder(compileContext));
-        service.accept(new PackageableElementFourthPassBuilder(compileContext));
-        service.accept(new PackageableElementFifthPassBuilder(compileContext));
         return compiledService;
     }
 
