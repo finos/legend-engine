@@ -165,7 +165,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammart</artifactId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
