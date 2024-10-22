@@ -205,7 +205,6 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-
                 </dependencies>
             </plugin>
         </plugins>
@@ -251,14 +250,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-engine-shared</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-shared-functions-conversion</artifactId>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -303,16 +294,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>-->
-<!--        </dependency>-->
 
-
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-functions</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
@@ -444,14 +426,19 @@
                                 <configuration>
                                     <target name="protocol">
                                         <copy todir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}">
-                                            <fileset dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}" />
+                                            <fileset
+                                                    dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}"/>
                                         </copy>
-					<replace dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
-					<copy todir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}">
-                                            <fileset dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}" />
+                                        <replace
+                                                dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
+                                        <copy todir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}">
+                                            <fileset
+                                                    dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}"/>
                                         </copy>
-                                        <replace dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
-
+                                        <replace
+                                                dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -461,9 +448,4 @@
             </build>
         </profile>
     </profiles>
-
-
-
-
-
 </project>

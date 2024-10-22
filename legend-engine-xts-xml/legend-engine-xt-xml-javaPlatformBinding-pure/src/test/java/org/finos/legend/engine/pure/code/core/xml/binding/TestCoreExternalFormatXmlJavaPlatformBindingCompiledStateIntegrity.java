@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core;
+package org.finos.legend.engine.pure.code.core.xml.binding;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestCoreCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
+public class TestCoreExternalFormatXmlJavaPlatformBindingCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
     public static void initialize()
     {
-        initialize("core");
+        initialize("core_external_format_xml_java_platform_binding");
     }
 
     @Test

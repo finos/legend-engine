@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.standard;
+package org.finos.legend.engine.pure.code.core.functions.unclassified;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
 
-public class TestFunctionsStandardCompiledStateStrategy extends AbstractCompiledStateIntegrityTest
+public class TestFunctionsUnclassifiedCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
     public static void initialize()
     {
-        initialize("core_functions_standard");
+        initialize("core_functions_unclassified");
     }
 }

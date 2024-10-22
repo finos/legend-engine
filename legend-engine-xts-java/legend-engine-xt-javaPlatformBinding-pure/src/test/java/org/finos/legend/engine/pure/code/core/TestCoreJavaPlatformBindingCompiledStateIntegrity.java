@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestCoreCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
+public class TestCoreJavaPlatformBindingCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
     public static void initialize()
     {
-        initialize("core");
+        initialize("core_java_platform_binding");
     }
 
     @Test
