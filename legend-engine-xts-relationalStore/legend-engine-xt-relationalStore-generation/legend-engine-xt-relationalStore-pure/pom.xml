@@ -32,5 +32,6 @@
         <module>legend-engine-xt-relationalStore-postgresSqlModel-pure</module>
         <module>legend-engine-xt-relationalStore-sqlPlanning-pure</module>
         <module>legend-engine-xt-relationalStore-sqlDialectTranslation-pure</module>
+        <module>legend-engine-xt-relationalStore-SDT-pure</module>
     </modules>
 </project>

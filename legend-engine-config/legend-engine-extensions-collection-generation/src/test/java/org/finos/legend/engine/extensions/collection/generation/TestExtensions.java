@@ -586,6 +586,7 @@ public class TestExtensions
                 .with("core_nonrelational_mongodb_java_platform_binding")
                 .with("core_external_store_relational_sql_planning")
                 .with("core_external_store_relational_sql_dialect_translation")
+                .with("core_external_store_relational_sql_dialect_translation_duckdb")
                 ;
     }
 }

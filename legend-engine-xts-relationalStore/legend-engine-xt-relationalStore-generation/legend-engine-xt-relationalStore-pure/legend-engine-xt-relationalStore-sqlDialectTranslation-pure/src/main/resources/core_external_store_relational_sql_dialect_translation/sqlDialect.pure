@@ -1,0 +1,139 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+
+Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
+{
+  dbType: String[1];
+  quoteConfig: QuoteConfiguration[1];
+  nodeProcessors: Map<Class<Node>, NodeProcessor<Node>>[1];
+  identifierProcessor: IdentifierProcessor[1];
+  expressionPrecedenceComparator: ExpressionPrecedenceComparator[1];
+  keywords: String[*];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T> // T extends Node
+{
+  nodeType: Class<T>[1];
+  processFunction: Function<{SqlDialect[1], T[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1];
+  selfDelimiting: Function<{T[1] -> Boolean[1]}>[1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::IdentifierProcessor
+{
+  processFunction: Function<{SqlDialect[1], String[1], Boolean[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::ExpressionPrecedenceComparator
+{
+  // Precedence is currently used to delimit child expressions with parentheses if the parent expression is of higher precedence
+  findOperatorType: Function<{meta::external::query::sql::metamodel::Expression[1] -> String[1]}>[1];
+  operatorPrecedence: Map<String, Integer>[1];
+
+
+  // Returns
+  //   1 id e1 expression has higher precedence than e2 expression
+  //   0 id e1 expression has same precedence than e2 expression
+  //   -1 id e1 expression has lower precedence than e2 expression
+
+  compare(e1: meta::external::query::sql::metamodel::Expression[1], e2: meta::external::query::sql::metamodel::Expression[1])
+  {
+    let priority1 = $this.operatorPrecedence->get($this.findOperatorType->eval($e1))->toOne();
+    let priority2 = $this.operatorPrecedence->get($this.findOperatorType->eval($e2))->toOne();
+    if (
+      [
+        pair(| $priority1 < $priority2, | 1),
+        pair(| $priority1 == $priority2, | 0)
+      ],
+      | -1
+    );
+  }: Integer[1];
+}
+
+function meta::external::store::relational::sqlDialectTranslation::nodeProcessor<T>(nodeType: Class<T>[1], processFunction: Function<{SqlDialect[1], T[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1]): NodeProcessor<T>[1]
+{
+  ^NodeProcessor<T>
+  (
+    nodeType = $nodeType,
+    processFunction = $processFunction,
+    selfDelimiting = {n: Node[1] | false}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::nodeProcessor<T>(nodeType: Class<T>[1], processFunction: Function<{SqlDialect[1], T[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1], selfDelimiting: Function<{T[1] -> Boolean[1]}>[1]): NodeProcessor<T>[1]
+{
+  ^NodeProcessor<T>
+  (
+    nodeType = $nodeType,
+    processFunction = $processFunction,
+    selfDelimiting = $selfDelimiting
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect->executeNodeProcessor($node, [], $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let nodeProcessor = $sqlDialect.nodeProcessors->get($node->class());
+  if ($nodeProcessor->isNotEmpty(),
+      | let processedNode = $nodeProcessor.processFunction->toOne()->eval($sqlDialect, $node, $state, $config);
+        if ($nodeProcessor->toOne().selfDelimiting->eval($node),
+            | $processedNode,
+            | // Check precedence of expressions
+              if ($node->instanceOf(meta::external::query::sql::metamodel::Expression) && $parentNode->isNotEmpty() && $parentNode->toOne()->instanceOf(meta::external::query::sql::metamodel::Expression),
+                  | 
+                    let e1 = $node->cast(@meta::external::query::sql::metamodel::Expression);
+                    let e2 = $parentNode->toOne()->cast(@meta::external::query::sql::metamodel::Expression);
+                    let precedenceResult = $sqlDialect.expressionPrecedenceComparator.compare($e1, $e2);
+                    // Though precedence wise its enough to check precedenceResult < 0, better to wrap in parentheses when dealing with different logical operations (to make SQL more readable)
+                    // With divide not always floating points, need to wrap
+                    if ($precedenceResult < 0 || differentLogicalBinaryExpressionTypes($e1, $e2),
+                        | '(' + $processedNode + ')',
+                        | $processedNode
+                    );,
+                  | $processedNode 
+              );
+        );,
+      | fail('Dialect translation for node of type "' + $node->class()->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"'); '';
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::identifierProcessor(processFunction: Function<{SqlDialect[1], String[1], Boolean[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1]): IdentifierProcessor[1]
+{
+  ^IdentifierProcessor(processFunction = $processFunction)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::executeIdentifierProcessor(sqlDialect: SqlDialect[1], identifier: String[1], shouldQuote: Boolean[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $shouldQuote, $state, $config)
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Quoting
+
+Class meta::external::store::relational::sqlDialectTranslation::QuoteConfiguration
+{
+  start: String[1];
+  end: String[1];
+  escape: String[1];
+}

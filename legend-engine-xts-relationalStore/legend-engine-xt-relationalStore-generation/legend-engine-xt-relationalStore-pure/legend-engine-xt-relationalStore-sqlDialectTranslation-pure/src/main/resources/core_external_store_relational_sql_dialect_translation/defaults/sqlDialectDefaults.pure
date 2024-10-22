@@ -1,0 +1,729 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Enum meta::external::store::relational::sqlDialectTranslation::defaults::SqlOperatorTypes_default
+{
+  DOT, // .
+  TYPECAST, // ::
+  ARRAY_ELEMENT_SELECTION, // []
+  UNARY_PLUS_MINUS, // + , -
+  COLLATE,
+  AT,
+  EXPONENTIATION, // ^
+  MULTIPLICATION_DIVISION_MODULO, // * , /, %
+  ADDITION_SUBTRACTION, // + , -
+  OTHER_NATIVE_USER_DEFINED_OPERATOR,
+  BETWEEN,
+  IN,
+  STRING_MATCH, // Like, Similar, Regex
+  BASIC_COMPARISON, // < > = <= >= <>
+  IS_CHECK, // IS NULL, IS NOT NULL, IS DISTINCT FROM etc.
+  NOT,
+  AND,
+  OR
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::findOperatorType_default(e: meta::external::query::sql::metamodel::Expression[1]): String[1]
+{
+  $e->match([
+    {c: ComparisonExpression[1] |
+      if(
+        [
+          pair(|$c.operator == ComparisonOperator.EQUAL, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.NOT_EQUAL, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.LESS_THAN, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.LESS_THAN_OR_EQUAL, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.GREATER_THAN, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL, | SqlOperatorTypes_default.BASIC_COMPARISON),
+          pair(|$c.operator == ComparisonOperator.IS_DISTINCT_FROM, | SqlOperatorTypes_default.IS_CHECK),
+          pair(|$c.operator == ComparisonOperator.IS_NOT_DISTINCT_FROM, | SqlOperatorTypes_default.IS_CHECK),
+          pair(|$c.operator == ComparisonOperator.REGEX_MATCH, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.REGEX_MATCH_CI, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.REGEX_NO_MATCH, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.REGEX_NO_MATCH_CI, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.LIKE, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.ILIKE, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.NOT_LIKE, | SqlOperatorTypes_default.STRING_MATCH),
+          pair(|$c.operator == ComparisonOperator.NOT_ILIKE, | SqlOperatorTypes_default.STRING_MATCH)
+        ],
+        | fail('Unhandled comparator type: ' + $c.operator->toString()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
+      );
+    },
+    {l: LogicalBinaryExpression[1] |
+      if(
+        [
+          pair(|$l.type == LogicalBinaryType.AND, | SqlOperatorTypes_default.AND),
+          pair(|$l.type == LogicalBinaryType.OR, | SqlOperatorTypes_default.OR)
+        ],
+        | fail('Unhandled logical binary expression type: ' + $l.type->toString()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
+      );
+    },
+    {l: NotExpression[1] | SqlOperatorTypes_default.NOT},
+    {a: ArithmeticExpression[1] |
+      if(
+        [
+          pair(|$a.type == ArithmeticType.ADD, | SqlOperatorTypes_default.ADDITION_SUBTRACTION),
+          pair(|$a.type == ArithmeticType.SUBTRACT, | SqlOperatorTypes_default.ADDITION_SUBTRACTION),
+          pair(|$a.type == ArithmeticType.MULTIPLY, | SqlOperatorTypes_default.MULTIPLICATION_DIVISION_MODULO),
+          pair(|$a.type == ArithmeticType.DIVIDE, | SqlOperatorTypes_default.MULTIPLICATION_DIVISION_MODULO),
+          pair(|$a.type == ArithmeticType.MODULUS, | SqlOperatorTypes_default.MULTIPLICATION_DIVISION_MODULO),
+          pair(|$a.type == ArithmeticType.POWER, | SqlOperatorTypes_default.EXPONENTIATION)
+        ],
+        | fail('Unhandled arithemtic expression type: ' + $a.type->toString()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
+      );
+    },
+    {q: QualifiedNameReference[1] | SqlOperatorTypes_default.DOT},
+    {i: IsNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},
+    {i: IsNotNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},
+    {i: NegativeExpression[1] | SqlOperatorTypes_default.UNARY_PLUS_MINUS},
+    {i: InPredicate[1] | SqlOperatorTypes_default.IN},
+    {b: BetweenPredicate[1] | SqlOperatorTypes_default.BETWEEN},
+    a: meta::external::query::sql::metamodel::Expression[1] | fail('Unknown expression type - ' + $e->class()->elementToPath()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
+  ])->toString()
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::operatorPrecedence_default(): Map<String, Integer>[1]
+{
+  // https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-PRECEDENCE
+
+  let operatorPrecedenceOrder = [
+    SqlOperatorTypes_default.DOT->toString(),
+    SqlOperatorTypes_default.TYPECAST->toString(),
+    SqlOperatorTypes_default.ARRAY_ELEMENT_SELECTION->toString(),
+    SqlOperatorTypes_default.UNARY_PLUS_MINUS->toString(),
+    SqlOperatorTypes_default.COLLATE->toString(),
+    SqlOperatorTypes_default.AT->toString(),
+    SqlOperatorTypes_default.EXPONENTIATION->toString(),
+    SqlOperatorTypes_default.MULTIPLICATION_DIVISION_MODULO->toString(),
+    SqlOperatorTypes_default.ADDITION_SUBTRACTION->toString(),
+    SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR->toString(),
+    SqlOperatorTypes_default.BETWEEN->toString(),
+    SqlOperatorTypes_default.IN->toString(),
+    SqlOperatorTypes_default.STRING_MATCH->toString(),
+    SqlOperatorTypes_default.BASIC_COMPARISON->toString(),
+    SqlOperatorTypes_default.IS_CHECK->toString(),
+    SqlOperatorTypes_default.NOT->toString(),
+    SqlOperatorTypes_default.AND->toString(),
+    SqlOperatorTypes_default.OR->toString()
+  ];
+
+  $operatorPrecedenceOrder->zip($operatorPrecedenceOrder->size()->range())->newMap();
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::identifierProcessor_default(): IdentifierProcessor[1]
+{
+  identifierProcessor
+  (
+    {sqlDialect, identifier, shouldQuote, state, config |
+      if ($shouldQuote || $identifier->in($sqlDialect.keywords),
+          | if ($sqlDialect.quoteConfig->isEmpty(),
+                | // Quoting configuration unknown. Hence returning the identifier as is
+                  $identifier,
+                | let quoteCfg = $sqlDialect.quoteConfig->toOne();
+                  $quoteCfg.start + $identifier->replace($quoteCfg.end, $quoteCfg.escape) + $quoteCfg.end;
+            ),
+          | $identifier
+      )
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::integerLiteralNodeProcessor_default():  NodeProcessor<IntegerLiteral>[1]
+{
+  nodeProcessor(
+    IntegerLiteral,
+    {sqlDialect, i, state, config | 
+      $i.value->toString()
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::stringLiteralNodeProcessor_default(): NodeProcessor<StringLiteral>[1]
+{
+  nodeProcessor(
+    StringLiteral,
+    {sqlDialect, s, state, config | 
+      '\'' + $s.value->replace('\'', '\'\'') + '\''
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::booleanLiteralNodeProcessor_default(): NodeProcessor<BooleanLiteral>[1]
+{
+  nodeProcessor(
+    BooleanLiteral,
+    {sqlDialect, s, state, config | 
+      $sqlDialect->keyword(if($s.value , | 'true', | 'false'), $state, $config)
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::longLiteralNodeProcessor_default(): NodeProcessor<LongLiteral>[1]
+{
+  nodeProcessor(
+    LongLiteral,
+    {sqlDialect, l, state, config | 
+      $l.value->toString()
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::doubleLiteralNodeProcessor_default(): NodeProcessor<DoubleLiteral>[1]
+{
+  nodeProcessor(
+    DoubleLiteral,
+    {sqlDialect, d, state, config | 
+      $d.value->toString()
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::nullLiteralNodeProcessor_default(): NodeProcessor<NullLiteral>[1]
+{
+  nodeProcessor(
+    NullLiteral,
+    {sqlDialect, d, state, config | 
+      $sqlDialect->keyword('null', $state, $config)
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::allColumnsNodeProcessor_default(): NodeProcessor<AllColumns>[1]
+{
+  nodeProcessor(
+    AllColumns,
+    {sqlDialect, a, state, config | 
+      let prefix = if ($a.prefix->isNotEmpty(), | $sqlDialect->executeIdentifierProcessor($a.prefix->toOne(), false, $state, $config) + '.', | '');
+      $prefix + '*';
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::singleColumnNodeProcessor_default(): NodeProcessor<SingleColumn>[1]
+{
+  nodeProcessor(
+    SingleColumn,
+    {sqlDialect, s, state, config | 
+      let suffix = if ($s.alias->isNotEmpty(),
+        | ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($s.alias->toOne(), false, $state, $config),
+        | ''
+      );
+      $sqlDialect->executeNodeProcessor($s.expression, $state, $config) + $suffix;
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::comparisonExpressionNodeProcessor_default(): NodeProcessor<ComparisonExpression>[1]
+{
+  nodeProcessor(
+    ComparisonExpression,
+    {sqlDialect, c, state, config | 
+      let leftExpr = $sqlDialect->executeNodeProcessor($c.left, $c, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($c.right, $c, $state, $config);
+      let comparator = if(
+        [
+          pair(|$c.operator == ComparisonOperator.EQUAL, | '='),
+          pair(|$c.operator == ComparisonOperator.NOT_EQUAL, | '<>'),
+          pair(|$c.operator == ComparisonOperator.LESS_THAN, | '<'),
+          pair(|$c.operator == ComparisonOperator.LESS_THAN_OR_EQUAL, | '<='),
+          pair(|$c.operator == ComparisonOperator.GREATER_THAN, | '>'),
+          pair(|$c.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL, | '>='),
+          pair(|$c.operator == ComparisonOperator.IS_DISTINCT_FROM, | $sqlDialect->keyword('is distinct from', $state, $config)),
+          pair(|$c.operator == ComparisonOperator.IS_NOT_DISTINCT_FROM, | $sqlDialect->keyword('is not distinct from', $state, $config)),
+          pair(|$c.operator == ComparisonOperator.REGEX_MATCH, | '~'),
+          pair(|$c.operator == ComparisonOperator.REGEX_MATCH_CI, | '~*'),
+          pair(|$c.operator == ComparisonOperator.REGEX_NO_MATCH, | '!~'),
+          pair(|$c.operator == ComparisonOperator.REGEX_NO_MATCH_CI, | '!~*'),
+          pair(|$c.operator == ComparisonOperator.LIKE, | '~~'),
+          pair(|$c.operator == ComparisonOperator.ILIKE, | '~~*'),
+          pair(|$c.operator == ComparisonOperator.NOT_LIKE, | '!~~'),
+          pair(|$c.operator == ComparisonOperator.NOT_ILIKE, | '!~~*')
+        ],
+        | failWithMessage('Unhandled comparator type: ' + $c.operator->toString())
+      );
+
+      $leftExpr + ' ' + $comparator + ' ' + $rightExpr;
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::logicalBinaryExpressionNodeProcessor_default(): NodeProcessor<LogicalBinaryExpression>[1]
+{
+  nodeProcessor(
+    LogicalBinaryExpression,
+    {sqlDialect, l, state, config | 
+      let leftExpr = $sqlDialect->executeNodeProcessor($l.left, $l, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($l.right, $l, $state, $config);
+      if(
+        [
+          pair(|$l.type == LogicalBinaryType.AND, | $leftExpr + ' ' + $sqlDialect->keyword('and', $state, $config) + ' ' + $rightExpr;),
+          pair(|$l.type == LogicalBinaryType.OR, | $leftExpr + ' ' + $sqlDialect->keyword('or', $state, $config) + ' ' + $rightExpr;)
+        ],
+        | failWithMessage('Unhandled binary expression type: ' + $l.type->toString())
+      );
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::notExpressionNodeProcessor_default(): NodeProcessor<NotExpression>[1]
+{
+  nodeProcessor(
+    NotExpression,
+    {sqlDialect, e, state, config | 
+      $sqlDialect->keyword('not', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.value, $e, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::arithmeticExpressionNodeProcessor_default(): NodeProcessor<ArithmeticExpression>[1]
+{
+  nodeProcessor(
+    ArithmeticExpression,
+    {sqlDialect, a, state, config |
+      let isDivide = $a->isDivideExpr();
+      let castAsDecimalIfDivide = {e: meta::external::query::sql::metamodel::Expression[1] |
+        if ($isDivide, | ^Cast(type = ^ColumnType(name = 'decimal'), expression = $e), | $e)
+      };
+      let leftExpr = $sqlDialect->executeNodeProcessor($castAsDecimalIfDivide->eval($a.left), $a, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($castAsDecimalIfDivide->eval($a.right), $a, $state, $config);
+      let operator = if(
+        [
+          pair(|$a.type == ArithmeticType.ADD, | '+'),
+          pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
+          pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
+          pair(|$a.type == ArithmeticType.DIVIDE, | '/'),
+          pair(|$a.type == ArithmeticType.MODULUS, | '%'),
+          pair(|$a.type == ArithmeticType.POWER, | '^')
+        ],
+        | failWithMessage('Unhandled arithmetic operator type: ' + $a.type->toString())
+      );
+
+      $leftExpr + ' ' + $operator + ' ' + $rightExpr;
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::qualifiedNameReferenceNodeProcessor_default(): NodeProcessor<QualifiedNameReference>[1]
+{
+  nodeProcessor(
+    QualifiedNameReference,
+    {sqlDialect, q, state, config | 
+      $sqlDialect->qualifiedName($q.name, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::isNullPredicateNodeProcessor_default(): NodeProcessor<IsNullPredicate>[1]
+{
+  nodeProcessor(
+    IsNullPredicate,
+    {sqlDialect, e, state, config | 
+       $sqlDialect->executeNodeProcessor($e.value, $e, $state, $config) + ' ' + $sqlDialect->keyword('is null', $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::isNotNullPredicateNodeProcessor_default(): NodeProcessor<IsNotNullPredicate>[1]
+{
+  nodeProcessor(
+    IsNotNullPredicate,
+    {sqlDialect, e, state, config | 
+      $sqlDialect->executeNodeProcessor($e.value, $e, $state, $config) + ' ' + $sqlDialect->keyword('is not null', $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::negativeNodeProcessor_default(): NodeProcessor<NegativeExpression>[1]
+{
+  nodeProcessor(
+    NegativeExpression,
+    {sqlDialect, e, state, config | 
+      '-' + $sqlDialect->executeNodeProcessor($e.value, $e, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::currentTimeNodeProcessor_default(): NodeProcessor<CurrentTime>[1]
+{
+  nodeProcessor(
+    CurrentTime,
+    {sqlDialect, c, state, config | 
+      let type = if(
+        [
+          pair(|$c.type == CurrentTimeType.TIME, | $sqlDialect->keyword('current_time', $state, $config)),
+          pair(|$c.type == CurrentTimeType.TIMESTAMP, | $sqlDialect->keyword('current_timestamp', $state, $config)),
+          pair(|$c.type == CurrentTimeType.DATE, | $sqlDialect->keyword('current_date', $state, $config))
+        ],
+        | failWithMessage('Unhandled current time type: ' + $c.type->toString())
+      );
+      let precision = if ($c.precision->isNotEmpty(), | '(' + $c.precision->toOne()->toString() + ')', | '');
+      $type + $precision;
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::whenClauseNodeProcessor_default(): NodeProcessor<WhenClause>[1]
+{
+  nodeProcessor(
+    WhenClause,
+    {sqlDialect, w, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      $sqlDialect->keyword('when', $state, $config) + $sep1 + $sqlDialect->executeNodeProcessor($w.operand, [], $state->increaseLevel(), $config) +
+      $sep0 + $sqlDialect->keyword('then', $state, $config) + $sep1 + $sqlDialect->executeNodeProcessor($w.result, [], $state->increaseLevel(), $config);
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::searchedCaseExpressionNodeProcessor_default(): NodeProcessor<SearchedCaseExpression>[1]
+{
+  nodeProcessor(
+    SearchedCaseExpression,
+    {sqlDialect, c, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      let sep2 = $state.separator(2, $config);
+      let default = if ($c.defaultValue->isNotEmpty(),
+          | $sep1 + $sqlDialect->keyword('else', $state, $config) + 
+            $sep2 + $sqlDialect->executeNodeProcessor($c.defaultValue->toOne(), [], $state->increaseLevel()->increaseLevel(), $config),
+          | ''
+      );
+      let whenClauses = $c.whenClauses->map(w | $sqlDialect->executeNodeProcessor($w, [], $state->increaseLevel(), $config))->joinStrings($sep1);
+      $sqlDialect->keyword('case', $state, $config) + $sep1 + $whenClauses + $default + $sep0 + $sqlDialect->keyword('end', $state, $config);
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::columnTypeProcessor_default(): NodeProcessor<ColumnType>[1]
+{
+  nodeProcessor(
+    ColumnType,
+    {sqlDialect, c, state, config |
+      $sqlDialect->keyword($c.name, $state, $config) +
+      if ($c.parameters->isNotEmpty(), | $c.parameters->map(p | $p->toString())->joinStrings('(', ', ', ')'), | '');
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::castProcessor_default(): NodeProcessor<Cast>[1]
+{
+  nodeProcessor(
+    Cast,
+    {sqlDialect, c, state, config |
+      $sqlDialect->keyword('cast', $state, $config) + '(' + $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config) + ' ' +
+      $sqlDialect->keyword('as', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($c.type, [], $state, $config) + ')'
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::inListExpressionProcessor_default(): NodeProcessor<InListExpression>[1]
+{
+  nodeProcessor(
+    InListExpression,
+    {sqlDialect, l, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      let whenClauses = $l.values->map(v | $sqlDialect->executeNodeProcessor($v, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1);
+      '(' + $sep1 + $whenClauses + $sep0 + ')';
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::inPredicateProcessor_default(): NodeProcessor<InPredicate>[1]
+{
+  nodeProcessor(
+    InPredicate,
+    {sqlDialect, i, state, config |
+      $sqlDialect->executeNodeProcessor($i.value, $i, $state, $config) + ' ' + $sqlDialect->keyword('in', $state, $config) + ' ' +
+      $sqlDialect->executeNodeProcessor($i.valueList, $i, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::extractProcessor_default(): NodeProcessor<Extract>[1]
+{
+  nodeProcessor(
+    Extract,
+    {sqlDialect, e, state, config |
+      $sqlDialect->keyword('extract', $state, $config) + '(' + $sqlDialect->keyword($e.field.name->toLower(), $state, $config) + ' ' +
+      $sqlDialect->keyword('from', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($e.expression, [], $state, $config) + ')';
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::betweenPredicateProcessor_default(): NodeProcessor<BetweenPredicate>[1]
+{
+  nodeProcessor(
+    BetweenPredicate,
+    {sqlDialect, b, state, config |
+      $sqlDialect->executeNodeProcessor($b.value, $b, $state, $config) + ' '  + $sqlDialect->keyword('between', $state, $config) + ' ' +
+      $sqlDialect->executeNodeProcessor($b.min, $b, $state, $config) + ' ' + $sqlDialect->keyword('and', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($b.max, $b, $state, $config);
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::sortItemProcessor_default(): NodeProcessor<SortItem>[1]
+{
+  nodeProcessor(
+    SortItem,
+    {sqlDialect, s, state, config |
+      $sqlDialect->executeNodeProcessor($s.sortKey, [], $state, $config) + ' ' +
+      if(
+        [
+          pair(|$s.ordering == SortItemOrdering.ASCENDING, | $sqlDialect->keyword('asc', $state, $config)),
+          pair(|$s.ordering == SortItemOrdering.DESCENDING, | $sqlDialect->keyword('desc', $state, $config))
+        ],
+        | failWithMessage('Unhandled sort item ordering type: ' + $s.ordering->toString())
+      ) +
+      if(
+        [
+          pair(|$s.nullOrdering == SortItemNullOrdering.FIRST, | ' ' + $sqlDialect->keyword('nulls first', $state, $config)),
+          pair(|$s.nullOrdering == SortItemNullOrdering.LAST, | ' ' + $sqlDialect->keyword('nulls last', $state, $config)),
+          pair(|$s.nullOrdering == SortItemNullOrdering.UNDEFINED, | '')
+        ],
+        | failWithMessage('Unhandled sort item null ordering type: ' + $s.nullOrdering->toString())
+      );
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::windowProcessor_default(): NodeProcessor<meta::external::query::sql::metamodel::Window>[1]
+{
+  nodeProcessor(
+    meta::external::query::sql::metamodel::Window,
+    {sqlDialect, w, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      if ($w.windowRef->isNotEmpty(),
+          | $w.windowRef->toOne(),
+          | let partitions = if ($w.partitions->isNotEmpty(),
+              | $sqlDialect->keyword('partition by', $state, $config) + $sep1 + $w.partitions->map(p | $sqlDialect->executeNodeProcessor($p, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1),
+              | ''
+            );
+            let orderBy = if ($w.orderBy->isNotEmpty(),
+              | let sep = if ($w.partitions->isNotEmpty(), | $sep0, | '');
+                $sep + $sqlDialect->keyword('order by', $state, $config) + $sep1 + $w.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1);,
+              | ''
+            );
+            assert($w.windowFrame->isEmpty(), | 'Window frame processing not implemented yet');
+            $partitions + $orderBy;
+      );
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::functionCallProcessor_default(): NodeProcessor<FunctionCall>[1]
+{
+  nodeProcessor(
+    FunctionCall,
+    {sqlDialect, f, state, config |
+      assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
+      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+      assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
+      assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
+
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      
+      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($f.arguments->isEmpty(), | '', | $sep1) +
+      $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1) +
+      + if($f.arguments->isEmpty(), | '', | $sep0) + ')' +
+      if ($f.window->isNotEmpty(),
+          | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
+          | ''
+      );
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::tableProcessor_default(): NodeProcessor<Table>[1]
+{
+  nodeProcessor(
+    Table,
+    {sqlDialect, t, state, config |
+      $sqlDialect->qualifiedName($t.name, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::aliasedRelationProcessor_default(): NodeProcessor<AliasedRelation>[1]
+{
+  nodeProcessor(
+    AliasedRelation,
+    {sqlDialect, a, state, config |
+      $sqlDialect->executeNodeProcessor($a.relation, $state, $config) + ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' 
+      + $sqlDialect->executeIdentifierProcessor($a.alias, false, $state, $config)
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::joinProcessor_default(): NodeProcessor<Join>[1]
+{
+  nodeProcessor(
+    Join,
+    {sqlDialect, j, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      let left = $sqlDialect->executeNodeProcessor($j.left, $state, $config);
+      let right = $sqlDialect->executeNodeProcessor($j.right, $state->increaseLevel(), $config);
+      let type = if(
+        [
+          pair(|$j.type == JoinType.CROSS, | $sqlDialect->keyword('cross join', $state, $config)),
+          pair(|$j.type == JoinType.LEFT, | $sqlDialect->keyword('left outer join', $state, $config)),
+          pair(|$j.type == JoinType.RIGHT, | $sqlDialect->keyword('right outer join', $state, $config)),
+          pair(|$j.type == JoinType.INNER, | $sqlDialect->keyword('inner join', $state, $config))
+        ],
+        | failWithMessage('Unhandled join type: ' + $j.type->toString())
+      );
+      let isNaturalJoin = $j.criteria->isNotEmpty() && $j.criteria->toOne()->instanceOf(NaturalJoin);
+      
+      $left + $sep0 + if($isNaturalJoin, | $sqlDialect->keyword('natural', $state, $config) + ' ', | '') + $type +
+      $sep1 + $right +
+      if ($j.criteria->isNotEmpty() && (!$isNaturalJoin),
+          | $sep1 + $sqlDialect->keyword('on', $state, $config) + ' ' +
+            $j.criteria->toOne()->match([
+              o: JoinOn[1] | '(' + $sqlDialect->executeNodeProcessor($o.expression, $state, $config)  + ')',
+              a: Any[*] | failWithMessage('Unhandled join criteria: ' + $a->class()->elementToPath())
+            ]),
+          | ''
+      );
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::selectProcessor_default(): NodeProcessor<Select>[1]
+{
+  nodeProcessor(
+    Select,
+    {sqlDialect, s, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+
+      $sqlDialect->keyword('select', $state, $config) + if($s.distinct, | ' ' + $sqlDialect->keyword('distinct', $state, $config), | '') + $sep1 +
+      $s.selectItems->map(si | $sqlDialect->executeNodeProcessor($si, $state, $config))->joinStrings(',' + $sep1);
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::querySpecificationProcessor_default(): NodeProcessor<QuerySpecification>[1]
+{
+  nodeProcessor(
+    QuerySpecification,
+    {sqlDialect, querySpec, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+
+      // Select
+      $sqlDialect->executeNodeProcessor($querySpec.select, $state, $config) +
+
+      // From
+      $querySpec.from->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('from', $state, $config) +
+        $sep1 + $querySpec.from->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+      }) +
+
+      // Where
+      $querySpec.where->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('where', $state, $config) +
+        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.where->toOne(), $state->increaseLevel(), $config)
+      }) +
+
+      // Group By
+      $querySpec.groupBy->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('group by', $state, $config) +
+        $sep1 + $querySpec.groupBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+      }) +
+
+      // Having
+      $querySpec.having->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('having', $state, $config) +
+        $sep1 + $sqlDialect->executeNodeProcessor($querySpec.having->toOne(), $state->increaseLevel(), $config)
+      }) +
+
+      // Order By
+      $querySpec.orderBy->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('order by', $state, $config) +
+        $sep1 + $querySpec.orderBy->map(r | $sqlDialect->executeNodeProcessor($r, $state->increaseLevel(), $config))->joinStrings(',' + $sep1)
+      }) +
+
+      // Limit
+      $querySpec.limit->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('limit', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.limit->toOne(), $state->increaseLevel(), $config)
+      }) +
+
+      // Offset
+      $querySpec.offset->executeIfNotEmptyElseReturnEmptyString({|
+        $sep0 + $sqlDialect->keyword('offset', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($querySpec.offset->toOne(), $state->increaseLevel(), $config)
+      });
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::unionProcessor_default(): NodeProcessor<Union>[1]
+{
+  nodeProcessor(
+    Union,
+    {sqlDialect, u, state, config |
+      let sep0 = $state.separator(0, $config);
+      let left = $sqlDialect->executeNodeProcessor($u.left, $state, $config);
+      let right = $sqlDialect->executeNodeProcessor($u.right, $state, $config);
+      $left + $sep0 + $sqlDialect->keyword(if($u.distinct, | 'union', | 'union all'), $state, $config) + $sep0 + $right;
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::queryProcessor_default(): NodeProcessor<Query>[1]
+{
+  nodeProcessor(
+    Query,
+    {sqlDialect, query, state, config |
+      if ($query.limit->isEmpty() && $query.orderBy->isEmpty() && $query.offset->isEmpty(),
+          | $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config),
+          | failWithMessage('Unexpected limit, orderBy or offset at Query level')
+      )
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::subQueryExpressionProcessor_default(): NodeProcessor<SubqueryExpression>[1]
+{
+  nodeProcessor(
+    SubqueryExpression,
+    {sqlDialect, s, state, config |
+      let sep0 = $state.separator(0, $config);
+      let sep1 = $state.separator(1, $config);
+      '(' + $sep1 + $sqlDialect->executeNodeProcessor($s.query, $state->increaseLevel(), $config) + $sep0 + ')';
+    },
+    {n | true}
+  )
+}
