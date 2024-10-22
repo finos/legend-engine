@@ -2813,7 +2813,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  )\n" +
                 "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
                 "  Join Firm_Person(firmTable.ADDRESSID = personTable.ADDRESSID)\n" +
-                ")", null, Collections.singletonList("COMPILATION error at [22:3-63]: Found joins with duplicate names: Firm_Person"));
+                ")", null, Arrays.asList("COMPILATION error at [21:3-53]: Found joins with duplicate names: Firm_Person", "COMPILATION error at [22:3-63]: Found joins with duplicate names: Firm_Person"));
     }
 
     @Test
@@ -2841,6 +2841,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  )\n" +
                 "  Filter FirmFilter(firmTable.LEGALNAME = 'myevent')\n" +
                 "  Filter FirmFilter(firmTable.ADDRESSID = 1)\n" +
-                ")", null, Collections.singletonList("COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
+                ")", null, Arrays.asList("COMPILATION error at [21:3-52]: Found filters with duplicate names: FirmFilter", "COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
 }
