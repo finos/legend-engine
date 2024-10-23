@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.protocol.functionActivator.deployment;
 
+import java.util.List;
+
 public class DeploymentResult
 {
     public String activatorIdentifier;
     public boolean successful;
     public String deploymentLocation;
+    public List<PostDeploymentActionResult> actionResults;
 
     @Override
     public String toString()

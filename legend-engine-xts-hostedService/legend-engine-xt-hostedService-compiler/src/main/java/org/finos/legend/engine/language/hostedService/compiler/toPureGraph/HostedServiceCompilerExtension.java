@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
+import org.finos.legend.engine.language.functionActivator.compiler.toPureGraph.postDeployment.HelperPostDeploymentCompilerBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -97,6 +98,7 @@ public class HostedServiceCompilerExtension implements CompilerExtension
                         ._generateLineage(app.generateLineage)
                         ._storeModel(app.storeModel)
                         ._ownership(buildHostedServiceOwner(app.ownership, context))
+                        ._actions(HelperPostDeploymentCompilerBuilder.resolveDeploymentAction(app.actions, context))
                         ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((HostedServiceDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
@@ -104,7 +106,6 @@ public class HostedServiceCompilerExtension implements CompilerExtension
             throw new RuntimeException(e);
         }
     }
-
 
     public Root_meta_external_function_activator_Ownership buildHostedServiceOwner(Ownership owner, CompileContext context)
     {

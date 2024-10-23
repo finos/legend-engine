@@ -6,6 +6,7 @@
     "platform_store_relational",
     "core_functions_unclassified",
     "core",
-    "core_relational"
+    "core_relational",
+    "core_functions_standard"
   ]
 }

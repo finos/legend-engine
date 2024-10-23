@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.relation;
+package org.finos.legend.engine.protocol.functionActivator.postDeployment;
 
-import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
-import org.junit.BeforeClass;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class TestFunctionsRelationCompiledStateStrategy extends AbstractCompiledStateIntegrityTest
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public class ActionContent
 {
-    @BeforeClass
-    public static void initialize()
-    {
-        initialize("core_functions_relation");
-    }
 }

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.63.1-SNAPSHOT</version>
+    <version>4.63.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -108,7 +108,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.20.0</legend.pure.version>
-        <legend.shared.version>0.25.6</legend.shared.version>
+        <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>12.54.0</legend.web-application.version>
 
         <!-- SONAR -->
@@ -736,7 +736,16 @@
                 <artifactId>legend-engine-xt-functionActivator-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
