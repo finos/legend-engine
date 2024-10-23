@@ -100,17 +100,6 @@ public final class TDSResult extends StreamingResult implements IResult, StoreEx
         }
     }
 
-    private static long getRealizeRowLimit()
-    {
-        return Long.getLong(
-                "org.finos.legend.engine.realizedResultRowLimit",
-                Long.getLong(
-                        "org.finos.legend.engine.realizedRelationalResultRowLimit",
-                        1_000L
-                )
-        );
-    }
-
     @Override
     public void cancel()
     {

@@ -60,4 +60,15 @@ public abstract class StreamingResult extends Result
             throw new RuntimeException(e);
         }
     }
+
+    public static long getRealizeRowLimit()
+    {
+            return Long.getLong(
+                            "org.finos.legend.engine.realizedResultRowLimit",
+                            Long.getLong(
+                                            "org.finos.legend.engine.realizedRelationalResultRowLimit",
+                                            1_000L
+                                            )
+                            );
+    }
 }

@@ -1,0 +1,84 @@
+import meta::legend::*;
+import meta::pure::mapping::*;
+import meta::pure::profiles::*;
+
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsNotEmptyForRelational_returnsTrue():Boolean[1]
+{
+  //CreateAndFill
+  meta::relational::tests::platform::operations::createTablesAndFillDbUS();
+
+
+  let finalQuery = 
+    {|
+      
+      let employees = meta::relational::tests::platform::operations::Person.all()
+                                      ->filter( x | $x.region =='NYC')->from(meta::relational::tests::platform::operations::mapping::EmployeeUSMapping,meta::relational::tests::platform::operations::runtime::testRuntimeUS());
+
+      $employees->isNotEmpty();
+    };
+
+  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals('true', $result);
+
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsFalse():Boolean[1]
+{
+  //CreateAndFill
+  meta::relational::tests::platform::operations::createTablesAndFillDbUS();
+
+
+  let finalQuery = 
+    {|
+      
+      let employees = meta::relational::tests::platform::operations::Person.all()
+                                      ->filter( x | $x.region =='Chennai')->from(meta::relational::tests::platform::operations::mapping::EmployeeUSMapping,meta::relational::tests::platform::operations::runtime::testRuntimeUS());
+
+      $employees->isNotEmpty();
+    };
+
+  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals('false', $result);
+
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testFalsePlatformIsEmptyForRelational():Boolean[1]
+{
+  //CreateAndFill
+  meta::relational::tests::platform::operations::createTablesAndFillDbUS();
+
+
+  let finalQuery = 
+    {|
+      
+      let employees = meta::relational::tests::platform::operations::Person.all()
+                                      ->filter( x | $x.region =='NYC')->from(meta::relational::tests::platform::operations::mapping::EmployeeUSMapping,meta::relational::tests::platform::operations::runtime::testRuntimeUS());
+
+      $employees->isEmpty();
+    };
+
+  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals('false', $result);
+
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsTrue():Boolean[1]
+{
+  //CreateAndFill
+  meta::relational::tests::platform::operations::createTablesAndFillDbUS();
+
+
+  let finalQuery = 
+    {|
+      
+      let employees = meta::relational::tests::platform::operations::Person.all()
+                                      ->filter( x | $x.region =='Chennai')->from(meta::relational::tests::platform::operations::mapping::EmployeeUSMapping,meta::relational::tests::platform::operations::runtime::testRuntimeUS());
+
+      $employees->isEmpty();
+    };
+
+  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  assertEquals('true', $result);
+
+}
