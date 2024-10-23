@@ -719,7 +719,8 @@ function meta::pure::lineage::scanProperties::printPropertyNodeLists(properyList
 function <<access.private>> meta::pure::lineage::scanProperties::propertyTree::recurseBuildTree(list:List<PropertyPathNode>[*]):PropertyPathTree[*]
 {
    let m = $list->filter(l|!$l.values->isEmpty())->groupBy(l|$l.values->at(0));
-   $m->keys()->map(
+
+   $m->keys()->sortBy(v | $v.property.name->toOne())->map(
                   k|^PropertyPathTree(display = $k.property->match([p:Property<Nil,Any|*>[1]|'',q:QualifiedProperty<Any>[1]|'(Q)'])+$k.property.name->toOne(),
                                       value = $k,
                                       children = $m->get($k).values->map(l|^$l(values=$l.values->slice(1, $l.values->size())))->recurseBuildTree(),

@@ -79,6 +79,16 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return new DataQualityCompilerExtension();
     }
 
+
+    private GenericType genericType(CompileContext context, String _class)
+    {
+        GenericType gt = context.resolveGenericType("meta::external::dataquality::DataQuality");
+
+        return gt._typeArguments(org.eclipse.collections.impl.factory.Lists.fixedSize.of(
+                context.resolveGenericType(_class)
+        ));
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
@@ -88,11 +98,11 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class, DataSpace.class),
                         (dataquality, compileContext) ->
                         {
-                            Root_meta_external_dataquality_DataQuality_Impl<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
+                            Root_meta_external_dataquality_DataQuality<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
                                     dataquality.name,
                                     SourceInformationHelper.toM3SourceInformation(dataquality.sourceInformation),
                                     compileContext.pureModel.getClass("meta::external::dataquality::DataQuality")
-                            );
+                            )._classifierGenericType(genericType(compileContext, dataquality.dataQualityRootGraphFetchTree._class));
                             return metamodel;
                         },
                         (dataquality, compileContext) ->
@@ -213,6 +223,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(classifier)
                 ._typeArguments(org.eclipse.collections.impl.factory.Lists.fixedSize.of(context.pureModel.getGenericType(parentClass)));
+
         return new Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl<>("", SourceInformationHelper.toM3SourceInformation(rootGraphFetchTree.sourceInformation), classifier)
                 ._class(parentClass)
                 ._classifierGenericType(genericType)

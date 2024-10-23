@@ -1,0 +1,117 @@
+###Connection
+RelationalDatabaseConnection meta::dataquality::H2
+{
+  store: meta::dataquality::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Relational
+Database meta::dataquality::db
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER
+  )
+  Table addressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LOCATIONID INTEGER,
+    TYPE INTEGER
+  )
+  Table locationTable
+  (
+    ID INTEGER PRIMARY KEY,
+    STREET VARCHAR(200),
+    LOCALITY VARCHAR(200)
+  )
+
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+  Join Address_Location(addressTable.LOCATIONID = locationTable.ID)
+)
+
+
+###Mapping
+Mapping meta::dataquality::dataqualitymappings
+(
+  meta::dataquality::Person: Relational
+  {
+    name: [meta::dataquality::db]personTable.FIRSTNAME,
+    age: [meta::dataquality::db]personTable.AGE,
+    addresses: [meta::dataquality::db]@Address_Person
+  }
+  meta::dataquality::Address: Relational
+  {
+    addressId: [meta::dataquality::db]addressTable.ID,
+    location: [meta::dataquality::db]@Address_Location
+  }
+  meta::dataquality::Location: Relational
+  {
+    street: [meta::dataquality::db]locationTable.STREET,
+    locality: [meta::dataquality::db]locationTable.LOCALITY
+  }
+)
+
+
+###Runtime
+Runtime meta::dataquality::DataQualityRuntime
+{
+  mappings:
+  [
+    meta::dataquality::dataqualitymappings
+  ];
+  connections:
+  [
+    meta::dataquality::db:
+    [
+      connection_1: meta::dataquality::H2
+    ]
+  ];
+}
+
+
+###Pure
+Class meta::dataquality::Person
+[
+  mustBeOfLegalAge: $this.age >= 18
+]
+{
+  name: String[1];
+  age: Integer[1];
+  addresses: meta::dataquality::Address[*];
+}
+
+Class meta::dataquality::Address
+{
+  location: meta::dataquality::Location[1];
+  locationStreet: String[1];
+  addressId: String[1];
+}
+
+Class meta::dataquality::Location
+{
+  street: String[1];
+  locality: String[1];
+}
+
+
+###DataQualityValidation
+DataQualityValidation meta::dataquality::PersonDataQualityValidation
+{
+   context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);
+   validationTree: $[
+       meta::dataquality::Person<mustBeOfLegalAge>{
+         name
+       }
+     ]$;
+   filter: p: meta::dataquality::Person[1]|$p.name == 'John';
+}

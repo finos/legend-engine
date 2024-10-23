@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensionLoader;
+import org.finos.legend.engine.language.pure.grammar.test.GrammarParseTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -42,8 +43,7 @@ public class TestDataQualityApi
     @Test
     public void testDataQualityGetPropertyPathTree() throws IOException
     {
-        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("inputs/modelWithDataQualityValidation.json"));
-        PureModelContextData pureModelContextData = objectMapper.readValue(url, PureModelContextData.class);
+        PureModelContextData pureModelContextData = GrammarParseTestUtils.loadPureModelContextFromResource("inputs/modelWithDataQualityValidation.pure", TestDataQualityApi.class);
         CompilerExtensionLoader.logExtensionList();
         PureModel model = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("meta::dataquality::PersonDataQualityValidation");
@@ -59,8 +59,7 @@ public class TestDataQualityApi
     @Test
     public void testDataQualityGetPropertyPathTree_WithNullDataQualityValidation() throws IOException
     {
-        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("inputs/modelWithNullDataQualityValidation.json"));
-        PureModelContextData pureModelContextData = objectMapper.readValue(url, PureModelContextData.class);
+        PureModelContextData pureModelContextData = GrammarParseTestUtils.loadPureModelContextFromResource("inputs/modelWithNullDataQualityValidation.pure", TestDataQualityApi.class);
         CompilerExtensionLoader.logExtensionList();
         PureModel model = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("meta::dataquality::PersonDataQualityValidation");
