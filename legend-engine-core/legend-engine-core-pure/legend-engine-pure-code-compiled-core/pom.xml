@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-pure</artifactId>
-        <version>4.63.1-SNAPSHOT</version>
+        <version>4.63.1</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -426,19 +426,13 @@
                                 <configuration>
                                     <target name="protocol">
                                         <copy todir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}">
-                                            <fileset
-                                                    dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}"/>
+                                            <fileset dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}" />
                                         </copy>
-                                        <replace
-                                                dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}"
-                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
+                                        <replace dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
                                         <copy todir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}">
-                                            <fileset
-                                                    dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}"/>
+                                            <fileset dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}" />
                                         </copy>
-                                        <replace
-                                                dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}"
-                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
+                                        <replace dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
                                     </target>
                                 </configuration>
                             </execution>
