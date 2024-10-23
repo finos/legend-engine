@@ -265,7 +265,7 @@ public class HelperModelBuilder
                    In the absence of a message the system will fall back on the default failure message.
                  */
             }
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint pureConstraint = new Root_meta_pure_metamodel_constraint_Constraint_Impl(constraintSourceId);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint pureConstraint = new Root_meta_pure_metamodel_constraint_Constraint_Impl(constraintSourceId, SourceInformationHelper.toM3SourceInformation(c.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::constraint::Constraint"));
             pureConstraint.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.sourceInformation));
             pureConstraint._functionDefinition(lf);
             pureConstraint._name(c.name);

@@ -1,0 +1,26 @@
+###Runtime
+Runtime meta::external::dataquality::tests::domain::DataQualityRuntime
+{
+  mappings:
+  [
+    meta::external::dataquality::tests::domain::dataqualitymappings
+  ];
+  connections:
+  [
+    meta::external::dataquality::tests::domain::db:
+    [
+      connection_1: meta::external::dataquality::tests::domain::H2
+    ]
+  ];
+}
+
+###Connection
+RelationalDatabaseConnection meta::external::dataquality::tests::domain::H2
+{
+  store: meta::external::dataquality::tests::domain::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
