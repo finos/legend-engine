@@ -12,29 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.executor;
 
-public enum StatisticName
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface TabularDataAbstract extends ResultData
 {
-    INCOMING_RECORD_COUNT("incomingRecordCount"),
-    ROWS_TERMINATED("rowsTerminated"),
-    ROWS_INSERTED("rowsInserted"),
-    ROWS_UPDATED("rowsUpdated"),
-    ROWS_DELETED("rowsDeleted"),
-    FILES_LOADED("filesLoaded"),
-    ROWS_WITH_ERRORS("rowsWithErrors"),
+    Optional<String> queryId();
 
-    INPUT_FILES_BYTES_SCANNED("inputFilesBytesScanned");
-
-    String value;
-
-    StatisticName(String value)
-    {
-        this.value = value;
-    }
-
-    public String get()
-    {
-        return value;
-    }
+    List<Map<String, Object>> data();
 }
