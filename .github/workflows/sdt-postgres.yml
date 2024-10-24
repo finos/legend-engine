@@ -46,7 +46,7 @@ jobs:
         run: |
           mvn -B -e -pl ${{ env.PROJECT_DIR }} clean install -am -DskipTests=true 
 
-      - name: Run Test_Postgres_SDT
+      - name: Run SDT Test
         run: |
           mvn -B -e -pl ${{ env.PROJECT_DIR }} test -Dtest=Test_Postgres_SDT
 
