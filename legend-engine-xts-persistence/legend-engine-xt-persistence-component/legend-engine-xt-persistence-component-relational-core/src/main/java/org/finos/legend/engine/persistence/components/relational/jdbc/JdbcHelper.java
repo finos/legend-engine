@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
+import org.finos.legend.engine.persistence.components.executor.RelationalTransactionManager;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -47,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
 public class JdbcHelper implements RelationalExecutionHelper
@@ -54,7 +57,7 @@ public class JdbcHelper implements RelationalExecutionHelper
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
     protected final Connection connection;
-    private JdbcTransactionManager transactionManager;
+    private RelationalTransactionManager transactionManager;
 
     public static final String TYPE_NAME = "TYPE_NAME";
     public static final String DATA_TYPE = "DATA_TYPE";
@@ -81,12 +84,17 @@ public class JdbcHelper implements RelationalExecutionHelper
         return connection;
     }
 
+    protected RelationalTransactionManager intializeTransactionManager(Connection connection) throws SQLException
+    {
+        return new JdbcTransactionManager(connection);
+    }
+
     @Override
     public void beginTransaction()
     {
         try
         {
-            this.transactionManager = new JdbcTransactionManager(connection);
+            this.transactionManager = intializeTransactionManager(connection);
             this.transactionManager.beginTransaction();
         }
         catch (SQLException e)
@@ -434,10 +442,10 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
         else
         {
-            JdbcTransactionManager txManager = null;
+            RelationalTransactionManager txManager = null;
             try
             {
-                txManager = new JdbcTransactionManager(connection);
+                txManager = intializeTransactionManager(connection);
                 txManager.beginTransaction();
                 for (String sql : sqls)
                 {
@@ -474,7 +482,7 @@ public class JdbcHelper implements RelationalExecutionHelper
         }
     }
 
-    private void revertTransaction(JdbcTransactionManager txManager)
+    private void revertTransaction(RelationalTransactionManager txManager)
     {
         if (txManager != null)
         {
@@ -494,41 +502,23 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            try
-            {
-                return this.transactionManager.convertResultSetToList(sql, rows);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
+            return getResult(this.transactionManager, sql, rows);
         }
         else
         {
-            JdbcTransactionManager txManager = null;
-            try
-            {
-                txManager = new JdbcTransactionManager(connection);
-                return txManager.convertResultSetToList(sql, rows);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
-            finally
-            {
-                if (txManager != null)
-                {
-                    try
-                    {
-                        txManager.close();
-                    }
-                    catch (SQLException e)
-                    {
-                        LOGGER.error("Error closing transaction manager.", e);
-                    }
-                }
-            }
+            return executeWithNewTransactionManager(sql, (manager, s) -> getResult(manager, s, rows));
+        }
+    }
+
+    private List<Map<String, Object>> getResult(RelationalTransactionManager manager, String s, int rows)
+    {
+        try
+        {
+            return manager.convertResultSetToList(s, rows);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
         }
     }
 
@@ -537,39 +527,99 @@ public class JdbcHelper implements RelationalExecutionHelper
     {
         if (this.transactionManager != null)
         {
-            try
-            {
-                return this.transactionManager.convertResultSetToList(sql);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
+            return getResult(this.transactionManager, sql);
         }
         else
         {
-            JdbcTransactionManager txManager = null;
-            try
+            return executeWithNewTransactionManager(sql, (manager, s) -> getResult(manager, s));
+        }
+    }
+
+    private List<Map<String, Object>> getResult(RelationalTransactionManager manager, String s)
+    {
+        try
+        {
+            return manager.convertResultSetToList(s);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
+        }
+    }
+
+    @Override
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql)
+    {
+        if (this.transactionManager != null)
+        {
+            return getTabularData(this.transactionManager, sql);
+        }
+        else
+        {
+            return executeWithNewTransactionManager(sql, (manager, s) -> getTabularData(manager, s));
+        }
+    }
+
+    private TabularData getTabularData(RelationalTransactionManager manager, String s)
+    {
+        try
+        {
+            return manager.convertResultSetToTabularData(s);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
+        }
+    }
+
+    @Override
+    public TabularData executeQueryAndGetResultsAsTabularData(String sql, int rows)
+    {
+        if (this.transactionManager != null)
+        {
+            return getTabularData(this.transactionManager, sql, rows);
+        }
+        else
+        {
+            return executeWithNewTransactionManager(sql, (manager, s) -> getTabularData(manager, s, rows));
+        }
+    }
+
+    private TabularData getTabularData(RelationalTransactionManager manager, String s, int rows)
+    {
+        try
+        {
+            return manager.convertResultSetToTabularData(s, rows);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
+        }
+    }
+
+    protected  <T> T executeWithNewTransactionManager(String sql, BiFunction<RelationalTransactionManager, String, T> transactionExecutor)
+    {
+        RelationalTransactionManager txManager = null;
+        try
+        {
+            txManager = intializeTransactionManager(connection);
+            return transactionExecutor.apply(txManager, sql);
+        }
+        catch (SQLException e)
+        {
+            throw SqlExecutionExceptionMapper.from(e);
+        }
+        finally
+        {
+            if (txManager != null)
             {
-                txManager = new JdbcTransactionManager(connection);
-                return txManager.convertResultSetToList(sql);
-            }
-            catch (SQLException e)
-            {
-                throw SqlExecutionExceptionMapper.from(e);
-            }
-            finally
-            {
-                if (txManager != null)
+                try
                 {
-                    try
-                    {
-                        txManager.close();
-                    }
-                    catch (SQLException e)
-                    {
-                        LOGGER.error("Error closing transaction manager.", e);
-                    }
+                    txManager.close();
+                }
+                catch (SQLException e)
+                {
+                    LOGGER.error("Error closing transaction manager.", e);
                 }
             }
         }

@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 
@@ -146,7 +146,7 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
 
         if (!partitionSpecResult.isEmpty())
         {
-            List<Map<String, Object>> partitionSpecRows = partitionSpecResult.get(0).getData();
+            List<Map<String, Object>> partitionSpecRows = partitionSpecResult.get(0).data();
             for (Map<String, Object> partitionSpec: partitionSpecRows)
             {
                 partitionSpecList.add(partitionSpec);
