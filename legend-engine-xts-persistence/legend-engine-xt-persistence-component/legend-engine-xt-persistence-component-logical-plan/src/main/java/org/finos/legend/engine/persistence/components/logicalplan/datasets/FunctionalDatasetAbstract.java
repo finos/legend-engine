@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.sql;
-
-import org.finos.legend.engine.persistence.components.executor.ResultData;
+package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import java.util.List;
-import java.util.Map;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Style;
 
-public class TabularData implements ResultData
+@Immutable
+@Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface FunctionalDatasetAbstract extends DatasetReference
 {
-    private final List<Map<String, Object>> data;
 
-    public TabularData(List<Map<String, Object>> data)
-    {
-        this.data = data;
-    }
-
-    public List<Map<String, Object>> getData()
-    {
-        return data;
-    }
-
-    // todo: Add a field for schema
+    List<Value> value();
 }

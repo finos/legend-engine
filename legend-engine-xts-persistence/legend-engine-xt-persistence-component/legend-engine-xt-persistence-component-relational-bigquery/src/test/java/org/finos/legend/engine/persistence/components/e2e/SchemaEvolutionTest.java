@@ -36,7 +36,7 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;

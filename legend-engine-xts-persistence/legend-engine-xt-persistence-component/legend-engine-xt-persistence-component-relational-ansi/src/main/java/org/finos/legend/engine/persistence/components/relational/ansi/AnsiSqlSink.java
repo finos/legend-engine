@@ -156,7 +156,7 @@ import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUt
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -393,7 +393,7 @@ public class AnsiSqlSink extends RelationalSink
             List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
             if (!results.isEmpty())
             {
-                List<Map<String, Object>> resultSets = results.get(0).getData();
+                List<Map<String, Object>> resultSets = results.get(0).data();
                 for (Map<String, Object> row : resultSets)
                 {
                     for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))

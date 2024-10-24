@@ -28,7 +28,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FunctionalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
@@ -60,7 +62,7 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalC
 import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.snowflake.jdbc.SnowflakeJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
@@ -71,6 +73,11 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FunctionalDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SQLCreateVisitor;
@@ -86,13 +93,14 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.QueryStatsLogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.slf4j.Logger;
@@ -189,6 +197,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
+        logicalPlanVisitorByClass.put(FunctionalDataset.class, new FunctionalDatasetVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
@@ -263,7 +272,7 @@ public class SnowflakeSink extends AnsiSqlSink
         if (relationalConnection instanceof JdbcConnection)
         {
             JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
-            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+            return new RelationalExecutor(this, SnowflakeJdbcHelper.of(jdbcConnection.connection()));
         }
         else
         {
@@ -335,7 +344,7 @@ public class SnowflakeSink extends AnsiSqlSink
 
         if (!results.isEmpty())
         {
-            List<Map<String, Object>> resultSets = results.get(0).getData();
+            List<Map<String, Object>> resultSets = results.get(0).data();
             for (Map<String, Object> row : resultSets)
             {
                 Map<String, Object> errorDetails = buildErrorDetails(getString(row, FILE_WITH_ERROR), getString(row, COLUMN_NAME), getLong(row, ROW_NUMBER));
@@ -482,7 +491,7 @@ public class SnowflakeSink extends AnsiSqlSink
             List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
             if (!results.isEmpty())
             {
-                List<Map<String, Object>> resultSets = results.get(0).getData();
+                List<Map<String, Object>> resultSets = results.get(0).data();
                 for (Map<String, Object> row : resultSets)
                 {
                     // This loop will only be executed once as there is always only one element in the set
@@ -503,7 +512,8 @@ public class SnowflakeSink extends AnsiSqlSink
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues, Clock executionTimestampClock)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
-        List<Map<String, Object>> resultSets = results.get(0).getData();
+        TabularData resultData = results.get(0);
+        List<Map<String, Object>> resultSets = resultData.data();
         List<String> dataFilePathsWithErrors = new ArrayList<>();
 
         long totalFilesLoaded = 0;
@@ -546,6 +556,7 @@ public class SnowflakeSink extends AnsiSqlSink
         stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
         stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
         stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+        resultData.queryId().ifPresent(queryId -> appendLoadQueryStats(executor, stats, queryId));
 
         IngestorResult.Builder resultBuilder = IngestorResult.builder()
             .updatedDatasets(datasets)
@@ -590,6 +601,38 @@ public class SnowflakeSink extends AnsiSqlSink
         catch (JsonProcessingException e)
         {
             throw new JsonReadOrWriteException(e.getMessage(), e);
+        }
+    }
+
+    private void appendLoadQueryStats(Executor<SqlGen, TabularData, SqlPlan> executor, Map<StatisticName, Object> stats, String queryId)
+    {
+        try
+        {
+            RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+            SqlPlan physicalPlanForQueryOperatorStats = transformer.generatePhysicalPlan(QueryStatsLogicalPlanUtils.getLogicalPlanForQueryOperatorStats());
+            HashMap<String, PlaceholderValue> queryIdPlaceHolder = new HashMap<>();
+            queryIdPlaceHolder.put(QueryStatsLogicalPlanUtils.QUERY_ID_PARAMETER, PlaceholderValue.builder().value(queryId).isSensitive(false).build());
+            List<TabularData> queryOperatorStats = executor.executePhysicalPlanAndGetResults(physicalPlanForQueryOperatorStats, queryIdPlaceHolder);
+            if (!queryOperatorStats.isEmpty())
+            {
+                List<Map<String, Object>> queryOperatorStatsResults = queryOperatorStats.get(0).data();
+                queryOperatorStatsResults.forEach(queryStats ->
+                {
+                    switch ((String) queryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
+                    {
+                        case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
+                            stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS));
+                            break;
+                        case QueryStatsLogicalPlanUtils.INSERT_STAGE:
+                            stats.put(StatisticName.INCOMING_RECORD_COUNT, queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS));
+                            break;
+                    }
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.error(String.format("Error extracting query stats for query id: [%s].", queryId), e);
         }
     }
 }
