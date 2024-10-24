@@ -27,6 +27,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
 public class DataElementCompilerExtension implements CompilerExtension
@@ -49,28 +50,32 @@ public class DataElementCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         DataElement.class,
-                        (DataElement dataElement, CompileContext context) ->
-                        {
-                            Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name, SourceInformationHelper.toM3SourceInformation(dataElement.sourceInformation), null);
-                            GenericType mappingGenericType = HelperCoreBuilder.newGenericType(context.pureModel.getType("meta::pure::data::DataElement"), context);
-                            return compiled._classifierGenericType(mappingGenericType)
-                                    ._stereotypes(ListIterate.collect(dataElement.stereotypes, stereotype -> HelperCoreBuilder.resolveStereotype(stereotype, context)))
-                                    ._taggedValues(ListIterate.collect(dataElement.taggedValues, taggedValue -> HelperCoreBuilder.newTaggedValue(taggedValue, context)));
-                        },
-                        (DataElement dataElement, CompileContext context) ->
-                        {
-                            String fullPath = context.pureModel.buildPackageString(dataElement._package, dataElement.name);
-                            Root_meta_pure_data_DataElement compiled = (Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(fullPath);
-
-                            ProcessingContext processingContext = new ProcessingContext("Data '" + fullPath + "' Second Pass");
-                            Root_meta_pure_data_EmbeddedData compiledData = dataElement.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
-                            if (compiledData instanceof Root_meta_pure_data_DataElementReference)
-                            {
-                                throw new EngineException("Cannot use Data element reference in a Data element", dataElement.data.sourceInformation, EngineErrorType.COMPILATION);
-                            }
-                            compiled._data(compiledData);
-                        }
+                        this::dataElementFirstPass,
+                        this::dataElementSecondPass
                 )
         );
+    }
+
+    private PackageableElement dataElementFirstPass(DataElement dataElement, CompileContext context)
+    {
+        Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name, SourceInformationHelper.toM3SourceInformation(dataElement.sourceInformation), null);
+        GenericType mappingGenericType = context.newGenericType(context.pureModel.getType("meta::pure::data::DataElement"));
+        return compiled._classifierGenericType(mappingGenericType)
+                ._stereotypes(ListIterate.collect(dataElement.stereotypes, context::resolveStereotype))
+                ._taggedValues(ListIterate.collect(dataElement.taggedValues, context::newTaggedValue));
+    }
+
+    private void dataElementSecondPass(DataElement dataElement, CompileContext context)
+    {
+        String fullPath = context.pureModel.buildPackageString(dataElement._package, dataElement.name);
+        Root_meta_pure_data_DataElement compiled = (Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(fullPath);
+
+        ProcessingContext processingContext = new ProcessingContext("Data '" + fullPath + "' Second Pass");
+        Root_meta_pure_data_EmbeddedData compiledData = dataElement.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
+        if (compiledData instanceof Root_meta_pure_data_DataElementReference)
+        {
+            throw new EngineException("Cannot use Data element reference in a Data element", dataElement.data.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        compiled._data(compiledData);
     }
 }

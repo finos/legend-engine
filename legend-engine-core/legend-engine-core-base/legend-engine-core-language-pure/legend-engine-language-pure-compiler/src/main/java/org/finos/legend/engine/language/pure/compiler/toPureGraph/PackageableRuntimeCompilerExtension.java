@@ -25,6 +25,7 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
 public class PackageableRuntimeCompilerExtension implements CompilerExtension
@@ -48,24 +49,28 @@ public class PackageableRuntimeCompilerExtension implements CompilerExtension
                 Processor.newProcessor(
                         PackageableRuntime.class,
                         Lists.fixedSize.with(Mapping.class, PackageableConnection.class),
-                        (PackageableRuntime packageableRuntime, CompileContext context) ->
-                        {
-                            Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
-                            GenericType packageableRuntimeGenericType = HelperCoreBuilder.newGenericType(context.pureModel.getType("meta::pure::runtime::PackageableRuntime"), context);
-                            metamodel._classifierGenericType(packageableRuntimeGenericType);
-                            Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::Runtime"));
-                            return metamodel._runtimeValue(pureRuntime);
-                        },
+                        this::packageableRuntimeFirstPass,
                         (PackageableRuntime packageableRuntime, CompileContext context) ->
                         {
                         },
-                        (PackageableRuntime packageableRuntime, CompileContext context) ->
-                        {
-                            String fullPath = context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
-                            Root_meta_pure_runtime_PackageableRuntime metamodel = context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
-                            HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, metamodel._runtimeValue(), context);
-                        }
+                        this::packageableRuntimeThirdPass
                 )
         );
+    }
+
+    private PackageableElement packageableRuntimeFirstPass(PackageableRuntime packageableRuntime, CompileContext context)
+    {
+        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+        GenericType packageableRuntimeGenericType = context.newGenericType(context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
+        metamodel._classifierGenericType(packageableRuntimeGenericType);
+        Root_meta_core_runtime_EngineRuntime pureRuntime = new Root_meta_core_runtime_EngineRuntime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), context.pureModel.getClass("meta::core::runtime::Runtime"));
+        return metamodel._runtimeValue(pureRuntime);
+    }
+
+    private void packageableRuntimeThirdPass(PackageableRuntime packageableRuntime, CompileContext context)
+    {
+        String fullPath = context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
+        Root_meta_pure_runtime_PackageableRuntime metamodel = context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
+        HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, metamodel._runtimeValue(), context);
     }
 }

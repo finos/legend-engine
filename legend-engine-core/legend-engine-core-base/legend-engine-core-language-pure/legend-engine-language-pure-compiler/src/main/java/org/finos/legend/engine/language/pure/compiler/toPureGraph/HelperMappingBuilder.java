@@ -378,7 +378,7 @@ public class HelperMappingBuilder
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class rootClass = mappingclass.rootClass;
         if (rootClass != null)
         {
-            context.pureModel.processThirdPass(rootClass);
+            context.processThirdPass(rootClass);
             mappingClass._class(context.pureModel.getClass(context.pureModel.buildPackageString(rootClass._package, rootClass.name), rootClass.sourceInformation));
         }
         return mappingClass;

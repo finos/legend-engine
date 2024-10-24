@@ -606,12 +606,11 @@ public class PureModel implements IPureModel
         }
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         return visitWithErrorHandling(element, () ->
         {
-            CompileContext context = getContext(element);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = context.getExtraProcessorOrThrow(element).processFirstPass(element, context);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = getContext(element).processFirstPass(element);
             if (pureElement instanceof ConcreteFunctionDefinition<?>)
             {
                 return pureElement;
@@ -620,12 +619,11 @@ public class PureModel implements IPureModel
         });
     }
 
-    public void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    private void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         visitWithErrorHandling(element, () ->
         {
-            CompileContext context = getContext(element);
-            context.getExtraProcessorOrThrow(element).processSecondPass(element, context);
+            getContext(element).processSecondPass(element);
             return null;
         });
     }
@@ -644,12 +642,11 @@ public class PureModel implements IPureModel
         visitWithErrorHandling(element, () -> element.accept(new PackageableElementMilestoningPassBuilder(getContext(element))));
     }
 
-    public void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    private void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         visitWithErrorHandling(element, () ->
         {
-            CompileContext context = getContext(element);
-            context.getExtraProcessorOrThrow(element).processThirdPass(element, context);
+            getContext(element).processThirdPass(element);
             return null;
         });
     }

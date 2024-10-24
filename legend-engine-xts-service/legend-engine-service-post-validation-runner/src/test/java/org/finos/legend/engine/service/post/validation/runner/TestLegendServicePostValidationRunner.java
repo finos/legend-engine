@@ -102,9 +102,9 @@ public class TestLegendServicePostValidationRunner
             pkg._childrenRemove(existing);
         }
 
-        Root_meta_legend_service_metamodel_Service compiledService = (Root_meta_legend_service_metamodel_Service) compileContext.pureModel.processFirstPass(service);
-        compileContext.pureModel.processSecondPass(service);
-        compileContext.pureModel.processThirdPass(service);
+        Root_meta_legend_service_metamodel_Service compiledService = (Root_meta_legend_service_metamodel_Service) compileContext.processFirstPass(service);
+        compileContext.processSecondPass(service);
+        compileContext.processThirdPass(service);
         return compiledService;
     }
 

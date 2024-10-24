@@ -58,7 +58,7 @@ public class HelperRelationalDatabaseConnectionBuilder
                 Database db = new Database();
                 db.name = element;
                 db._package = "";
-                context.pureModel.processFirstPass(db);
+                context.processFirstPass(db);
             }
         }
     }

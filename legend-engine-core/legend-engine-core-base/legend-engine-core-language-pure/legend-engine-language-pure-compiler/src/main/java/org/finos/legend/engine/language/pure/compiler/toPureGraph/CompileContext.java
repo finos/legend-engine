@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -27,22 +29,27 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
@@ -164,6 +171,21 @@ public class CompileContext
     public Processor<?> getExtraProcessorOrThrow(PackageableElement element)
     {
         return getCompilerExtensions().getExtraProcessorOrThrow(element);
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        return getExtraProcessorOrThrow(element).processFirstPass(element, this);
+    }
+
+    public void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        getExtraProcessorOrThrow(element).processSecondPass(element, this);
+    }
+
+    public void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        getExtraProcessorOrThrow(element).processSecondPass(element, this);
     }
 
     public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)
@@ -377,6 +399,11 @@ public class CompileContext
         return this.pureModel.getEnumValue(this.resolveEnumeration(fullPath, enumerationSourceInformation), fullPath, value, sourceInformation);
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype resolveStereotype(StereotypePtr stereotypePointer)
+    {
+        return this.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation);
+    }
+
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype resolveStereotype(String fullPath, String value)
     {
         return this.resolveStereotype(fullPath, value, SourceInformation.getUnknownSourceInformation(), SourceInformation.getUnknownSourceInformation());
@@ -385,6 +412,11 @@ public class CompileContext
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype resolveStereotype(String fullPath, String value, SourceInformation profileSourceInformation, SourceInformation sourceInformation)
     {
         return this.pureModel.getStereotype(this.resolveProfile(fullPath, profileSourceInformation), fullPath, value, sourceInformation);
+    }
+
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag resolveTag(TagPtr tagPointer)
+    {
+        return this.resolveTag(tagPointer.profile, tagPointer.value, tagPointer.profileSourceInformation, tagPointer.sourceInformation);
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag resolveTag(String fullPath, String value, SourceInformation profileSourceInformation, SourceInformation sourceInformation)
@@ -490,5 +522,31 @@ public class CompileContext
             }
         });
         return results;
+    }
+
+
+    // ------------------------------------------ SUB-ELEMENT UTILITY -----------------------------------------
+
+    public GenericType newGenericType(Type rawType)
+    {
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(rawType);
+    }
+
+    public GenericType newGenericType(Type rawType, GenericType typeArgument)
+    {
+        return newGenericType(rawType, Lists.fixedSize.with(typeArgument));
+    }
+
+    public GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments)
+    {
+        return newGenericType(rawType)._typeArguments(typeArguments);
+    }
+
+    public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue taggedValue)
+    {
+        return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))
+                ._tag(resolveTag(taggedValue.tag))
+                ._value(taggedValue.value);
     }
 }

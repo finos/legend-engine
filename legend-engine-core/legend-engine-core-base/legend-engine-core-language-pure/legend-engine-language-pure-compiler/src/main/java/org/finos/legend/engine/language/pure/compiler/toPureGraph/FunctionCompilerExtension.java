@@ -31,6 +31,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
@@ -61,75 +62,79 @@ public class FunctionCompilerExtension implements CompilerExtension
                 Processor.newProcessor(
                         Function.class,
                         Lists.fixedSize.with(DataElement.class, Class.class, Association.class, Mapping.class, Binding.class),
-                        (Function function, CompileContext context) ->
-                        {
-                            // NOTE: in the protocol, we still store the function name as is, but in the function index, we will store the function based on its function signature
-                            String functionSignature = HelperModelBuilder.getSignature(function);
-                            String functionFullName = context.pureModel.buildPackageString(function._package, functionSignature);
-                            String functionName = context.pureModel.buildPackageString(function._package, HelperModelBuilder.getFunctionNameWithoutSignature(function));
-                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
-
-                            ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
-
-                            context.pureModel.setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
-                                    ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
-                                    ._classifierGenericType(HelperCoreBuilder.newGenericType(context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx))), context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity), context.pureModel), context))
-                                    ._stereotypes(ListIterate.collect(function.stereotypes, stereotype -> HelperCoreBuilder.resolveStereotype(stereotype, context)))
-                                    ._taggedValues(ListIterate.collect(function.taggedValues, taggedValue -> HelperCoreBuilder.newTaggedValue(taggedValue, context)));
-                            HelperModelBuilder.processFunctionConstraints(function, context, targetFunc, ctx);
-
-                            context.pureModel.handlers.register(new UserDefinedFunctionHandler(context.pureModel, functionFullName, targetFunc,
-                                    ps -> new TypeAndMultiplicity(context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity)),
-                                    ps ->
-                                    {
-                                        List<ValueSpecification> vs = ListIterate.collect(function.parameters, p -> p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx)));
-                                        if (ps.size() == function.parameters.size())
-                                        {
-                                            int size = ps.size();
-                                            // TODO clean up the check....
-                                            try
-                                            {
-                                                for (int i = 0; i < size; i++)
-                                                {
-                                                    HelperModelBuilder.checkCompatibility(context, ps.get(i)._genericType()._rawType(), ps.get(i)._multiplicity(), vs.get(i)._genericType()._rawType(), vs.get(i)._multiplicity(), "Error in function '" + functionFullName + "'", function.body.get(function.body.size() - 1).sourceInformation);
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                return false;
-                                            }
-                                            return true;
-                                        }
-                                        return false;
-                                    }));
-                            return targetFunc;
-                        },
+                        this::functionFirstPass,
                         (Function function, CompileContext context) ->
                         {
                         },
-                        (Function function, CompileContext context) ->
-                        {
-                            String packageString = context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
-                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
-                            ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Third Pass");
-                            MutableList<ValueSpecification> body;
-                            try
-                            {
-                                function.parameters.forEach(p -> p.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), ctx)));
-                                body = ListIterate.collect(function.body, expression -> expression.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), ctx)));
-                            }
-                            catch (Exception e)
-                            {
-                                LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
-                                throw e;
-                            }
-                            FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
-                            HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
-                            ctx.pop();
-                            targetFunc._expressionSequence(body);
-                            HelperFunctionBuilder.processFunctionSuites(function, targetFunc, context, ctx);
-                        }
+                        this::functionThirdPass
                 )
         );
+    }
+
+    private PackageableElement functionFirstPass(Function function, CompileContext context)
+    {
+        // NOTE: in the protocol, we still store the function name as is, but in the function index, we will store the function based on its function signature
+        String functionSignature = HelperModelBuilder.getSignature(function);
+        String functionFullName = context.pureModel.buildPackageString(function._package, functionSignature);
+        String functionName = context.pureModel.buildPackageString(function._package, HelperModelBuilder.getFunctionNameWithoutSignature(function));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
+
+        ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
+
+        context.pureModel.setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
+                ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
+                ._classifierGenericType(context.newGenericType(context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx))), context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity), context.pureModel)))
+                ._stereotypes(ListIterate.collect(function.stereotypes, context::resolveStereotype))
+                ._taggedValues(ListIterate.collect(function.taggedValues, context::newTaggedValue));
+        HelperModelBuilder.processFunctionConstraints(function, context, targetFunc, ctx);
+
+        context.pureModel.handlers.register(new UserDefinedFunctionHandler(context.pureModel, functionFullName, targetFunc,
+                ps -> new TypeAndMultiplicity(context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity)),
+                ps ->
+                {
+                    List<ValueSpecification> vs = ListIterate.collect(function.parameters, p -> p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx)));
+                    if (ps.size() == function.parameters.size())
+                    {
+                        int size = ps.size();
+                        // TODO clean up the check....
+                        try
+                        {
+                            for (int i = 0; i < size; i++)
+                            {
+                                HelperModelBuilder.checkCompatibility(context, ps.get(i)._genericType()._rawType(), ps.get(i)._multiplicity(), vs.get(i)._genericType()._rawType(), vs.get(i)._multiplicity(), "Error in function '" + functionFullName + "'", function.body.get(function.body.size() - 1).sourceInformation);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return false;
+                        }
+                        return true;
+                    }
+                    return false;
+                }));
+        return targetFunc;
+    }
+
+    private void functionThirdPass(Function function, CompileContext context)
+    {
+        String packageString = context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
+        ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Third Pass");
+        MutableList<ValueSpecification> body;
+        try
+        {
+            function.parameters.forEach(p -> p.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), ctx)));
+            body = ListIterate.collect(function.body, expression -> expression.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), ctx)));
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
+            throw e;
+        }
+        FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
+        HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
+        ctx.pop();
+        targetFunc._expressionSequence(body);
+        HelperFunctionBuilder.processFunctionSuites(function, targetFunc, context, ctx);
     }
 }

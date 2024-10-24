@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Profile_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Stereotype_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tag_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
 
@@ -47,14 +48,16 @@ public class ProfileCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         Profile.class,
-                        (Profile profile, CompileContext context) ->
-                        {
-                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
-                            return targetProfile._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st.value, st.sourceInformation, context)))
-                                    ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t.value, t.sourceInformation, context)));
-                        }
+                        this::profileFirstPass
                 )
         );
+    }
+
+    private PackageableElement profileFirstPass(Profile profile, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
+        return targetProfile._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st.value, st.sourceInformation, context)))
+                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t.value, t.sourceInformation, context)));
     }
 
     private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name, SourceInformation sourceInformation, CompileContext context)

@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_section_SectionIndex_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 public class SectionIndexCompilerExtension implements CompilerExtension
 {
@@ -41,9 +42,13 @@ public class SectionIndexCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         SectionIndex.class,
-                        (SectionIndex sectionIndex, CompileContext context) ->
-                                new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, SourceInformationHelper.toM3SourceInformation(sectionIndex.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"))
+                        this::sectionIndexFirstPass
                 )
         );
+    }
+
+    private PackageableElement sectionIndexFirstPass(SectionIndex sectionIndex, CompileContext context)
+    {
+        return new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, SourceInformationHelper.toM3SourceInformation(sectionIndex.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
     }
 }

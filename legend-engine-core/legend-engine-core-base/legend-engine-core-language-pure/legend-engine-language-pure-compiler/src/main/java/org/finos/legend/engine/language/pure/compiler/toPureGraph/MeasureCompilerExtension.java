@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 
@@ -44,31 +45,35 @@ public class MeasureCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         Measure.class,
-                        (Measure measure, CompileContext context) ->
-                        {
-                            String fullPath = context.pureModel.buildPackageString(measure._package, measure.name);
-                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = new Root_meta_pure_metamodel_type_Measure_Impl(measure.name, SourceInformationHelper.toM3SourceInformation(measure.sourceInformation), null);
-                            context.pureModel.typesIndex.put(fullPath, targetMeasure);
-                            GenericType genericType = HelperCoreBuilder.newGenericType(targetMeasure, context);
-                            context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
-                            targetMeasure._classifierGenericType(HelperCoreBuilder.newGenericType(context.pureModel.getType(M3Paths.Measure), context));
-                            if (measure.canonicalUnit != null)
-                            {
-                                HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, context);
-                            }
-                            measure.nonCanonicalUnits.forEach(ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, context));
-                            return targetMeasure;
-                        },
-                        (Measure measure, CompileContext context) ->
-                        {
-                            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = context.pureModel.getMeasure(context.pureModel.buildPackageString(measure._package, measure.name), measure.sourceInformation);
-                            if (measure.canonicalUnit != null)
-                            {
-                                targetMeasure._canonicalUnit(HelperMeasureBuilder.processUnitPackageableElementSecondPass(measure.canonicalUnit, context));
-                            }
-                            targetMeasure._nonCanonicalUnits(ListIterate.collect(measure.nonCanonicalUnits, ncu -> HelperMeasureBuilder.processUnitPackageableElementSecondPass(ncu, context)));
-                        }
+                        this::measureFirstPass,
+                        this::measureSecondPass
                 )
         );
+    }
+
+    private PackageableElement measureFirstPass(Measure measure, CompileContext context)
+    {
+        String fullPath = context.pureModel.buildPackageString(measure._package, measure.name);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = new Root_meta_pure_metamodel_type_Measure_Impl(measure.name, SourceInformationHelper.toM3SourceInformation(measure.sourceInformation), null);
+        context.pureModel.typesIndex.put(fullPath, targetMeasure);
+        GenericType genericType = context.newGenericType(targetMeasure);
+        context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
+        targetMeasure._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.Measure)));
+        if (measure.canonicalUnit != null)
+        {
+            HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, context);
+        }
+        measure.nonCanonicalUnits.forEach(ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, context));
+        return targetMeasure;
+    }
+
+    private void measureSecondPass(Measure measure, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = context.pureModel.getMeasure(context.pureModel.buildPackageString(measure._package, measure.name), measure.sourceInformation);
+        if (measure.canonicalUnit != null)
+        {
+            targetMeasure._canonicalUnit(HelperMeasureBuilder.processUnitPackageableElementSecondPass(measure.canonicalUnit, context));
+        }
+        targetMeasure._nonCanonicalUnits(ListIterate.collect(measure.nonCanonicalUnits, ncu -> HelperMeasureBuilder.processUnitPackageableElementSecondPass(ncu, context)));
     }
 }
