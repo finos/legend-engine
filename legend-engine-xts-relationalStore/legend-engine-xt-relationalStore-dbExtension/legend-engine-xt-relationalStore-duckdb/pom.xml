@@ -18,6 +18,7 @@
         <module>legend-engine-xt-relationalStore-duckdb-grammar</module>
         <module>legend-engine-xt-relationalStore-duckdb-protocol</module>
         <module>legend-engine-xt-relationalStore-duckdb-pure</module>
+        <module>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</module>
     </modules>
 
     <dependencyManagement>
