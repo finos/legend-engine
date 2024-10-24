@@ -98,7 +98,7 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
   assertContains(['equal', 'not', 'and', 'or', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
 
   let join = if(
-    $functionOperator->(['equal', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ]),
+    $functionOperator->in(['equal', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ]),
     | let expressionParameters = $expressionSequence.parametersValues->evaluateAndDeactivate();
       let sourceSet = getClassMappingAtId($classMappings, $sourceId);
       let targetSet = getClassMappingAtId($classMappings, $targetId);
