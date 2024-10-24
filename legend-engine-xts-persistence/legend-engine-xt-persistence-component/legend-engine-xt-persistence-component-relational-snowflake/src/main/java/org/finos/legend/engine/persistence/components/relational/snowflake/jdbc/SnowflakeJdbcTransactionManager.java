@@ -33,55 +33,41 @@ public class SnowflakeJdbcTransactionManager extends JdbcTransactionManager
         super(connection);
     }
 
-    public TabularData convertResultSetToTabularData(String sql)
+    public TabularData convertResultSetToTabularData(String sql) throws SQLException
     {
-        try
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        Optional<String> queryId;
+        try (ResultSet resultSet = this.statement.executeQuery(sql))
         {
-            List<Map<String, Object>> resultList = new ArrayList<>();
-            Optional<String> queryId;
-            try (ResultSet resultSet = this.statement.executeQuery(sql))
+            while (resultSet.next())
             {
-                while (resultSet.next())
-                {
-                    extractResults(resultList, resultSet);
-                }
-                queryId = Optional.ofNullable(resultSet.unwrap(SnowflakeResultSet.class).getQueryID());
+                extractResults(resultList, resultSet);
             }
-            return TabularData.builder()
-                    .addAllData(resultList)
-                    .queryId(queryId)
-                    .build();
+            queryId = Optional.ofNullable(resultSet.unwrap(SnowflakeResultSet.class).getQueryID());
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return TabularData.builder()
+                .addAllData(resultList)
+                .queryId(queryId)
+                .build();
     }
 
-    public TabularData convertResultSetToTabularData(String sql, int rows)
+    public TabularData convertResultSetToTabularData(String sql, int rows) throws SQLException
     {
-        try
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        Optional<String> queryId;
+        try (ResultSet resultSet = this.statement.executeQuery(sql))
         {
-            List<Map<String, Object>> resultList = new ArrayList<>();
-            Optional<String> queryId;
-            try (ResultSet resultSet = this.statement.executeQuery(sql))
+            int iter = 0;
+            while (resultSet.next() && iter < rows)
             {
-                int iter = 0;
-                while (resultSet.next() && iter < rows)
-                {
-                    iter++;
-                    extractResults(resultList, resultSet);
-                }
-                queryId = Optional.ofNullable(resultSet.unwrap(SnowflakeResultSet.class).getQueryID());
+                iter++;
+                extractResults(resultList, resultSet);
             }
-            return TabularData.builder()
-                    .addAllData(resultList)
-                    .queryId(queryId)
-                    .build();
+            queryId = Optional.ofNullable(resultSet.unwrap(SnowflakeResultSet.class).getQueryID());
         }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return TabularData.builder()
+                .addAllData(resultList)
+                .queryId(queryId)
+                .build();
     }
 }
