@@ -48,7 +48,8 @@ public class AlloyH2Server extends Server
     {
         try
         {
-            startServer(Integer.parseInt(args[0]));
+//            startServer(Integer.parseInt(args[0]));
+            startServer(9092);
         }
         catch (SQLException e)
         {
