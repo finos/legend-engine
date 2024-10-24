@@ -58,7 +58,7 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SchemaDefinitionVisitor;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -224,7 +224,7 @@ public class DuckDBSink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
                 .stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .map(Map::values)
                 .flatMap(t -> t.stream().findFirst())
