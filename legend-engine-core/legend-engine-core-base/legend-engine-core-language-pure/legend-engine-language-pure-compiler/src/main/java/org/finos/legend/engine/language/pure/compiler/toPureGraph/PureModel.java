@@ -48,15 +48,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Pure
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -120,6 +117,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -299,12 +297,6 @@ public class PureModel implements IPureModel
                         .forEach(handleEngineExceptions(this::processFirstPass));
 
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>> dependencyGraph = Maps.mutable.empty();
-                dependencyGraph.put(Class.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class));
-                dependencyGraph.put(Association.class, Lists.fixedSize.with(Class.class));
-                dependencyGraph.put(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration.class, Class.class, Association.class, Binding.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class));
-                dependencyGraph.put(PackageableConnection.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class));
-                dependencyGraph.put(PackageableRuntime.class, Lists.fixedSize.with(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, PackageableConnection.class));
-                dependencyGraph.put(Function.class, Lists.fixedSize.with(DataElement.class, Class.class, Association.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Binding.class));
                 this.extensions.getExtraProcessors().forEach(x -> dependencyGraph.put(x.getElementClass(), (Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>>) x.getPrerequisiteClasses()));
 
                 dependencyManagement.processDependencyGraph(dependencyGraph);
@@ -322,7 +314,7 @@ public class PureModel implements IPureModel
                     {
                         java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elementClass = element.getClass();
                         String elementFullPath = buildPackageString(element._package, element.name);
-                        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> prerequisiteElements = visitWithErrorHandling(element, new PackageableElementPrerequisiteFinder(getContext(element)));
+                        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> prerequisiteElements = processPrerequisiteElementsPass(element);
                         MutableSet<String> prerequisiteElementFullPaths = Sets.fixedSize.withAll(prerequisiteElements.collect(prerequisiteElement ->
                                 platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(prerequisiteElement, getExecutionSupport())));
                         elementPrerequisitesByClass.putIfAbsent(elementClass, forkJoinPool == null ? Maps.mutable.empty() : new ConcurrentHashMap<>());
@@ -614,31 +606,59 @@ public class PureModel implements IPureModel
         }
     }
 
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return visitWithErrorHandling(element, new PackageableElementFirstPassBuilder(getContext(element)));
+        return visitWithErrorHandling(element, () ->
+        {
+            CompileContext context = getContext(element);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = context.getExtraProcessorOrThrow(element).processFirstPass(element, context);
+            if (pureElement instanceof ConcreteFunctionDefinition<?>)
+            {
+                return pureElement;
+            }
+            return setNameAndPackage(pureElement, element.name, element._package, element.sourceInformation);
+        });
     }
 
-    private void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        visitWithErrorHandling(element, new PackageableElementSecondPassBuilder(getContext(element)));
+        visitWithErrorHandling(element, () ->
+        {
+            CompileContext context = getContext(element);
+            context.getExtraProcessorOrThrow(element).processSecondPass(element, context);
+            return null;
+        });
+    }
+
+    private RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        return visitWithErrorHandling(element, () ->
+        {
+            CompileContext context = getContext(element);
+            return context.getExtraProcessorOrThrow(element).getPrerequisiteElements(element, context);
+        });
     }
 
     private void processMilestoningPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        visitWithErrorHandling(element, new PackageableElementMilestoningPassBuilder(getContext(element)));
+        visitWithErrorHandling(element, () -> element.accept(new PackageableElementMilestoningPassBuilder(getContext(element))));
     }
 
-    private void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        visitWithErrorHandling(element, new PackageableElementThirdPassBuilder(getContext(element)));
+        visitWithErrorHandling(element, () ->
+        {
+            CompileContext context = getContext(element);
+            context.getExtraProcessorOrThrow(element).processThirdPass(element, context);
+            return null;
+        });
     }
 
-    private <T> T visitWithErrorHandling(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element, PackageableElementVisitor<T> visitor)
+    private <T> T visitWithErrorHandling(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element, Callable<T> callable)
     {
         try
         {
-            return element.accept(visitor);
+            return callable.call();
         }
         catch (Exception e)
         {
@@ -647,7 +667,7 @@ public class PureModel implements IPureModel
                 SourceInformation sourceInformation = ((EngineException) e).getSourceInformation();
                 if ((sourceInformation != null) && (sourceInformation != SourceInformation.getUnknownSourceInformation()))
                 {
-                    throw e;
+                    throw (EngineException) e;
                 }
             }
             StringBuilder builder = new StringBuilder("Error in '").append(element.getPath()).append("'");

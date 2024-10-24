@@ -375,9 +375,11 @@ public class HelperMappingBuilder
         {
             mappingClass._setImplementation(mappingclass.setImplementation.accept(new ClassMappingFirstPassBuilder(context, parent)).getOne());
         }
-        if (mappingclass.rootClass != null)
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class rootClass = mappingclass.rootClass;
+        if (rootClass != null)
         {
-            mappingClass._class((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) mappingclass.rootClass.accept(new PackageableElementThirdPassBuilder(context)));
+            context.pureModel.processThirdPass(rootClass);
+            mappingClass._class(context.pureModel.getClass(context.pureModel.buildPackageString(rootClass._package, rootClass.name), rootClass.sourceInformation));
         }
         return mappingClass;
     }
