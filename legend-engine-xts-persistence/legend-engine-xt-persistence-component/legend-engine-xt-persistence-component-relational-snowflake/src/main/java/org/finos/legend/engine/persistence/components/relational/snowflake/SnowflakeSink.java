@@ -76,7 +76,6 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FunctionalDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
