@@ -14,6 +14,7 @@
 
 import meta::json::*;
 import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
 import meta::pure::changetoken::diff_generation::*;
 import meta::pure::changetoken::tests::*;
 
@@ -273,4 +274,17 @@ function <<test.Test>> meta::pure::changetoken::tests::testGetTokens(): Boolean[
     let classes = [meta::pure::changetoken::tests::old::entities::vX_X_X]->packageClassesRecursive();
     let tokens = getHashTokens($classes, 'version');
     assertEquals(['meta::pure::changetoken::tests::OldSampleClass', 'xyz', 'String[1]'], $tokens);
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::testInterpreted(): Boolean[1]
+{
+    let oldScope = [];
+    let newScope = meta::legend::compileLegendGrammar('Class xxx::new::entities::vX_X_X::XXX{abc : String[1] = \'UNKNOWN\';} Class xxx::new::entities::vX_X_X::YYY{def : xxx::new::entities::vX_X_X::XXX[1] = ^xxx::new::entities::vX_X_X::XXX(abc=\'INVALID\'); ghi : xxx::new::entities::vX_X_X::XXX[1];}')->cast(@Class<Any>);
+    let oldVersions = ^Versions(versions = [^Version(version = 'da39a3ee5e6b4b0d3255bfef95601890afd80709')]);
+    let newVersions = $oldVersions->generateDiffFromVersionsAndClasses($newScope, $oldScope, [], [], [], '@type', 'version');
+    let jsonVersions = $newVersions->versionsToJson('@type');
+    let expectedJson = '{"@type":"meta::pure::changetoken::Versions","versions":[{"@type":"meta::pure::changetoken::Version","version":"da39a3ee5e6b4b0d3255bfef95601890afd80709"},{"@type":"meta::pure::changetoken::Version","changeTokens":[{"@type":"meta::pure::changetoken::AddedClass","class":"xxx::XXX"},{"@type":"meta::pure::changetoken::AddField","class":"xxx::XXX","defaultValue":{"@type":"meta::pure::changetoken::ConstValue","value":"UNKNOWN"},"fieldName":"abc","fieldType":"String[1]","safeCast":true},{"@type":"meta::pure::changetoken::AddedClass","class":"xxx::YYY"},{"@type":"meta::pure::changetoken::AddField","class":"xxx::YYY","defaultValue":{"@type":"meta::pure::changetoken::ConstValue","value":{"@type":"xxx::XXX","abc":"INVALID"}},"fieldName":"def","fieldType":"xxx::XXX[1]","safeCast":true},{"@type":"meta::pure::changetoken::AddField","class":"xxx::YYY","defaultValue":{"@type":"meta::pure::changetoken::ConstValue","value":{"@type":"xxx::XXX","abc":""}},"fieldName":"ghi","fieldType":"xxx::XXX[1]","safeCast":true}],"prevVersion":"da39a3ee5e6b4b0d3255bfef95601890afd80709","version":"65896f85895f1305e1c69d233118d0da1402ee4d"}]}';
+    assertEquals($expectedJson->parseJSON()->sort()->toCompactJSONString(), $jsonVersions->parseJSON()->sort()->toCompactJSONString());
+    let class = setupSuiteFromVersions($newVersions)->upcast('{"version":"da39a3ee5e6b4b0d3255bfef95601890afd80709","@type":"xxx::XXX"}');
+    $class->expect('{"version":"65896f85895f1305e1c69d233118d0da1402ee4d","@type":"xxx::XXX","abc":"UNKNOWN"}');
 }
