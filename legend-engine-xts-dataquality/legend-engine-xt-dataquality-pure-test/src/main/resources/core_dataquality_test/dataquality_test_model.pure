@@ -1,0 +1,113 @@
+###Relational
+Database meta::external::dataquality::tests::domain::db
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER
+  )
+  Table addressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LOCATIONID INTEGER,
+    TYPE INTEGER
+  )
+  Table locationTable
+  (
+    ID INTEGER PRIMARY KEY,
+    STREET VARCHAR(200),
+    LOCALITY VARCHAR(200)
+  )
+
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+  Join Address_Location(addressTable.LOCATIONID = locationTable.ID)
+)
+
+
+###Mapping
+Mapping meta::external::dataquality::tests::domain::dataqualitymappings
+(
+  meta::external::dataquality::tests::domain::Person: Relational
+  {
+    name: [meta::external::dataquality::tests::domain::db]personTable.FIRSTNAME,
+    age: [meta::external::dataquality::tests::domain::db]personTable.AGE,
+    addresses: [meta::external::dataquality::tests::domain::db]@Address_Person
+  }
+  meta::external::dataquality::tests::domain::Address: Relational
+  {
+    addressId: [meta::external::dataquality::tests::domain::db]addressTable.ID,
+    location: [meta::external::dataquality::tests::domain::db]@Address_Location
+  }
+  meta::external::dataquality::tests::domain::Location: Relational
+  {
+    street: [meta::external::dataquality::tests::domain::db]locationTable.STREET,
+    locality: [meta::external::dataquality::tests::domain::db]locationTable.LOCALITY
+  }
+)
+
+###Pure
+Class meta::external::dataquality::tests::domain::Person
+[
+  mustBeOfLegalAge: $this.age >= 18,
+  validNameLength: $this.name->length() < 1000,
+  ageMustBePositive: $this.age >= 0
+]
+{
+  name: String[1];
+  age: Integer[1];
+  addresses: meta::external::dataquality::tests::domain::Address[*];
+}
+
+Class meta::external::dataquality::tests::domain::Address
+[
+  validAddressId: $this.addressId->isNotEmpty()
+]
+{
+  location: meta::external::dataquality::tests::domain::Location[1];
+  locationStreet: String[1];
+  addressId: String[1];
+}
+
+Class meta::external::dataquality::tests::domain::Location
+{
+  street: String[1];
+  locality: String[1];
+}
+
+
+Class meta::external::dataquality::tests::domain::NonTemporal
+[
+  nameLength: $this.name->length() > 1
+]
+{
+ name: String[1];
+ businessTemporal: meta::external::dataquality::tests::domain::BusinessTemporal[0..1];
+ processingTemporal: meta::external::dataquality::tests::domain::ProcessingTemporal[0..1];
+ biTemporal: meta::external::dataquality::tests::domain::BiTemporalEntity[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::external::dataquality::tests::domain::BusinessTemporal
+{
+  name: String[1];
+  parent: meta::external::dataquality::tests::domain::BusinessTemporal[0..1];
+  nonTemporal: meta::external::dataquality::tests::domain::NonTemporal[0..1];
+  processingTemporal: meta::external::dataquality::tests::domain::ProcessingTemporal[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::external::dataquality::tests::domain::ProcessingTemporal
+{
+  name: String[1];
+  parent: meta::external::dataquality::tests::domain::ProcessingTemporal[0..1];
+  nonTemporal: meta::external::dataquality::tests::domain::NonTemporal[0..1];
+  businessTemporal: meta::external::dataquality::tests::domain::BusinessTemporal[0..1];
+}
+
+Class <<temporal.bitemporal>> meta::external::dataquality::tests::domain::BiTemporalEntity
+{
+  name: String[1];
+  nonTemporal: meta::external::dataquality::tests::domain::NonTemporal[0..1];
+}
