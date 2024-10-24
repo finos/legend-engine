@@ -67,7 +67,7 @@ function <<access.private>> meta::external::store::relational::modelJoins::getCl
   $classMappings->filter(c| $c.id == $id)->toOne('More than one class mapping at the given id: ' + $id);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::getAttributeRelationalOperationElement(vs:ValueSpecification[1], sourceSet:RootRelationalInstanceSetImplementation[1], targetSet: RootRelationalInstanceSetImplementation[1]):RelationalOperationElement[1]
+function <<access.private>> meta::external::store::relational::modelJoins::convertToRelationalElement(vs:ValueSpecification[1], sourceSet:RootRelationalInstanceSetImplementation[1], targetSet: RootRelationalInstanceSetImplementation[1]):RelationalOperationElement[1]
 {
   $vs->match([
     p : SimpleFunctionExpression[1] | 
