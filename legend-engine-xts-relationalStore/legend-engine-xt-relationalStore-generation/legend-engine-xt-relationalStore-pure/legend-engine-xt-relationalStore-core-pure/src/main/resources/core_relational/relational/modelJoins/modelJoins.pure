@@ -79,7 +79,7 @@ function <<access.private>> meta::external::store::relational::modelJoins::getAt
       $relationalPropertyMapping.relationalOperationElement->toOne('Localized relational model joins cannot support more than one relational operation element per property mapping. Found on class mapping id: ' + $classMapping.id);,
 
     v : InstanceValue[1] |
-      assert($v.values->size() == 1 && $v.values->toOne()->instanceOf(String),|'ab')
+      assert($v.values->size() == 1 && $v.values->toOne()->instanceOf(String),|'ab');
       ^Literal(value=$v.values->toOne());
   ]);
 
