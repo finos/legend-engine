@@ -73,13 +73,6 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
             SnowflakeAppArtifact artifact  = SnowflakeAppGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
             String content = mapper.writeValueAsString(artifact);
             result.add((new Artifact(content, FILE_NAME, "json")));
-            if (!(element._stereotypes().anySatisfy(stereotype ->
-                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
-            {
-                LOGGER.info("Generating snowflakeApp lineage artifact for " + element.getName());
-                String lineage = SnowflakeAppGenerator.generateFunctionLineage(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
-                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
-            }
             LOGGER.info("Generated artifacts for " + element.getName());
         }
         catch (Exception e)
