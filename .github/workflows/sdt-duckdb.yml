@@ -14,64 +14,23 @@
 
 name: (SDT) DuckDB SQL Dialect Tests
 
+on: [push, pull_request]
+
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  PROJECT_DIR: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
-
-on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: 11
-          distribution: zulu
-          server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
-
-      - name: Check Java version
-        run: java -version
-      
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Build core_external_store_relational_sql_dialect_translation_duckdb
-        run: |
-          mvn -B -e -pl ${{ env.PROJECT_DIR }} clean install -am -DskipTests=true 
-
-      - name: Run SDT Test
-        run: |
-          mvn -B -e -pl ${{ env.PROJECT_DIR }} test -Dtest=Test_DuckDB_SDT
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: SDT Test
+        uses: ./.github/workflows/actions/sdt-test
         with:
-          name: test-results
-          path: ${{ env.PROJECT_DIR }}/target/surefire-reports/*.xml
-
-      - name: Publish Test Results
-        uses: mikepenz/action-junit-report@v4
-        if: always()
-        with:
-          report_paths: '${{ env.PROJECT_DIR }}/target/surefire-reports/*.xml'
-          fail_on_failure: true
-          summary: true
-          detailed_summary: true
-          include_passed: true
-          check_name: DuckDB SDT Report
-          job_name: DuckDB SDT Report
-
-      - name: Upload CI Event
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: event-file
-          path: ${{ github.event_path }}
+          check-name: DuckDB SDT Report
+          project-dir: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
+          test-name: Test_DuckDB_SDT
