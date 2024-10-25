@@ -1,13 +1,13 @@
-import meta::legend::*;
+
+import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::pure::profiles::*;
 
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsNotEmptyForRelational_returnsTrue():Boolean[1]
+function <<test.Test,test.AlloyOnly>> meta::relational::tests::platform::operations::testIsNotEmptyForRelational_returnsTrue():Boolean[1]
 {
   //CreateAndFill
   meta::relational::tests::platform::operations::createTablesAndFillDbUS();
-
 
   let finalQuery = 
     {|
@@ -18,12 +18,11 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::
       $employees->isNotEmpty();
     };
 
-  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals('true', $result);
-
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsFalse():Boolean[1]
+function <<test.Test,test.AlloyOnly>> meta::relational::tests::platform::operations::testIsNotEmptyForRelational_returnsFalse():Boolean[1]
 {
   //CreateAndFill
   meta::relational::tests::platform::operations::createTablesAndFillDbUS();
@@ -38,12 +37,12 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::
       $employees->isNotEmpty();
     };
 
-  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals('false', $result);
 
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testFalsePlatformIsEmptyForRelational():Boolean[1]
+function <<test.Test,test.AlloyOnly>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsFalse():Boolean[1]
 {
   //CreateAndFill
   meta::relational::tests::platform::operations::createTablesAndFillDbUS();
@@ -58,12 +57,12 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::
       $employees->isEmpty();
     };
 
-  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals('false', $result);
 
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsTrue():Boolean[1]
+function <<test.Test,test.AlloyOnly>> meta::relational::tests::platform::operations::testIsEmptyForRelational_returnsTrue():Boolean[1]
 {
   //CreateAndFill
   meta::relational::tests::platform::operations::createTablesAndFillDbUS();
@@ -78,7 +77,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::platform::
       $employees->isEmpty();
     };
 
-  let result = executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($finalQuery,[],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals('true', $result);
 
 }
