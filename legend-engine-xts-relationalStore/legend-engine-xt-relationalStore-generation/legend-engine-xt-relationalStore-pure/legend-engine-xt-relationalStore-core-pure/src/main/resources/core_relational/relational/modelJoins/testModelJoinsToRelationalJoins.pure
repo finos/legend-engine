@@ -13,19 +13,19 @@ import meta::pure::alloy::connections::alloy::specification::*;
 
 function <<test.BeforePackage>> meta::external::store::relational::modelJoins::test::setUp():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime(LocalTradesDatabase).connectionStores.connection->toOne()->cast(@DatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(LocalTradesDatabase).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('Drop table if exists LegalEntity;', $connection);
-   executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32));', $connection);
-   executeInDb('insert into LegalEntity (ENTITY_ID, name) values (1, \'Firm X\');', $connection);
-   executeInDb('insert into LegalEntity (ENTITY_ID, name) values (2, \'Firm A\');', $connection);
+   executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32), value INT);', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name, value) values (1, \'Firm X\', 12);', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name, value) values (2, \'Firm A\', 13);', $connection);
 
    executeInDb('Drop table if exists Trade;', $connection);
-   executeInDb('Create Table Trade(id INT, ENTITY_NAME_FK VARCHAR(32), value INT, ENTITY_ID_FK INT);', $connection);
-   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (1, \'Firm X\', 8, 1);', $connection);
-   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (2, \'Firm A\', 9, 2);', $connection);
-   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (3, \'Firm X\', 10, 1);', $connection);
-   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK) values (4, \'Firm X\', 11, 1);', $connection);
+   executeInDb('Create Table Trade(id INT, ENTITY_NAME_FK VARCHAR(32), value INT, ENTITY_ID_FK INT, date DATE);', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK, date) values (1, \'Firm X\', 8,  1, \'2022-01-01\');', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK, date) values (2, \'Firm A\', 9,  2, \'2023-01-01\');', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK, date) values (3, \'Firm X\', 10, 1, \'2024-01-01\');', $connection);
+   executeInDb('insert into Trade (id, ENTITY_NAME_FK, value, ENTITY_ID_FK, date) values (4, \'Firm X\', 11, 1, \'2025-01-01\');', $connection);
    true;
 }
 
@@ -67,6 +67,38 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
     $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
     $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
   );
+}
+
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithConstantDouble():Boolean[1] 
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantDouble, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".value = 1 and (2 <> "root".value OR "root".value is null) and 1 = 1)', 
+               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithConstantString():Boolean[1]
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantString, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".ENTITY_ID_FK = \'foo\' and (\'bar\' <> "root".ENTITY_ID_FK OR "root".ENTITY_ID_FK is null))',                               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithConstantDate():Boolean[1]
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_withConstantDate, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".ENTITY_ID_FK = "legalentity_view_0".ENTITY_ID and "root".date = \'2024-01-01\' and (\'2024-01-01\' <> "root".date OR "root".date is null))',
+               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithInequalities():Boolean[1]
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_withInequalities, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".value >= "legalentity_view_0".value and "root".value > "legalentity_view_0".value and "root".value <= "legalentity_view_0".value and "root".value < "legalentity_view_0".value)',
+               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
 function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingFromProject():Boolean[1]
@@ -272,5 +304,70 @@ Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
   $that.entityId && $this.entityNameFk == $that.name,
     trades[legal_entity, trade]: $this.entityId ==
   $that.entityIdFk && $this.name == $that.entityNameFk
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::TradesMapping
+(
+  Trade[trade]: Relational
+  {
+    ~primaryKey
+    (
+      [XStoreTradesDatabase]Trades.Trade.id
+    )
+    ~mainTable [XStoreTradesDatabase]Trades.Trade
+    id: [XStoreTradesDatabase]Trades.Trade.id,
+    value: [XStoreTradesDatabase]Trades.Trade.value,
+    date: [XStoreTradesDatabase]Trades.Trade.date,
+    +entityIdFk: String[1]: [XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK,
+    +entityNameFk: String[1]: [XStoreTradesDatabase]Trades.Trade.ENTITY_NAME_FK
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping_withConstantDouble
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+  include meta::external::store::relational::modelJoins::test::TradesMapping
+  
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.entityIdFk == $that.entityId   && $this.value == 1 && 2 != $this.value && 1 == 1,
+    trades[legal_entity, trade]: $this.entityId   == $that.entityIdFk && $that.value == 1 && 2 != $that.value && 1 == 1
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping_withConstantString
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+  include meta::external::store::relational::modelJoins::test::TradesMapping
+  
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.entityIdFk == $that.entityId   && $this.entityIdFk == 'foo' && 'bar' != $this.entityIdFk,
+    trades[legal_entity, trade]: $this.entityId   == $that.entityIdFk && $that.entityIdFk == 'foo' && 'bar' != $that.entityIdFk
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping_withConstantDate
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+  include meta::external::store::relational::modelJoins::test::TradesMapping
+  
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.entityIdFk == $that.entityId   && $this.date == %2024-01-01 && %2024-01-01 != $this.date,
+    trades[legal_entity, trade]: $this.entityId   == $that.entityIdFk && $that.date == %2024-01-01 && %2024-01-01 != $that.date
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping_withInequalities
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+  include meta::external::store::relational::modelJoins::test::TradesMapping
+  
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: ($this.value >= $that.value) && ($this.value > $that.value) && ($this.value <= $that.value) && ($this.value < $that.value),
+    trades[legal_entity, trade]: ($that.value >= $this.value) && ($that.value > $this.value) && ($that.value <= $this.value) && ($that.value < $this.value)
   }
 )
