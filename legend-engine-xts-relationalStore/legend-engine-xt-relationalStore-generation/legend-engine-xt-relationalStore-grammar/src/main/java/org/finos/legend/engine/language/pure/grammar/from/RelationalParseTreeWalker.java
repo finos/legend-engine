@@ -95,17 +95,19 @@ public class RelationalParseTreeWalker
     private final DefaultCodeSection section;
 
     private static final ImmutableSet<String> JOIN_TYPES = Sets.immutable.with("INNER", "OUTER");
+    private final PureGrammarParserContext context;
 
-    public RelationalParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    public RelationalParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
     {
-        this(walkerSourceInformation, null, null);
+        this(walkerSourceInformation, null, null, context);
     }
 
-    public RelationalParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
+    public RelationalParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.context = context;
     }
 
     public void visit(RelationalParserGrammar.DefinitionContext ctx)
@@ -464,7 +466,7 @@ public class RelationalParseTreeWalker
                 ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
-        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions(context);
         Milestoning milestoning = IRelationalGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IRelationalGrammarParserExtension::getExtraMilestoningParsers));
 
         if (milestoning == null)

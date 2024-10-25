@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.from.connection;
 
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class ConnectionValueSourceCode
@@ -24,13 +25,15 @@ public class ConnectionValueSourceCode
     public final SourceInformation sourceInformation;
     public final ParseTreeWalkerSourceInformation walkerSourceInformation;
     public final boolean isEmbedded;
+    public final PureGrammarParserContext context;
 
-    public ConnectionValueSourceCode(String code, String connectionType, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation, boolean isEmbedded)
+    public ConnectionValueSourceCode(String code, String connectionType, SourceInformation sourceInformation, ParseTreeWalkerSourceInformation walkerSourceInformation, boolean isEmbedded, PureGrammarParserContext context)
     {
         this.code = code;
         this.connectionType = connectionType;
         this.sourceInformation = sourceInformation;
         this.walkerSourceInformation = walkerSourceInformation;
         this.isEmbedded = isEmbedded;
+        this.context = context;
     }
 }

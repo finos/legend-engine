@@ -35,9 +35,11 @@ import java.util.function.Function;
 public class RelationalDatabaseConnectionParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserContext context;
 
-    public RelationalDatabaseConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    public RelationalDatabaseConnectionParseTreeWalker(PureGrammarParserContext context, ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
+        this.context = context;
         this.walkerSourceInformation = walkerSourceInformation;
     }
 
@@ -91,7 +93,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
     private void handleLocalMode(RelationalDatabaseConnection connectionValue)
     {
         connectionValue.localMode = true;
-        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions(context);
         try
         {
             connectionValue.datasourceSpecification = IRelationalGrammarParserExtension.process(
@@ -111,7 +113,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
     private List<PostProcessor> visitRelationalPostProcessors(RelationalDatabaseConnectionParserGrammar.RelationalPostProcessorsContext postProcessorsContext)
     {
         List<RelationalDatabaseConnectionParserGrammar.SpecificationContext> specifications = postProcessorsContext.specification();
-        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions(context);
         List<Function<PostProcessorSpecificationSourceCode, PostProcessor>> parsers = ListIterate.flatCollect(extensions, IRelationalGrammarParserExtension::getExtraPostProcessorParsers);
         return ListIterate.collect(specifications, spec -> visitRelationalPostProcessor(spec, parsers));
     }
@@ -149,7 +151,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
                 ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
-        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions(context);
         DatasourceSpecification ds = IRelationalGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IRelationalGrammarParserExtension::getExtraDataSourceSpecificationParsers));
 
         if (ds == null)
@@ -173,7 +175,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
                 ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, ctx.getStart())
         );
 
-        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions(context);
         AuthenticationStrategy auth = IRelationalGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IRelationalGrammarParserExtension::getExtraAuthenticationStrategyParsers));
 
         if (auth == null)

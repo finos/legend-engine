@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.connection;
 
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
@@ -94,7 +95,7 @@ public class ConnectionParseTreeWalker
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.BRACE_OPEN().getSymbol().getText().length();
         ParseTreeWalkerSourceInformation connectionValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
-        ConnectionValueSourceCode connectionValueSourceCode = new ConnectionValueSourceCode(connectionValueCode, connectionType, sourceInformation, connectionValueWalkerSourceInformation, isProcessingEmbeddedConnection);
+        ConnectionValueSourceCode connectionValueSourceCode = new ConnectionValueSourceCode(connectionValueCode, connectionType, sourceInformation, connectionValueWalkerSourceInformation, isProcessingEmbeddedConnection, new PureGrammarParserContext(this.extensions));
         ConnectionValueParser connectionValueParser = this.extensions.getConnectionValueParser(connectionType);
         if (connectionValueParser == null)
         {
