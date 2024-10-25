@@ -147,12 +147,14 @@ Class meta::external::store::relational::modelJoins::test::LegalEntity
 {
   entityId: String[1];
   name: String[1];
+  value: Integer[1];
 }
 
 Class meta::external::store::relational::modelJoins::test::Trade
 {
   id: String[1];
   value: Integer[1];
+  date: Date[1];
 }
 
 Class meta::external::store::relational::modelJoins::test::OtherEntity
@@ -181,14 +183,16 @@ Database meta::external::store::relational::modelJoins::test::EntityDatabase
     Table LegalEntity
     (
       ENTITY_ID VARCHAR(32) PRIMARY KEY,
-      name VARCHAR(32) NOT NULL
+      name VARCHAR(32) NOT NULL,
+      value INT NOT NULL
     )
 
     View LegalEntity_View
     (
       ~groupBy (Entity.LegalEntity.ENTITY_ID)
       ENTITY_ID: Entity.LegalEntity.ENTITY_ID,
-      name: Entity.LegalEntity.name
+      name: Entity.LegalEntity.name,
+      value: Entity.LegalEntity.value
     )
   )
 )
@@ -224,7 +228,8 @@ Database meta::external::store::relational::modelJoins::test::XStoreTradesDataba
       id VARCHAR(32) PRIMARY KEY,
       value INTEGER NOT NULL,
       ENTITY_ID_FK VARCHAR(32) NOT NULL,
-      ENTITY_NAME_FK VARCHAR(32) NOT NULL
+      ENTITY_NAME_FK VARCHAR(32) NOT NULL,
+      date DATE NOT NULL
     )
   )
 )
@@ -243,7 +248,8 @@ Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
     )
     ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View
     entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID,
-    name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.name
+    name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.name,
+    value : [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.value
   }
 )
 
