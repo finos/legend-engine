@@ -81,14 +81,6 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
             result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), PostDeploymentActionLoader.generateActions(activator), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
-            if (!(element._stereotypes().anySatisfy(stereotype ->
-                    stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress")))))
-            {
-                //lineage
-                LOGGER.info("Generating hostedService lineage artifacts for " + element.getName());
-                String lineage = HostedServiceArtifactGenerator.generateLineage(pureModel, activator, data, routerExtensions);
-                result.add(new Artifact(lineage, LINEAGE_FILE_NAME, "json"));
-            }
             LOGGER.info("Generated artifacts for " + element.getName());
 
         }
