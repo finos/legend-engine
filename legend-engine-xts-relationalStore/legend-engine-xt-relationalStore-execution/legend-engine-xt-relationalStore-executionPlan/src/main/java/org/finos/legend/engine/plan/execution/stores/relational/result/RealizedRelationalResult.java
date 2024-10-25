@@ -38,6 +38,7 @@ public class RealizedRelationalResult extends StreamingResult
     public List<SQLResultColumn> columns;
     public List<List<Object>> resultSetRows;
     public List<List<Object>> transformedRows;
+    public static final String ROW_LIMIT_PROPERTY_NAME = "org.finos.legend.engine.realizedRelationalResultRowLimit";
 
     public RealizedRelationalResult(RelationalResult relationalResult) throws SQLException
     {
