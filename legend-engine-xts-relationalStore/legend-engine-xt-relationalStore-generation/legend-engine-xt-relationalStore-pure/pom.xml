@@ -29,7 +29,6 @@
     <modules>
         <module>legend-engine-xt-relationalStore-core-pure</module>
         <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-relationalStore-postgresSqlModel-pure</module>
         <module>legend-engine-xt-relationalStore-sqlPlanning-pure</module>
         <module>legend-engine-xt-relationalStore-sqlDialectTranslation-pure</module>
         <module>legend-engine-xt-relationalStore-SDT-pure</module>
