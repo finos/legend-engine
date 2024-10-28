@@ -45,3 +45,10 @@ function meta::legend::executePlanAsJSON(plan:String[1], vars: Pair<String, Any>
   let func = $fStr->pathToElement()->cast(@Function<{String[1], Pair<String, Any>[*]->String[1]}>);
   $func->eval($plan, $vars);
 }
+
+function meta::legend::compileLegendPMCD(pmcdJSON : String[1]):PackageableElement[*]
+{
+  let fStr = 'meta::legend::compilePMCD_String_1__PackageableElement_MANY_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
+  $func->eval($pmcdJSON);
+}

@@ -19,3 +19,5 @@ import meta::pure::mapping::*;
 native function meta::legend::compile(s:String[1]):PackageableElement[*];
 
 native function meta::legend::compileVS(s:String[1]):Any[1];
+
+native function meta::legend::compilePMCD(pmcdJSON:String[1]):PackageableElement[*];
