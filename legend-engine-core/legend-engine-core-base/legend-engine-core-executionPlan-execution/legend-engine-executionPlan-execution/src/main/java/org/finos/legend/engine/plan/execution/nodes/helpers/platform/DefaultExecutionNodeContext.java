@@ -131,6 +131,10 @@ public class DefaultExecutionNodeContext implements ExecutionNodeContext
             {
                 return (T) ((StreamingObjectResult) result).getObjectStream();
             }
+            else if (rawType.equals(List.class))
+            {
+                return this.getResultAsParameterizedType(type, result.realizeInMemory());
+            }
         }
         throw new IllegalArgumentException("Unable to convert " + result.getClass().getSimpleName() + " to " + TypeUtils.toString(type));
     }
