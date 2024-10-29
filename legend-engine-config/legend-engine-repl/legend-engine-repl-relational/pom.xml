@@ -109,11 +109,6 @@
         </dependency>
         <!-- PCT -->
 
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
-
         <!-- DuckDB -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
