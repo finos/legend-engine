@@ -17,7 +17,7 @@ import meta::external::store::relational::postgresSql::parser::*;
 import meta::pure::functions::meta::*;
 import meta::json::*;
 
-native function meta::external::store::relational::postgresSql::parser::parseSqlStatementToJson(sql: String[1]): String[1];
+native function <<access.private>> meta::external::store::relational::postgresSql::parser::parseSqlStatementToJson(sql: String[1]): String[1];
 
 function meta::external::store::relational::postgresSql::parser::parseSqlStatement(sql: String[1]): Statement[1]
 {
