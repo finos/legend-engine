@@ -345,7 +345,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let config = testSqlDialectTranslationConfig(false);
 
   let e = ^InListExpression(values = [literal(101), literal(102), literal(103)]);
-  assertEquals('( 101, 102, 103 )', $dialect->executeNodeProcessor($e, $state, $config));
+  assertEquals('(101, 102, 103)', $dialect->executeNodeProcessor($e, $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInListExpressionPrettyFormatProcessing(): Boolean[1]
@@ -372,7 +372,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let valueList = ^InListExpression(values = [literal(101), literal(102), literal(103)]);
   let e1 = ^InPredicate(valueList = $valueList, value = literal(101));
   let e2 = ^InPredicate(valueList = $valueList, value = literal(101));
-  assertEquals('101 IN ( 101, 102, 103 )', $dialect->executeNodeProcessor($e1, $state, $config));
+  assertEquals('101 IN (101, 102, 103)', $dialect->executeNodeProcessor($e1, $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInPredicatePrettyFormatProcessing(): Boolean[1]
@@ -476,9 +476,9 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
 
   assertEquals('db.func()', $dialect->executeNodeProcessor(^FunctionCall(name =  $name), $state, $config));
-  assertEquals('db.func( 101 )', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
+  assertEquals('db.func(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
   assertEquals(
-    'db.func( 101, FALSE ) OVER ( PARTITION BY db.schema.table.c1, db.schema.table.c2 ORDER BY db.schema.table.c3 DESC NULLS FIRST, db.schema.table.c4 ASC NULLS LAST )',
+    'db.func(101, FALSE) OVER (PARTITION BY db.schema.table.c1, db.schema.table.c2 ORDER BY db.schema.table.c3 DESC NULLS FIRST, db.schema.table.c4 ASC NULLS LAST)',
     $dialect->executeNodeProcessor(
       ^FunctionCall(
         name =  $name,
@@ -1016,7 +1016,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     from = ^Table(name = ^QualifiedName(parts = ['t'])),
     where = ^ComparisonExpression(left = literal(103), right = literal(104), operator = ComparisonOperator.LESS_THAN)
   );
-  assertEquals('( SELECT 101 + 102 FROM t WHERE 103 < 104 )', $dialect->executeNodeProcessor(^SubqueryExpression(query = ^Query(queryBody = $q1)), $state, $config));
+  assertEquals('(SELECT 101 + 102 FROM t WHERE 103 < 104)', $dialect->executeNodeProcessor(^SubqueryExpression(query = ^Query(queryBody = $q1)), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSubqueryExpressionPrettyFormatProcessing(): Boolean[1]
