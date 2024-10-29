@@ -46,6 +46,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -175,7 +176,12 @@ public class CompileContext
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return getExtraProcessorOrThrow(element).processFirstPass(element, this);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = getExtraProcessorOrThrow(element).processFirstPass(element, this);
+        if (pureElement instanceof ConcreteFunctionDefinition<?>)
+        {
+            return pureElement;
+        }
+        return this.pureModel.setNameAndPackage(pureElement, element.name, element._package, element.sourceInformation);
     }
 
     public void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
@@ -183,9 +189,14 @@ public class CompileContext
         getExtraProcessorOrThrow(element).processSecondPass(element, this);
     }
 
+    protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        return getExtraProcessorOrThrow(element).getPrerequisiteElements(element, this);
+    }
+
     public void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        getExtraProcessorOrThrow(element).processSecondPass(element, this);
+        getExtraProcessorOrThrow(element).processThirdPass(element, this);
     }
 
     public <T> T resolve(String path, SourceInformation sourceInformation, Function<String, T> resolver)

@@ -606,16 +606,12 @@ public class PureModel implements IPureModel
         }
     }
 
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    private void processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return visitWithErrorHandling(element, () ->
+        visitWithErrorHandling(element, () ->
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = getContext(element).processFirstPass(element);
-            if (pureElement instanceof ConcreteFunctionDefinition<?>)
-            {
-                return pureElement;
-            }
-            return setNameAndPackage(pureElement, element.name, element._package, element.sourceInformation);
+            getContext(element).processFirstPass(element);
+            return null;
         });
     }
 
@@ -630,11 +626,7 @@ public class PureModel implements IPureModel
 
     private RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return visitWithErrorHandling(element, () ->
-        {
-            CompileContext context = getContext(element);
-            return context.getExtraProcessorOrThrow(element).getPrerequisiteElements(element, context);
-        });
+        return visitWithErrorHandling(element, () -> getContext(element).processPrerequisiteElementsPass(element));
     }
 
     private void processMilestoningPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
