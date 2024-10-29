@@ -38,8 +38,6 @@ public class RealizedRelationalResult extends StreamingResult
     public List<SQLResultColumn> columns;
     public List<List<Object>> resultSetRows;
     public List<List<Object>> transformedRows;
-
-    private static final int DEFAULT_ROW_LIMIT = 1000;
     public static final String ROW_LIMIT_PROPERTY_NAME = "org.finos.legend.engine.realizedRelationalResultRowLimit";
 
     public RealizedRelationalResult(RelationalResult relationalResult) throws SQLException
@@ -52,7 +50,7 @@ public class RealizedRelationalResult extends StreamingResult
         this.transformedRows = Lists.mutable.empty();
         this.resultSetRows = Lists.mutable.empty();
         ResultSet resultSet = relationalResult.resultSet;
-        int SUPPORTED_RESULT_ROWS = getRowLimit();
+        long SUPPORTED_RESULT_ROWS = getRealizeRowLimit();
         int rowCount = 0;
         try
         {
@@ -82,11 +80,6 @@ public class RealizedRelationalResult extends StreamingResult
         {
             relationalResult.close();
         }
-    }
-
-    public int getRowLimit()
-    {
-        return Integer.getInteger(ROW_LIMIT_PROPERTY_NAME, DEFAULT_ROW_LIMIT);
     }
 
     private RealizedRelationalResult()

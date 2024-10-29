@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.result.object;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public class StreamingObjectResult<T> extends StreamingResult
@@ -90,5 +92,23 @@ public class StreamingObjectResult<T> extends StreamingResult
             this.close();
             throw new RuntimeException(format.toString() + " format not currently supported with StreamingObjectResult");
         }
+    }
+
+    @Override
+    public Result realizeInMemory()
+    {
+        List<T> res = Lists.mutable.empty();
+        this.getObjectStream().forEach(x ->
+        {
+            if (res.size() > StreamingResult.getRealizeRowLimit())
+            {
+                throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + getRealizeRowLimit() + " rows.");
+            }
+            else
+            {
+                res.add(x);
+            }
+        });
+        return new ConstantResult(res);
     }
 }

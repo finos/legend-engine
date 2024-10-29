@@ -53,7 +53,7 @@ import org.finos.legend.engine.persistence.components.relational.memsql.sql.visi
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
@@ -197,7 +197,7 @@ public class MemSqlSink extends AnsiSqlSink
             List<Column> userColumns = JdbcHelper.convertUserProvidedFieldsToColumns(userFields, new MemSqlDataTypeMapping());
             List<Column> dbColumns = new ArrayList<>();
 
-            for (Map<String, Object> m : results.get(0).getData())
+            for (Map<String, Object> m : results.get(0).data())
             {
                 String columnName = (String) m.get("Field");
 

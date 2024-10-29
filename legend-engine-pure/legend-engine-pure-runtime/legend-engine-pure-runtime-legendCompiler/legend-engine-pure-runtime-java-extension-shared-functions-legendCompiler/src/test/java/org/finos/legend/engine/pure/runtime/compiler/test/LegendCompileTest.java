@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.pure.runtime.compiler.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.junit.Test;
@@ -125,6 +130,23 @@ public abstract class LegendCompileTest
     {
         test("let x =  meta::legend::compileVS('#Test{X X Test}#');\n" +
                 "assertEquals('X X Test', $x);");
+    }
+
+    @Test
+    public void testPMCD() throws JsonProcessingException
+    {
+        Class test = new Class();
+        test.name = "a";
+        test._package = "test::class";
+
+        PureModelContextData  pmcd = PureModelContextData.newBuilder().withElement(test).build();
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        String pmcdJson = objectMapper.writeValueAsString(pmcd);
+
+        test("let x = meta::legend::compilePMCD('" + pmcdJson + "');\n" +
+                "let p = $x->at(0)->cast(@Class<Any>).name;\n " +
+                "assertEquals('a', $p);"
+        );
     }
 
 

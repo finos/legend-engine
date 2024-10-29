@@ -1,0 +1,84 @@
+Class meta::relational::tests::platform::operations::Person
+{
+  firstName: String[1];
+  lastName: String[*];
+  isDataEng:Boolean[1];
+  region:String[1];
+}
+
+function meta::relational::tests::platform::operations::createTablesAndFillDbUS():Boolean[1]
+{
+  let connection = meta::relational::tests::platform::operations::runtime::testRuntimeUS().connectionByElement(meta::relational::tests::platform::operations::database::EmployeeUSDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+   meta::relational::metamodel::execute::executeInDb('Drop table if exists Person;', $connection);
+   meta::relational::metamodel::execute::executeInDb('Create Table Person(PKEY  INT PRIMARY KEY,FIRST_NAME VARCHAR(200),LAST_NAME VARCHAR(200),IS_FULLTIME BOOLEAN,REGION VARCHAR(200));', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into Person (PKEY, FIRST_NAME, LAST_NAME,IS_FULLTIME,REGION) values (1,\'John\', \'Smith\',True, \'NYC\');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into Person (PKEY, FIRST_NAME, LAST_NAME,IS_FULLTIME,REGION) values (2,\'Jane\', \'Doe\',True, \'Chicago\');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into Person (PKEY, FIRST_NAME, LAST_NAME,IS_FULLTIME,REGION) values (3,\'Christopher\', \'Nolan\',True, \'NYC\');', $connection);
+  true; 
+}
+
+###Relational
+Database meta::relational::tests::platform::operations::database::EmployeeUSDB
+(
+    Table Person (
+      PKEY  INT PRIMARY KEY,
+      FIRST_NAME VARCHAR(200) ,
+      LAST_NAME VARCHAR(200) ,
+      IS_FULLTIME BIT,
+      REGION VARCHAR(200)
+      )
+)
+
+
+###Mapping
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::platform::operations::mapping::EmployeeUSMapping
+(
+ meta::relational::tests::platform::operations::Person: Relational{
+   ~primaryKey
+    (
+      [meta::relational::tests::platform::operations::database::EmployeeUSDB]Person.PKEY
+    )
+    ~mainTable [meta::relational::tests::platform::operations::database::EmployeeUSDB]Person
+    firstName:[meta::relational::tests::platform::operations::database::EmployeeUSDB]Person.FIRST_NAME,
+    lastName: [meta::relational::tests::platform::operations::database::EmployeeUSDB]Person.LAST_NAME,
+    isDataEng: [meta::relational::tests::platform::operations::database::EmployeeUSDB]Person.IS_FULLTIME,
+    region: [meta::relational::tests::platform::operations::database::EmployeeUSDB]Person.REGION
+  }
+)
+
+
+###Pure
+import meta::relational::metamodel::*;
+import meta::json::*;
+import meta::json::tests::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+
+
+function meta::relational::tests::platform::operations::runtime::testRuntimeUS():Runtime[1]
+{
+  ^Runtime(connectionStores = meta::relational::tests::platform::operations::testDatabaseConnectionPerson(meta::relational::tests::platform::operations::database::EmployeeUSDB,'GMT'))
+}
+
+function meta::relational::tests::platform::operations::testDatabaseConnectionPerson(db:Database[1], timeZone:String[0..1]) : ConnectionStore[1]
+{
+  ^ConnectionStore(
+    connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(
+        type = DatabaseType.H2,
+        timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
+    ),
+    element = $db);
+}
+
+
+
+

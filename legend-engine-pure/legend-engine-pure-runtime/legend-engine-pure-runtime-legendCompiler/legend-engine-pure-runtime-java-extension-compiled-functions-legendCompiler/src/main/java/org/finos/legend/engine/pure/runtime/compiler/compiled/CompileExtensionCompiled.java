@@ -16,6 +16,7 @@ package org.finos.legend.engine.pure.runtime.compiler.compiled;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.pure.runtime.compiler.compiled.natives.LegendCompile;
+import org.finos.legend.engine.pure.runtime.compiler.compiled.natives.LegendCompilePMCD;
 import org.finos.legend.engine.pure.runtime.compiler.compiled.natives.LegendCompileVS;
 import org.finos.legend.pure.runtime.java.compiled.extension.BaseCompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
@@ -26,7 +27,7 @@ public class CompileExtensionCompiled extends BaseCompiledExtension
     {
         super(
                 "core_external_compiler",
-                () -> Lists.fixedSize.with(new LegendCompile(), new LegendCompileVS()),
+                () -> Lists.fixedSize.with(new LegendCompile(), new LegendCompileVS(), new LegendCompilePMCD()),
                 Lists.fixedSize.with(),
                 Lists.fixedSize.empty(),
                 Lists.fixedSize.empty());

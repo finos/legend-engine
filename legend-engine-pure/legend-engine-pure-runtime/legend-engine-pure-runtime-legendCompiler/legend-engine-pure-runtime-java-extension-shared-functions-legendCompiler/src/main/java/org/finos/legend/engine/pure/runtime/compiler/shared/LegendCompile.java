@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.pure.runtime.compiler.shared;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
@@ -22,9 +24,9 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.ModelElementAccessor;
@@ -53,6 +55,27 @@ public class LegendCompile
         PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
         // Extract Compiled created elements
         return ((ConcreteFunctionDefinition<?>) extractCreatedElementFromCompiledGraph(data, pm).getFirst())._expressionSequence().getFirst();
+    }
+
+    public static MutableList<PackageableElement> doCompilePMCD(String code, Metadata metadata)
+    {
+        // Parse
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        PureModelContextData data = null;
+        try
+        {
+            data = objectMapper.readValue(code, PureModelContextData.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Compile
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
+
+        // Extract Compiled created elements
+        return extractCreatedElementFromCompiledGraph(data, pm);
     }
 
     private static MutableList<PackageableElement> extractCreatedElementFromCompiledGraph(PureModelContextData pureModelContextData, PureModel pureModel)

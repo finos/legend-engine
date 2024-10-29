@@ -45,5 +45,6 @@ public enum FunctionName
     CONVERT,
     STRUCT,
     CONCAT,
+    JSON_EXTRACT_PATH_TEXT,
     APPROX_COUNT_DISTINCT;
 }
