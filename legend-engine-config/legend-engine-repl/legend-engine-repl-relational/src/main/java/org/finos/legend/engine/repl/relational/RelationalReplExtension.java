@@ -17,7 +17,6 @@ package org.finos.legend.engine.repl.relational;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.repl.client.Client;
@@ -30,27 +29,11 @@ import org.finos.legend.engine.repl.relational.commands.Load;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionManagement;
 import org.finos.legend.engine.repl.relational.local.LocalConnectionType;
 
-import java.sql.SQLException;
-
 import static org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResultGridPrintUtility.prettyGridPrint;
 
 public class RelationalReplExtension implements ReplExtension
 {
     public static String DUCKDB_LOCAL_CONNECTION_BASE_NAME = "DuckDuck";
-
-    static
-    {
-        try
-        {
-            int port = AlloyH2Server.startServer(0).getPort();
-            System.setProperty("legend.test.h2.port", String.valueOf(port));
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     private Client client;
     private int maxRowSize = 40;
     private LocalConnectionManagement localConnectionManagement;
@@ -66,7 +49,6 @@ public class RelationalReplExtension implements ReplExtension
     {
         this.client = client;
         this.localConnectionManagement = new LocalConnectionManagement(client);
-        // this.localConnectionManagement.addLocalConnection(LocalConnectionType.H2, "MyTestH2");
         this.localConnectionManagement.addLocalConnection(LocalConnectionType.DuckDB, DUCKDB_LOCAL_CONNECTION_BASE_NAME);
     }
 
