@@ -4,6 +4,7 @@
   "dependencies": [
     "platform",
     "core",
-    "core_external_store_relational_postgres_sql_model"
+    "core_external_store_relational_postgres_sql_model",
+    "core_external_store_relational_postgres_sql_parser"
   ]
 }
