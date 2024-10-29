@@ -112,13 +112,10 @@ public class TestQueryTimeOut extends AlloyTestServer
         statement.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,PRIMARY KEY(fullName));");
 
         Integer personTableLength = 100000;
-        Long t1 = System.currentTimeMillis();
         for (int i = 1; i <= personTableLength; i++)
         {
             statement.execute(String.format("insert into PERSON (fullName,firmName,addressName) values ('fullName%d','firmName%d','addressName%d');", personTableLength - i, i, personTableLength - i));
         }
-        Long t2 = System.currentTimeMillis();
-        System.out.println("Insert took " + (t2 - t1) + " ms");
     }
 
     @Test
@@ -128,12 +125,10 @@ public class TestQueryTimeOut extends AlloyTestServer
         {
             SingleExecutionPlan executionPlan = buildPlan(TEST_EXECUTION_PLAN);
             Assert.assertNotNull(executionPlan);
-            System.out.println(LocalDateTime.now());
             Assert.assertNotNull(executePlan(executionPlan, Maps.mutable.empty()));
         }
         catch (Exception e)
         {
-            System.out.println(LocalDateTime.now());
             Assert.assertEquals("org.h2.jdbc.JdbcSQLTimeoutException: Statement was canceled or the session timed out; SQL statement:", e.getMessage().substring(0, e.getMessage().indexOf('\n')));
             return;
         }
