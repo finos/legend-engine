@@ -80,10 +80,19 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
 {
   level: Integer[1] = 0;
 
+  {doc.doc = 'Returns right level indentation for next line if pretty format configured, else space'}
   separator(offsetIndex: Integer[1], config: SqlDialectTranslationConfig[1]) {
     if ($config.formatConfig.pretty,
         | $config.formatConfig.lineSeparator + repeat($config.formatConfig.indent, $this.level + $offsetIndex)->joinStrings(),
         | ' '
+    )
+  }: String[1];
+
+  {doc.doc = 'Returns right level indentation for next line if pretty format configured, else empty string'}
+  separatorIfPretty(offsetIndex: Integer[1], config: SqlDialectTranslationConfig[1]) {
+    if ($config.formatConfig.pretty,
+        | $config.formatConfig.lineSeparator + repeat($config.formatConfig.indent, $this.level + $offsetIndex)->joinStrings(),
+        | ''
     )
   }: String[1];
 }

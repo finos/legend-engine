@@ -448,9 +448,9 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::inL
   nodeProcessor(
     InListExpression,
     {sqlDialect, l, state, config |
-      let sep0 = $state.separator(0, $config);
-      let sep1 = $state.separator(1, $config);
-      let whenClauses = $l.values->map(v | $sqlDialect->executeNodeProcessor($v, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1);
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
+      let whenClauses = $l.values->map(v | $sqlDialect->executeNodeProcessor($v, [], $state->increaseLevel(), $config))->joinStrings(',' + $state.separator(1, $config));
       '(' + $sep1 + $whenClauses + $sep0 + ')';
     },
     {n | true}
@@ -551,11 +551,11 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fun
       assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
       assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
 
-      let sep0 = $state.separator(0, $config);
-      let sep1 = $state.separator(1, $config);
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
       
       $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($f.arguments->isEmpty(), | '', | $sep1) +
-      $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1) +
+      $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config))->joinStrings(',' + $state.separator(1, $config)) +
       + if($f.arguments->isEmpty(), | '', | $sep0) + ')' +
       if ($f.window->isNotEmpty(),
           | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
@@ -720,8 +720,8 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::sub
   nodeProcessor(
     SubqueryExpression,
     {sqlDialect, s, state, config |
-      let sep0 = $state.separator(0, $config);
-      let sep1 = $state.separator(1, $config);
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
       '(' + $sep1 + $sqlDialect->executeNodeProcessor($s.query, $state->increaseLevel(), $config) + $sep0 + ')';
     },
     {n | true}
