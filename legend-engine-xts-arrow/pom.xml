@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.64.0</version>
+        <version>4.64.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xts-arrow</artifactId>
