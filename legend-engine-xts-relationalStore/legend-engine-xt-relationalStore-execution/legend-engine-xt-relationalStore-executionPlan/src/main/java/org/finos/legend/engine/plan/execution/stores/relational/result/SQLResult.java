@@ -42,7 +42,6 @@ public abstract class SQLResult extends Result implements StoreExecutable
     private final String databaseType;
     private final List<String> temporaryTables;
     private final Connection connection;
-    private final DatabaseConnection protocolConnection;
     private final Statement statement;
 
     private final RequestContext requestContext;
@@ -55,7 +54,6 @@ public abstract class SQLResult extends Result implements StoreExecutable
         this.temporaryTables = temporaryTables;
         this.requestContext = requestContext;
         this.connection = connection;
-        this.protocolConnection = protocolConnection;
         
         try
         {
