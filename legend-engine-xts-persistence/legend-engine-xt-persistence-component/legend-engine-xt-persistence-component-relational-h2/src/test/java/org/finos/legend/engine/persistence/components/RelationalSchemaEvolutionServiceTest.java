@@ -18,9 +18,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalSchemaEvolutionService;
 import org.finos.legend.engine.persistence.components.relational.api.SchemaEvolutionServiceResult;
@@ -98,7 +96,13 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
     {
         DatasetDefinition mainTable = TestUtils.getSchemaEvolutionAddColumnMainTableUpperCase(); // This is only used to create a database table in upper case
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
-        DatasetReference mainTableDatasetReference = DatasetReferenceImpl.builder().group(testSchemaName).name(mainTableName).build(); // This is the model user has
+        DatasetReference mainTableDatasetReference = DatasetReferenceImpl.builder().group(testSchemaName)
+                .name(mainTableName)
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableOrigin(TableOrigin.ICEBERG).build())
+                .build(); // This is the model user has
+
+        Assertions.assertEquals(DatasetAdditionalProperties.builder().tableOrigin(TableOrigin.ICEBERG).build(),
+                mainTableDatasetReference.datasetAdditionalProperties().get());
 
         // Create staging table
         createStagingTable(stagingTable);
