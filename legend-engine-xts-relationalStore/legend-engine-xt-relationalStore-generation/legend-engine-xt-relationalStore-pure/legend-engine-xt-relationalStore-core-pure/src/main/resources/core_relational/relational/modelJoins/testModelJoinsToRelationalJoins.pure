@@ -16,9 +16,9 @@ function <<test.BeforePackage>> meta::external::store::relational::modelJoins::t
    let connection = meta::external::store::relational::tests::testRuntime(LocalTradesDatabase).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection);
 
    executeInDb('Drop table if exists LegalEntity;', $connection);
-   executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32), value INT);', $connection);
-   executeInDb('insert into LegalEntity (ENTITY_ID, name, value) values (1, \'Firm X\', 12);', $connection);
-   executeInDb('insert into LegalEntity (ENTITY_ID, name, value) values (2, \'Firm A\', 13);', $connection);
+   executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32), value INT, valueHidden INT);', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name, value, valueHidden) values (1, \'Firm X\', 12, 12);', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name, value, valueHidden) values (2, \'Firm A\', 13, 13;', $connection);
 
    executeInDb('Drop table if exists Trade;', $connection);
    executeInDb('Create Table Trade(id INT, ENTITY_NAME_FK VARCHAR(32), value INT, ENTITY_ID_FK INT, date DATE);', $connection);
@@ -98,6 +98,14 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping_withInequalities, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
   assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".value >= "legalentity_view_0".value and "root".value > "legalentity_view_0".value and "root".value <= "legalentity_view_0".value and "root".value < "legalentity_view_0".value)',
+               $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::external::store::relational::modelJoins::test::testJoinWithHiddenAttribute():Boolean[1]
+{
+  let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
+  let xstoreResult = executionPlan($query, XStoreTradesMapping_joinOnHiddenAttribute, getXStoreRuntime(),meta::relational::extension::relationalExtensions());
+  assertEquals('select "root".value as "Value", "legalentity_view_0".name as "Client/Name" from Trades.Trade as "root" left outer join (select "root".ENTITY_ID as ENTITY_ID, "root".name as name, "root".value as value, "root".valueHidden as valueHidden from Entity.LegalEntity as "root" group by "root".ENTITY_ID) as "legalentity_view_0" on ("root".value = "legalentity_view_0".valueHidden)',
                $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
@@ -184,7 +192,8 @@ Database meta::external::store::relational::modelJoins::test::EntityDatabase
     (
       ENTITY_ID VARCHAR(32) PRIMARY KEY,
       name VARCHAR(32) NOT NULL,
-      value INT NOT NULL
+      value INT NOT NULL,
+      valueHidden INT NOT NULL
     )
 
     View LegalEntity_View
@@ -192,7 +201,8 @@ Database meta::external::store::relational::modelJoins::test::EntityDatabase
       ~groupBy (Entity.LegalEntity.ENTITY_ID)
       ENTITY_ID: Entity.LegalEntity.ENTITY_ID,
       name: Entity.LegalEntity.name,
-      value: Entity.LegalEntity.value
+      value: Entity.LegalEntity.value,
+      valueHidden: Entity.LegalEntity.valueHidden
     )
   )
 )
@@ -249,6 +259,7 @@ Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
     ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View
     entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.ENTITY_ID,
     name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.name,
+    +valueHidden: Number[1] : [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.valueHidden,
     value : [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity_View.value
   }
 )
@@ -375,5 +386,17 @@ Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
   {
     client[trade, legal_entity]: ($this.value >= $that.value) && ($this.value > $that.value) && ($this.value <= $that.value) && ($this.value < $that.value),
     trades[legal_entity, trade]: ($that.value >= $this.value) && ($that.value > $this.value) && ($that.value <= $this.value) && ($that.value < $this.value)
+  }
+)
+
+Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping_joinOnHiddenAttribute
+(
+  include meta::external::store::relational::modelJoins::test::LegalEntityMapping
+  include meta::external::store::relational::modelJoins::test::TradesMapping
+  
+  meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
+  {
+    client[trade, legal_entity]: $this.value == $that.valueHidden,
+    trades[legal_entity, trade]: $that.value == $this.valueHidden
   }
 )
