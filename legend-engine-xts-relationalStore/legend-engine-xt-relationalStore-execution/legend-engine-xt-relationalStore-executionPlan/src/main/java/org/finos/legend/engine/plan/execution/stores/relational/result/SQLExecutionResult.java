@@ -68,7 +68,7 @@ public class SQLExecutionResult extends SQLResult
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
     {
-        super("success", connection, activities, databaseType, temporaryTables, requestContext);
+        super("success", connection, SQLExecutionNode.connection, activities, databaseType, temporaryTables, requestContext);
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));

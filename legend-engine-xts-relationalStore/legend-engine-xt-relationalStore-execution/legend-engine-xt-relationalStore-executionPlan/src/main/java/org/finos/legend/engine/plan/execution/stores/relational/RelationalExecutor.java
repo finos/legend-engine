@@ -264,7 +264,7 @@ public class RelationalExecutor
 
         this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, identity, executionState, false);
 
-        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, identity, tempTableList, executionState.getRequestContext());
+        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, node.connection, identity, tempTableList, executionState.getRequestContext());
     }
 
     private void prepareForSQLExecution(String sqlQuery, String sqlComment, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, Identity identity, ExecutionState executionState, boolean shouldLogSQL)
