@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
@@ -114,7 +115,7 @@ public class JsonClassDeserialization<T extends Any> extends ClassConversion<Obj
         }
         catch (PureExecutionException e)
         {
-            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString() + ": \n" + e.getInfo(), e);
+            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString() + ": \n" + e.getInfo(), e, Stacks.mutable.empty());
         }
     }
 
@@ -139,12 +140,12 @@ public class JsonClassDeserialization<T extends Any> extends ClassConversion<Obj
             }
             catch (PureExecutionException e)
             {
-                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \n" + e.getInfo(), e);
+                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \n" + e.getInfo(), e, Stacks.mutable.empty());
             }
             catch (ClassCastException | IllegalArgumentException e)
             {
                 String foundType = jsonValue instanceof JSONObject ? "JSON Object" : PrimitiveConversion.toPurePrimitiveName(jsonValue.getClass());
-                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \nExpected " + jsonPropertyDeserialization.pureTypeAsString() + ", found " + foundType, e);
+                throw new PureExecutionException(context.getSourceInformation(), "Error populating property '" + jsonPropertyDeserialization.getName() + "' on class '" + this.pureTypeAsString() + "': \nExpected " + jsonPropertyDeserialization.pureTypeAsString() + ", found " + foundType, e, Stacks.mutable.empty());
             }
         }
         return keyValues;
@@ -165,7 +166,7 @@ public class JsonClassDeserialization<T extends Any> extends ClassConversion<Obj
             {
                 StringBuilder errorMsg = new StringBuilder();
                 unknownProperties.forEach(p -> PackageableElement.writeUserPathForPackageableElement(errorMsg.append("Property '").append(p).append("' can't be found in class "), this.clazz).append(". "));
-                throw new PureExecutionException(context.getSourceInformation(), errorMsg.toString());
+                throw new PureExecutionException(context.getSourceInformation(), errorMsg.toString(), Stacks.mutable.empty());
             }
         }
     }

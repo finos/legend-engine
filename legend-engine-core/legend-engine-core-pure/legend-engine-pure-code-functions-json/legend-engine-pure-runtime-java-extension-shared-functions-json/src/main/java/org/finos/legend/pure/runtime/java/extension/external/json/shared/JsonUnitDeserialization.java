@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -43,15 +44,15 @@ public class JsonUnitDeserialization<T extends Any> extends UnitConversion<Objec
         }
         catch (Exception e)
         {
-            throw new PureExecutionException("Mal-formatted Json for unit.", e);
+            throw new PureExecutionException("Mal-formatted Json for unit.", e, Stacks.mutable.empty());
         }
         if (unitsJsonArray.size() != 1)
         {
-            throw new PureExecutionException("Currently composite units are not supported.");
+            throw new PureExecutionException("Currently composite units are not supported.", Stacks.mutable.empty());
         }
         if (unitTypeExponent.intValue() != 1)
         {
-            throw new PureExecutionException("Currently non-one exponent for unit is not supported. Got: " + unitTypeExponent + ".");
+            throw new PureExecutionException("Currently non-one exponent for unit is not supported. Got: " + unitTypeExponent + ".", Stacks.mutable.empty());
         }
         Number unitValue;
         try
@@ -60,7 +61,7 @@ public class JsonUnitDeserialization<T extends Any> extends UnitConversion<Objec
         }
         catch (ClassCastException e)
         {
-            throw new PureExecutionException("Value from unitValue field must be of Number type, getting " + ((JSONObject) value).get(VALUE_KEY_NAME).getClass().getName() + " type instead.", e);
+            throw new PureExecutionException("Value from unitValue field must be of Number type, getting " + ((JSONObject) value).get(VALUE_KEY_NAME).getClass().getName() + " type instead.", e, Stacks.mutable.empty());
         }
 
         JsonDeserializationContext deserializationContext = (JsonDeserializationContext) context;
@@ -70,7 +71,7 @@ public class JsonUnitDeserialization<T extends Any> extends UnitConversion<Objec
         }
         catch (Exception e)
         {
-            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString(), e);
+            throw new PureExecutionException(deserializationContext.getSourceInformation(), "Could not create new instance of " + this.pureTypeAsString(), e, Stacks.mutable.empty());
         }
     }
 }

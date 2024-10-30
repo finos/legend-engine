@@ -31,7 +31,7 @@ public class TestAssertNotSize extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("size should not equal: 2", 3, 9, "assertNotSize([1, 2], 2)");
+        assertExpressionRaisesPureException("size should not equal: 2", 32, 5, "assertNotSize([1, 2], 2)");
     }
 
     protected static FunctionExecution getFunctionExecution()

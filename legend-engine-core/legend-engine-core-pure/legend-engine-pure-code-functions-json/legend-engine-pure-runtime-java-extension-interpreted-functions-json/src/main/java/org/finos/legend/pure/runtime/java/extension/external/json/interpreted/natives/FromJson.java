@@ -19,6 +19,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
@@ -72,9 +73,9 @@ public class FromJson extends NativeFunction
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        SourceInformation si = functionExpressionToUseInStack.getSourceInformation();
+        SourceInformation si = functionExpressionCallStack.peek().getSourceInformation();
 
         Class startingClass = (Class) Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
         CoreInstance config = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
@@ -93,8 +94,8 @@ public class FromJson extends NativeFunction
             @Override
             public <T extends Any> T newObject(Class<T> clazz, Map<String, RichIterable<?>> properties)
             {
-                CoreInstance instance = FromJson.this.repository.newEphemeralAnonymousCoreInstance(functionExpressionToUseInStack.getSourceInformation(), clazz);
-                properties.forEach((key, values) -> Instance.setValuesForProperty(instance, key, values.collect(value -> convertValue(key, value, processorSupport, si), Lists.mutable.empty()), processorSupport));
+                CoreInstance instance = FromJson.this.repository.newEphemeralAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), clazz);
+                properties.forEach((key, values) -> Instance.setValuesForProperty(instance, key, values.collect(value -> convertValue(key, value, functionExpressionCallStack, processorSupport, si), Lists.mutable.empty()), processorSupport));
                 DeserializationUtils.replaceReverseProperties(instance, processorSupport, si);
 
                 CoreInstance override = processorSupport.newAnonymousCoreInstance(si, M3Paths.ConstraintsGetterOverride);
@@ -105,7 +106,7 @@ public class FromJson extends NativeFunction
                 }
                 CoreInstance value = ValueSpecificationBootstrap.wrapValueSpecification(instance, true, processorSupport);
 
-                return (T) DefaultConstraintHandler.handleConstraints(clazz, value, si, functionExecution, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
+                return (T) DefaultConstraintHandler.handleConstraints(clazz, value, si, functionExecution, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
             }
 
             @Override
@@ -123,18 +124,18 @@ public class FromJson extends NativeFunction
                     {
                         PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
                     }
-                    throw new PureExecutionException(builder.toString());
+                    throw new PureExecutionException(builder.toString(), functionExpressionCallStack);
                 }
 
                 ListIterable<CoreInstance> params = Lists.immutable.with(
                         ValueSpecificationBootstrap.wrapValueSpecification(retrievedUnit, false, processorSupport),
                         NumericUtilities.toPureNumberValueExpression(unitValue, false, repository, processorSupport));
-                return (T) new NewUnit(repository).execute(params, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, context, processorSupport);
+                return (T) new NewUnit(repository).execute(params, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, context, processorSupport);
             }
         }));
     }
 
-    private CoreInstance convertValue(String key, Object value, ProcessorSupport processorSupport, SourceInformation sourceInfo)
+    private CoreInstance convertValue(String key, Object value, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport, SourceInformation sourceInfo)
     {
         if (value instanceof String)
         {
@@ -181,6 +182,6 @@ public class FromJson extends NativeFunction
         {
             return (CoreInstance) value;
         }
-        throw new PureExecutionException(sourceInfo, "Unknown type from output of JsonDeserializer for property: " + key);
+        throw new PureExecutionException(sourceInfo, "Unknown type from output of JsonDeserializer for property: " + key, functionExpressionCallStack);
     }
 }

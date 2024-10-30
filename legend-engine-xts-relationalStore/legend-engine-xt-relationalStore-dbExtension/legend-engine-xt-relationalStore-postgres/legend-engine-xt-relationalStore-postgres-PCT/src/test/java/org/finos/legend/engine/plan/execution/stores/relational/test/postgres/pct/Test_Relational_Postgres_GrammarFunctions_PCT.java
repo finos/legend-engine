@@ -44,12 +44,14 @@ public class Test_Relational_Postgres_GrammarFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_", "\"Assert failed\""),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::eq(SideClass[*],Nil[1])'"),
 
             // Equal
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_", "\"Assert failed\""),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""),
 
             // GreaterThan
             one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "\"Assert failed\""),

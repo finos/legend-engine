@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -31,6 +32,6 @@ public class JsonDeserializationMultiplicityParameterised<T> extends JsonPropert
     @Override
     public RichIterable<T> apply(Object value, ConversionContext context)
     {
-        throw new PureExecutionException("Deserialization of properties with parameterised multiplicity not supported. Tried to deserialize: ");
+        throw new PureExecutionException("Deserialization of properties with parameterised multiplicity not supported. Tried to deserialize: ", Stacks.mutable.empty());
     }
 }

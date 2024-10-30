@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.relational.sdt.RunSqlDialectTestQueryHelper;
 import org.finos.legend.pure.m3.compiler.Context;
@@ -60,7 +61,7 @@ public class RunSqlDialectTestQueryInterpretedExtension extends BaseInterpretedE
         }
 
         @Override
-        public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+        public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
         {
             String dbType = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport).getName();
             String testQuery = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport).getName();
@@ -69,27 +70,27 @@ public class RunSqlDialectTestQueryInterpretedExtension extends BaseInterpretedE
 
             Function<ResultSet, CoreInstance> transformer = (resultSet) ->
             {
-                CoreInstance pureResult = repository.newAnonymousCoreInstance(functionExpressionToUseInStack.getSourceInformation(), processorSupport.package_getByUserPath("meta::relational::metamodel::execute::ResultSet"));
+                CoreInstance pureResult = repository.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), processorSupport.package_getByUserPath("meta::relational::metamodel::execute::ResultSet"));
                 CoreInstance rowClassifier = processorSupport.package_getByUserPath("meta::relational::metamodel::execute::Row");
                 Instance.addValueToProperty(pureResult, "connectionAcquisitionTimeInNanoSecond", this.repository.newIntegerCoreInstance(-1), processorSupport);
                 try
                 {
-                    ExecuteInDb.createPureResultSetFromDatabaseResultSet(pureResult, resultSet, functionExpressionToUseInStack, rowClassifier, "UTC", repository, System.nanoTime(), 200, processorSupport);
+                    ExecuteInDb.createPureResultSetFromDatabaseResultSet(pureResult, resultSet, functionExpressionCallStack.peek(), rowClassifier, "UTC", repository, System.nanoTime(), 200, processorSupport);
                     return ValueSpecificationBootstrap.wrapValueSpecification(pureResult, true, processorSupport);
                 }
                 catch (SQLException e)
                 {
-                    throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), e);
+                    throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), e, functionExpressionCallStack);
                 }
             };
 
             try
             {
-                return RunSqlDialectTestQueryHelper.runTestQueryAndTransformResultSet(dbType, testQuery, setupSqls, teardownSqls, transformer);
+                return RunSqlDialectTestQueryHelper.runTestQueryAndTransformResultSet(dbType, testQuery, setupSqls, teardownSqls, transformer, functionExpressionCallStack);
             }
             catch (SQLException e)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), e);
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), e, functionExpressionCallStack);
             }
         }
     }

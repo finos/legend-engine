@@ -19,6 +19,7 @@ import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
@@ -97,9 +98,9 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                                 System.out.println("| **" + dbTestName + "** | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
-                                    throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
+                                    throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e, Stacks.mutable.empty());
                                 }
-                                throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e);
+                                throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e, Stacks.mutable.empty());
                             }
                             if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
                             {

@@ -33,15 +33,15 @@ public class TestAssertNotEquals extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("1 should not equal 1", 3, 9, "assertNotEquals(1, 1)");
+        assertExpressionRaisesPureException("1 should not equal 1", 21, 5, "assertNotEquals(1, 1)");
     }
 
     @Test
     public void testFailureWithCollections()
     {
-        assertExpressionRaisesPureException("[1, 2] should not equal [1, 2]", 3, 9, "assertNotEquals([1, 2], [1, 2])");
-        assertExpressionRaisesPureException("['aaa', 'bb'] should not equal ['aaa', 'bb']", 3, 9, "assertNotEquals(['aaa', 'bb'], ['aaa', 'bb'])");
-        assertExpressionRaisesPureException("['aaa', 2] should not equal ['aaa', 2]", 3, 9, "assertNotEquals(['aaa', 2], ['aaa', 2])");
+        assertExpressionRaisesPureException("[1, 2] should not equal [1, 2]", 34, 5, "assertNotEquals([1, 2], [1, 2])");
+        assertExpressionRaisesPureException("['aaa', 'bb'] should not equal ['aaa', 'bb']", 34, 5, "assertNotEquals(['aaa', 'bb'], ['aaa', 'bb'])");
+        assertExpressionRaisesPureException("['aaa', 2] should not equal ['aaa', 2]", 34, 5, "assertNotEquals(['aaa', 2], ['aaa', 2])");
     }
 
     protected static FunctionExecution getFunctionExecution()

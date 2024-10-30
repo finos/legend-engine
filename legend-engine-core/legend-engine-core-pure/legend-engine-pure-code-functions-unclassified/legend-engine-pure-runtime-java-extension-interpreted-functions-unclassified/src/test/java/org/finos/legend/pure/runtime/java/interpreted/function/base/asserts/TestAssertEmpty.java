@@ -31,7 +31,7 @@ public class TestAssertEmpty extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("[1, 2] is not empty", 3, 9, "assertEmpty([1, 2])");
+        assertExpressionRaisesPureException("[1, 2] is not empty", 21, 5, "assertEmpty([1, 2])");
     }
 
     protected static FunctionExecution getFunctionExecution()

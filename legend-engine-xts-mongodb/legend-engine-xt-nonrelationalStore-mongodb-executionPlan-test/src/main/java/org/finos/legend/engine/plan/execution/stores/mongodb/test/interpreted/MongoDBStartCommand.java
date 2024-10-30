@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.mongodb.test.interpreted;
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.engine.plan.execution.stores.mongodb.test.shared.MongoDBCommands;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
@@ -51,7 +52,7 @@ public class MongoDBStartCommand extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         CoreInstance imageTagCoreInstance = params.get(0);
         String imageTag = Instance.getValueForMetaPropertyToOneResolved(imageTagCoreInstance, M3Properties.values, processorSupport).getName();

@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.compiled;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.runtime.java.extension.external.json.shared.JsonSerializationContext;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.Conversion;
 import org.eclipse.collections.api.block.procedure.Procedure2;
@@ -36,7 +37,7 @@ public class PureMapSerializer
             {
                 if (!(key instanceof String))
                 {
-                    throw new PureExecutionException("Only String-key map conversions are supported, found key: " + key);
+                    throw new PureExecutionException("Only String-key map conversions are supported, found key: " + key, Stacks.mutable.empty());
                 }
                 result.put(key, toJson(value, context));
             }

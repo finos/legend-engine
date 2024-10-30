@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -55,9 +56,9 @@ public class Project extends Shared
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
+        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
 
         ListIterable<? extends CoreInstance> values = Instance.getValueForMetaPropertyToManyResolved(params.get(0), M3Properties.values, processorSupport);
 
@@ -88,7 +89,7 @@ public class Project extends Shared
 
                 final Function<CoreInstance, Object> valExtractor = getExtractor(processorSupport, type);
 
-                CoreInstance subResult = this.functionExecution.executeFunction(false, fInfo.getOne(), parameters, resolvedTypeParameters, resolvedMultiplicityParameters, fInfo.getTwo(), functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
+                CoreInstance subResult = this.functionExecution.executeFunction(false, fInfo.getOne(), parameters, resolvedTypeParameters, resolvedMultiplicityParameters, fInfo.getTwo(), functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 subResult.getValueForMetaPropertyToMany("values").forEach(c -> vals.add(valExtractor.apply(c)));
 
                 if (type == _Package.getByUserPath("String", processorSupport))

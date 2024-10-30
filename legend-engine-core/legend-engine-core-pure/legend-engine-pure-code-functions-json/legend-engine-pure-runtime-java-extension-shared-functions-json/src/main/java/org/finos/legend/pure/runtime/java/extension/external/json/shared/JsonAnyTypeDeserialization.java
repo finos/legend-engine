@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.Conversion;
@@ -36,7 +37,7 @@ public class JsonAnyTypeDeserialization implements Conversion<Object, Object>
         }
         catch (IllegalArgumentException e)
         {
-            throw new PureExecutionException("Deserialization of Any currently only supported on primitive values!", e);
+            throw new PureExecutionException("Deserialization of Any currently only supported on primitive values!", e, Stacks.mutable.empty());
         }
     }
 

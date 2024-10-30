@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.compiled.natives;
 
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.ConstraintsOverride;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -55,7 +56,7 @@ public class JsonParserHelper
 
         if (outsideLowerBound || outsideUpperBound)
         {
-            throw new PureExecutionException(si, "Expected value(s) of multiplicity " + humanReadableMultiplicity + ", found " + array.size() + " value(s).");
+            throw new PureExecutionException(si, "Expected value(s) of multiplicity " + humanReadableMultiplicity + ", found " + array.size() + " value(s).", Stacks.mutable.empty());
         }
     }
 
@@ -75,7 +76,7 @@ public class JsonParserHelper
 
         if (outsideLowerBound || outsideUpperBound)
         {
-            throw new PureExecutionException(si, "Expected value(s) of multiplicity " + humanReadableMultiplicity + ", found " + errorMsg + " value(s).");
+            throw new PureExecutionException(si, "Expected value(s) of multiplicity " + humanReadableMultiplicity + ", found " + errorMsg + " value(s).", Stacks.mutable.empty());
         }
     }
 
@@ -127,7 +128,7 @@ public class JsonParserHelper
                     actualType = actualValue.getClass().getSimpleName();
                 }
             }
-            throw new PureExecutionException("Expected " + expectedPureType + ", found " + actualType);
+            throw new PureExecutionException("Expected " + expectedPureType + ", found " + actualType, Stacks.mutable.empty());
         }
     }
 
@@ -197,13 +198,13 @@ public class JsonParserHelper
                     enumerationFullUserPath = enumString.substring(0, dotIndex);
                     if (!fullClassName.regionMatches(5, enumerationFullUserPath.replace("::", "_"), 0, fullClassName.length() - 5))
                     {
-                        throw new PureExecutionException(si, "Expected enum of type " + fullClassName + "; got: " + enumString);
+                        throw new PureExecutionException(si, "Expected enum of type " + fullClassName + "; got: " + enumString, Stacks.mutable.empty());
                     }
                 }
                 T result = (T) metadata.getEnum(enumerationFullUserPath, enumName);
                 if (result == null)
                 {
-                    throw new PureExecutionException(si, "Unknown enum: " + fullClassName + "." + enumName);
+                    throw new PureExecutionException(si, "Unknown enum: " + fullClassName + "." + enumName, Stacks.mutable.empty());
                 }
                 return result;
             }

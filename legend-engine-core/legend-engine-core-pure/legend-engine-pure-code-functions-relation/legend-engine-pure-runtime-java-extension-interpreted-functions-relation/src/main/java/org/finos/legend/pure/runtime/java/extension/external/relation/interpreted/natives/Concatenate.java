@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.external.relation.interpret
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -43,9 +44,9 @@ public class Concatenate extends Shared
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
+        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
 
         TestTDS tds1 = getTDS(params, 0, processorSupport);
         TestTDS tds2 = getTDS(params, 1, processorSupport);
@@ -55,7 +56,7 @@ public class Concatenate extends Shared
 
         if (!_RelationType.canConcatenate(genericType1, genericType2, processorSupport))
         {
-            throw new PureExecutionException("Can't concatenate the two Relations as their types are incompatible : " + _RelationType.print(genericType1, processorSupport) + " & " + _RelationType.print(genericType2, processorSupport));
+            throw new PureExecutionException("Can't concatenate the two Relations as their types are incompatible : " + _RelationType.print(genericType1, processorSupport) + " & " + _RelationType.print(genericType2, processorSupport), functionExpressionCallStack);
         }
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds1.concatenate(tds2), returnGenericType, repository, processorSupport), false, processorSupport);
