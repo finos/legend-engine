@@ -18,7 +18,7 @@ function <<test.BeforePackage>> meta::external::store::relational::modelJoins::t
    executeInDb('Drop table if exists LegalEntity;', $connection);
    executeInDb('Create Table LegalEntity (ENTITY_ID INT, name VARCHAR(32), value INT, valueHidden INT);', $connection);
    executeInDb('insert into LegalEntity (ENTITY_ID, name, value, valueHidden) values (1, \'Firm X\', 12, 12);', $connection);
-   executeInDb('insert into LegalEntity (ENTITY_ID, name, value, valueHidden) values (2, \'Firm A\', 13, 13;', $connection);
+   executeInDb('insert into LegalEntity (ENTITY_ID, name, value, valueHidden) values (2, \'Firm A\', 13, 13);', $connection);
 
    executeInDb('Drop table if exists Trade;', $connection);
    executeInDb('Create Table Trade(id INT, ENTITY_NAME_FK VARCHAR(32), value INT, ENTITY_ID_FK INT, date DATE);', $connection);
