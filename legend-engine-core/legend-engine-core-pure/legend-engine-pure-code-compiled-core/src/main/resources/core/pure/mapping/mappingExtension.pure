@@ -146,6 +146,11 @@ function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): Enumeration
   $m.enumerationMappings->concatenate($m.includes->map(i | $i.included->allEnumerationMappings()))
 }
 
+function meta::pure::mapping::getEnumAndSourceValues(e:meta::pure::mapping::EnumerationMapping<Any>[1]):Pair<String,List<String>>[*]
+{
+   $e.enumValueMappings->map(e|pair($e.enum->id(), list($e.sourceValues->map(s|$s->toString()))));
+}
+
 function meta::pure::mapping::allSuperSetImplementations(set :PropertyMappingsImplementation[1], m:Mapping[1]):PropertyMappingsImplementation[*]
 {
       if ($set.superSetImplementationId->isEmpty(),
