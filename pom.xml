@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.20.0</legend.pure.version>
+        <legend.pure.version>5.21.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>12.54.0</legend.web-application.version>
 
@@ -2548,7 +2548,7 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-dataquality-pure-test</artifactId>
                 <version>${project.version}</version>
-            </dependency>            
+            </dependency>
 
 
             <dependency>

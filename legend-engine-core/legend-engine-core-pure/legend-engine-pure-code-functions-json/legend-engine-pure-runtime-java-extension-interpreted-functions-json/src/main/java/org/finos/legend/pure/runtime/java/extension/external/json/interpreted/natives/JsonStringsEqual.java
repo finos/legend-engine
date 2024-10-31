@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.interpreted.natives;
 
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
@@ -42,7 +43,7 @@ public class JsonStringsEqual extends NativePredicate
     }
 
     @Override
-    protected boolean executeBoolean(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, ListIterable<? extends CoreInstance> params, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport) throws PureExecutionException
+    protected boolean executeBoolean(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, ListIterable<? extends CoreInstance> params, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport) throws PureExecutionException
     {
         CoreInstance left = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport);
         CoreInstance right = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
@@ -56,7 +57,7 @@ public class JsonStringsEqual extends NativePredicate
         catch (ParseException e)
         {
             //ParseException implementation returns human readable error message from toString() method and getMessage() returns null
-            throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "Failed to parse JSON string. Invalid JSON string. " + e.toString(), e);
+            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "Failed to parse JSON string. Invalid JSON string. " + e.toString(), e, functionExpressionCallStack);
         }
     }
 }

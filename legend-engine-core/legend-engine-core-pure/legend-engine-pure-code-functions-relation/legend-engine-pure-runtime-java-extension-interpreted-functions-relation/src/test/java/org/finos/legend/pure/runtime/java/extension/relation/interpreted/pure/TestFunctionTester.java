@@ -260,24 +260,24 @@ public class TestFunctionTester extends PureExpressionTest
 //
 //        //--------------------------------------------------------------------
 //
-        compileTestSource("fromString.pure",
-                "function test():Any[*]\n" +
-                        "{ " +
-                        "    let tds = #TDS\n" +
-                        "              id, name\n" +
-                        "              1, George\n" +
-                        "              2, Pierre\n" +
-                        "              3, Sachin\n" +
-                        "              4, David\n" +
-                        "            #;\n" +
-                        "\n" +
-                        "  print(" +
-                        "       $tds->drop(3)->size()" +
-                        "   ,2);" +
-                        "}\n");
-        this.execute("test():Any[*]");
-        runtime.delete("fromString.pure");
-//
+//        compileTestSource("fromString.pure",
+//                "function test():Any[*]\n" +
+//                        "{ " +
+//                        "    let tds = #TDS\n" +
+//                        "              id, name\n" +
+//                        "              1, George\n" +
+//                        "              2, Pierre\n" +
+//                        "              3, Sachin\n" +
+//                        "              4, David\n" +
+//                        "            #;\n" +
+//                        "\n" +
+//                        "  print(" +
+//                        "       $tds->drop(3)->size()" +
+//                        "   ,2);" +
+//                        "}\n");
+//        this.execute("test():Any[*]");
+//        runtime.delete("fromString.pure");
+////
 //        //--------------------------------------------------------------------
 //
 //        compileTestSource("fromString.pure",

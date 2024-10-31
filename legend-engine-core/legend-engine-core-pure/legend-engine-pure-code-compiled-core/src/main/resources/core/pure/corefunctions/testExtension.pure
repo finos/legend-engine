@@ -183,7 +183,7 @@ function <<access.private>> meta::pure::functions::test::testedBy(vs:ValueSpecif
       iv:InstanceValueSpecificationContext[1]           | $iv.instanceValue->testedBy($soFar, $extensions),
       pv:ParameterValueSpecificationContext[1]          | $pv.functionExpression->testedBy($soFar, $extensions),
       kv:KeyValueValueSpecificationContext[1]           | $kv.functionExpression->testedBy($soFar, $extensions),
-      cc:ClassConstraintValueSpecificationContext[1]    | $cc.class->testedBy($soFar, $extensions),
+      cc:ClassConstraintValueSpecificationContext[1]    | $cc.type->testedBy($soFar, $extensions),
       an:Any[*]                                         | $soFar
    ]);
 }

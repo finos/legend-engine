@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -38,7 +39,7 @@ public class JsonDeserializationMultiplicityOne<T> extends JsonPropertyDeseriali
         {
             if (!isFromAssociation())
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found 0 value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found 0 value(s).", Stacks.mutable.empty());
             }
             return Lists.immutable.empty();
         }
@@ -47,11 +48,11 @@ public class JsonDeserializationMultiplicityOne<T> extends JsonPropertyDeseriali
             JSONArray jsonValues = (JSONArray) jsonValue;
             if (jsonValues.size() > 1)
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found " + jsonValues.size() + " value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found " + jsonValues.size() + " value(s).", Stacks.mutable.empty());
             }
             if (jsonValues.isEmpty() && !isFromAssociation())
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found 0 value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity [1], found 0 value(s).", Stacks.mutable.empty());
             }
             Object value = ((JSONArray) jsonValue).get(0);
             return applyConversion(value, jsonDeserializationContext);

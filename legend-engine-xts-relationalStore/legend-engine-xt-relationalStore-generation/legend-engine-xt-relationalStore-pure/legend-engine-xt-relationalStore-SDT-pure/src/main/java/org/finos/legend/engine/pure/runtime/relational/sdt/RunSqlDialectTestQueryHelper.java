@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.runtime.relational.sdt;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -42,12 +44,12 @@ public class RunSqlDialectTestQueryHelper
 
     }
 
-    public static <T> T runTestQueryAndTransformResultSet(String dbType, String testQuery, RichIterable<? extends String> setupSqls, RichIterable<? extends String> teardownSqls, Function<ResultSet, T> resultSetTransformFunction) throws SQLException
+    public static <T> T runTestQueryAndTransformResultSet(String dbType, String testQuery, RichIterable<? extends String> setupSqls, RichIterable<? extends String> teardownSqls, Function<ResultSet, T> resultSetTransformFunction, MutableStack<CoreInstance> functionExpressionCallStack) throws SQLException
     {
         TestConnectionIntegration found = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.valueOf(dbType)).getFirst();
         if (found == null)
         {
-            throw new PureExecutionException("Can't find a TestConnectionIntegration for dbType " + dbType + ". Available ones are " + TestConnectionIntegrationLoader.extensions().collect(c -> c.getDatabaseType().name()));
+            throw new PureExecutionException("Can't find a TestConnectionIntegration for dbType " + dbType + ". Available ones are " + TestConnectionIntegrationLoader.extensions().collect(c -> c.getDatabaseType().name()), functionExpressionCallStack);
         }
         RelationalDatabaseConnection relationalDatabaseConnection = found.getConnection();
 

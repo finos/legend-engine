@@ -23,6 +23,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.lazy.AbstractLazyIterable;
@@ -97,7 +98,7 @@ public class FunctionsHelper
         }
         catch (Exception e)
         {
-            throw new PureExecutionException("Error ciphering value '" + value + "' with key '" + key + "'.", e);
+            throw new PureExecutionException("Error ciphering value '" + value + "' with key '" + key + "'.", e, Stacks.mutable.empty());
         }
     }
 
@@ -109,7 +110,7 @@ public class FunctionsHelper
         }
         catch (Exception e)
         {
-            throw new PureExecutionException("Error deciphering value '" + value + "' with key '" + key + "'.", e);
+            throw new PureExecutionException("Error deciphering value '" + value + "' with key '" + key + "'.", e, Stacks.mutable.empty());
         }
     }
     // Crypto ----------------------------------------------------------------
@@ -130,7 +131,7 @@ public class FunctionsHelper
     {
         if (!date.hasDay())
         {
-            throw new PureExecutionException(sourceInformation, "Cannot get week of year for " + date);
+            throw new PureExecutionException(sourceInformation, "Cannot get week of year for " + date, Stacks.mutable.empty());
         }
         return date.getCalendar().get(Calendar.WEEK_OF_YEAR);
     }
@@ -139,7 +140,7 @@ public class FunctionsHelper
     {
         if (!date.hasDay())
         {
-            throw new PureExecutionException(sourceInformation, "Cannot get day of year for " + date);
+            throw new PureExecutionException(sourceInformation, "Cannot get day of year for " + date, Stacks.mutable.empty());
         }
         return date.getCalendar().get(Calendar.DAY_OF_YEAR);
     }
@@ -148,7 +149,7 @@ public class FunctionsHelper
     {
         if (!date.hasDay())
         {
-            throw new PureExecutionException(sourceInformation, "Cannot get day of week for " + date);
+            throw new PureExecutionException(sourceInformation, "Cannot get day of week for " + date, Stacks.mutable.empty());
         }
         switch (date.getCalendar().get(Calendar.DAY_OF_WEEK))
         {
@@ -182,7 +183,7 @@ public class FunctionsHelper
             }
             default:
             {
-                throw new PureExecutionException(sourceInformation, "Error getting day of week for " + date);
+                throw new PureExecutionException(sourceInformation, "Error getting day of week for " + date, Stacks.mutable.empty());
             }
         }
     }
@@ -243,7 +244,7 @@ public class FunctionsHelper
         }
         catch (InvalidFunctionDescriptorException e)
         {
-            throw new PureExecutionException(sourceInformation, "Invalid function descriptor: " + functionDescriptor, e);
+            throw new PureExecutionException(sourceInformation, "Invalid function descriptor: " + functionDescriptor, e, Stacks.mutable.empty());
         }
     }
 
@@ -336,7 +337,7 @@ public class FunctionsHelper
     {
         if (size < 1)
         {
-            throw new PureExecutionException(sourceInformation, "Invalid chunk size: " + size);
+            throw new PureExecutionException(sourceInformation, "Invalid chunk size: " + size, Stacks.mutable.empty());
         }
         return chunk(text, (int) size);
     }
@@ -472,7 +473,7 @@ public class FunctionsHelper
         }
         catch (NoSuchMethodException e)
         {
-            throw new PureExecutionException(sourceInformation, "Cannot find property '" + property + "' on " + CompiledSupport.getPureGeneratedClassName(val));
+            throw new PureExecutionException(sourceInformation, "Cannot find property '" + property + "' on " + CompiledSupport.getPureGeneratedClassName(val), Stacks.mutable.empty());
         }
         catch (Exception e)
         {
@@ -569,7 +570,7 @@ public class FunctionsHelper
         long port = System.getProperty("alloy.test.server.port") == null ? -1 : Long.parseLong(System.getProperty("alloy.test.server.port"));
         if (host != null && port == -1)
         {
-            throw new PureExecutionException("The system variable 'alloy.test.server.host' is set to '" + host + "' however 'alloy.test.server.port' has not been set!");
+            throw new PureExecutionException("The system variable 'alloy.test.server.host' is set to '" + host + "' however 'alloy.test.server.port' has not been set!", Stacks.mutable.empty());
         }
         String clientVersion = System.getProperty("alloy.test.clientVersion");
         String serverVersion = System.getProperty("alloy.test.serverVersion");
@@ -587,7 +588,7 @@ public class FunctionsHelper
         {
             if (port == -1)
             {
-                throw new PureExecutionException("The system variable 'legend.test.server.host' is set to '" + host + "' however 'legend.test.server.port' has not been set!");
+                throw new PureExecutionException("The system variable 'legend.test.server.host' is set to '" + host + "' however 'legend.test.server.port' has not been set!", Stacks.mutable.empty());
             }
             if (serializationKind == null || !(serializationKind.equals("text") || serializationKind.equals("json")))
             {
@@ -595,11 +596,11 @@ public class FunctionsHelper
             }
             if (clientVersion == null)
             {
-                throw new PureExecutionException("The system variable 'legend.test.clientVersion' should be set");
+                throw new PureExecutionException("The system variable 'legend.test.clientVersion' should be set", Stacks.mutable.empty());
             }
             if (serverVersion == null)
             {
-                throw new PureExecutionException("The system variable 'legend.test.serverVersion' should be set");
+                throw new PureExecutionException("The system variable 'legend.test.serverVersion' should be set", Stacks.mutable.empty());
             }
         }
         return host != null ? Pure.evaluate(es, alloyTest, bridge, clientVersion, serverVersion, serializationKind, host, port) : Pure.evaluate(es, regular, bridge);

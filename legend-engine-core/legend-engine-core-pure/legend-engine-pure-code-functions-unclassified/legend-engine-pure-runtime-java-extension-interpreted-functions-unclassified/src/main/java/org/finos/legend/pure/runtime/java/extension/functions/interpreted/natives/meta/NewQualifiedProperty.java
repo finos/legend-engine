@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.functions.interpreted.nativ
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -45,7 +46,7 @@ public class NewQualifiedProperty extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport)
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport)
     {
         String name = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport).getName();
         CoreInstance ownerGenericType = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
@@ -61,7 +62,7 @@ public class NewQualifiedProperty extends NativeFunction
         {
             StringBuilder message = new StringBuilder("Invalid property owner: ");
             GenericType.print(message, ownerGenericType, processorSupport);
-            throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), message.toString());
+            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), message.toString(), functionExpressionCallStack);
         }
 
         // construct function type

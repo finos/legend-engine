@@ -31,13 +31,13 @@ public class TestFail extends PureExpressionTest
     @Test
     public void testFail()
     {
-        assertExpressionRaisesPureException("Assert failed", 3, 9, "fail()");
+        assertExpressionRaisesPureException("Assert failed", 26, 5, "fail()");
     }
 
     @Test
     public void testFailWithMessage()
     {
-        assertExpressionRaisesPureException("Error Here", 3, 9, "fail('Error Here')");
+        assertExpressionRaisesPureException("Error Here", 26, 5, "fail('Error Here')");
     }
 
     protected static FunctionExecution getFunctionExecution()

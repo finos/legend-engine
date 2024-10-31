@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.runtime.relational.sdt.compiled;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -40,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.GregorianCalendar;
+import java.util.Stack;
 import java.util.TimeZone;
 
 public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtension
@@ -103,17 +105,17 @@ public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtensi
                 }
                 catch (SQLException e)
                 {
-                    throw new PureExecutionException(e);
+                    throw new PureExecutionException(e, Stacks.mutable.empty());
                 }
             };
 
             try
             {
-                return RunSqlDialectTestQueryHelper.runTestQueryAndTransformResultSet(dbType, testQuery, setupSqls, teardownSqls, transformer);
+                return RunSqlDialectTestQueryHelper.runTestQueryAndTransformResultSet(dbType, testQuery, setupSqls, teardownSqls, transformer, Stacks.mutable.empty());
             }
             catch (SQLException e)
             {
-                throw new PureExecutionException(e);
+                throw new PureExecutionException(e, Stacks.mutable.empty());
             }
         }
     }

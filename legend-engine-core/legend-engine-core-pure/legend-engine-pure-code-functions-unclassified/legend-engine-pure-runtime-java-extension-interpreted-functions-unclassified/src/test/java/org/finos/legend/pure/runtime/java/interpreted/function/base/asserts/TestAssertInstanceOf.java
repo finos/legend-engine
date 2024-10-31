@@ -31,7 +31,7 @@ public class TestAssertInstanceOf extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("expected 3 to be an instance of Boolean, actual: Integer", 3, 9, "assertInstanceOf(3, Boolean)");
+        assertExpressionRaisesPureException("expected 3 to be an instance of Boolean, actual: Integer", 34, 5, "assertInstanceOf(3, Boolean)");
     }
 
     protected static FunctionExecution getFunctionExecution()

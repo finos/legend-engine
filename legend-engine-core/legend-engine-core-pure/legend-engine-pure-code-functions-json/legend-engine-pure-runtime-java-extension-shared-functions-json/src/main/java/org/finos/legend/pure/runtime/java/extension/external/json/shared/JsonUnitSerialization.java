@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -59,6 +60,6 @@ public class JsonUnitSerialization<T extends CoreInstance> extends UnitConversio
         {
             return (Number) ((InstanceValue) value)._values().getAny();
         }
-        throw new PureExecutionException("Unexpected unit value: " + value);
+        throw new PureExecutionException("Unexpected unit value: " + value, Stacks.mutable.empty());
     }
 }

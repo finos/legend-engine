@@ -17,6 +17,7 @@ package org.finos.legend.pure.runtime.java.extension.external.relation.interpret
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
@@ -50,9 +51,9 @@ public class GroupBy extends AggregationShared
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, processorSupport);
+        CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
 
         TestTDS tds = getTDS(params, 0, processorSupport);
 
@@ -70,11 +71,11 @@ public class GroupBy extends AggregationShared
         CoreInstance aggSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(2), M3Properties.values, processorSupport);
         if (aggSpec instanceof AggColSpec)
         {
-            result.addColumn(processOneAggColSpec(orderedSource, null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
+            result.addColumn(processOneAggColSpec(orderedSource, null, (AggColSpec<?, ?, ?>) aggSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null));
         }
         else if (aggSpec instanceof AggColSpecArray)
         {
-            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
+            result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
         }
         else
         {

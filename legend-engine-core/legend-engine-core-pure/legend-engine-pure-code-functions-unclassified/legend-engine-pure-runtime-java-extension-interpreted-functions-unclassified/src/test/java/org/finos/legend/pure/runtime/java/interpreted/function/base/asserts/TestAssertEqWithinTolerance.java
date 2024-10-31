@@ -31,9 +31,9 @@ public class TestAssertEqWithinTolerance extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("\nexpected: 1\nactual:   0", 3, 9, "assertEqWithinTolerance(1, 0, 0)");
-        assertExpressionRaisesPureException("\nexpected: 2.718271828459045\nactual:   2.718281828459045", 3, 9, "assertEqWithinTolerance(2.718271828459045, 2.718281828459045, 0.000000001)");
-        assertExpressionRaisesPureException("\nexpected: 2.718281828459045\nactual:   2.7182818284590455", 3, 9, "assertEqWithinTolerance(2.718281828459045, 2.7182818284590455, 0.0000000000000001)");
+        assertExpressionRaisesPureException("\nexpected: 1\nactual:   0", 21, 5, "assertEqWithinTolerance(1, 0, 0)");
+        assertExpressionRaisesPureException("\nexpected: 2.718271828459045\nactual:   2.718281828459045", 21, 5, "assertEqWithinTolerance(2.718271828459045, 2.718281828459045, 0.000000001)");
+        assertExpressionRaisesPureException("\nexpected: 2.718281828459045\nactual:   2.7182818284590455", 21, 5, "assertEqWithinTolerance(2.718281828459045, 2.7182818284590455, 0.0000000000000001)");
     }
 
     protected static FunctionExecution getFunctionExecution()

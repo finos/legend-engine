@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -48,7 +49,7 @@ public class AlloyTest extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, final ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, final ProcessorSupport processorSupport) throws PureExecutionException
     {
         String clientVersion = System.getProperty("alloy.test.clientVersion");
         String serverVersion = System.getProperty("alloy.test.serverVersion");
@@ -59,15 +60,15 @@ public class AlloyTest extends NativeFunction
         {
             if (port == -1)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'alloy.test.server.host' is set to '" + host + "' however 'alloy.test.server.port' has not been set!");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'alloy.test.server.host' is set to '" + host + "' however 'alloy.test.server.port' has not been set!", functionExpressionCallStack);
             }
             if (clientVersion == null)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'alloy.test.clientVersion' should be set");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'alloy.test.clientVersion' should be set", functionExpressionCallStack);
             }
             if (serverVersion == null)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'alloy.test.serverVersion' should be set");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'alloy.test.serverVersion' should be set", functionExpressionCallStack);
             }
             MutableList<CoreInstance> fParams = Lists.mutable.with(
                     ValueSpecificationBootstrap.newStringLiteral(this.repository, clientVersion, this.functionExecution.getProcessorSupport()),
@@ -80,7 +81,7 @@ public class AlloyTest extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);
@@ -92,7 +93,7 @@ public class AlloyTest extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);

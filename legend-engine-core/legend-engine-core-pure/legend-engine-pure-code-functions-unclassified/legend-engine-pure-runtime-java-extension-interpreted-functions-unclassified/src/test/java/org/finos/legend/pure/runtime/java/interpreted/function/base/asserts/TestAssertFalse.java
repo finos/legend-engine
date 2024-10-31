@@ -31,29 +31,29 @@ public class TestAssertFalse extends PureExpressionTest
     @Test
     public void testFailWithoutMessage()
     {
-        assertExpressionRaisesPureException("Assert failed", 3, 9, "assertFalse(true)");
-        assertExpressionRaisesPureException("Assert failed", 3, 9, "assertFalse(2 == 2)");
+        assertExpressionRaisesPureException("Assert failed", 26, 5, "assertFalse(true)");
+        assertExpressionRaisesPureException("Assert failed", 26, 5, "assertFalse(2 == 2)");
     }
 
     @Test
     public void testFailWithMessageString()
     {
-        assertExpressionRaisesPureException("Test message", 3, 9, "assertFalse(true, 'Test message')");
-        assertExpressionRaisesPureException("Test message", 3, 9, "assertFalse(2 == 2, 'Test message')");
+        assertExpressionRaisesPureException("Test message", 26, 5, "assertFalse(true, 'Test message')");
+        assertExpressionRaisesPureException("Test message", 26, 5, "assertFalse(2 == 2, 'Test message')");
     }
 
     @Test
     public void testFailWithFormattedMessage()
     {
-        assertExpressionRaisesPureException("Test message: 5", 3, 9, "assertFalse(true, 'Test message: %d', 2 + 3)");
-        assertExpressionRaisesPureException("Test message: 5", 3, 9, "assertFalse(2 == 2, 'Test message: %d', 2 + 3)");
+        assertExpressionRaisesPureException("Test message: 5", 21, 5, "assertFalse(true, 'Test message: %d', 2 + 3)");
+        assertExpressionRaisesPureException("Test message: 5", 21, 5, "assertFalse(2 == 2, 'Test message: %d', 2 + 3)");
     }
 
     @Test
     public void testFailWithMessageFunction()
     {
-        assertExpressionRaisesPureException("Test message: 5", 3, 9, "assertFalse(true, |format('Test message: %d', 2 + 3))");
-        assertExpressionRaisesPureException("Test message: 5", 3, 9, "assertFalse(2 == 2, |format('Test message: %d', 2 + 3))");
+        assertExpressionRaisesPureException("Test message: 5", 29, 5, "assertFalse(true, |format('Test message: %d', 2 + 3))");
+        assertExpressionRaisesPureException("Test message: 5", 29, 5, "assertFalse(2 == 2, |format('Test message: %d', 2 + 3))");
     }
 
     protected static FunctionExecution getFunctionExecution()

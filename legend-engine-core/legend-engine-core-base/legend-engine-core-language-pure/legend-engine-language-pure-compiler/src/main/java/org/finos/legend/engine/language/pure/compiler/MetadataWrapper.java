@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.map.MapIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.m3.coreinstance.Package;
@@ -79,7 +80,7 @@ public class MetadataWrapper implements Metadata
                     return type;
                 }
             }
-            throw new PureExecutionException(e);
+            throw new PureExecutionException(e, Stacks.mutable.empty());
         }
     }
 
