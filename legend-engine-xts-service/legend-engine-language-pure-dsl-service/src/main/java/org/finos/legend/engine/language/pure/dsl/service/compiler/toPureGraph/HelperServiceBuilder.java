@@ -27,9 +27,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
@@ -283,13 +285,42 @@ public class HelperServiceBuilder
         {
             SingleExecutionParameters execParams = (SingleExecutionParameters) params;
             Mapping mapping = context.resolveMapping(execParams.mapping, execParams.mappingSourceInformation);
-            inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
-            Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
-            HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
-            return new Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionParameters"))
+            Root_meta_legend_service_metamodel_SingleExecutionParameters param = new Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionParameters"))
                     ._key(execParams.key)
-                    ._mapping(mapping)
-                    ._runtime(runtime);
+                    ._mapping(mapping);
+            if (execParams.runtime != null && execParams.runtimeComponents != null)
+            {
+                throw new EngineException("Cannot use both runtime and runtime components", execParams.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if (execParams.runtime != null)
+            {
+                inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
+                Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
+                HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
+                param._runtime(runtime);
+            }
+            else
+            {
+                Assert.assertTrue(execParams.runtimeComponents != null, () -> "Runtime components must be specified when runtime isn't");
+                RuntimeComponents c = execParams.runtimeComponents;
+                PackageableElement binding = null;
+                try
+                {
+                    binding = platform_pure_essential_meta_graph_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(c.binding.path, context.getExecutionSupport());
+                    Assert.assertTrue(binding instanceof Root_meta_external_format_shared_binding_Binding, () -> "provide a valid Binding");
+                }
+                catch (Exception e)
+                {
+                    throw new EngineException("Cannot resolve binding. Error: " + e.getMessage(), execParams.runtimeComponents.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                Root_meta_legend_service_metamodel_RuntimeComponents components = new Root_meta_legend_service_metamodel_RuntimeComponents_Impl("")
+                        ._runtime(HelperRuntimeBuilder.buildPureRuntime(c.runtime, context))
+                        ._class(context.resolveClass(c.clazz.path))
+                        ._binding((Root_meta_external_format_shared_binding_Binding)binding);
+                param._runtimeComponents(components);
+            }
+            return param;
         }
         else if (params instanceof MultiExecutionParameters)
         {

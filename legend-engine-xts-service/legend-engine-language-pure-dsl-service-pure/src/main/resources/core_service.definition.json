@@ -8,6 +8,7 @@
     "platform_dsl_store",
     "core_functions_unclassified",
     "core_data_space_metamodel",
+    "core_external_format_json",
     "core"
   ]
 }

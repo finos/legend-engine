@@ -32,7 +32,18 @@ public class HelperExecutionEnvironmentGrammarComposer
         str.append(getTabString(baseIndentation)).append(parameters.key).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
         str.append(getTabString(baseIndentation + 1)).append("mapping: ").append(parameters.mapping).append(";\n");
-        str.append(HelperServiceGrammarComposer.renderServiceExecutionRuntime(parameters.runtime, baseIndentation + 1, context));
+       if (parameters.runtime != null)
+       {
+           str.append(HelperServiceGrammarComposer.renderServiceExecutionRuntime(parameters.runtime, baseIndentation + 1, context));
+       }
+       if (parameters.runtimeComponents != null)
+       {
+           str.append(getTabString(baseIndentation + 1)).append("runtimeComponents:").append("\n").append(getTabString(baseIndentation + 1)).append("{\n");
+           str.append(getTabString(baseIndentation + 2)).append("class: ").append(parameters.runtimeComponents.clazz.path).append(";\n");
+           str.append(getTabString(baseIndentation + 2)).append("binding: ").append(parameters.runtimeComponents.binding.path).append(";\n");
+           str.append(HelperServiceGrammarComposer.renderServiceExecutionRuntime(parameters.runtimeComponents.runtime, baseIndentation + 2, context));
+           str.append("\n").append(getTabString(baseIndentation + 1)).append("}");
+       }
         str.append("\n").append(getTabString(baseIndentation)).append("}");
         return str.toString();
     }
