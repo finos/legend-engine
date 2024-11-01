@@ -15,14 +15,14 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 
-public class SingleExecutionParameters extends ExecutionParameters
+public class RuntimeComponents
 {
-    public String key;
-    public String mapping;
     public Runtime runtime;
-    public RuntimeComponents runtimeComponents;
+    public PackageableElementPointer clazz;
+    public PackageableElementPointer binding;
     public SourceInformation sourceInformation;
-    public SourceInformation mappingSourceInformation;
+
 }

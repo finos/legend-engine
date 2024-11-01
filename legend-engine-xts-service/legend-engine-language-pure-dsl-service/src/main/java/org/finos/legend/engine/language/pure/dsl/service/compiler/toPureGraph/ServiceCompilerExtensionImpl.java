@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -200,7 +201,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         }),
                 Processor.newProcessor(
                         ExecutionEnvironmentInstance.class,
-                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class),
+                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, Binding.class),
                         (execEnv, context) -> new Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance_Impl(execEnv.name, null, context.pureModel.getClass("meta::legend::service::metamodel::ExecutionEnvironmentInstance"))
                                 ._name(execEnv.name),
                         (execEnv, context) ->
@@ -359,7 +360,8 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 org.eclipse.collections.api.factory.Lists.mutable.with(
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "SingleExecutionParameters".equals(ps.get(1)._genericType()._rawType()._name()))),
                         new FunctionHandlerDispatchBuilderInfo("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name()))),
-                        new FunctionHandlerDispatchBuilderInfo("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && handlers.isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())))
+                        new FunctionHandlerDispatchBuilderInfo("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && handlers.isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name()))),
+                        new FunctionHandlerDispatchBuilderInfo("meta::legend::service::getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && handlers.isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && handlers.isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && handlers.isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())))
                 ));
     }
 
@@ -374,7 +376,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         // getter for execution parameters from execution environment
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(
                                 handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 2)),
-                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3))))
+                                handlers.m(handlers.h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3))
+                        )),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(
+                                 handlers.m(handlers.h("meta::legend::service::getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> handlers.res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3)))
+                        )
 
                 ));
     }
