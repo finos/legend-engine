@@ -1,0 +1,234 @@
+//  Copyright 2023 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
+import meta::pure::changetoken::tests::move::nested::*;
+import meta::pure::changetoken::tests::*;
+
+function meta::pure::changetoken::tests::move::nested::setupSuite(): meta::external::language::java::metamodel::Class[1]
+{
+  setupSuiteFromJson('{\n' +
+                '  "@type": "meta::pure::changetoken::Versions",\n' +
+                '  "versions": [\n' +
+                '    {\n' +
+                '      "@type": "meta::pure::changetoken::Version",\n' +
+                '      "version": "ftdm:abcdefg123"\n' +
+                '    },\n' +
+                '    {\n' +
+                '      "@type": "meta::pure::changetoken::Version",\n' +
+                '      "version": "ftdm:abcdefg456",\n' +
+                '      "prevVersion": "ftdm:abcdefg123",\n' +
+                '      "changeTokens": [\n' +
+                '        {\n' +
+                '          "@type": "meta::pure::changetoken::RenameField",\n' +
+                '          "oldFieldName": [\n' +
+                '            "abc",\n' +
+                '            "value"\n' +
+                '          ],\n' +
+                '          "newFieldName": [\n' +
+                '            "xyz",\n' +
+                '            "value"\n' +
+                '          ],\n' +
+                '          "class": "meta::pure::changetoken::tests::SampleClass"\n' +
+                '        }\n' +
+                '      ]\n' +
+                '    }\n' +
+                '  ]\n' +
+                '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testUpcast(): Any[*]
+{
+        expect(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testDowncast(): Any[*]
+{
+        expect(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testUpcastSame(): Any[*]
+{
+        expect(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": {"@type":"String", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testDowncastSame(): Any[*]
+{
+        expect(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc": {"@type":"String", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testUpcastDifferent(): Any[*]
+{
+        exception(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": {"@type":"String", "value":"5d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}'),
+                'Cannot overwrite with different value:5d');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testDowncastDifferent(): Any[*]
+{
+        exception(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc": {"@type":"String", "value":"6d"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                'Cannot overwrite with different value:6d');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testUpcastInvalidDestination(): Any[*]
+{
+        exception(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"3d"}, "xyz": "invalid"}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}'),
+                'Destination is not a map: xyz');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testDowncastInvalidDestination(): Any[*]
+{
+        exception(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"3d"}, "abc":  "invalid"}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                'Destination is not a map: abc');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testUpcastInvalidSource(): Any[*]
+{
+        exception(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"1d"}, "xyz": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"String", "value":"2d"}, "xyz": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": "invalid", "xyz": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"String", "value":"4d"}, "xyz": {"@type":"String"}\n' +
+                        '}'),
+                'Source is not a map: abc');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::nested::testDowncastInvalidSource(): Any[*]
+{
+        exception(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"1d"}, "abc": {"@type":"String"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"String", "value":"2d"}, "abc": {"@type":"String"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": "invalid", "abc": {"@type":"String"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"String", "value":"4d"}, "abc": {"@type":"String"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                'Source is not a map: xyz');
+}

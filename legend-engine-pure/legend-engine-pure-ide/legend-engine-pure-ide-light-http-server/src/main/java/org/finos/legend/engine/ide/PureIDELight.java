@@ -99,6 +99,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-haskell/legend-engine-xt-haskell-pure", "external-language-haskell"))
                 .with(this.buildCore("legend-engine-xts-daml/legend-engine-xt-daml-pure", "external-language-daml"))
                 .with(this.buildCore("legend-engine-xts-changetoken/legend-engine-xt-changetoken-pure", "pure-changetoken"))
+                .with(this.buildCore("legend-engine-xts-changetoken/legend-engine-xt-changetoken-test-pure", "pure-changetoken-test"))
                 .with(this.buildCore("legend-engine-xts-analytics/legend-engine-xts-analytics-mapping/legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
                 .with(this.buildCore("legend-engine-xts-analytics/legend-engine-xts-analytics-class/legend-engine-xt-analytics-class-pure", "analytics-class"))
                 .with(this.buildCore("legend-engine-xts-analytics/legend-engine-xts-analytics-binding/legend-engine-xt-analytics-binding-pure", "analytics-binding"))
