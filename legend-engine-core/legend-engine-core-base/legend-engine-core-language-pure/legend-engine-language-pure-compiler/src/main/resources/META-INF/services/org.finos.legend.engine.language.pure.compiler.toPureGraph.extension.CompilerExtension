@@ -1,1 +1,12 @@
 org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.ProfileCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.EnumerationCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.ClassCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.MeasureCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.AssociationCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.FunctionCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.MappingCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableRuntimeCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableConnectionCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.SectionIndexCompilerExtension
+org.finos.legend.engine.language.pure.compiler.toPureGraph.DataElementCompilerExtension

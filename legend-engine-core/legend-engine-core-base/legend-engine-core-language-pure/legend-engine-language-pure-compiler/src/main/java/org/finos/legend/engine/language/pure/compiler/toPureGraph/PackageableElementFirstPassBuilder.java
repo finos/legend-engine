@@ -59,8 +59,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnect
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;

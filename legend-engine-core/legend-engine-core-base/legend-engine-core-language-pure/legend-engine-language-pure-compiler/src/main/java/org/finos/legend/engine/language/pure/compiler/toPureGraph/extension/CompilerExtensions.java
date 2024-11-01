@@ -88,15 +88,6 @@ public class CompilerExtensions
     @SuppressWarnings("unchecked")
     private static final ImmutableSet<Class<? extends PackageableElement>> FORBIDDEN_PROCESSOR_CLASSES = Sets.immutable.with(
             PackageableElement.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime.class,
-            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex.class,
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class
     );
 

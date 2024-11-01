@@ -24,8 +24,6 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -93,8 +91,8 @@ public class ServiceModeling
             pkg._childrenRemove(existing);
         }
 
-        Root_meta_legend_service_metamodel_Service compiledService = (Root_meta_legend_service_metamodel_Service) service.accept(new PackageableElementFirstPassBuilder(compileContext));
-        service.accept(new PackageableElementSecondPassBuilder(compileContext));
+        Root_meta_legend_service_metamodel_Service compiledService = (Root_meta_legend_service_metamodel_Service) compileContext.processFirstPass(service);
+        compileContext.processSecondPass(service);
         return compiledService;
     }
 
