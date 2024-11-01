@@ -269,7 +269,7 @@ execParams:                             singleExecEnv | multiExecEnv
 singleExecEnv:                          identifier COLON
                                             BRACE_OPEN
                                                 serviceMapping
-                                                (serviceRuntime | serviceRuntimeComponents) *
+                                                (serviceRuntime | serviceRuntimeComponents) +
                                             BRACE_CLOSE
 ;
 multiExecEnv:                           identifier COLON BRACKET_OPEN singleExecEnv (COMMA singleExecEnv)* BRACKET_CLOSE
