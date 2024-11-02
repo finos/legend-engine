@@ -1090,7 +1090,7 @@ public class TestCompilationFromGrammar
                         "        city : x|$x.city,\n" +
                         "        treePlanted: x|$x.treePlanted,\n" +
                         "        year: x|$x.year\n" +
-                        "      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)\n" +
+                        "      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)\n" +
                         "}"
         );
     }

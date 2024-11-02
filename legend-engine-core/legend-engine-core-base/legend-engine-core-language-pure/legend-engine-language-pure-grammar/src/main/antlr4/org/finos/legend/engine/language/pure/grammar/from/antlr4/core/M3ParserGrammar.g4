@@ -211,14 +211,22 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                 |
                                                 (
                                                     PAREN_OPEN
-                                                        columnType (COMMA columnType)*
+                                                        columnInfo (COMMA columnInfo)*
                                                     PAREN_CLOSE
                                                 )
                                                 |
                                                 unitName
 ;
-columnType:                                     identifier COLON identifier
+
+columnInfo:                                     columnName COLON columnType
 ;
+
+columnName: identifier
+;
+
+columnType: identifier
+;
+
 functionTypePureType:                           type multiplicity
 ;
 typeAndMultiplicityParameters:                  LESS_THAN ((typeParameters multiplictyParameters?) | multiplictyParameters) GREATER_THAN

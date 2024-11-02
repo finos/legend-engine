@@ -1168,7 +1168,7 @@ public class PureModel implements IPureModel
 
     public GenericType getGenericType(Type type)
     {
-        return this.typesGenericTypeIndex.getIfAbsentPut(buildTypeId(type), () -> new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(type));
+        return this.typesGenericTypeIndex.getIfAbsentPut(buildTypeId(type), () -> CompileContext.newGenericType(type, this));
     }
 
     public String buildTypeId(Type type)
