@@ -23,18 +23,22 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.Type;
+import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
@@ -93,7 +97,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
@@ -359,5 +363,27 @@ public class HelperValueSpecificationGrammarComposer
     public static String generateValidDateValueContainingPercent(String date)
     {
         return date.indexOf(DateParseTreeWalker.DATE_PREFIX) != -1 ? date : DateParseTreeWalker.DATE_PREFIX + date;
+    }
+
+    public static String printGenericType(GenericType genericType)
+    {
+        return printType(genericType.rawType) +
+                (genericType.typeArguments.isEmpty() ?
+                        "" :
+                        "<" + ListIterate.collect(genericType.typeArguments, HelperValueSpecificationGrammarComposer::printGenericType).makeString(", ") + ">"
+                );
+    }
+
+    public static String printType(Type type)
+    {
+        if (type instanceof PackageableType)
+        {
+            return ((PackageableType) type).fullPath;
+        }
+        else if (type instanceof RelationType)
+        {
+            return "(" + ListIterate.collect(((RelationType) type).columns, x -> x.name + ":" + x.type).makeString(", ") + ")";
+        }
+        throw new RuntimeException(type.getClass().getSimpleName() + ": Not supported");
     }
 }

@@ -72,6 +72,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Gen
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
+import org.finos.legend.pure.m2.dsl.mapping.M2MappingPaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -93,6 +94,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 
 import java.util.List;
@@ -155,7 +157,7 @@ public class HelperMappingBuilder
         // process enum value mappings
         String id = getEnumerationMappingId(em);
         return new Root_meta_pure_mapping_EnumerationMapping_Impl<>(id, SourceInformationHelper.toM3SourceInformation(em.sourceInformation), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::mapping::EnumerationMapping"))._typeArguments(Lists.mutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Any")))))
+                ._classifierGenericType(context.newGenericType(context.pureModel.getType(M2MappingPaths.EnumerationMapping), Lists.mutable.with(context.newGenericType(context.pureModel.getType(M3Paths.Any)))))
                 ._name(id)
                 ._parent(pureMapping)
                 ._enumeration(context.resolveEnumeration(em.enumeration.path, em.enumeration.sourceInformation))
@@ -287,13 +289,13 @@ public class HelperMappingBuilder
         return cm.id != null ? cm.id : HelperModelBuilder.getElementFullPath(context.resolveClass(cm._class, cm.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
     }
 
-    public static LambdaFunction processPurePropertyMappingTransform(PurePropertyMapping ppm, Lambda lambda, PropertyMappingsImplementation owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type inputVarType, CompileContext context, String mappingName)
+    public static LambdaFunction<?> processPurePropertyMappingTransform(PurePropertyMapping ppm, Lambda lambda, PropertyMappingsImplementation owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type inputVarType, CompileContext context, String mappingName)
     {
         List<ValueSpecification> expressions = lambda.body;
         VariableExpression lambdaParam = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                 ._name("src")
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(inputVarType));
+                ._genericType(context.newGenericType(inputVarType));
         MutableList<VariableExpression> pureParameters = Lists.mutable.with(lambdaParam);
         ProcessingContext ctx = new ProcessingContext("Pure M2M Transform Lambda");
         ctx.addInferredVariables("src", lambdaParam);
@@ -301,12 +303,11 @@ public class HelperMappingBuilder
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(expressions, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(e -> e._name()));
-        GenericType functionType = context.pureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
+        GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
         String propertyName = owner._id() + "." + ppm.property.property;
-        String mappingPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(owner._parent(), context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("src");
-        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(Lists.mutable.with(functionType)))
+        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl<Object>(propertyName, SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), null)
+                ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), Lists.mutable.with(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
     }
@@ -452,13 +453,14 @@ public class HelperMappingBuilder
             // Local property mapping
             LocalMappingPropertyInfo localMappingPropertyInfo = propertyMapping.localMappingProperty;
 
-            GenericType sourceGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType")); // Raw type will be populated when mapping class is built
-            GenericType targetGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+            GenericType sourceGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass(M3Paths.GenericType)); // Raw type will be populated when mapping class is built
+            GenericType targetGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass(M3Paths.GenericType))
                     ._rawType(context.resolveType(localMappingPropertyInfo.type, localMappingPropertyInfo.sourceInformation));
-            GenericType propertyClassifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                    ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
-                    ._typeArguments(Lists.fixedSize.of(sourceGenericType, targetGenericType))
-                    ._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
+            GenericType propertyClassifierGenericType = context.newGenericType(
+                    context.pureModel.getType(M3Paths.Property),
+                    Lists.fixedSize.of(sourceGenericType, targetGenericType),
+                    Lists.fixedSize.of(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity))
+            );
 
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(propertyMapping.property.property, SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), null)
                     ._name(propertyMapping.property.property)
@@ -487,14 +489,14 @@ public class HelperMappingBuilder
 
                 final MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(mappingClassName);
                 mappingClass._name(mappingClassName);
-
-                GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                        ._rawType(context.pureModel.getType("meta::pure::metamodel::type::Class"))
-                        ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(mappingClass)));
+                GenericType classifierGenericType = context.newGenericType(
+                        context.pureModel.getType("meta::pure::metamodel::type::Class"),
+                        Lists.fixedSize.of(context.newGenericType(mappingClass))
+                );
                 mappingClass._classifierGenericType(classifierGenericType);
 
-                GenericType superType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(setImplementation._class());
-                Generalization newGeneralization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._specific(mappingClass)._general(superType);
+                GenericType superType = context.newGenericType(setImplementation._class());
+                Generalization newGeneralization = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, context.pureModel.getClass(M3Paths.Generalization))._specific(mappingClass)._general(superType);
                 mappingClass._generalizations(Lists.immutable.with(newGeneralization));
                 setImplementation._class()._specializationsAdd(newGeneralization);
 

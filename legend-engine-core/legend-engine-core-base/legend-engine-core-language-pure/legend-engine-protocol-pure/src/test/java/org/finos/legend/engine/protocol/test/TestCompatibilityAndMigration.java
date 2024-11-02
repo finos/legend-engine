@@ -334,200 +334,226 @@ public class TestCompatibilityAndMigration
     public void testCastType() throws Exception
     {
         check("{\n" +
-                "  \"_type\": \"data\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"_type\": \"function\",\n" +
-                "      \"body\": [\n" +
-                "        {\n" +
-                "          \"_type\": \"func\",\n" +
-                "          \"function\": \"cast\",\n" +
-                "          \"parameters\": [\n" +
-                "            {\n" +
-                "              \"_type\": \"packageableElementPtr\",\n" +
-                "              \"fullPath\": \"a\",\n" +
-                "              \"sourceInformation\": {\n" +
-                "                \"endColumn\": 2,\n" +
-                "                \"endLine\": 1,\n" +
-                "                \"sourceId\": \"a::a\",\n" +
-                "                \"startColumn\": 2,\n" +
-                "                \"startLine\": 1\n" +
-                "              }\n" +
-                "            },\n" +
-                "            {\n" +
-                "              \"_type\": \"hackedClass\",\n" +
-                "              \"fullPath\": \"Type\",\n" +
-                "              \"sourceInformation\": {\n" +
-                "                \"endColumn\": 7,\n" +
-                "                \"endLine\": 2,\n" +
-                "                \"sourceId\": \"a::a\",\n" +
-                "                \"startColumn\": 4,\n" +
-                "                \"startLine\": 2\n" +
-                "              }\n" +
-                "            }\n" +
-                "          ],\n" +
-                "          \"sourceInformation\": {\n" +
-                "            \"endColumn\": 8,\n" +
-                "            \"endLine\": 1,\n" +
-                "            \"sourceId\": \"a::a\",\n" +
-                "            \"startColumn\": 5,\n" +
-                "            \"startLine\": 1\n" +
-                "          }\n" +
-                "        }\n" +
-                "      ],\n" +
-                "      \"name\": \"a\",\n" +
-                "      \"package\": \"a\",\n" +
-                "      \"parameters\": [],\n" +
-                "      \"returnMultiplicity\": {\n" +
-                "        \"lowerBound\": 0\n" +
-                "      },\n" +
-                "      \"returnType\": \"Any\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}", "{\n" +
-                "  \"_type\" : \"data\",\n" +
-                "  \"elements\" : [ {\n" +
-                "    \"_type\" : \"function\",\n" +
-                "    \"name\" : \"a\",\n" +
-                "    \"returnType\" : \"Any\",\n" +
-                "    \"returnMultiplicity\" : {\n" +
-                "      \"lowerBound\" : 0\n" +
-                "    },\n" +
-                "    \"body\" : [ {\n" +
-                "      \"_type\" : \"func\",\n" +
-                "      \"sourceInformation\" : {\n" +
-                "        \"sourceId\" : \"a::a\",\n" +
-                "        \"startLine\" : 1,\n" +
-                "        \"startColumn\" : 5,\n" +
-                "        \"endLine\" : 1,\n" +
-                "        \"endColumn\" : 8\n" +
-                "      },\n" +
-                "      \"function\" : \"cast\",\n" +
-                "      \"parameters\" : [ {\n" +
-                "        \"_type\" : \"packageableElementPtr\",\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::a\",\n" +
-                "          \"startLine\" : 1,\n" +
-                "          \"startColumn\" : 2,\n" +
-                "          \"endLine\" : 1,\n" +
-                "          \"endColumn\" : 2\n" +
-                "        },\n" +
-                "        \"fullPath\" : \"a\"\n" +
-                "      }, {\n" +
-                "        \"_type\" : \"genericTypeInstance\",\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::a\",\n" +
-                "          \"startLine\" : 2,\n" +
-                "          \"startColumn\" : 4,\n" +
-                "          \"endLine\" : 2,\n" +
-                "          \"endColumn\" : 7\n" +
-                "        },\n" +
-                "        \"fullPath\" : \"Type\"\n" +
-                "      } ]\n" +
-                "    } ],\n" +
-                "    \"package\" : \"a\"\n" +
-                "  } ]\n" +
-                "}");
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"packageableElementPtr\",\n" +
+                        "              \"fullPath\": \"a\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"endColumn\": 2,\n" +
+                        "                \"endLine\": 1,\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startColumn\": 2,\n" +
+                        "                \"startLine\": 1\n" +
+                        "              }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"hackedClass\",\n" +
+                        "              \"fullPath\": \"Type\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"endColumn\": 7,\n" +
+                        "                \"endLine\": 2,\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startColumn\": 4,\n" +
+                        "                \"startLine\": 2\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"sourceInformation\": {\n" +
+                        "            \"endColumn\": 8,\n" +
+                        "            \"endLine\": 1,\n" +
+                        "            \"sourceId\": \"a::a\",\n" +
+                        "            \"startColumn\": 5,\n" +
+                        "            \"startLine\": 1\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"package\": \"a\",\n" +
+                        "      \"parameters\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"Any\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"returnType\": \"Any\",\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"sourceInformation\": {\n" +
+                        "            \"sourceId\": \"a::a\",\n" +
+                        "            \"startLine\": 1,\n" +
+                        "            \"startColumn\": 5,\n" +
+                        "            \"endLine\": 1,\n" +
+                        "            \"endColumn\": 8\n" +
+                        "          },\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"packageableElementPtr\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startLine\": 1,\n" +
+                        "                \"startColumn\": 2,\n" +
+                        "                \"endLine\": 1,\n" +
+                        "                \"endColumn\": 2\n" +
+                        "              },\n" +
+                        "              \"fullPath\": \"a\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startLine\": 2,\n" +
+                        "                \"startColumn\": 4,\n" +
+                        "                \"endLine\": 2,\n" +
+                        "                \"endColumn\": 7\n" +
+                        "              },\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"Type\"\n" +
+                        "                }\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"a\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}");
     }
 
     @Test
     public void testCastUnit() throws Exception
     {
         check("{\n" +
-                "  \"_type\": \"data\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"_type\": \"function\",\n" +
-                "      \"body\": [\n" +
-                "        {\n" +
-                "          \"_type\": \"func\",\n" +
-                "          \"function\": \"cast\",\n" +
-                "          \"parameters\": [\n" +
-                "            {\n" +
-                "              \"_type\": \"packageableElementPtr\",\n" +
-                "              \"fullPath\": \"a\",\n" +
-                "              \"sourceInformation\": {\n" +
-                "                \"endColumn\": 2,\n" +
-                "                \"endLine\": 1,\n" +
-                "                \"sourceId\": \"a::a\",\n" +
-                "                \"startColumn\": 2,\n" +
-                "                \"startLine\": 1\n" +
-                "              }\n" +
-                "            },\n" +
-                "            {\n" +
-                "              \"_type\": \"hackedUnit\",\n" +
-                "              \"sourceInformation\": {\n" +
-                "                \"endColumn\": 9,\n" +
-                "                \"endLine\": 2,\n" +
-                "                \"sourceId\": \"a::a\",\n" +
-                "                \"startColumn\": 4,\n" +
-                "                \"startLine\": 2\n" +
-                "              },\n" +
-                "              \"unitType\": \"Type~A\"\n" +
-                "            }\n" +
-                "          ],\n" +
-                "          \"sourceInformation\": {\n" +
-                "            \"endColumn\": 8,\n" +
-                "            \"endLine\": 1,\n" +
-                "            \"sourceId\": \"a::a\",\n" +
-                "            \"startColumn\": 5,\n" +
-                "            \"startLine\": 1\n" +
-                "          }\n" +
-                "        }\n" +
-                "      ],\n" +
-                "      \"name\": \"a\",\n" +
-                "      \"package\": \"a\",\n" +
-                "      \"parameters\": [],\n" +
-                "      \"returnMultiplicity\": {\n" +
-                "        \"lowerBound\": 0\n" +
-                "      },\n" +
-                "      \"returnType\": \"Any\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}", "{\n" +
-                "  \"_type\" : \"data\",\n" +
-                "  \"elements\" : [ {\n" +
-                "    \"_type\" : \"function\",\n" +
-                "    \"name\" : \"a\",\n" +
-                "    \"returnType\" : \"Any\",\n" +
-                "    \"returnMultiplicity\" : {\n" +
-                "      \"lowerBound\" : 0\n" +
-                "    },\n" +
-                "    \"body\" : [ {\n" +
-                "      \"_type\" : \"func\",\n" +
-                "      \"sourceInformation\" : {\n" +
-                "        \"sourceId\" : \"a::a\",\n" +
-                "        \"startLine\" : 1,\n" +
-                "        \"startColumn\" : 5,\n" +
-                "        \"endLine\" : 1,\n" +
-                "        \"endColumn\" : 8\n" +
-                "      },\n" +
-                "      \"function\" : \"cast\",\n" +
-                "      \"parameters\" : [ {\n" +
-                "        \"_type\" : \"packageableElementPtr\",\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::a\",\n" +
-                "          \"startLine\" : 1,\n" +
-                "          \"startColumn\" : 2,\n" +
-                "          \"endLine\" : 1,\n" +
-                "          \"endColumn\" : 2\n" +
-                "        },\n" +
-                "        \"fullPath\" : \"a\"\n" +
-                "      }, {\n" +
-                "        \"_type\" : \"genericTypeInstance\",\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::a\",\n" +
-                "          \"startLine\" : 2,\n" +
-                "          \"startColumn\" : 4,\n" +
-                "          \"endLine\" : 2,\n" +
-                "          \"endColumn\" : 9\n" +
-                "        },\n" +
-                "        \"fullPath\" : \"Type~A\"\n" +
-                "      } ]\n" +
-                "    } ],\n" +
-                "    \"package\" : \"a\"\n" +
-                "  } ]\n" +
-                "}");
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"packageableElementPtr\",\n" +
+                        "              \"fullPath\": \"a\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"endColumn\": 2,\n" +
+                        "                \"endLine\": 1,\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startColumn\": 2,\n" +
+                        "                \"startLine\": 1\n" +
+                        "              }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"hackedUnit\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"endColumn\": 9,\n" +
+                        "                \"endLine\": 2,\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startColumn\": 4,\n" +
+                        "                \"startLine\": 2\n" +
+                        "              },\n" +
+                        "              \"unitType\": \"Type~A\"\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"sourceInformation\": {\n" +
+                        "            \"endColumn\": 8,\n" +
+                        "            \"endLine\": 1,\n" +
+                        "            \"sourceId\": \"a::a\",\n" +
+                        "            \"startColumn\": 5,\n" +
+                        "            \"startLine\": 1\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"package\": \"a\",\n" +
+                        "      \"parameters\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"Any\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"returnType\": \"Any\",\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"sourceInformation\": {\n" +
+                        "            \"sourceId\": \"a::a\",\n" +
+                        "            \"startLine\": 1,\n" +
+                        "            \"startColumn\": 5,\n" +
+                        "            \"endLine\": 1,\n" +
+                        "            \"endColumn\": 8\n" +
+                        "          },\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"packageableElementPtr\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startLine\": 1,\n" +
+                        "                \"startColumn\": 2,\n" +
+                        "                \"endLine\": 1,\n" +
+                        "                \"endColumn\": 2\n" +
+                        "              },\n" +
+                        "              \"fullPath\": \"a\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"sourceInformation\": {\n" +
+                        "                \"sourceId\": \"a::a\",\n" +
+                        "                \"startLine\": 2,\n" +
+                        "                \"startColumn\": 4,\n" +
+                        "                \"endLine\": 2,\n" +
+                        "                \"endColumn\": 9\n" +
+                        "              },\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"Type~A\"\n" +
+                        "                }\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"a\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}");
     }
 
     @Test
@@ -1231,33 +1257,118 @@ public class TestCompatibilityAndMigration
     {
         check(
                 "{\n" +
-                "  \"_type\": \"data\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"_type\": \"dataElement\",\n" +
-                "      \"data\": {\n" +
-                "        \"_type\": \"reference\",\n" +
-                "        \"dataElement\": \"com::path::exampleReference\"\n" +
-                "      },\n" +
-                "      \"name\": \"dataElementReferenceExample\",\n" +
-                "      \"package\": \"my\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n",
-         "{\n" +
-                "  \"_type\": \"data\",\n" +
-                "  \"elements\": [\n" +
-                "    {\n" +
-                "      \"_type\": \"dataElement\",\n" +
-                "      \"data\": {\n" +
-                "        \"_type\": \"reference\",\n" +
-                "        \"dataElement\":{\"path\":\"com::path::exampleReference\",\"type\":\"DATA\"}" +
-                "      },\n" +
-                "      \"name\": \"dataElementReferenceExample\",\n" +
-                "      \"package\": \"my\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n");
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"dataElement\",\n" +
+                        "      \"data\": {\n" +
+                        "        \"_type\": \"reference\",\n" +
+                        "        \"dataElement\": \"com::path::exampleReference\"\n" +
+                        "      },\n" +
+                        "      \"name\": \"dataElementReferenceExample\",\n" +
+                        "      \"package\": \"my\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"dataElement\",\n" +
+                        "      \"data\": {\n" +
+                        "        \"_type\": \"reference\",\n" +
+                        "        \"dataElement\":{\"path\":\"com::path::exampleReference\",\"type\":\"DATA\"}" +
+                        "      },\n" +
+                        "      \"name\": \"dataElementReferenceExample\",\n" +
+                        "      \"package\": \"my\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testGenericTypeInstance() throws Exception
+    {
+        check(
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              },\n" +
+                        "              \"values\": []\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"fullPath\": \"String\"\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"f__String_$0_1$_\",\n" +
+                        "      \"package\": \"withPath\",\n" +
+                        "      \"parameters\": [],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"String\",\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": []\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"name\": \"f__String_$0_1$_\",\n" +
+                        "      \"returnType\": \"String\",\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"String\"\n" +
+                        "                }\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"withPath\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}");
     }
 
     @Test
@@ -1266,7 +1377,7 @@ public class TestCompatibilityAndMigration
         check(
                 new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionBefore.json"), "Can't find resource '" + "simpleFunctionBefore.json" + "'"), "UTF-8").useDelimiter("\\A").next(),
                 new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionAfter.json"), "Can't find resource '" + "simpleFunctionAfter.json" + "'"), "UTF-8").useDelimiter("\\A").next()
-                );
+        );
     }
 
     @Test

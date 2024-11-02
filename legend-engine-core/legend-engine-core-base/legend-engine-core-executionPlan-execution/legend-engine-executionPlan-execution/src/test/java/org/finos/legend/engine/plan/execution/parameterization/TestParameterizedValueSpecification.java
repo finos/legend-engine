@@ -21,10 +21,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
