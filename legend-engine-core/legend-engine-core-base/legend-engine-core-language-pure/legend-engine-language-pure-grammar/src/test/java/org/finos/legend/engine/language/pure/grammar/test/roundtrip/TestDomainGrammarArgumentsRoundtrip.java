@@ -51,4 +51,13 @@ public class TestDomainGrammarArgumentsRoundtrip extends TestGrammarRoundtrip.Te
                 "  []->cast(@Relation<(a:Integer)>)\n" +
                 "}\n");
     }
+
+    @Test
+    public void testFunc()
+    {
+        test("function withPath::f(s: a::Type[1]): String[0..1]\n" +
+                "{\n" +
+                "  []\n" +
+                "}\n");
+    }
 }

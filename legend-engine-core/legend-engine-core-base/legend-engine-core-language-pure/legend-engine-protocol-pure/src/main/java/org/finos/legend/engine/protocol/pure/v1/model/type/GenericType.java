@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.type;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class GenericType
 {
     public Type rawType;
     public List<GenericType> typeArguments = Lists.mutable.empty();
+    public List<Multiplicity> multiplicityArguments = Lists.mutable.empty();
     public List<ValueSpecification> typeVariables = Lists.mutable.empty();
     public SourceInformation sourceInformation;
 
@@ -40,5 +42,12 @@ public class GenericType
     {
         this.rawType = rawType;
         this.typeArguments = typeArguments;
+    }
+
+    public GenericType(Type rawType, List<GenericType> typeArguments, List<Multiplicity> multiplicityArguments)
+    {
+        this.rawType = rawType;
+        this.typeArguments = typeArguments;
+        this.multiplicityArguments = multiplicityArguments;
     }
 }

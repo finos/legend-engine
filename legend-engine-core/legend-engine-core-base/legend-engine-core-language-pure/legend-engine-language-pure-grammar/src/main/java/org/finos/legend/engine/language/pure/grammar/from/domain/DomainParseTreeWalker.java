@@ -401,8 +401,7 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            String path = functionVariableExpressionContext.type().getText();
-            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
+            variable.genericType = processGenericType(functionVariableExpressionContext.type());
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -450,8 +449,7 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            String path = functionVariableExpressionContext.type().getText();
-            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
+            variable.genericType = processGenericType(functionVariableExpressionContext.type());
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -905,11 +903,20 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        PackageableElementPtr newClass = new PackageableElementPtr();
-        newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        GenericTypeInstance generic = new GenericTypeInstance(
+                new GenericType(new PackageableType("meta::pure::metamodel::type::Class"),
+                        Lists.mutable.of(
+                                new GenericType(
+                                        new PackageableType(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())),
+                                        ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType),
+                                        ListIterate.collect(ctx.multiplicityArguments() == null ? Lists.mutable.empty() : ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity)
+                                )
+                        )
+                )
+        );
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection(keyExpressions);
-        return this.createAppliedFunction(Lists.mutable.with(newClass, new CString(""), valueAssignments), "new");
+        return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
     }
 
     // necessary for proper compilation of new function
@@ -1460,8 +1467,7 @@ public class DomainParseTreeWalker
         if (ctx != null && ctx.lambdaParamType() != null)
         {
             variable.multiplicity = this.buildMultiplicity(ctx.lambdaParamType().multiplicity().multiplicityArgument());
-            String path = ctx.lambdaParamType().type().getText();
-            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(ctx.lambdaParamType().type()));
+            variable.genericType = processGenericType(ctx.lambdaParamType().type());
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         }
         variable.name = PureGrammarParserUtility.fromIdentifier(var);
@@ -1568,8 +1574,12 @@ public class DomainParseTreeWalker
         {
             throw new EngineException("The type " + ctx.getText() + " is not supported yet", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
-
-        return new GenericType(type, ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType));
+        GenericType result = new GenericType(type, ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType));
+        if (ctx.multiplicityArguments() != null)
+        {
+            result.multiplicityArguments = ListIterate.collect(ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity);
+        }
+        return result;
     }
 
     private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, ValueSpecification instance, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)

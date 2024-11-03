@@ -4,1296 +4,1346 @@
     {
       "_type": "Enumeration",
       "name": "EmployeeType",
-      "package": "model",
       "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 6,
+        "startLine": 2,
         "startColumn": 1,
-        "startLine": 2
+        "endLine": 6,
+        "endColumn": 1
       },
       "values": [
         {
+          "value": "CONTRACT",
           "sourceInformation": {
-            "endColumn": 10,
-            "endLine": 4,
+            "startLine": 4,
             "startColumn": 3,
-            "startLine": 4
-          },
-          "value": "CONTRACT"
+            "endLine": 4,
+            "endColumn": 10
+          }
         },
         {
+          "value": "FULL_TIME",
           "sourceInformation": {
-            "endColumn": 11,
-            "endLine": 5,
+            "startLine": 5,
             "startColumn": 3,
-            "startLine": 5
-          },
-          "value": "FULL_TIME"
+            "endLine": 5,
+            "endColumn": 11
+          }
         }
-      ]
+      ],
+      "package": "model"
     },
     {
       "_type": "class",
       "name": "Person",
-      "package": "model",
+      "sourceInformation": {
+        "startLine": 8,
+        "startColumn": 1,
+        "endLine": 13,
+        "endColumn": 1
+      },
       "properties": [
         {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
           "name": "firstName",
-          "propertyTypeSourceInformation": {
-            "endColumn": 19,
+          "type": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "sourceInformation": {
+            "startLine": 10,
+            "startColumn": 3,
             "endLine": 10,
+            "endColumn": 23
+          },
+          "propertyTypeSourceInformation": {
+            "startLine": 10,
             "startColumn": 14,
-            "startLine": 10
-          },
-          "sourceInformation": {
-            "endColumn": 23,
             "endLine": 10,
-            "startColumn": 3,
-            "startLine": 10
-          },
-          "type": "String"
+            "endColumn": 19
+          }
         },
         {
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
           "name": "lastName",
-          "propertyTypeSourceInformation": {
-            "endColumn": 18,
-            "endLine": 11,
-            "startColumn": 13,
-            "startLine": 11
-          },
-          "sourceInformation": {
-            "endColumn": 22,
-            "endLine": 11,
-            "startColumn": 3,
-            "startLine": 11
-          },
-          "type": "String"
-        },
-        {
+          "type": "String",
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
           },
-          "name": "employeeType",
+          "sourceInformation": {
+            "startLine": 11,
+            "startColumn": 3,
+            "endLine": 11,
+            "endColumn": 22
+          },
           "propertyTypeSourceInformation": {
-            "endColumn": 35,
-            "endLine": 12,
-            "startColumn": 17,
-            "startLine": 12
+            "startLine": 11,
+            "startColumn": 13,
+            "endLine": 11,
+            "endColumn": 18
+          }
+        },
+        {
+          "name": "employeeType",
+          "type": "model::EmployeeType",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
           },
           "sourceInformation": {
-            "endColumn": 39,
-            "endLine": 12,
+            "startLine": 12,
             "startColumn": 3,
-            "startLine": 12
+            "endLine": 12,
+            "endColumn": 39
           },
-          "type": "model::EmployeeType"
+          "propertyTypeSourceInformation": {
+            "startLine": 12,
+            "startColumn": 17,
+            "endLine": 12,
+            "endColumn": 35
+          }
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 13,
-        "startColumn": 1,
-        "startLine": 8
-      }
+      "package": "model"
     },
     {
       "_type": "class",
       "name": "Firm",
-      "package": "model",
+      "sourceInformation": {
+        "startLine": 15,
+        "startColumn": 1,
+        "endLine": 19,
+        "endColumn": 1
+      },
       "properties": [
         {
+          "name": "legalName",
+          "type": "String",
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
           },
-          "name": "legalName",
-          "propertyTypeSourceInformation": {
-            "endColumn": 19,
-            "endLine": 17,
-            "startColumn": 14,
-            "startLine": 17
-          },
           "sourceInformation": {
-            "endColumn": 23,
-            "endLine": 17,
+            "startLine": 17,
             "startColumn": 3,
-            "startLine": 17
+            "endLine": 17,
+            "endColumn": 23
           },
-          "type": "String"
+          "propertyTypeSourceInformation": {
+            "startLine": 17,
+            "startColumn": 14,
+            "endLine": 17,
+            "endColumn": 19
+          }
         },
         {
+          "name": "employees",
+          "type": "model::Person",
           "multiplicity": {
             "lowerBound": 0
           },
-          "name": "employees",
-          "propertyTypeSourceInformation": {
-            "endColumn": 26,
-            "endLine": 18,
-            "startColumn": 14,
-            "startLine": 18
-          },
           "sourceInformation": {
-            "endColumn": 30,
-            "endLine": 18,
+            "startLine": 18,
             "startColumn": 3,
-            "startLine": 18
+            "endLine": 18,
+            "endColumn": 30
           },
-          "type": "model::Person"
+          "propertyTypeSourceInformation": {
+            "startLine": 18,
+            "startColumn": 14,
+            "endLine": 18,
+            "endColumn": 26
+          }
         }
       ],
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 19,
-        "startColumn": 1,
-        "startLine": 15
-      }
+      "package": "model"
     },
     {
       "_type": "function",
+      "name": "PersonQuery__TabularDataSet_1_",
+      "sourceInformation": {
+        "startLine": 21,
+        "startColumn": 1,
+        "endLine": 24,
+        "endColumn": 1
+      },
+      "returnType": "meta::pure::tds::TabularDataSet",
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
       "body": [
         {
           "_type": "func",
+          "sourceInformation": {
+            "startLine": 23,
+            "startColumn": 131,
+            "endLine": 23,
+            "endColumn": 134
+          },
           "function": "from",
           "parameters": [
             {
               "_type": "func",
+              "sourceInformation": {
+                "startLine": 23,
+                "startColumn": 24,
+                "endLine": 23,
+                "endColumn": 30
+              },
               "function": "project",
               "parameters": [
                 {
                   "_type": "func",
+                  "sourceInformation": {
+                    "startLine": 23,
+                    "startColumn": 16,
+                    "endLine": 23,
+                    "endColumn": 21
+                  },
                   "function": "getAll",
                   "parameters": [
                     {
                       "_type": "packageableElementPtr",
-                      "fullPath": "model::Person",
                       "sourceInformation": {
-                        "endColumn": 15,
-                        "endLine": 23,
+                        "startLine": 23,
                         "startColumn": 3,
-                        "startLine": 23
-                      }
-                    }
-                  ],
-                  "sourceInformation": {
-                    "endColumn": 21,
-                    "endLine": 23,
-                    "startColumn": 16,
-                    "startLine": 23
-                  }
-                },
-                {
-                  "_type": "collection",
-                  "multiplicity": {
-                    "lowerBound": 2,
-                    "upperBound": 2
-                  },
-                  "sourceInformation": {
-                    "endColumn": 98,
-                    "endLine": 23,
-                    "startColumn": 32,
-                    "startLine": 23
-                  },
-                  "values": [
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 54,
-                                "endLine": 23,
-                                "startColumn": 53,
-                                "startLine": 23
-                              }
-                            }
-                          ],
-                          "property": "firstName",
-                          "sourceInformation": {
-                            "endColumn": 64,
-                            "endLine": 23,
-                            "startColumn": 56,
-                            "startLine": 23
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 48,
-                            "endLine": 23,
-                            "startColumn": 36,
-                            "startLine": 23
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 64,
                         "endLine": 23,
-                        "startColumn": 52,
-                        "startLine": 23
-                      }
-                    },
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 88,
-                                "endLine": 23,
-                                "startColumn": 87,
-                                "startLine": 23
-                              }
-                            }
-                          ],
-                          "property": "lastName",
-                          "sourceInformation": {
-                            "endColumn": 97,
-                            "endLine": 23,
-                            "startColumn": 90,
-                            "startLine": 23
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 82,
-                            "endLine": 23,
-                            "startColumn": 70,
-                            "startLine": 23
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 97,
-                        "endLine": 23,
-                        "startColumn": 86,
-                        "startLine": 23
-                      }
+                        "endColumn": 15
+                      },
+                      "fullPath": "model::Person"
                     }
                   ]
                 },
                 {
                   "_type": "collection",
+                  "sourceInformation": {
+                    "startLine": 23,
+                    "startColumn": 32,
+                    "endLine": 23,
+                    "endColumn": 98
+                  },
                   "multiplicity": {
                     "lowerBound": 2,
                     "upperBound": 2
                   },
+                  "values": [
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 23,
+                        "startColumn": 52,
+                        "endLine": 23,
+                        "endColumn": 64
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 23,
+                            "startColumn": 56,
+                            "endLine": 23,
+                            "endColumn": 64
+                          },
+                          "property": "firstName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 23,
+                                "startColumn": 53,
+                                "endLine": 23,
+                                "endColumn": 54
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 23,
+                            "startColumn": 36,
+                            "endLine": 23,
+                            "endColumn": 48
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 23,
+                        "startColumn": 86,
+                        "endLine": 23,
+                        "endColumn": 97
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 23,
+                            "startColumn": 90,
+                            "endLine": 23,
+                            "endColumn": 97
+                          },
+                          "property": "lastName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 23,
+                                "startColumn": 87,
+                                "endLine": 23,
+                                "endColumn": 88
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 23,
+                            "startColumn": 70,
+                            "endLine": 23,
+                            "endColumn": 82
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
                   "sourceInformation": {
-                    "endColumn": 127,
-                    "endLine": 23,
+                    "startLine": 23,
                     "startColumn": 101,
-                    "startLine": 23
+                    "endLine": 23,
+                    "endColumn": 127
+                  },
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
                   },
                   "values": [
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 113,
-                        "endLine": 23,
+                        "startLine": 23,
                         "startColumn": 102,
-                        "startLine": 23
+                        "endLine": 23,
+                        "endColumn": 113
                       },
                       "value": "First Name"
                     },
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 126,
-                        "endLine": 23,
+                        "startLine": 23,
                         "startColumn": 116,
-                        "startLine": 23
+                        "endLine": 23,
+                        "endColumn": 126
                       },
                       "value": "Last Name"
                     }
                   ]
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 30,
-                "endLine": 23,
-                "startColumn": 24,
-                "startLine": 23
-              }
+              ]
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::RelationalMapping",
               "sourceInformation": {
-                "endColumn": 163,
-                "endLine": 23,
+                "startLine": 23,
                 "startColumn": 136,
-                "startLine": 23
-              }
+                "endLine": 23,
+                "endColumn": 163
+              },
+              "fullPath": "execution::RelationalMapping"
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::Runtime",
               "sourceInformation": {
-                "endColumn": 183,
-                "endLine": 23,
+                "startLine": 23,
                 "startColumn": 166,
-                "startLine": 23
-              }
+                "endLine": 23,
+                "endColumn": 183
+              },
+              "fullPath": "execution::Runtime"
             }
-          ],
+          ]
+        }
+      ],
+      "package": "model"
+    },
+    {
+      "_type": "function",
+      "name": "PersonWithParams_String_1__TabularDataSet_1_",
+      "sourceInformation": {
+        "startLine": 26,
+        "startColumn": 1,
+        "endLine": 44,
+        "endColumn": 1
+      },
+      "parameters": [
+        {
+          "_type": "var",
           "sourceInformation": {
-            "endColumn": 134,
-            "endLine": 23,
-            "startColumn": 131,
-            "startLine": 23
+            "startLine": 26,
+            "startColumn": 34,
+            "endLine": 26,
+            "endColumn": 53
+          },
+          "name": "firstName",
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
           }
         }
       ],
-      "name": "PersonQuery__TabularDataSet_1_",
-      "package": "model",
+      "returnType": "meta::pure::tds::TabularDataSet",
       "returnMultiplicity": {
         "lowerBound": 1,
         "upperBound": 1
       },
-      "returnType": "meta::pure::tds::TabularDataSet",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 24,
-        "startColumn": 1,
-        "startLine": 21
-      }
-    },
-    {
-      "_type": "function",
       "body": [
         {
           "_type": "func",
+          "sourceInformation": {
+            "startLine": 28,
+            "startColumn": 187,
+            "endLine": 28,
+            "endColumn": 190
+          },
           "function": "from",
           "parameters": [
             {
               "_type": "func",
+              "sourceInformation": {
+                "startLine": 28,
+                "startColumn": 80,
+                "endLine": 28,
+                "endColumn": 86
+              },
               "function": "project",
               "parameters": [
                 {
                   "_type": "func",
+                  "sourceInformation": {
+                    "startLine": 28,
+                    "startColumn": 24,
+                    "endLine": 28,
+                    "endColumn": 29
+                  },
                   "function": "filter",
                   "parameters": [
                     {
                       "_type": "func",
+                      "sourceInformation": {
+                        "startLine": 28,
+                        "startColumn": 16,
+                        "endLine": 28,
+                        "endColumn": 21
+                      },
                       "function": "getAll",
                       "parameters": [
                         {
                           "_type": "packageableElementPtr",
-                          "fullPath": "model::Person",
                           "sourceInformation": {
-                            "endColumn": 15,
-                            "endLine": 28,
+                            "startLine": 28,
                             "startColumn": 3,
-                            "startLine": 28
-                          }
+                            "endLine": 28,
+                            "endColumn": 15
+                          },
+                          "fullPath": "model::Person"
                         }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 21,
-                        "endLine": 28,
-                        "startColumn": 16,
-                        "startLine": 28
-                      }
+                      ]
                     },
                     {
                       "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 28,
+                        "startColumn": 50,
+                        "endLine": 28,
+                        "endColumn": 76
+                      },
                       "body": [
                         {
                           "_type": "func",
+                          "sourceInformation": {
+                            "startLine": 28,
+                            "startColumn": 64,
+                            "endLine": 28,
+                            "endColumn": 65
+                          },
                           "function": "equal",
                           "parameters": [
                             {
                               "_type": "property",
+                              "sourceInformation": {
+                                "startLine": 28,
+                                "startColumn": 54,
+                                "endLine": 28,
+                                "endColumn": 62
+                              },
+                              "property": "firstName",
                               "parameters": [
                                 {
                                   "_type": "var",
-                                  "name": "x",
                                   "sourceInformation": {
-                                    "endColumn": 52,
-                                    "endLine": 28,
+                                    "startLine": 28,
                                     "startColumn": 51,
-                                    "startLine": 28
-                                  }
+                                    "endLine": 28,
+                                    "endColumn": 52
+                                  },
+                                  "name": "x"
                                 }
-                              ],
-                              "property": "firstName",
-                              "sourceInformation": {
-                                "endColumn": 62,
-                                "endLine": 28,
-                                "startColumn": 54,
-                                "startLine": 28
-                              }
+                              ]
                             },
                             {
                               "_type": "var",
-                              "name": "firstName",
                               "sourceInformation": {
-                                "endColumn": 76,
-                                "endLine": 28,
+                                "startLine": 28,
                                 "startColumn": 67,
-                                "startLine": 28
-                              }
+                                "endLine": 28,
+                                "endColumn": 76
+                              },
+                              "name": "firstName"
                             }
-                          ],
-                          "sourceInformation": {
-                            "endColumn": 65,
-                            "endLine": 28,
-                            "startColumn": 64,
-                            "startLine": 28
-                          }
+                          ]
                         }
                       ],
                       "parameters": [
                         {
                           "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
                           "sourceInformation": {
-                            "endColumn": 46,
-                            "endLine": 28,
+                            "startLine": 28,
                             "startColumn": 34,
-                            "startLine": 28
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 76,
-                        "endLine": 28,
-                        "startColumn": 50,
-                        "startLine": 28
-                      }
-                    }
-                  ],
-                  "sourceInformation": {
-                    "endColumn": 29,
-                    "endLine": 28,
-                    "startColumn": 24,
-                    "startLine": 28
-                  }
-                },
-                {
-                  "_type": "collection",
-                  "multiplicity": {
-                    "lowerBound": 2,
-                    "upperBound": 2
-                  },
-                  "sourceInformation": {
-                    "endColumn": 154,
-                    "endLine": 28,
-                    "startColumn": 88,
-                    "startLine": 28
-                  },
-                  "values": [
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 110,
-                                "endLine": 28,
-                                "startColumn": 109,
-                                "startLine": 28
-                              }
-                            }
-                          ],
-                          "property": "firstName",
-                          "sourceInformation": {
-                            "endColumn": 120,
                             "endLine": 28,
-                            "startColumn": 112,
-                            "startLine": 28
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
+                            "endColumn": 46
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
                           "multiplicity": {
                             "lowerBound": 1,
                             "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 104,
-                            "endLine": 28,
-                            "startColumn": 92,
-                            "startLine": 28
                           }
                         }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 120,
-                        "endLine": 28,
-                        "startColumn": 108,
-                        "startLine": 28
-                      }
-                    },
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 144,
-                                "endLine": 28,
-                                "startColumn": 143,
-                                "startLine": 28
-                              }
-                            }
-                          ],
-                          "property": "lastName",
-                          "sourceInformation": {
-                            "endColumn": 153,
-                            "endLine": 28,
-                            "startColumn": 146,
-                            "startLine": 28
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 138,
-                            "endLine": 28,
-                            "startColumn": 126,
-                            "startLine": 28
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 153,
-                        "endLine": 28,
-                        "startColumn": 142,
-                        "startLine": 28
-                      }
+                      ]
                     }
                   ]
                 },
                 {
                   "_type": "collection",
+                  "sourceInformation": {
+                    "startLine": 28,
+                    "startColumn": 88,
+                    "endLine": 28,
+                    "endColumn": 154
+                  },
                   "multiplicity": {
                     "lowerBound": 2,
                     "upperBound": 2
                   },
+                  "values": [
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 28,
+                        "startColumn": 108,
+                        "endLine": 28,
+                        "endColumn": 120
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 28,
+                            "startColumn": 112,
+                            "endLine": 28,
+                            "endColumn": 120
+                          },
+                          "property": "firstName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 28,
+                                "startColumn": 109,
+                                "endLine": 28,
+                                "endColumn": 110
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 28,
+                            "startColumn": 92,
+                            "endLine": 28,
+                            "endColumn": 104
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 28,
+                        "startColumn": 142,
+                        "endLine": 28,
+                        "endColumn": 153
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 28,
+                            "startColumn": 146,
+                            "endLine": 28,
+                            "endColumn": 153
+                          },
+                          "property": "lastName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 28,
+                                "startColumn": 143,
+                                "endLine": 28,
+                                "endColumn": 144
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 28,
+                            "startColumn": 126,
+                            "endLine": 28,
+                            "endColumn": 138
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
                   "sourceInformation": {
-                    "endColumn": 183,
-                    "endLine": 28,
+                    "startLine": 28,
                     "startColumn": 157,
-                    "startLine": 28
+                    "endLine": 28,
+                    "endColumn": 183
+                  },
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
                   },
                   "values": [
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 169,
-                        "endLine": 28,
+                        "startLine": 28,
                         "startColumn": 158,
-                        "startLine": 28
+                        "endLine": 28,
+                        "endColumn": 169
                       },
                       "value": "First Name"
                     },
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 182,
-                        "endLine": 28,
+                        "startLine": 28,
                         "startColumn": 172,
-                        "startLine": 28
+                        "endLine": 28,
+                        "endColumn": 182
                       },
                       "value": "Last Name"
                     }
                   ]
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 86,
-                "endLine": 28,
-                "startColumn": 80,
-                "startLine": 28
-              }
+              ]
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::RelationalMapping",
               "sourceInformation": {
-                "endColumn": 219,
-                "endLine": 28,
+                "startLine": 28,
                 "startColumn": 192,
-                "startLine": 28
-              }
+                "endLine": 28,
+                "endColumn": 219
+              },
+              "fullPath": "execution::RelationalMapping"
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::Runtime",
               "sourceInformation": {
-                "endColumn": 239,
-                "endLine": 28,
+                "startLine": 28,
                 "startColumn": 222,
-                "startLine": 28
-              }
+                "endLine": 28,
+                "endColumn": 239
+              },
+              "fullPath": "execution::Runtime"
             }
-          ],
-          "sourceInformation": {
-            "endColumn": 190,
-            "endLine": 28,
-            "startColumn": 187,
-            "startLine": 28
-          }
+          ]
         }
       ],
-      "name": "PersonWithParams_String_1__TabularDataSet_1_",
-      "package": "model",
-      "parameters": [
-        {
-          "_type": "var",
-          "class": "String",
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "firstName",
-          "sourceInformation": {
-            "endColumn": 53,
-            "endLine": 26,
-            "startColumn": 34,
-            "startLine": 26
-          }
-        }
-      ],
-      "returnMultiplicity": {
-        "lowerBound": 1,
-        "upperBound": 1
-      },
-      "returnType": "meta::pure::tds::TabularDataSet",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 44,
-        "startColumn": 1,
-        "startLine": 26
-      },
       "tests": [
         {
           "_type": "functionTestSuite",
           "id": "testSuite_1",
           "sourceInformation": {
-            "endColumn": 3,
-            "endLine": 43,
+            "startLine": 31,
             "startColumn": 3,
-            "startLine": 31
+            "endLine": 43,
+            "endColumn": 3
           },
-          "testData": [
-            {
-              "data": {
-                "_type": "reference",
-                "dataElement": {
-                  "path": "test::other",
-                  "type": "DATA"
-                }
-              },
-              "store": {
-                "path":"store::TestDB",
-                "type": "STORE"
-              }
-            }
-          ],
           "tests": [
             {
               "_type": "functionTest",
+              "id": "testPass",
+              "sourceInformation": {
+                "startLine": 42,
+                "startColumn": 5,
+                "endLine": 42,
+                "endColumn": 109
+              },
               "assertions": [
                 {
                   "_type": "equalToJson",
-                  "expected": {
-                    "_type": "externalFormat",
-                    "contentType": "application/json",
-                    "data": "[{\n  \"First Name\" : \"Nicole\",\"Last Name\" : \"Smith\"} ]",
-                    "sourceInformation": {
-                      "endColumn": 108,
-                      "endLine": 42,
-                      "startColumn": 46,
-                      "startLine": 42
-                    }
-                  },
                   "id": "default",
                   "sourceInformation": {
-                    "endColumn": 108,
-                    "endLine": 42,
+                    "startLine": 42,
                     "startColumn": 46,
-                    "startLine": 42
+                    "endLine": 42,
+                    "endColumn": 108
+                  },
+                  "expected": {
+                    "_type": "externalFormat",
+                    "sourceInformation": {
+                      "startLine": 42,
+                      "startColumn": 46,
+                      "endLine": 42,
+                      "endColumn": 108
+                    },
+                    "contentType": "application/json",
+                    "data": "[{\n  \"First Name\" : \"Nicole\",\"Last Name\" : \"Smith\"} ]"
                   }
                 }
               ],
-              "id": "testPass",
               "parameters": [
                 {
-                  "name": "firstName",
                   "sourceInformation": {
-                    "endColumn": 40,
-                    "endLine": 42,
+                    "startLine": 42,
                     "startColumn": 33,
-                    "startLine": 42
+                    "endLine": 42,
+                    "endColumn": 40
                   },
+                  "name": "firstName",
                   "value": {
                     "_type": "string",
                     "sourceInformation": {
-                      "endColumn": 40,
-                      "endLine": 42,
+                      "startLine": 42,
                       "startColumn": 33,
-                      "startLine": 42
+                      "endLine": 42,
+                      "endColumn": 40
                     },
                     "value": "Nicole"
                   }
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 109,
-                "endLine": 42,
-                "startColumn": 5,
-                "startLine": 42
+              ]
+            }
+          ],
+          "testData": [
+            {
+              "store": {
+                "type": "STORE",
+                "path": "store::TestDB"
+              },
+              "data": {
+                "_type": "reference",
+                "dataElement": {
+                  "type": "DATA",
+                  "path": "test::other"
+                }
               }
             }
           ]
         }
-      ]
+      ],
+      "package": "model"
     },
     {
       "_type": "function",
-      "body": [
-        {
-          "_type": "func",
-          "function": "from",
-          "parameters": [
-            {
-              "_type": "func",
-              "function": "project",
-              "parameters": [
-                {
-                  "_type": "func",
-                  "function": "getAll",
-                  "parameters": [
-                    {
-                      "_type": "packageableElementPtr",
-                      "fullPath": "model::Person",
-                      "sourceInformation": {
-                        "endColumn": 15,
-                        "endLine": 48,
-                        "startColumn": 3,
-                        "startLine": 48
-                      }
-                    }
-                  ],
-                  "sourceInformation": {
-                    "endColumn": 21,
-                    "endLine": 48,
-                    "startColumn": 16,
-                    "startLine": 48
-                  }
-                },
-                {
-                  "_type": "collection",
-                  "multiplicity": {
-                    "lowerBound": 2,
-                    "upperBound": 2
-                  },
-                  "sourceInformation": {
-                    "endColumn": 98,
-                    "endLine": 48,
-                    "startColumn": 32,
-                    "startLine": 48
-                  },
-                  "values": [
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 54,
-                                "endLine": 48,
-                                "startColumn": 53,
-                                "startLine": 48
-                              }
-                            }
-                          ],
-                          "property": "firstName",
-                          "sourceInformation": {
-                            "endColumn": 64,
-                            "endLine": 48,
-                            "startColumn": 56,
-                            "startLine": 48
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 48,
-                            "endLine": 48,
-                            "startColumn": 36,
-                            "startLine": 48
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 64,
-                        "endLine": 48,
-                        "startColumn": 52,
-                        "startLine": 48
-                      }
-                    },
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 88,
-                                "endLine": 48,
-                                "startColumn": 87,
-                                "startLine": 48
-                              }
-                            }
-                          ],
-                          "property": "lastName",
-                          "sourceInformation": {
-                            "endColumn": 97,
-                            "endLine": 48,
-                            "startColumn": 90,
-                            "startLine": 48
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 82,
-                            "endLine": 48,
-                            "startColumn": 70,
-                            "startLine": 48
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 97,
-                        "endLine": 48,
-                        "startColumn": 86,
-                        "startLine": 48
-                      }
-                    }
-                  ]
-                },
-                {
-                  "_type": "collection",
-                  "multiplicity": {
-                    "lowerBound": 2,
-                    "upperBound": 2
-                  },
-                  "sourceInformation": {
-                    "endColumn": 127,
-                    "endLine": 48,
-                    "startColumn": 101,
-                    "startLine": 48
-                  },
-                  "values": [
-                    {
-                      "_type": "string",
-                      "sourceInformation": {
-                        "endColumn": 113,
-                        "endLine": 48,
-                        "startColumn": 102,
-                        "startLine": 48
-                      },
-                      "value": "First Name"
-                    },
-                    {
-                      "_type": "string",
-                      "sourceInformation": {
-                        "endColumn": 126,
-                        "endLine": 48,
-                        "startColumn": 116,
-                        "startLine": 48
-                      },
-                      "value": "Last Name"
-                    }
-                  ]
-                }
-              ],
-              "sourceInformation": {
-                "endColumn": 30,
-                "endLine": 48,
-                "startColumn": 24,
-                "startLine": 48
-              }
-            },
-            {
-              "_type": "packageableElementPtr",
-              "fullPath": "execution::RelationalMapping",
-              "sourceInformation": {
-                "endColumn": 163,
-                "endLine": 48,
-                "startColumn": 136,
-                "startLine": 48
-              }
-            },
-            {
-              "_type": "packageableElementPtr",
-              "fullPath": "execution::Runtime",
-              "sourceInformation": {
-                "endColumn": 183,
-                "endLine": 48,
-                "startColumn": 166,
-                "startLine": 48
-              }
-            }
-          ],
-          "sourceInformation": {
-            "endColumn": 134,
-            "endLine": 48,
-            "startColumn": 131,
-            "startLine": 48
-          }
-        }
-      ],
       "name": "PersonQuerySharedData__TabularDataSet_1_",
-      "package": "model",
+      "sourceInformation": {
+        "startLine": 46,
+        "startColumn": 1,
+        "endLine": 49,
+        "endColumn": 1
+      },
+      "returnType": "meta::pure::tds::TabularDataSet",
       "returnMultiplicity": {
         "lowerBound": 1,
         "upperBound": 1
       },
-      "returnType": "meta::pure::tds::TabularDataSet",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 49,
-        "startColumn": 1,
-        "startLine": 46
-      }
-    },
-    {
-      "_type": "function",
       "body": [
         {
           "_type": "func",
+          "sourceInformation": {
+            "startLine": 48,
+            "startColumn": 131,
+            "endLine": 48,
+            "endColumn": 134
+          },
           "function": "from",
           "parameters": [
             {
               "_type": "func",
+              "sourceInformation": {
+                "startLine": 48,
+                "startColumn": 24,
+                "endLine": 48,
+                "endColumn": 30
+              },
               "function": "project",
               "parameters": [
                 {
                   "_type": "func",
+                  "sourceInformation": {
+                    "startLine": 48,
+                    "startColumn": 16,
+                    "endLine": 48,
+                    "endColumn": 21
+                  },
                   "function": "getAll",
                   "parameters": [
                     {
                       "_type": "packageableElementPtr",
-                      "fullPath": "model::Person",
                       "sourceInformation": {
-                        "endColumn": 15,
-                        "endLine": 53,
+                        "startLine": 48,
                         "startColumn": 3,
-                        "startLine": 53
-                      }
-                    }
-                  ],
-                  "sourceInformation": {
-                    "endColumn": 21,
-                    "endLine": 53,
-                    "startColumn": 16,
-                    "startLine": 53
-                  }
-                },
-                {
-                  "_type": "collection",
-                  "multiplicity": {
-                    "lowerBound": 2,
-                    "upperBound": 2
-                  },
-                  "sourceInformation": {
-                    "endColumn": 98,
-                    "endLine": 53,
-                    "startColumn": 32,
-                    "startLine": 53
-                  },
-                  "values": [
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 54,
-                                "endLine": 53,
-                                "startColumn": 53,
-                                "startLine": 53
-                              }
-                            }
-                          ],
-                          "property": "firstName",
-                          "sourceInformation": {
-                            "endColumn": 64,
-                            "endLine": 53,
-                            "startColumn": 56,
-                            "startLine": 53
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 48,
-                            "endLine": 53,
-                            "startColumn": 36,
-                            "startLine": 53
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 64,
-                        "endLine": 53,
-                        "startColumn": 52,
-                        "startLine": 53
-                      }
-                    },
-                    {
-                      "_type": "lambda",
-                      "body": [
-                        {
-                          "_type": "property",
-                          "parameters": [
-                            {
-                              "_type": "var",
-                              "name": "x",
-                              "sourceInformation": {
-                                "endColumn": 88,
-                                "endLine": 53,
-                                "startColumn": 87,
-                                "startLine": 53
-                              }
-                            }
-                          ],
-                          "property": "lastName",
-                          "sourceInformation": {
-                            "endColumn": 97,
-                            "endLine": 53,
-                            "startColumn": 90,
-                            "startLine": 53
-                          }
-                        }
-                      ],
-                      "parameters": [
-                        {
-                          "_type": "var",
-                          "class": "model::Person",
-                          "multiplicity": {
-                            "lowerBound": 1,
-                            "upperBound": 1
-                          },
-                          "name": "x",
-                          "sourceInformation": {
-                            "endColumn": 82,
-                            "endLine": 53,
-                            "startColumn": 70,
-                            "startLine": 53
-                          }
-                        }
-                      ],
-                      "sourceInformation": {
-                        "endColumn": 97,
-                        "endLine": 53,
-                        "startColumn": 86,
-                        "startLine": 53
-                      }
+                        "endLine": 48,
+                        "endColumn": 15
+                      },
+                      "fullPath": "model::Person"
                     }
                   ]
                 },
                 {
                   "_type": "collection",
+                  "sourceInformation": {
+                    "startLine": 48,
+                    "startColumn": 32,
+                    "endLine": 48,
+                    "endColumn": 98
+                  },
                   "multiplicity": {
                     "lowerBound": 2,
                     "upperBound": 2
                   },
+                  "values": [
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 48,
+                        "startColumn": 52,
+                        "endLine": 48,
+                        "endColumn": 64
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 48,
+                            "startColumn": 56,
+                            "endLine": 48,
+                            "endColumn": 64
+                          },
+                          "property": "firstName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 48,
+                                "startColumn": 53,
+                                "endLine": 48,
+                                "endColumn": 54
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 48,
+                            "startColumn": 36,
+                            "endLine": 48,
+                            "endColumn": 48
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 48,
+                        "startColumn": 86,
+                        "endLine": 48,
+                        "endColumn": 97
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 48,
+                            "startColumn": 90,
+                            "endLine": 48,
+                            "endColumn": 97
+                          },
+                          "property": "lastName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 48,
+                                "startColumn": 87,
+                                "endLine": 48,
+                                "endColumn": 88
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 48,
+                            "startColumn": 70,
+                            "endLine": 48,
+                            "endColumn": 82
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
                   "sourceInformation": {
-                    "endColumn": 127,
-                    "endLine": 53,
+                    "startLine": 48,
                     "startColumn": 101,
-                    "startLine": 53
+                    "endLine": 48,
+                    "endColumn": 127
+                  },
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
                   },
                   "values": [
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 113,
-                        "endLine": 53,
+                        "startLine": 48,
                         "startColumn": 102,
-                        "startLine": 53
+                        "endLine": 48,
+                        "endColumn": 113
                       },
                       "value": "First Name"
                     },
                     {
                       "_type": "string",
                       "sourceInformation": {
-                        "endColumn": 126,
-                        "endLine": 53,
+                        "startLine": 48,
                         "startColumn": 116,
-                        "startLine": 53
+                        "endLine": 48,
+                        "endColumn": 126
                       },
                       "value": "Last Name"
                     }
                   ]
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 30,
-                "endLine": 53,
-                "startColumn": 24,
-                "startLine": 53
-              }
+              ]
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::RelationalMapping",
               "sourceInformation": {
-                "endColumn": 163,
-                "endLine": 53,
+                "startLine": 48,
                 "startColumn": 136,
-                "startLine": 53
-              }
+                "endLine": 48,
+                "endColumn": 163
+              },
+              "fullPath": "execution::RelationalMapping"
             },
             {
               "_type": "packageableElementPtr",
-              "fullPath": "execution::RuntimeWithStoreConnections",
               "sourceInformation": {
-                "endColumn": 203,
-                "endLine": 53,
+                "startLine": 48,
                 "startColumn": 166,
-                "startLine": 53
-              }
+                "endLine": 48,
+                "endColumn": 183
+              },
+              "fullPath": "execution::Runtime"
             }
-          ],
-          "sourceInformation": {
-            "endColumn": 134,
-            "endLine": 53,
-            "startColumn": 131,
-            "startLine": 53
-          }
+          ]
         }
       ],
+      "package": "model"
+    },
+    {
+      "_type": "function",
       "name": "PersonWithConnectionStores__TabularDataSet_1_",
-      "package": "model",
+      "sourceInformation": {
+        "startLine": 51,
+        "startColumn": 1,
+        "endLine": 54,
+        "endColumn": 1
+      },
+      "returnType": "meta::pure::tds::TabularDataSet",
       "returnMultiplicity": {
         "lowerBound": 1,
         "upperBound": 1
       },
-      "returnType": "meta::pure::tds::TabularDataSet",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 54,
-        "startColumn": 1,
-        "startLine": 51
-      }
+      "body": [
+        {
+          "_type": "func",
+          "sourceInformation": {
+            "startLine": 53,
+            "startColumn": 131,
+            "endLine": 53,
+            "endColumn": 134
+          },
+          "function": "from",
+          "parameters": [
+            {
+              "_type": "func",
+              "sourceInformation": {
+                "startLine": 53,
+                "startColumn": 24,
+                "endLine": 53,
+                "endColumn": 30
+              },
+              "function": "project",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "sourceInformation": {
+                    "startLine": 53,
+                    "startColumn": 16,
+                    "endLine": 53,
+                    "endColumn": 21
+                  },
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "sourceInformation": {
+                        "startLine": 53,
+                        "startColumn": 3,
+                        "endLine": 53,
+                        "endColumn": 15
+                      },
+                      "fullPath": "model::Person"
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
+                  "sourceInformation": {
+                    "startLine": 53,
+                    "startColumn": 32,
+                    "endLine": 53,
+                    "endColumn": 98
+                  },
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
+                  },
+                  "values": [
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 53,
+                        "startColumn": 52,
+                        "endLine": 53,
+                        "endColumn": 64
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 53,
+                            "startColumn": 56,
+                            "endLine": 53,
+                            "endColumn": 64
+                          },
+                          "property": "firstName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 53,
+                                "startColumn": 53,
+                                "endLine": 53,
+                                "endColumn": 54
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 53,
+                            "startColumn": 36,
+                            "endLine": 53,
+                            "endColumn": 48
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "lambda",
+                      "sourceInformation": {
+                        "startLine": 53,
+                        "startColumn": 86,
+                        "endLine": 53,
+                        "endColumn": 97
+                      },
+                      "body": [
+                        {
+                          "_type": "property",
+                          "sourceInformation": {
+                            "startLine": 53,
+                            "startColumn": 90,
+                            "endLine": 53,
+                            "endColumn": 97
+                          },
+                          "property": "lastName",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "sourceInformation": {
+                                "startLine": 53,
+                                "startColumn": 87,
+                                "endLine": 53,
+                                "endColumn": 88
+                              },
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "sourceInformation": {
+                            "startLine": 53,
+                            "startColumn": 70,
+                            "endLine": 53,
+                            "endColumn": 82
+                          },
+                          "name": "x",
+                          "genericType": {
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "model::Person"
+                            }
+                          },
+                          "multiplicity": {
+                            "lowerBound": 1,
+                            "upperBound": 1
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "_type": "collection",
+                  "sourceInformation": {
+                    "startLine": 53,
+                    "startColumn": 101,
+                    "endLine": 53,
+                    "endColumn": 127
+                  },
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
+                  },
+                  "values": [
+                    {
+                      "_type": "string",
+                      "sourceInformation": {
+                        "startLine": 53,
+                        "startColumn": 102,
+                        "endLine": 53,
+                        "endColumn": 113
+                      },
+                      "value": "First Name"
+                    },
+                    {
+                      "_type": "string",
+                      "sourceInformation": {
+                        "startLine": 53,
+                        "startColumn": 116,
+                        "endLine": 53,
+                        "endColumn": 126
+                      },
+                      "value": "Last Name"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "packageableElementPtr",
+              "sourceInformation": {
+                "startLine": 53,
+                "startColumn": 136,
+                "endLine": 53,
+                "endColumn": 163
+              },
+              "fullPath": "execution::RelationalMapping"
+            },
+            {
+              "_type": "packageableElementPtr",
+              "sourceInformation": {
+                "startLine": 53,
+                "startColumn": 166,
+                "endLine": 53,
+                "endColumn": 203
+              },
+              "fullPath": "execution::RuntimeWithStoreConnections"
+            }
+          ]
+        }
+      ],
+      "package": "model"
     },
     {
       "_type": "sectionIndex",
       "name": "SectionIndex",
-      "package": "__internal__",
       "sections": [
         {
           "_type": "importAware",
           "parserName": "Pure",
           "sourceInformation": {
-            "endColumn": 8,
-            "endLine": 1,
+            "startLine": 1,
             "startColumn": 1,
-            "startLine": 1
+            "endLine": 1,
+            "endColumn": 8
           }
         },
         {
           "_type": "importAware",
+          "parserName": "Pure",
           "elements": [
             "model::EmployeeType",
             "model::Person",
@@ -1303,15 +1353,15 @@
             "model::PersonQuerySharedData__TabularDataSet_1_",
             "model::PersonWithConnectionStores__TabularDataSet_1_"
           ],
-          "parserName": "Pure",
           "sourceInformation": {
-            "endColumn": 1,
-            "endLine": 56,
+            "startLine": 2,
             "startColumn": 8,
-            "startLine": 2
+            "endLine": 56,
+            "endColumn": 1
           }
         }
-      ]
+      ],
+      "package": "__internal__"
     }
   ]
 }

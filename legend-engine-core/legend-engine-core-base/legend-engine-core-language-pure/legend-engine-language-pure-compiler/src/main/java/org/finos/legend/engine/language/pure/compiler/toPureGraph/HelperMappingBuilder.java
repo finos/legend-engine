@@ -439,7 +439,7 @@ public class HelperMappingBuilder
         if (aggregateFunction.aggregateFn.parameters.size() > 0)
         {
             Variable variable = aggregateFunction.aggregateFn.parameters.get(0);
-            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, PackageableElement.getUserPathForPackageableElement(Handlers.funcReturnType(processed, context.pureModel)._rawType()));
+            variable.genericType = context.convertGenericType(Handlers.funcReturnType(processed, context.pureModel));
             variable.multiplicity = new Multiplicity(1, 1);
         }
         afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());

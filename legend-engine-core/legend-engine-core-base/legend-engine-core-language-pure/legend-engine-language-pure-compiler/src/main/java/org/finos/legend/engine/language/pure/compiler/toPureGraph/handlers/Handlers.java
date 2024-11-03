@@ -33,8 +33,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -117,7 +116,6 @@ public class Handlers
         }
     }
 
-
     private static void updateSimpleLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity m, CompileContext cc)
     {
         if (lambda instanceof Lambda)
@@ -126,14 +124,10 @@ public class Handlers
             if (params.size() > 1)
             {
                 Variable p = params.get(0);
-                GenericType gt = cc.pureModel.getGenericType(M3Paths.Relation);
-                updateVariableType(p, gt);
-                // Hack to compensate the fact that 'generics' are not supported in the type system ... we would like the relation (newGenericType) to be a typeArgument of Relation (i.e. Relation<(id:Integer)>
-                // we pack the 'relation' in the variable 'relationType' extra slot...
-                updateVariableType(p, newGenericType);
+                updateVariableType(p, cc.newGenericType(cc.pureModel.getType(M3Paths.Relation), Lists.fixedSize.of(newGenericType)));
                 p.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
                 Variable f = params.get(1);
-                updateVariableType(f, cc.pureModel.getGenericType("meta::pure::functions::relation::_Window"));
+                updateVariableType(f, cc.newGenericType(cc.pureModel.getType("meta::pure::functions::relation::_Window"), Lists.mutable.with(cc.pureModel.getGenericType(cc.pureModel.getType("meta::pure::metamodel::type::Any")))));
                 f.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
             }
             Variable variable = params.get(params.size() - 1);
@@ -144,14 +138,7 @@ public class Handlers
 
     private static void updateVariableType(Variable variable, GenericType newGenericType)
     {
-        if (newGenericType._rawType() instanceof RelationType)
-        {
-            variable.relationType = RelationTypeHelper.convert((RelationType<?>) newGenericType._rawType());
-        }
-        else
-        {
-            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, PackageableElement.getUserPathForPackageableElement(newGenericType._rawType()));
-        }
+        variable.genericType = CompileContext.convertGenericType(newGenericType);
     }
 
 
@@ -171,10 +158,10 @@ public class Handlers
     private static void updateTDSRowLambda(List<Variable> vars)
     {
         Variable variable = vars.get(0);
-        variable._class = new PackageableElementPointer(PackageableElementType.CLASS, "meta::pure::tds::TDSRow");
+        variable.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
         variable.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
         Variable variable2 = vars.get(1);
-        variable2._class = new PackageableElementPointer(PackageableElementType.CLASS, "meta::pure::tds::TDSRow");
+        variable2.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
         variable2.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
     }
 

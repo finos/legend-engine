@@ -681,7 +681,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 (this.isVariableInFunctionSignature ? "" : "$") +
                 PureGrammarComposerUtility.convertIdentifier(variable.name) +
                 (this.isRenderingHTML() ? "</span>" : "") +
-                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class.path, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (variable.genericType != null ? ": " + HelperValueSpecificationGrammarComposer.printGenericType(variable.genericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override
@@ -747,7 +747,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this) + ")";
             case "tdsAggregateValue":
                 TDSAggregateValue tdsAggregateValue = (TDSAggregateValue) iv.value;
-                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" +  convertString(tdsAggregateValue.name,true) + "," + tdsAggregateValue.mapFn.accept(this) + ", " + tdsAggregateValue.aggregateFn.accept(this) + ")";
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + convertString(tdsAggregateValue.name, true) + "," + tdsAggregateValue.mapFn.accept(this) + ", " + tdsAggregateValue.aggregateFn.accept(this) + ")";
 
             default:
                 PureGrammarComposerContext context = this.toContext();
@@ -763,7 +763,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(AppliedFunction appliedFunction)
     {
-        String function = appliedFunction.function;
+        String _function = appliedFunction.function;
+        int index = _function.lastIndexOf("::");
+        String function = index == -1 ? _function : _function.substring(index + 2);
         List<ValueSpecification> parameters = appliedFunction.parameters;
 
         if ("getAll".equals(function))
@@ -778,11 +780,28 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value) + " = " + parameters.get(1).accept(this);
         }
+        else if ("cast".equals(function))
+        {
+            return parameters.get(0).accept(this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
+        }
+        else if ("subType".equals(function))
+        {
+            return parameters.get(0).accept(this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
+        }
         else if ("new".equals(function))
         {
             ValueSpecification param = parameters.get(parameters.size() - 1);
             List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Arrays.asList(param);
-            return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
+            String type;
+            if (parameters.get(0) instanceof GenericTypeInstance)
+            {
+                type = printGenericType(((GenericTypeInstance) parameters.get(0)).genericType.typeArguments.get(0), this);
+            }
+            else
+            {
+                type = parameters.get(0).accept(this);
+            }
+            return "^" + type + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
         }
         else if ("not".equals(function))
         {
@@ -1042,7 +1061,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(GenericTypeInstance genericTypeInstance)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append('@' + printGenericType(genericTypeInstance.genericType));
+        builder.append(printGenericType(genericTypeInstance.genericType, this));
         return builder.toString();
     }
 

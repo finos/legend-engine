@@ -330,12 +330,12 @@ public class HelperValueSpecificationGrammarComposer
 
     private static String getParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getFunctionDescriptorParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class.path) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
+        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
     }
 
     private static String getClassSignature(String _class)
@@ -365,20 +365,23 @@ public class HelperValueSpecificationGrammarComposer
         return date.indexOf(DateParseTreeWalker.DATE_PREFIX) != -1 ? date : DateParseTreeWalker.DATE_PREFIX + date;
     }
 
-    public static String printGenericType(GenericType genericType)
+    public static String printGenericType(GenericType genericType, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return printType(genericType.rawType) +
-                (genericType.typeArguments.isEmpty() ?
+        return printType(genericType.rawType, transformer) +
+                (genericType.typeArguments.isEmpty() && genericType.multiplicityArguments.isEmpty() ?
                         "" :
-                        "<" + ListIterate.collect(genericType.typeArguments, HelperValueSpecificationGrammarComposer::printGenericType).makeString(", ") + ">"
+                        "<" +
+                        ListIterate.collect(genericType.typeArguments, x -> printGenericType(x, transformer)).makeString(", ") +
+                        (genericType.multiplicityArguments.isEmpty() ? "" : "|" + ListIterate.collect(genericType.multiplicityArguments, HelperDomainGrammarComposer::renderMultiplicity).makeString(",")) +
+                        ">"
                 );
     }
 
-    public static String printType(Type type)
+    public static String printType(Type type, DEPRECATED_PureGrammarComposerCore transformer)
     {
         if (type instanceof PackageableType)
         {
-            return ((PackageableType) type).fullPath;
+            return printFullPath(((PackageableType) type).fullPath, transformer);
         }
         else if (type instanceof RelationType)
         {
