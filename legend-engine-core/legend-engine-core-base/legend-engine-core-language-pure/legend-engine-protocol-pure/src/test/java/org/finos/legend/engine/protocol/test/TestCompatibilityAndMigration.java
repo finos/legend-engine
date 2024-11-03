@@ -1372,6 +1372,120 @@ public class TestCompatibilityAndMigration
     }
 
     @Test
+    public void testVariable() throws Exception
+    {
+        check("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"collection\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 0\n" +
+                        "          },\n" +
+                        "          \"values\": []\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"f_Type_1__String_$0_1$_\",\n" +
+                        "      \"package\": \"withPath\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        "          \"class\": \"a::Type\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"name\": \"s\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"String\",\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": []\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"package\": \"__internal__\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"withPath::f_Type_1__String_$0_1$_\"\n" +
+                        "          ],\n" +
+                        "          \"imports\": [],\n" +
+                        "          \"parserName\": \"Pure\"\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"name\": \"f_Type_1__String_$0_1$_\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        "          \"name\": \"s\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"genericType\": {\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"packageableType\",\n" +
+                        "              \"fullPath\": \"a::Type\"\n" +
+                        "            }\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"returnType\": \"String\",\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"collection\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 0\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"withPath\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"parserName\": \"Pure\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"withPath::f_Type_1__String_$0_1$_\"\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"__internal__\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}");
+    }
+
+    @Test
     public void testStoreTestData() throws Exception
     {
         check(

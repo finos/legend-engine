@@ -161,7 +161,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             // for backward compatibility, since some protocol versions use PackageableElementPtr for units
             return visit(new UnitType(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation));
         }
-
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(packageableElement._classifierGenericType())
@@ -705,19 +704,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     public ValueSpecification visit(Variable variable)
     {
         openVariables.add(variable.name);
-        if ((variable._class != null || variable.relationType != null) && variable.multiplicity != null)
+        if (variable.genericType != null && variable.multiplicity != null)
         {
             VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(variable.sourceInformation), this.context.pureModel.getClass(M3Paths.VariableExpression))
                     ._name(variable.name);
-            GenericType genericType =
-                    // Bad Hack to compensate the fact that 'generics' are not supported in the type system ...
-                    variable.relationType != null && variable._class != null ?
-                            new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
-                                    ._rawType(context.pureModel.getClass(variable._class.path))
-                                    ._typeArguments(Lists.immutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(RelationTypeHelper.convert(variable.relationType, this.context.pureModel.getExecutionSupport().getProcessorSupport(), null)))) :
-                            variable.relationType != null ?
-                                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(RelationTypeHelper.convert(variable.relationType, this.context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
-                                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
+            GenericType genericType = context.newGenericType(variable.genericType);
             ve._genericType(genericType);
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
             processingContext.addInferredVariables(variable.name, ve);

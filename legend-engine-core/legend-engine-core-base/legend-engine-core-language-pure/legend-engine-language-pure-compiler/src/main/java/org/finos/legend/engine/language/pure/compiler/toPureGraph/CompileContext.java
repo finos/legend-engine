@@ -51,6 +51,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -63,6 +64,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._class._Class;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
@@ -566,6 +568,19 @@ public class CompileContext
         return newGenericType(rawType, this.pureModel)._typeArguments(typeArguments)._multiplicityArguments(multiplicityArguments);
     }
 
+    public static org.finos.legend.engine.protocol.pure.v1.model.type.GenericType convertGenericType(GenericType genericType)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.type.Type rType;
+        if (genericType._rawType() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType)
+        {
+            rType = RelationTypeHelper.convert((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) genericType._rawType());
+        }
+        else
+        {
+            rType = new PackageableType(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(genericType._rawType()));
+        }
+        return new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
+    }
 
     public GenericType newGenericType(org.finos.legend.engine.protocol.pure.v1.model.type.GenericType genericType)
     {
@@ -593,7 +608,20 @@ public class CompileContext
             throw new EngineException(genericType.rawType.getClass() + " is not supported yet!", genericType.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        return gt._rawType(type)._typeArguments(ListIterate.collect(genericType.typeArguments, this::newGenericType));
+        if (type instanceof Class)
+        {
+            if ((((Class<?>) type)._typeParameters().size() != genericType.typeArguments.size()))
+            {
+                throw new EngineException("Missing type arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if ((((Class<?>) type)._multiplicityParameters().size() != genericType.multiplicityArguments.size()))
+            {
+                throw new EngineException("Missing multiplicity arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+        return gt._rawType(type)
+                ._typeArguments(ListIterate.collect(genericType.typeArguments, this::newGenericType))
+                ._multiplicityArguments(ListIterate.collect(genericType.multiplicityArguments, pureModel::getMultiplicity));
     }
 
 

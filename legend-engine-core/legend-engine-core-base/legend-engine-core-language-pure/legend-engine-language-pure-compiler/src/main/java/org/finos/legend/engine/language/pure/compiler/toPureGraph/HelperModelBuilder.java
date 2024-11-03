@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -321,7 +322,7 @@ public class HelperModelBuilder
 
     private static String getParameterSignature(Variable p)
     {
-        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getClassSignature(String _class)
@@ -552,7 +553,7 @@ public class HelperModelBuilder
 
     public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty p)
     {
-        return o._name() == p.name && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
+        return o._name().equals(p.name) && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }
 
     public static String getTypeFullPath(Type type, CompiledExecutionSupport executionSupport)

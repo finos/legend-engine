@@ -266,15 +266,8 @@ public class HelperValueSpecificationBuilder
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                Type inferredVariableType = inferredVariable._genericType()._rawType();
-                if (inferredVariableType instanceof RelationType)
-                {
-                    automaLambdaparam.relationType = RelationTypeHelper.convert((RelationType<?>) inferredVariableType);
-                }
-                else
-                {
-                    automaLambdaparam._class = new PackageableElementPointer(PackageableElementType.CLASS, HelperModelBuilder.getTypeFullPath(inferredVariableType, context.pureModel.getExecutionSupport()));
-                }
+                GenericType inferredVariableType = inferredVariable._genericType();
+                automaLambdaparam.genericType = CompileContext.convertGenericType(inferredVariableType);
                 automaLambdaparam.multiplicity = Multiplicity.PURE_ONE;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
