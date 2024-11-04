@@ -16,8 +16,10 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.block.factory.Functions;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -295,6 +297,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return this.isRenderingHTML() ? "</BR>\n" : "\n";
     }
 
+    private static final ImmutableSet<String> CORE_FUNCTIONS_WITH_PREFIX_RENDERING = Sets.immutable.of("if", "over");
 
     // ----------------------------------------------- GENERAL -----------------------------------------------
 
@@ -820,7 +823,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                     + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
                     + possiblyAddParenthesis(function, parameters.get(1), this);
         }
-        else if ("if".equals(function))
+        else if (function != null && CORE_FUNCTIONS_WITH_PREFIX_RENDERING.contains(function))
         {
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
                     (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +

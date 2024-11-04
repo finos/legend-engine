@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 import org.junit.Test;
 
 import static org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestLambdaRoundtrip.testLambda;
+import static org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestLambdaRoundtrip.testLambdaPretty;
 
 public class TestRelation
 {
@@ -90,5 +91,37 @@ public class TestRelation
     public void testCast()
     {
         testLambda("|test::Person.all()->meta::pure::functions::lang::cast(@Relation<(someCol:String, someCol:String)>)");
+    }
+
+    @Test
+    public void testOver()
+    {
+        testLambda("|over(~a)");
+        testLambda("|over(~[a, b], !c->descending())");
+        testLambda("|over(~[a, b], !c->descending(), [])");
+        testLambdaPretty(
+                "|over(\n" +
+                        "  ~a\n" +
+                        ")"
+        );
+        testLambdaPretty(
+                "|over(\n" +
+                        "  ~[\n" +
+                        "     a,\n" +
+                        "     b\n" +
+                        "   ],\n" +
+                        "  !c->descending()\n" +
+                        ")"
+        );
+        testLambdaPretty(
+                "|over(\n" +
+                        "  ~[\n" +
+                        "     a,\n" +
+                        "     b\n" +
+                        "   ],\n" +
+                        "  !c->descending(),\n" +
+                        "  []\n" +
+                        ")"
+        );
     }
 }
