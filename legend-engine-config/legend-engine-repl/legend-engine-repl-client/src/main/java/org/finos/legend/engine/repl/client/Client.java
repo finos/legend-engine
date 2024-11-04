@@ -89,63 +89,63 @@ public class Client
 
     public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions, PlanExecutor planExecutor, Path homeDirectory) throws Exception
     {
-            this.replExtensions = replExtensions;
-            this.completerExtensions = completerExtensions;
-            this.planExecutor = planExecutor;
-            this.state = new ModelState(this.legendInterface, this.replExtensions);
-            this.terminal = TerminalBuilder.terminal();
-            this.homeDirectory = homeDirectory;
-            this.documentation = DocumentationGeneration.buildDocumentation();
+        this.replExtensions = replExtensions;
+        this.completerExtensions = completerExtensions;
+        this.planExecutor = planExecutor;
+        this.state = new ModelState(this.legendInterface, this.replExtensions);
+        this.terminal = TerminalBuilder.terminal();
+        this.homeDirectory = homeDirectory;
+        this.documentation = DocumentationGeneration.buildDocumentation();
 
-            this.initialize();
-            replExtensions.forEach(e -> e.initialize(this));
+        this.initialize();
+        replExtensions.forEach(e -> e.initialize(this));
 
-            this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
-            if (System.getProperty("legend.repl.initializationMessage") != null)
-            {
-                this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
-            }
-            this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
-            this.println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
+        this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        if (System.getProperty("legend.repl.initializationMessage") != null)
+        {
+            this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));
+        }
+        this.printDebug("Press 'Enter' or type 'help' to see the list of available commands.");
+        this.println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
-            // NOTE: the order here matters, the default command 'help' should always go first
-            // and "catch-all" command 'execute' should always go last
-            this.commands = replExtensions
-                    .flatCollect(ReplExtension::getExtraCommands)
-                    .withAll(
-                            Lists.mutable.with(
-                                    new Ext(this),
-                                    new Debug(this),
-                                    new Doc(this),
-                                    new Graph(this),
-                                    new Execute(this)
-                            )
-                    );
-            this.commands.add(0, new Help(this, this.commands));
-            this.reader = LineReaderBuilder.builder()
-                    .terminal(terminal)
-                    // Configure history file
-                    // See https://github.com/jline/jline3/wiki/History
-                    .variable(LineReader.HISTORY_FILE, this.getHomeDir().resolve("history"))
-                    .variable(LineReader.HISTORY_FILE_SIZE, 1_000)
-                    .variable(LineReader.HISTORY_IGNORE, ": *") // make sure empty space(s) are not persisted
-                    // Disable cursor jumping to opening brace when typing closing brace
-                    // See https://github.com/jline/jline3/issues/216
-                    .variable(BLINK_MATCHING_PAREN, false)
-                    // Make sure hitting <tab> at the beginning of line will insert a tab instead of triggering a completion
-                    // which will cause error since the completer doesn't handle such case
-                    // See https://github.com/jline/jline3/wiki/Completion
-                    .option(LineReader.Option.INSERT_TAB, true)
-                    // Make sure word navigation works properly with Alt + (left/right) arrow key
-                    .variable(LineReader.WORDCHARS, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$")
-                    // Make sure to not break the completer when exclamation sign is present
-                    // Do this by disabling history expansion
-                    // See https://github.com/jline/jline3/issues/246
-                    .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
-                    .highlighter(new JLine3Highlighter())
-                    .parser(new JLine3Parser())
-                    .completer(new JLine3Completer(this.commands))
-                    .build();
+        // NOTE: the order here matters, the default command 'help' should always go first
+        // and "catch-all" command 'execute' should always go last
+        this.commands = replExtensions
+                .flatCollect(ReplExtension::getExtraCommands)
+                .withAll(
+                        Lists.mutable.with(
+                                new Ext(this),
+                                new Debug(this),
+                                new Doc(this),
+                                new Graph(this),
+                                new Execute(this)
+                        )
+                );
+        this.commands.add(0, new Help(this, this.commands));
+        this.reader = LineReaderBuilder.builder()
+                .terminal(terminal)
+                // Configure history file
+                // See https://github.com/jline/jline3/wiki/History
+                .variable(LineReader.HISTORY_FILE, this.getHomeDir().resolve("history"))
+                .variable(LineReader.HISTORY_FILE_SIZE, 1_000)
+                .variable(LineReader.HISTORY_IGNORE, ": *") // make sure empty space(s) are not persisted
+                // Disable cursor jumping to opening brace when typing closing brace
+                // See https://github.com/jline/jline3/issues/216
+                .variable(BLINK_MATCHING_PAREN, false)
+                // Make sure hitting <tab> at the beginning of line will insert a tab instead of triggering a completion
+                // which will cause error since the completer doesn't handle such case
+                // See https://github.com/jline/jline3/wiki/Completion
+                .option(LineReader.Option.INSERT_TAB, true)
+                // Make sure word navigation works properly with Alt + (left/right) arrow key
+                .variable(LineReader.WORDCHARS, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$")
+                // Make sure to not break the completer when exclamation sign is present
+                // Do this by disabling history expansion
+                // See https://github.com/jline/jline3/issues/246
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
+                .highlighter(new JLine3Highlighter())
+                .parser(new JLine3Parser())
+                .completer(new JLine3Completer(this.commands))
+                .build();
 
         try
         {

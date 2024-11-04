@@ -36,6 +36,7 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.pct.shared.PCTTools;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.MutableVersionControlledCodeStorage;
@@ -71,10 +72,22 @@ public class TestRun implements SimpleFunction
         String path = getPath(extraParams);
         String[] filterPaths = getFilterPaths(extraParams);
         boolean relevantTestsOnly = getRelevantTestsOnly(extraParams);
+        String pctAdapter = (String) extraParams.get("pctAdapter");
         Predicate<? super CoreInstance> filterPredicate = getFilterPredicate(runtime, relevantTestsOnly);
+        if (pctAdapter != null)
+        {
+            filterPredicate = Predicates.and(filterPredicate, new Predicate<CoreInstance>()
+            {
+                @Override
+                public boolean accept(CoreInstance test)
+                {
+                    return PCTTools.isPCTTest(test, runtime.getProcessorSupport());
+                }
+            });
+        }
 
         TestCollection collection = getTestCollection(pureSession, path, filterPaths, filterPredicate);
-        TestRunner runner = pureSession.newTestRunner(newId, collection);
+        TestRunner runner = pureSession.newTestRunner(newId, collection, pctAdapter);
 
         this.executorService.execute(runner);
 
@@ -98,6 +111,7 @@ public class TestRun implements SimpleFunction
         outputStream.write((",\"path\":\"" + path + "\"").getBytes());
         outputStream.write((",\"filterPaths\":" + (filterPaths.length == 0 ? "[]" : ArrayIterate.makeString(filterPaths, "[\"", "\",\"", "\"]"))).getBytes());
         outputStream.write((",\"relevantTestsOnly\":" + relevantTestsOnly).getBytes());
+        outputStream.write((",\"pctAdapter\":\"" + pctAdapter + "\"").getBytes());
         outputStream.write(",\"count\":".getBytes());
         outputStream.write(Integer.toString(tests.size()).getBytes());
         outputStream.write(",\"tests\":".getBytes());
@@ -116,13 +130,13 @@ public class TestRun implements SimpleFunction
 
     private String getPath(JSONObject extraParams)
     {
-        String path = (String)extraParams.get("path");
+        String path = (String) extraParams.get("path");
         return StringIterate.isEmpty(path) ? "::" : path;
     }
 
     private String[] getFilterPaths(JSONObject extraParams)
     {
-        JSONArray filterPaths = (JSONArray)extraParams.get("filterPaths");
+        JSONArray filterPaths = (JSONArray) extraParams.get("filterPaths");
         if (filterPaths != null)
         {
             String[] paths = new String[filterPaths.size()];
@@ -134,7 +148,7 @@ public class TestRun implements SimpleFunction
 
     private boolean getRelevantTestsOnly(JSONObject extraParams)
     {
-        Boolean relevantTestsOnly = (Boolean)extraParams.get("relevantTestsOnly");
+        Boolean relevantTestsOnly = (Boolean) extraParams.get("relevantTestsOnly");
         return (relevantTestsOnly == null) ? false : relevantTestsOnly;
     }
 
@@ -142,10 +156,10 @@ public class TestRun implements SimpleFunction
     {
         if (!relevantTestsOnly)
         {
-            return null;
+            return Predicates.alwaysTrue();
         }
 
-        final MutableVersionControlledCodeStorage codeStorage = (MutableVersionControlledCodeStorage)runtime.getCodeStorage();
+        final MutableVersionControlledCodeStorage codeStorage = (MutableVersionControlledCodeStorage) runtime.getCodeStorage();
         RichIterable<CodeStorageNode> modifiedUserFiles = codeStorage.getModifiedUserFiles();
         if (modifiedUserFiles.isEmpty())
         {

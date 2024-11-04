@@ -158,7 +158,7 @@ function <<access.private>> meta::pure::ide::display_ide(elem:Any[1]):String[1]
                                                                                                 |'"/ide/pure/icons/play.png"',
                                                                                                 |'"/ide/pure/icons/modelElements/function.png"'
                                                                                          );
-                                                                              '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":'+$icon+'}';,
+                                                                              '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":'+$icon+', "test":'+ toString(meta::pure::ide::testing::isTest($f)) + ', "pct":' + toString(meta::pure::ide::testing::isPCT($f)) + '}';,
                                                f:NativeFunction<Any>[1] | '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":"/ide/pure/icons/modelElements/function_parenthesis.png"}',
                                                e:Enumeration<Any>[1] | '{"li_attr":' + display_ide_attr($e) + ', "id":"'+$p->buildKey()+ '","text":"' + $e->id() + '", "icon":"/ide/pure/icons/modelElements/enumeration.gif"}',
                                                p:PrimitiveType[1] | '{"li_attr":' + display_ide_attr($p) + ', "id":"'+$p->buildKey()+ '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/primitive.png"}',
@@ -230,5 +230,3 @@ function <<access.private>> meta::pure::ide::tacticalDeprecated(element:Package[
 
    ($model->isNotEmpty() && $element.package == $model && !$element.name->in(['domain', 'producers', 'external', 'consumers'])) ;
 }
-
-
