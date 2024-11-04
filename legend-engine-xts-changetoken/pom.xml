@@ -31,5 +31,6 @@
     <modules>
         <module>legend-engine-xt-changetoken-compiler</module>
         <module>legend-engine-xt-changetoken-pure</module>
+        <module>legend-engine-xt-changetoken-test-pure</module>
     </modules>
 </project>

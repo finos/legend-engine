@@ -80,7 +80,7 @@ public class HelperModelBuilder
             if (property.defaultValue != null)
             {
                 LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(Collections.singletonList(property.defaultValue.value), Collections.emptyList(), context);
-                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), null);
+                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::DefaultValue"));
                 defaultValue._functionDefinition(lambdaFunction);
             }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);

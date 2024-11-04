@@ -1,0 +1,202 @@
+//  Copyright 2023 Goldman Sachs
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
+import meta::pure::changetoken::tests::move::*;
+import meta::pure::changetoken::tests::*;
+
+function meta::pure::changetoken::tests::move::setupSuite(): meta::external::language::java::metamodel::Class[1]
+{
+  setupSuiteFromJson('{\n' +
+                '  "@type": "meta::pure::changetoken::Versions",\n' +
+                '  "versions": [\n' +
+                '    {\n' +
+                '      "@type": "meta::pure::changetoken::Version",\n' +
+                '      "version": "ftdm:abcdefg123"\n' +
+                '    },\n' +
+                '    {\n' +
+                '      "@type": "meta::pure::changetoken::Version",\n' +
+                '      "version": "ftdm:abcdefg456",\n' +
+                '      "prevVersion": "ftdm:abcdefg123",\n' +
+                '      "changeTokens": [\n' +
+                '        {\n' +
+                '          "@type": "meta::pure::changetoken::AddField",\n' +
+                '          "fieldName": "xyz",\n' +
+                '          "fieldType": "SampleNestedClass[1]",\n' +
+                '          "defaultValue": {\n' +
+                '            "@type": "meta::pure::changetoken::ConstValue",\n' +
+                '            "value": "{\\"@type\\":\\"SampleNestedClass\\",\\"step\\":0,\\"active\\":true}"\n' +
+                '          },\n' +
+                '          "safeCast": true,\n' +
+                '          "class": "meta::pure::changetoken::tests::SampleClass"\n' +
+                '        },\n' +
+                '        {\n' +
+                '          "@type": "meta::pure::changetoken::RenameField",\n' +
+                '          "oldFieldName": [\n' +
+                '            "abc"\n' +
+                '          ],\n' +
+                '          "newFieldName": [\n' +
+                '            "xyz",\n' +
+                '            "def"\n' +
+                '          ],\n' +
+                '          "class": "meta::pure::changetoken::tests::SampleClass"\n' +
+                '        }\n' +
+                '      ]\n' +
+                '    }\n' +
+                '  ]\n' +
+                '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testUpcast(): Any[*]
+{
+        expect(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"Custom", "value":"4d"}\n' +
+                        '}'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"1d"}}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"2d"}}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"3d"}}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"4d"}}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testUpcastType(): Any[*]
+{
+        expect(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::OtherClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"Custom", "value":"4d"}\n' +
+                        '}'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::OtherClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::OtherClass", "abc": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"Custom", "value":"4d"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testUpcastMissing(): Any[*]
+{
+        expect(setupSuite()->upcast('{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "def": {"@type":"Custom", "value":"4d"}\n' +
+                        '}'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0}, "def": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0}, "def": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0}, "def": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"SampleNestedClass", "active":true, "step":0}, "def": {"@type":"Custom", "value":"4d"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testDowncast(): Any[*]
+{
+        expect(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"1d"}}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"2d"}}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"3d"}}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"SampleNestedClass", "active":true, "step":0, "def": {"@type":"Custom", "value":"4d"}}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"1d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"2d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "abc": {"@type":"Custom", "value":"3d"}}]\n' +
+                        '  ],\n' +
+                        '  "abc": {"@type":"Custom", "value":"4d"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testDowncastType(): Any[*]
+{
+        expect(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::OtherClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"4d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"3d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"2d"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"Custom", "value":"1d"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::OtherClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"4d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"3d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::OtherClass", "xyz": {"@type":"Custom", "value":"2d"}}]\n' +
+                        '  ],\n' +
+                        '  "xyz": {"@type":"Custom", "value":"1d"}\n' +
+                        '}\n');
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::move::testDowncastMissing(): Any[*]
+{
+        expect(setupSuite()->downcast('{\n' +
+                        '  "version":"ftdm:abcdefg456",\n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"4d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"3d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"2d"}}]\n' +
+                        '  ],\n' +
+                        '  "def": {"@type":"Custom", "value":"1d"}\n' +
+                        '}', 'ftdm:abcdefg123'),
+                '{\n' +
+                        '  "version":"ftdm:abcdefg123", \n' +
+                        '  "@type": "meta::pure::changetoken::tests::SampleClass",\n' +
+                        '  "innerObject": {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"4d"}},\n' +
+                        '  "innerNestedArray":[\n' +
+                        '    {"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"3d"}},\n' +
+                        '    [{"@type": "meta::pure::changetoken::tests::SampleClass", "def": {"@type":"Custom", "value":"2d"}}]\n' +
+                        '  ],\n' +
+                        '  "def": {"@type":"Custom", "value":"1d"}\n' +
+                        '}\n');
+}
