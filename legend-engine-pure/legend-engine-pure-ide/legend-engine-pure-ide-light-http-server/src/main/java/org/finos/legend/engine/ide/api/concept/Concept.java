@@ -16,12 +16,13 @@ package org.finos.legend.engine.ide.api.concept;
 
 import io.swagger.annotations.Api;
 import org.finos.legend.engine.ide.session.PureSession;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedPropertyInstance;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m3.pct.shared.PCTTools;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.Source;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -77,24 +78,32 @@ public class Concept
                 CoreInstance found = src.navigate(Integer.parseInt(line), Integer.parseInt(column), session.getPureRuntime().getProcessorSupport());
                 if (found != null)
                 {
+                    String doc = PCTTools.getDoc(found, pureRuntime.getProcessorSupport());
                     if (Instance.instanceOf(found, M3Paths.AbstractProperty, session.getPureRuntime().getProcessorSupport()))
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
                         CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(found, M3Properties.owner, session.getPureRuntime().getProcessorSupport());
                         String ownerPath = PackageableElement.getUserPathForPackageableElement(owner);
-                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.name).getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"" + (found instanceof QualifiedPropertyInstance ? "QualifiedProperty" : "Property") + "\"}").getBytes());
+                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.name).getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"" + (found instanceof QualifiedPropertyInstance ? "QualifiedProperty" : "Property") + "\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
                     }
                     else if (Instance.instanceOf(found, M3Paths.Enum, session.getPureRuntime().getProcessorSupport()))
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
                         CoreInstance owner = found.getClassifier();
                         String ownerPath = PackageableElement.getUserPathForPackageableElement(owner);
-                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"Enum\"}").getBytes());
+                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getName() + "\",\"owner\":\"" + ownerPath + "\",\"pureType\":\"Enum\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
+                    }
+                    else if (Instance.instanceOf(found, M3Paths.ConcreteFunctionDefinition, session.getPureRuntime().getProcessorSupport()) || Instance.instanceOf(found, M3Paths.NativeFunction, session.getPureRuntime().getProcessorSupport()))
+                    {
+                        String path = PackageableElement.getUserPathForPackageableElement(found);
+                        String grammarDoc = PCTTools.getGrammarDoc(found, pureRuntime.getProcessorSupport());
+                        String grammarChars = PCTTools.getGrammarCharacters(found, pureRuntime.getProcessorSupport());
+                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getValueForMetaPropertyToOne(M3Properties.functionName).getName() + "\",\"pureType\":\"" + found.getValueForMetaPropertyToOne(M3Properties.classifierGenericType).getValueForMetaPropertyToOne(M3Properties.rawType).getName() + "\",\"test\":" + (PCTTools.isPCTTest(found, pureRuntime.getProcessorSupport()) || PCTTools.isTest(found, pureRuntime.getProcessorSupport())) + ",\"pct\":" + PCTTools.isPCTTest(found, pureRuntime.getProcessorSupport()) + ",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + ",\"grammarDoc\":" + (grammarDoc != null ? ("\"" + grammarDoc + "\"") : null) + ",\"grammarChars\":" + (grammarChars != null ? ("\"" + grammarChars + "\"") : null) + ",\"signature\":\"" + Function.prettyPrint(found, pureRuntime.getProcessorSupport()) + "\"}").getBytes());
                     }
                     else
                     {
                         String path = PackageableElement.getUserPathForPackageableElement(found);
-                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + (found instanceof ConcreteFunctionDefinition ? found.getValueForMetaPropertyToOne(M3Properties.functionName).getName() : found.getName()) + "\",\"pureType\":\"" + found.getValueForMetaPropertyToOne(M3Properties.classifierGenericType).getValueForMetaPropertyToOne(M3Properties.rawType).getName() + "\"}").getBytes());
+                        outputStream.write(("{\"path\":\"" + path + "\",\"pureName\":\"" + found.getName() + "\",\"pureType\":\"" + found.getValueForMetaPropertyToOne(M3Properties.classifierGenericType).getValueForMetaPropertyToOne(M3Properties.rawType).getName() + "\",\"doc\":" + (doc != null ? ("\"" + doc + "\"") : null) + "}").getBytes());
                     }
                 }
                 else
