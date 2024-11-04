@@ -48,11 +48,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Pure
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -114,7 +109,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -255,13 +249,6 @@ public class PureModel implements IPureModel
             long preValidationEnd = System.nanoTime();
             LOGGER.info("{}", new LogInfo(user, "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
             span.log("GRAPH_PRE_VALIDATION_COMPLETED");
-
-            // Processing
-            long indexStart = System.nanoTime();
-            PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
-            long indexEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(user, "GRAPH_INDEX_INPUT", pureModelContextDataIndex, nanosDurationToMillis(indexStart, indexEnd)));
-            span.log("GRAPH_INDEX_INPUT");
 
             List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pureModelContextData.getElements();
             DependencyManagement dependencyManagement = new DependencyManagement();
@@ -1455,125 +1442,6 @@ public class PureModel implements IPureModel
     public Handlers getHandlers()
     {
         return handlers;
-    }
-
-    private PureModelContextDataIndex index(PureModelContextData pureModelContextData)
-    {
-        PureModelContextDataIndex index = new PureModelContextDataIndex();
-        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>,
-                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();
-
-        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>,
-                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByClass = Maps.mutable.empty();
-        pureModelContextData.getElements().forEach(e ->
-        {
-            if (e instanceof Association)
-            {
-                index.associations.add((Association) e);
-            }
-            else if (e instanceof Class)
-            {
-                index.classes.add((Class) e);
-            }
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration)
-            {
-                index.enumerations.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration) e);
-            }
-            else if (e instanceof Function)
-            {
-                index.functions.add((Function) e);
-            }
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping)
-            {
-                index.mappings.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) e);
-            }
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure)
-            {
-                index.measures.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure) e);
-            }
-            else if (e instanceof PackageableConnection)
-            {
-                index.connections.add((PackageableConnection) e);
-            }
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime)
-            {
-                index.runtimes.add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime) e);
-            }
-            else if (e instanceof Profile)
-            {
-                index.profiles.add((Profile) e);
-            }
-            else if (e instanceof SectionIndex)
-            {
-                index.sectionIndices.add((SectionIndex) e);
-            }
-            else if (e instanceof DataElement)
-            {
-                index.dataElements.add((DataElement) e);
-            }
-            // TODO eliminate special handling for stores
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store)
-            {
-                stores.getIfAbsentPut(e.getClass(), Lists.mutable::empty).add((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store) e);
-            }
-            else
-            {
-                otherElementsByClass.getIfAbsentPut(e.getClass(), Lists.mutable::empty).add(e);
-            }
-        });
-        stores.forEach((cls, elements) -> index.stores.getIfAbsentPut(this.extensions.getExtraProcessorOrThrow(cls), Lists.mutable::empty).addAll(elements));
-        otherElementsByClass.forEach((cls, elements) -> index.otherElementsByProcessor.getIfAbsentPut(this.extensions.getExtraProcessorOrThrow(cls), Lists.mutable::empty).addAll(elements));
-        return index;
-    }
-
-    private static class PureModelContextDataIndex
-    {
-        private final MutableList<Association> associations = Lists.mutable.empty();
-        private final MutableList<Class> classes = Lists.mutable.empty();
-        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration> enumerations = Lists.mutable.empty();
-        private final MutableList<Function> functions = Lists.mutable.empty();
-        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping> mappings = Lists.mutable.empty();
-        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure> measures = Lists.mutable.empty();
-        private final MutableList<PackageableConnection> connections = Lists.mutable.empty();
-        private final MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime> runtimes = Lists.mutable.empty();
-        private final MutableList<Profile> profiles = Lists.mutable.empty();
-        private final MutableList<SectionIndex> sectionIndices = Lists.mutable.empty();
-        private final MutableList<DataElement> dataElements = Lists.mutable.empty();
-        private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();
-        private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByProcessor = Maps.mutable.empty();
-
-        public Map<String, Number> getStats()
-        {
-            MutableMap<String, Number> result = Maps.mutable.empty();
-            possiblyAddStats(result, "associations", this.associations);
-            possiblyAddStats(result, "classes", this.classes);
-            possiblyAddStats(result, "enumerations", this.enumerations);
-            possiblyAddStats(result, "functions", this.functions);
-            possiblyAddStats(result, "mappings", this.mappings);
-            possiblyAddStats(result, "measures", this.measures);
-            possiblyAddStats(result, "connections", this.connections);
-            possiblyAddStats(result, "runtimes", this.runtimes);
-            possiblyAddStats(result, "profiles", this.profiles);
-            possiblyAddStats(result, "sectionIndices", this.sectionIndices);
-            possiblyAddStats(result, "dataElements", this.dataElements);
-            if (this.stores.notEmpty())
-            {
-                result.put("stores", this.stores.valuesView().sumOfInt(MutableList::size));
-            }
-            if (this.otherElementsByProcessor.notEmpty())
-            {
-                result.put("otherElements", this.otherElementsByProcessor.valuesView().sumOfInt(MutableList::size));
-            }
-            return result;
-        }
-
-        private static void possiblyAddStats(MutableMap<String, Number> stats, String name, MutableList<?> list)
-        {
-            if (list.notEmpty())
-            {
-                stats.put(name, list.size());
-            }
-        }
     }
 
     private static double nanosDurationToMillis(long startNanos, long endNanos)
