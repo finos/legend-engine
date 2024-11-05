@@ -12,23 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ###Pure
-// import meta::analytics::lineage::*;
-// import meta::pure::lineage::*;
-// import meta::relational::tests::model::simple::*;
-// import meta::relational::tests::mapping::association::embedded::*;
-// function  meta::pure::test::testWrapper::testPersonToOrganisationsExample():Boolean[1]
-// {
-//   meta::relational::tests::mapping::association::embedded::setUp();
-//   let result = meta::pure::test::testWrapper::testWrapper(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-//   let lineage = $result->meta::pure::test::testWrapper::getLineage();
-//   assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'], ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],'[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]',$lineage);
-//   let tds=  $result->meta::pure::test::testWrapper::getTabularDatasetResult().values->at(0);
-//   assertEquals(5, $tds.rows->size()); 
-//   assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $tds.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
-// }
-
-
 
 ###Pure
 import meta::analytics::lineage::*;
@@ -93,7 +76,7 @@ Class meta::pure::test::testWrapper::LineageResult extends meta::pure::test::tes
 
 function <<access.private>> meta::pure::test::testWrapper::resultLineageToString(reportLineage:meta::pure::lineage::result::ResultLineage[1]):String[1]
 {
-  $reportLineage.properties->map(c | $c.propertyName + '-' + $c.resultDetail)->sort()->joinStrings('[', ', ', ']');
+  $reportLineage.properties->map(c | $c.propertyName  + $c.resultDetail)->sort()->joinStrings('[', ', ', ']');
 }
 
 function meta::pure::test::testWrapper::assertLineage(storeLineage:String[*], classLineage:String[*], reportLineage:String[1], result:meta::pure::lineage::result::LineageResult[1]):Boolean[1]
