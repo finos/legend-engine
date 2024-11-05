@@ -84,7 +84,7 @@ public class HelperModelBuilder
                 defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::DefaultValue"));
                 defaultValue._functionDefinition(lambdaFunction);
             }
-            GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
+            GenericType returnGenericType = context.newGenericType(property.genericType);
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                     ._name(property.name)
                     ._defaultValue(defaultValue)
@@ -169,7 +169,7 @@ public class HelperModelBuilder
             return new Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), null)
                     ._name(property.name)
                     ._functionName(property.name)
-                    ._genericType(context.resolveGenericType(property.returnType, property.sourceInformation))
+                    ._genericType(context.newGenericType(property.returnGenericType))
                     ._multiplicity(context.pureModel.getMultiplicity(property.returnMultiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                     ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
@@ -177,7 +177,7 @@ public class HelperModelBuilder
                             context.newGenericType(
                                     context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"),
                                     Lists.fixedSize.of(
-                                            PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity), context.pureModel)
+                                            PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.newGenericType(property.returnGenericType), context.pureModel.getMultiplicity(property.returnMultiplicity), context.pureModel)
                                     )
                             )
                     )
@@ -315,7 +315,7 @@ public class HelperModelBuilder
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
-                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+                + "__" + getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.isEmpty() ? functionSignature : ("_" + functionSignature);
     }
 

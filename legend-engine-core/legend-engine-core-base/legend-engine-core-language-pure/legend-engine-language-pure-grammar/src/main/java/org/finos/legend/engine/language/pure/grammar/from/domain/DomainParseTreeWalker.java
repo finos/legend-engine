@@ -361,11 +361,10 @@ public class DomainParseTreeWalker
         property.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         property.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         // NOTE: here we limit the property type to only primitive type, class, or enumeration
-        property.type = ctx.propertyReturnType().type().getText();
+        property.genericType = processGenericType(ctx.propertyReturnType().type());
         property.multiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
         property.defaultValue = ctx.defaultValue() == null ? null : this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
         property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        property.propertyTypeSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.propertyReturnType().type());
         if (ctx.aggregation() != null)
         {
             if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null)
@@ -407,7 +406,7 @@ public class DomainParseTreeWalker
             return variable;
         });
         // NOTE: we should check but here we let returned type of the derived property to be whatever
-        qualifiedProperty.returnType = ctx.propertyReturnType().type().getText();
+        qualifiedProperty.returnGenericType = processGenericType(ctx.propertyReturnType().type());
         qualifiedProperty.returnMultiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
         qualifiedProperty.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return qualifiedProperty;
@@ -506,7 +505,7 @@ public class DomainParseTreeWalker
             }
             func.tests = suites;
         }
-        func.returnType = ctx.functionTypeSignature().type().getText();
+        func.returnGenericType = processGenericType(ctx.functionTypeSignature().type());
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         func.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier()) + HelperValueSpecificationGrammarComposer.getFunctionSignature(func);
@@ -1569,6 +1568,12 @@ public class DomainParseTreeWalker
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;
             }));
+        }
+        else if (ctx.unitName() != null)
+        {
+            PackageableType pType = new PackageableType(ctx.getText());
+            pType.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            type = pType;
         }
         else
         {

@@ -402,7 +402,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
-                + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
+                + ": " + HelperValueSpecificationGrammarComposer.printGenericType(function.returnGenericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
                 LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
                 "\n}" +

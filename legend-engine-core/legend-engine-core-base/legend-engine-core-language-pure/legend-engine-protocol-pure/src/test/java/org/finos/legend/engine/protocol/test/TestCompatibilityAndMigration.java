@@ -74,7 +74,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -138,7 +143,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -207,7 +217,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"Any\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"Any\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 1,\n" +
                         "      \"upperBound\" : 1\n" +
@@ -310,7 +325,12 @@ public class TestCompatibilityAndMigration
                         "  }, {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"f\",\n" +
-                        "    \"returnType\" : \"Any\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"Any\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 1,\n" +
                         "      \"upperBound\" : 1\n" +
@@ -386,60 +406,58 @@ public class TestCompatibilityAndMigration
                         "  ]\n" +
                         "}",
                 "{\n" +
-                        "  \"_type\": \"data\",\n" +
-                        "  \"elements\": [\n" +
-                        "    {\n" +
-                        "      \"_type\": \"function\",\n" +
-                        "      \"name\": \"a\",\n" +
-                        "      \"returnType\": \"Any\",\n" +
-                        "      \"returnMultiplicity\": {\n" +
-                        "        \"lowerBound\": 0\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"Any\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"func\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"sourceId\" : \"a::a\",\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 5,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 8\n" +
                         "      },\n" +
-                        "      \"body\": [\n" +
-                        "        {\n" +
-                        "          \"_type\": \"func\",\n" +
-                        "          \"sourceInformation\": {\n" +
-                        "            \"sourceId\": \"a::a\",\n" +
-                        "            \"startLine\": 1,\n" +
-                        "            \"startColumn\": 5,\n" +
-                        "            \"endLine\": 1,\n" +
-                        "            \"endColumn\": 8\n" +
-                        "          },\n" +
-                        "          \"function\": \"cast\",\n" +
-                        "          \"parameters\": [\n" +
-                        "            {\n" +
-                        "              \"_type\": \"packageableElementPtr\",\n" +
-                        "              \"sourceInformation\": {\n" +
-                        "                \"sourceId\": \"a::a\",\n" +
-                        "                \"startLine\": 1,\n" +
-                        "                \"startColumn\": 2,\n" +
-                        "                \"endLine\": 1,\n" +
-                        "                \"endColumn\": 2\n" +
-                        "              },\n" +
-                        "              \"fullPath\": \"a\"\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "              \"_type\": \"genericTypeInstance\",\n" +
-                        "              \"sourceInformation\": {\n" +
-                        "                \"sourceId\": \"a::a\",\n" +
-                        "                \"startLine\": 2,\n" +
-                        "                \"startColumn\": 4,\n" +
-                        "                \"endLine\": 2,\n" +
-                        "                \"endColumn\": 7\n" +
-                        "              },\n" +
-                        "              \"genericType\": {\n" +
-                        "                \"rawType\": {\n" +
-                        "                  \"_type\": \"packageableType\",\n" +
-                        "                  \"fullPath\": \"Type\"\n" +
-                        "                }\n" +
-                        "              }\n" +
-                        "            }\n" +
-                        "          ]\n" +
+                        "      \"function\" : \"cast\",\n" +
+                        "      \"parameters\" : [ {\n" +
+                        "        \"_type\" : \"packageableElementPtr\",\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::a\",\n" +
+                        "          \"startLine\" : 1,\n" +
+                        "          \"startColumn\" : 2,\n" +
+                        "          \"endLine\" : 1,\n" +
+                        "          \"endColumn\" : 2\n" +
+                        "        },\n" +
+                        "        \"fullPath\" : \"a\"\n" +
+                        "      }, {\n" +
+                        "        \"_type\" : \"genericTypeInstance\",\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::a\",\n" +
+                        "          \"startLine\" : 2,\n" +
+                        "          \"startColumn\" : 4,\n" +
+                        "          \"endLine\" : 2,\n" +
+                        "          \"endColumn\" : 7\n" +
+                        "        },\n" +
+                        "        \"genericType\" : {\n" +
+                        "          \"rawType\" : {\n" +
+                        "            \"_type\" : \"packageableType\",\n" +
+                        "            \"fullPath\" : \"Type\"\n" +
+                        "          }\n" +
                         "        }\n" +
-                        "      ],\n" +
-                        "      \"package\": \"a\"\n" +
-                        "    }\n" +
-                        "  ]\n" +
+                        "      } ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
                         "}");
     }
 
@@ -499,60 +517,58 @@ public class TestCompatibilityAndMigration
                         "  ]\n" +
                         "}",
                 "{\n" +
-                        "  \"_type\": \"data\",\n" +
-                        "  \"elements\": [\n" +
-                        "    {\n" +
-                        "      \"_type\": \"function\",\n" +
-                        "      \"name\": \"a\",\n" +
-                        "      \"returnType\": \"Any\",\n" +
-                        "      \"returnMultiplicity\": {\n" +
-                        "        \"lowerBound\": 0\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"Any\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"func\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"sourceId\" : \"a::a\",\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 5,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 8\n" +
                         "      },\n" +
-                        "      \"body\": [\n" +
-                        "        {\n" +
-                        "          \"_type\": \"func\",\n" +
-                        "          \"sourceInformation\": {\n" +
-                        "            \"sourceId\": \"a::a\",\n" +
-                        "            \"startLine\": 1,\n" +
-                        "            \"startColumn\": 5,\n" +
-                        "            \"endLine\": 1,\n" +
-                        "            \"endColumn\": 8\n" +
-                        "          },\n" +
-                        "          \"function\": \"cast\",\n" +
-                        "          \"parameters\": [\n" +
-                        "            {\n" +
-                        "              \"_type\": \"packageableElementPtr\",\n" +
-                        "              \"sourceInformation\": {\n" +
-                        "                \"sourceId\": \"a::a\",\n" +
-                        "                \"startLine\": 1,\n" +
-                        "                \"startColumn\": 2,\n" +
-                        "                \"endLine\": 1,\n" +
-                        "                \"endColumn\": 2\n" +
-                        "              },\n" +
-                        "              \"fullPath\": \"a\"\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "              \"_type\": \"genericTypeInstance\",\n" +
-                        "              \"sourceInformation\": {\n" +
-                        "                \"sourceId\": \"a::a\",\n" +
-                        "                \"startLine\": 2,\n" +
-                        "                \"startColumn\": 4,\n" +
-                        "                \"endLine\": 2,\n" +
-                        "                \"endColumn\": 9\n" +
-                        "              },\n" +
-                        "              \"genericType\": {\n" +
-                        "                \"rawType\": {\n" +
-                        "                  \"_type\": \"packageableType\",\n" +
-                        "                  \"fullPath\": \"Type~A\"\n" +
-                        "                }\n" +
-                        "              }\n" +
-                        "            }\n" +
-                        "          ]\n" +
+                        "      \"function\" : \"cast\",\n" +
+                        "      \"parameters\" : [ {\n" +
+                        "        \"_type\" : \"packageableElementPtr\",\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::a\",\n" +
+                        "          \"startLine\" : 1,\n" +
+                        "          \"startColumn\" : 2,\n" +
+                        "          \"endLine\" : 1,\n" +
+                        "          \"endColumn\" : 2\n" +
+                        "        },\n" +
+                        "        \"fullPath\" : \"a\"\n" +
+                        "      }, {\n" +
+                        "        \"_type\" : \"genericTypeInstance\",\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::a\",\n" +
+                        "          \"startLine\" : 2,\n" +
+                        "          \"startColumn\" : 4,\n" +
+                        "          \"endLine\" : 2,\n" +
+                        "          \"endColumn\" : 9\n" +
+                        "        },\n" +
+                        "        \"genericType\" : {\n" +
+                        "          \"rawType\" : {\n" +
+                        "            \"_type\" : \"packageableType\",\n" +
+                        "            \"fullPath\" : \"Type~A\"\n" +
+                        "          }\n" +
                         "        }\n" +
-                        "      ],\n" +
-                        "      \"package\": \"a\"\n" +
-                        "    }\n" +
-                        "  ]\n" +
+                        "      } ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
                         "}");
     }
 
@@ -601,51 +617,57 @@ public class TestCompatibilityAndMigration
                 "      \"returnType\": \"String\"\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", "{\n" +
-                "  \"_type\" : \"data\",\n" +
-                "  \"elements\" : [ {\n" +
-                "    \"_type\" : \"function\",\n" +
-                "    \"name\" : \"f\",\n" +
-                "    \"returnType\" : \"String\",\n" +
-                "    \"returnMultiplicity\" : {\n" +
-                "      \"lowerBound\" : 1,\n" +
-                "      \"upperBound\" : 1\n" +
-                "    },\n" +
-                "    \"body\" : [ {\n" +
-                "      \"_type\" : \"classInstance\",\n" +
-                "      \"sourceInformation\" : {\n" +
-                "        \"sourceId\" : \"a::f\",\n" +
-                "        \"startLine\" : 1,\n" +
-                "        \"startColumn\" : 11,\n" +
-                "        \"endLine\" : 1,\n" +
-                "        \"endColumn\" : 22\n" +
-                "      },\n" +
-                "      \"type\" : \"path\",\n" +
-                "      \"value\" : {\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::f\",\n" +
-                "          \"startLine\" : 1,\n" +
-                "          \"startColumn\" : 11,\n" +
-                "          \"endLine\" : 1,\n" +
-                "          \"endColumn\" : 22\n" +
-                "        },\n" +
-                "        \"startType\" : \"A\",\n" +
-                "        \"path\" : [ {\n" +
-                "          \"_type\" : \"propertyPath\",\n" +
-                "          \"sourceInformation\" : {\n" +
-                "            \"sourceId\" : \"a::f\",\n" +
-                "            \"startLine\" : 1,\n" +
-                "            \"startColumn\" : 13,\n" +
-                "            \"endLine\" : 1,\n" +
-                "            \"endColumn\" : 17\n" +
-                "          },\n" +
-                "          \"property\" : \"name\"\n" +
-                "        } ]\n" +
-                "      }\n" +
-                "    } ],\n" +
-                "    \"package\" : \"a\"\n" +
-                "  } ]\n" +
-                "}");
+                "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"f\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 1,\n" +
+                        "      \"upperBound\" : 1\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"sourceId\" : \"a::f\",\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 11,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 22\n" +
+                        "      },\n" +
+                        "      \"type\" : \"path\",\n" +
+                        "      \"value\" : {\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::f\",\n" +
+                        "          \"startLine\" : 1,\n" +
+                        "          \"startColumn\" : 11,\n" +
+                        "          \"endLine\" : 1,\n" +
+                        "          \"endColumn\" : 22\n" +
+                        "        },\n" +
+                        "        \"startType\" : \"A\",\n" +
+                        "        \"path\" : [ {\n" +
+                        "          \"_type\" : \"propertyPath\",\n" +
+                        "          \"sourceInformation\" : {\n" +
+                        "            \"sourceId\" : \"a::f\",\n" +
+                        "            \"startLine\" : 1,\n" +
+                        "            \"startColumn\" : 13,\n" +
+                        "            \"endLine\" : 1,\n" +
+                        "            \"endColumn\" : 17\n" +
+                        "          },\n" +
+                        "          \"property\" : \"name\"\n" +
+                        "        } ]\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}");
     }
 
     @Test
@@ -694,53 +716,59 @@ public class TestCompatibilityAndMigration
                 "      \"returnType\": \"String\"\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", "{\n" +
-                "  \"_type\" : \"data\",\n" +
-                "  \"elements\" : [ {\n" +
-                "    \"_type\" : \"function\",\n" +
-                "    \"name\" : \"f\",\n" +
-                "    \"returnType\" : \"String\",\n" +
-                "    \"returnMultiplicity\" : {\n" +
-                "      \"lowerBound\" : 1,\n" +
-                "      \"upperBound\" : 1\n" +
-                "    },\n" +
-                "    \"body\" : [ {\n" +
-                "      \"_type\" : \"classInstance\",\n" +
-                "      \"sourceInformation\" : {\n" +
-                "        \"sourceId\" : \"a::f\",\n" +
-                "        \"startLine\" : 1,\n" +
-                "        \"startColumn\" : 4,\n" +
-                "        \"endLine\" : 1,\n" +
-                "        \"endColumn\" : 4\n" +
-                "      },\n" +
-                "      \"type\" : \"rootGraphFetchTree\",\n" +
-                "      \"value\" : {\n" +
-                "        \"sourceInformation\" : {\n" +
-                "          \"sourceId\" : \"a::f\",\n" +
-                "          \"startLine\" : 1,\n" +
-                "          \"startColumn\" : 4,\n" +
-                "          \"endLine\" : 1,\n" +
-                "          \"endColumn\" : 4\n" +
-                "        },\n" +
-                "        \"subTrees\" : [ {\n" +
-                "          \"_type\" : \"propertyGraphFetchTree\",\n" +
-                "          \"sourceInformation\" : {\n" +
-                "            \"sourceId\" : \"a::f\",\n" +
-                "            \"startLine\" : 1,\n" +
-                "            \"startColumn\" : 6,\n" +
-                "            \"endLine\" : 1,\n" +
-                "            \"endColumn\" : 9\n" +
-                "          },\n" +
-                "          \"_type\" : \"propertyGraphFetchTree\",\n" +
-                "          \"property\" : \"name\"\n" +
-                "        } ],\n" +
-                "        \"_type\" : \"rootGraphFetchTree\",\n" +
-                "        \"class\" : \"A\"\n" +
-                "      }\n" +
-                "    } ],\n" +
-                "    \"package\" : \"a\"\n" +
-                "  } ]\n" +
-                "}");
+                "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"f\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 1,\n" +
+                        "      \"upperBound\" : 1\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"sourceId\" : \"a::f\",\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 4,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 4\n" +
+                        "      },\n" +
+                        "      \"type\" : \"rootGraphFetchTree\",\n" +
+                        "      \"value\" : {\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::f\",\n" +
+                        "          \"startLine\" : 1,\n" +
+                        "          \"startColumn\" : 4,\n" +
+                        "          \"endLine\" : 1,\n" +
+                        "          \"endColumn\" : 4\n" +
+                        "        },\n" +
+                        "        \"subTrees\" : [ {\n" +
+                        "          \"_type\" : \"propertyGraphFetchTree\",\n" +
+                        "          \"sourceInformation\" : {\n" +
+                        "            \"sourceId\" : \"a::f\",\n" +
+                        "            \"startLine\" : 1,\n" +
+                        "            \"startColumn\" : 6,\n" +
+                        "            \"endLine\" : 1,\n" +
+                        "            \"endColumn\" : 9\n" +
+                        "          },\n" +
+                        "          \"_type\" : \"propertyGraphFetchTree\",\n" +
+                        "          \"property\" : \"name\"\n" +
+                        "        } ],\n" +
+                        "        \"_type\" : \"rootGraphFetchTree\",\n" +
+                        "        \"class\" : \"A\"\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}");
     }
 
     @Test
@@ -778,7 +806,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -832,7 +865,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -868,7 +906,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -945,7 +988,12 @@ public class TestCompatibilityAndMigration
                         "  \"elements\" : [ {\n" +
                         "    \"_type\" : \"function\",\n" +
                         "    \"name\" : \"a\",\n" +
-                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
                         "    \"returnMultiplicity\" : {\n" +
                         "      \"lowerBound\" : 0\n" +
                         "    },\n" +
@@ -976,7 +1024,7 @@ public class TestCompatibilityAndMigration
                         "    } ],\n" +
                         "    \"package\" : \"a\"\n" +
                         "  } ]\n" +
-                        "}");
+                        "}\n");
     }
 
 
@@ -1331,43 +1379,41 @@ public class TestCompatibilityAndMigration
                         "  ]\n" +
                         "}\n",
                 "{\n" +
-                        "  \"_type\": \"data\",\n" +
-                        "  \"elements\": [\n" +
-                        "    {\n" +
-                        "      \"_type\": \"function\",\n" +
-                        "      \"name\": \"f__String_$0_1$_\",\n" +
-                        "      \"returnType\": \"String\",\n" +
-                        "      \"returnMultiplicity\": {\n" +
-                        "        \"lowerBound\": 0,\n" +
-                        "        \"upperBound\": 1\n" +
-                        "      },\n" +
-                        "      \"body\": [\n" +
-                        "        {\n" +
-                        "          \"_type\": \"func\",\n" +
-                        "          \"function\": \"cast\",\n" +
-                        "          \"parameters\": [\n" +
-                        "            {\n" +
-                        "              \"_type\": \"collection\",\n" +
-                        "              \"multiplicity\": {\n" +
-                        "                \"lowerBound\": 0,\n" +
-                        "                \"upperBound\": 0\n" +
-                        "              }\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "              \"_type\": \"genericTypeInstance\",\n" +
-                        "              \"genericType\": {\n" +
-                        "                \"rawType\": {\n" +
-                        "                  \"_type\": \"packageableType\",\n" +
-                        "                  \"fullPath\": \"String\"\n" +
-                        "                }\n" +
-                        "              }\n" +
-                        "            }\n" +
-                        "          ]\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"f__String_$0_1$_\",\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0,\n" +
+                        "      \"upperBound\" : 1\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"func\",\n" +
+                        "      \"function\" : \"cast\",\n" +
+                        "      \"parameters\" : [ {\n" +
+                        "        \"_type\" : \"collection\",\n" +
+                        "        \"multiplicity\" : {\n" +
+                        "          \"lowerBound\" : 0,\n" +
+                        "          \"upperBound\" : 0\n" +
                         "        }\n" +
-                        "      ],\n" +
-                        "      \"package\": \"withPath\"\n" +
-                        "    }\n" +
-                        "  ]\n" +
+                        "      }, {\n" +
+                        "        \"_type\" : \"genericTypeInstance\",\n" +
+                        "        \"genericType\" : {\n" +
+                        "          \"rawType\" : {\n" +
+                        "            \"_type\" : \"packageableType\",\n" +
+                        "            \"fullPath\" : \"String\"\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      } ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"withPath\"\n" +
+                        "  } ]\n" +
                         "}");
     }
 
@@ -1430,42 +1476,203 @@ public class TestCompatibilityAndMigration
                         "  ]\n" +
                         "}\n",
                 "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"f_Type_1__String_$0_1$_\",\n" +
+                        "    \"parameters\" : [ {\n" +
+                        "      \"_type\" : \"var\",\n" +
+                        "      \"name\" : \"s\",\n" +
+                        "      \"genericType\" : {\n" +
+                        "        \"rawType\" : {\n" +
+                        "          \"_type\" : \"packageableType\",\n" +
+                        "          \"fullPath\" : \"a::Type\"\n" +
+                        "        }\n" +
+                        "      },\n" +
+                        "      \"multiplicity\" : {\n" +
+                        "        \"lowerBound\" : 1,\n" +
+                        "        \"upperBound\" : 1\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"String\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0,\n" +
+                        "      \"upperBound\" : 1\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"collection\",\n" +
+                        "      \"multiplicity\" : {\n" +
+                        "        \"lowerBound\" : 0,\n" +
+                        "        \"upperBound\" : 0\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"withPath\"\n" +
+                        "  }, {\n" +
+                        "    \"_type\" : \"sectionIndex\",\n" +
+                        "    \"name\" : \"SectionIndex\",\n" +
+                        "    \"sections\" : [ {\n" +
+                        "      \"_type\" : \"importAware\",\n" +
+                        "      \"parserName\" : \"Pure\",\n" +
+                        "      \"elements\" : [ \"withPath::f_Type_1__String_$0_1$_\" ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"__internal__\"\n" +
+                        "  } ]\n" +
+                        "}");
+    }
+
+    @Test
+    public void testClass() throws Exception
+    {
+        check("{\n" +
                         "  \"_type\": \"data\",\n" +
                         "  \"elements\": [\n" +
                         "    {\n" +
-                        "      \"_type\": \"function\",\n" +
-                        "      \"name\": \"f_Type_1__String_$0_1$_\",\n" +
-                        "      \"parameters\": [\n" +
+                        "      \"_type\": \"class\",\n" +
+                        "      \"constraints\": [],\n" +
+                        "      \"name\": \"Class\",\n" +
+                        "      \"originalMilestonedProperties\": [],\n" +
+                        "      \"package\": \"my\",\n" +
+                        "      \"properties\": [\n" +
                         "        {\n" +
-                        "          \"_type\": \"var\",\n" +
-                        "          \"name\": \"s\",\n" +
                         "          \"multiplicity\": {\n" +
                         "            \"lowerBound\": 1,\n" +
                         "            \"upperBound\": 1\n" +
                         "          },\n" +
+                        "          \"name\": \"prop1\",\n" +
+                        "          \"stereotypes\": [],\n" +
+                        "          \"taggedValues\": [],\n" +
+                        "          \"type\": \"Result<String|*>\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"qualifiedProperties\": [\n" +
+                        "        {\n" +
+                        "          \"body\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              },\n" +
+                        "              \"values\": []\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"name\": \"prop2\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"var\",\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"multiplicityArguments\": [],\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"String\"\n" +
+                        "                },\n" +
+                        "                \"typeArguments\": [],\n" +
+                        "                \"typeVariables\": []\n" +
+                        "              },\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 1,\n" +
+                        "                \"upperBound\": 1\n" +
+                        "              },\n" +
+                        "              \"name\": \"val\"\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"returnMultiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"returnType\": \"Result<Integer|0..1>\",\n" +
+                        "          \"stereotypes\": [],\n" +
+                        "          \"taggedValues\": []\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"superTypes\": [],\n" +
+                        "      \"taggedValues\": []\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"package\": \"__internal__\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"my::Class\"\n" +
+                        "          ],\n" +
+                        "          \"imports\": [],\n" +
+                        "          \"parserName\": \"Pure\"\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"class\",\n" +
+                        "      \"name\": \"Class\",\n" +
+                        "      \"properties\": [\n" +
+                        "        {\n" +
+                        "          \"name\": \"prop1\",\n" +
                         "          \"genericType\": {\n" +
                         "            \"rawType\": {\n" +
                         "              \"_type\": \"packageableType\",\n" +
-                        "              \"fullPath\": \"a::Type\"\n" +
+                        "              \"fullPath\": \"Result<String|*>\"\n" +
                         "            }\n" +
-                        "          }\n" +
-                        "        }\n" +
-                        "      ],\n" +
-                        "      \"returnType\": \"String\",\n" +
-                        "      \"returnMultiplicity\": {\n" +
-                        "        \"lowerBound\": 0,\n" +
-                        "        \"upperBound\": 1\n" +
-                        "      },\n" +
-                        "      \"body\": [\n" +
-                        "        {\n" +
-                        "          \"_type\": \"collection\",\n" +
+                        "          },\n" +
                         "          \"multiplicity\": {\n" +
-                        "            \"lowerBound\": 0,\n" +
-                        "            \"upperBound\": 0\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
                         "          }\n" +
                         "        }\n" +
                         "      ],\n" +
-                        "      \"package\": \"withPath\"\n" +
+                        "      \"qualifiedProperties\": [\n" +
+                        "        {\n" +
+                        "          \"name\": \"prop2\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"var\",\n" +
+                        "              \"name\": \"val\",\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"String\"\n" +
+                        "                }\n" +
+                        "              },\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 1,\n" +
+                        "                \"upperBound\": 1\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"returnGenericType\": {\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"packageableType\",\n" +
+                        "              \"fullPath\": \"Result<Integer|0..1>\"\n" +
+                        "            }\n" +
+                        "          },\n" +
+                        "          \"returnMultiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"body\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"my\"\n" +
                         "    },\n" +
                         "    {\n" +
                         "      \"_type\": \"sectionIndex\",\n" +
@@ -1475,13 +1682,153 @@ public class TestCompatibilityAndMigration
                         "          \"_type\": \"importAware\",\n" +
                         "          \"parserName\": \"Pure\",\n" +
                         "          \"elements\": [\n" +
-                        "            \"withPath::f_Type_1__String_$0_1$_\"\n" +
+                        "            \"my::Class\"\n" +
                         "          ]\n" +
                         "        }\n" +
                         "      ],\n" +
                         "      \"package\": \"__internal__\"\n" +
                         "    }\n" +
                         "  ]\n" +
+                        "}");
+    }
+
+    @Test
+    public void testFunction() throws Exception
+    {
+        check("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"collection\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 0\n" +
+                        "          },\n" +
+                        "          \"values\": []\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"f_Result_1__Result<Integer|2>_$0_1$_\",\n" +
+                        "      \"package\": \"\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        "          \"genericType\": {\n" +
+                        "            \"multiplicityArguments\": [\n" +
+                        "              {\n" +
+                        "                \"lowerBound\": 1,\n" +
+                        "                \"upperBound\": 1\n" +
+                        "              }\n" +
+                        "            ],\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"packageableType\",\n" +
+                        "              \"fullPath\": \"Result\"\n" +
+                        "            },\n" +
+                        "            \"typeArguments\": [\n" +
+                        "              {\n" +
+                        "                \"multiplicityArguments\": [],\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"String\"\n" +
+                        "                },\n" +
+                        "                \"typeArguments\": [],\n" +
+                        "                \"typeVariables\": []\n" +
+                        "              }\n" +
+                        "            ],\n" +
+                        "            \"typeVariables\": []\n" +
+                        "          },\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"name\": \"x\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"Result<Integer|2>\",\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": []\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"package\": \"__internal__\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"f_Result_1__Result<Integer|2>_$0_1$_\"\n" +
+                        "          ],\n" +
+                        "          \"imports\": [],\n" +
+                        "          \"parserName\": \"Pure\"\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"f_Result_1__Result<Integer|2>_$0_1$_\",\n" +
+                        "    \"parameters\" : [ {\n" +
+                        "      \"_type\" : \"var\",\n" +
+                        "      \"name\" : \"x\",\n" +
+                        "      \"genericType\" : {\n" +
+                        "        \"rawType\" : {\n" +
+                        "          \"_type\" : \"packageableType\",\n" +
+                        "          \"fullPath\" : \"Result\"\n" +
+                        "        },\n" +
+                        "        \"typeArguments\" : [ {\n" +
+                        "          \"rawType\" : {\n" +
+                        "            \"_type\" : \"packageableType\",\n" +
+                        "            \"fullPath\" : \"String\"\n" +
+                        "          }\n" +
+                        "        } ],\n" +
+                        "        \"multiplicityArguments\" : [ {\n" +
+                        "          \"lowerBound\" : 1,\n" +
+                        "          \"upperBound\" : 1\n" +
+                        "        } ]\n" +
+                        "      },\n" +
+                        "      \"multiplicity\" : {\n" +
+                        "        \"lowerBound\" : 1,\n" +
+                        "        \"upperBound\" : 1\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"returnGenericType\" : {\n" +
+                        "      \"rawType\" : {\n" +
+                        "        \"_type\" : \"packageableType\",\n" +
+                        "        \"fullPath\" : \"Result<Integer|2>\"\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0,\n" +
+                        "      \"upperBound\" : 1\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"collection\",\n" +
+                        "      \"multiplicity\" : {\n" +
+                        "        \"lowerBound\" : 0,\n" +
+                        "        \"upperBound\" : 0\n" +
+                        "      }\n" +
+                        "    } ]\n" +
+                        "  }, {\n" +
+                        "    \"_type\" : \"sectionIndex\",\n" +
+                        "    \"name\" : \"SectionIndex\",\n" +
+                        "    \"sections\" : [ {\n" +
+                        "      \"_type\" : \"importAware\",\n" +
+                        "      \"parserName\" : \"Pure\",\n" +
+                        "      \"elements\" : [ \"f_Result_1__Result<Integer|2>_$0_1$_\" ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"__internal__\"\n" +
+                        "  } ]\n" +
                         "}");
     }
 

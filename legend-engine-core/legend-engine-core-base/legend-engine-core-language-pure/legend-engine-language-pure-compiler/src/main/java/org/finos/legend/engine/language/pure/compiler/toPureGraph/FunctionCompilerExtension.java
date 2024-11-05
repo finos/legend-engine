@@ -83,13 +83,13 @@ public class FunctionCompilerExtension implements CompilerExtension
 
         context.pureModel.setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
-                ._classifierGenericType(context.newGenericType(context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx))), context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity), context.pureModel)))
+                ._classifierGenericType(context.newGenericType(context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx))), context.newGenericType(function.returnGenericType), context.pureModel.getMultiplicity(function.returnMultiplicity), context.pureModel)))
                 ._stereotypes(ListIterate.collect(function.stereotypes, context::resolveStereotype))
                 ._taggedValues(ListIterate.collect(function.taggedValues, context::newTaggedValue));
         HelperModelBuilder.processFunctionConstraints(function, context, targetFunc, ctx);
 
         context.pureModel.handlers.register(new UserDefinedFunctionHandler(context.pureModel, functionFullName, targetFunc,
-                ps -> new TypeAndMultiplicity(context.resolveGenericType(function.returnType, function.sourceInformation), context.pureModel.getMultiplicity(function.returnMultiplicity)),
+                ps -> new TypeAndMultiplicity(context.newGenericType(function.returnGenericType), context.pureModel.getMultiplicity(function.returnMultiplicity)),
                 ps ->
                 {
                     List<ValueSpecification> vs = ListIterate.collect(function.parameters, p -> p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx)));

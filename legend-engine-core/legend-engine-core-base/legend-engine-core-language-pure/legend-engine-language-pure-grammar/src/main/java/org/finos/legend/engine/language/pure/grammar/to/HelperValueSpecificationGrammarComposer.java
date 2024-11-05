@@ -293,7 +293,7 @@ public class HelperValueSpecificationGrammarComposer
         String packageName = function._package;
         String functionName = getFunctionNameWithNoPackage(function);
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getFunctionDescriptorParameterSignature).select(Objects::nonNull).makeString(",");
-        String returnTypeSignature = getClassSignature(function.returnType);
+        String returnTypeSignature = getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath);
         String returnMultiplicitySignature = HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity);
         builder.append(packageName)
                 .append("::")
@@ -324,7 +324,7 @@ public class HelperValueSpecificationGrammarComposer
     public static String getFunctionSignature(Function function)
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
-                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+                + "__" + getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
@@ -371,9 +371,9 @@ public class HelperValueSpecificationGrammarComposer
                 (genericType.typeArguments.isEmpty() && genericType.multiplicityArguments.isEmpty() ?
                         "" :
                         "<" +
-                        ListIterate.collect(genericType.typeArguments, x -> printGenericType(x, transformer)).makeString(", ") +
-                        (genericType.multiplicityArguments.isEmpty() ? "" : "|" + ListIterate.collect(genericType.multiplicityArguments, HelperDomainGrammarComposer::renderMultiplicity).makeString(",")) +
-                        ">"
+                                ListIterate.collect(genericType.typeArguments, x -> printGenericType(x, transformer)).makeString(", ") +
+                                (genericType.multiplicityArguments.isEmpty() ? "" : "|" + ListIterate.collect(genericType.multiplicityArguments, HelperDomainGrammarComposer::renderMultiplicity).makeString(",")) +
+                                ">"
                 );
     }
 
