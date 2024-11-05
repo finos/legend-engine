@@ -43,6 +43,9 @@ import org.finos.legend.pure.generated.Root_meta_external_function_activator_hos
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
+import org.finos.legend.pure.m3.navigation.function.InvalidFunctionDescriptorException;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph
 
 public class HostedServiceArtifactGenerator
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HostedServiceArtifactGenerator.class);
     static final MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
 
     public static GenerationInfoData renderArtifact(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -100,8 +104,22 @@ public class HostedServiceArtifactGenerator
 
     public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
     {
+        MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements());
+        HostedService h = (HostedService)elements.select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(e.getPath())).getFirst();
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function f = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function)elements.select(e ->
+        {
+            try
+            {
+                return e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function && e.getPath().equals(FunctionDescriptor.functionDescriptorToId(h.function.path));
+            }
+            catch (InvalidFunctionDescriptorException invalidFunctionDescriptorException)
+            {
+                invalidFunctionDescriptorException.printStackTrace();
+            }
+            return false;
+        }).getFirst();
         return PureModelContextData.newBuilder()
-                .withElements(org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements()).select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(fullName(e))))
+                .withElements(Lists.mutable.with(h,f))
                 .withOrigin(data.origin).build();
     }
 

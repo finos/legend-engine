@@ -94,7 +94,8 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     public PureModelContextPointer generatePointerForActivator(PureModelContextData activator, PureModelContextData originalModel)
     {
         PureModelContextPointer origin = originalModel.getOrigin();
-        origin.sdlcInfo.packageableElementPointers = Lists.mutable.with(new PackageableElementPointer(PackageableElementType.SERVICE, elementName(activator.getElementsOfType(HostedService.class).get(0))));
+        origin.sdlcInfo.packageableElementPointers = Lists.mutable.with(new PackageableElementPointer(PackageableElementType.SERVICE, activator.getElementsOfType(HostedService.class).get(0).getPath()),
+                                                                        new PackageableElementPointer(PackageableElementType.FUNCTION, activator.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function.class).get(0).getPath()));
         return origin;
     }
 

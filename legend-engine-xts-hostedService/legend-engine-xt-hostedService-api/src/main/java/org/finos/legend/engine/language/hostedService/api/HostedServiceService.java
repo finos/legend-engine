@@ -101,7 +101,7 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     @Override
     public HostedServiceArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return new HostedServiceArtifact(activator._pattern(), this.hostedServiceArtifactgenerator.renderArtifact(pureModel,activator,inputModel,clientVersion,routerExtensions), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), null);
+        return this.hostedServiceArtifactgenerator.renderServiceArtifact(pureModel, activator, inputModel, clientVersion, routerExtensions);
     }
 
     @Override
