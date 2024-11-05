@@ -382,7 +382,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   let pureTypes = 
     graphQLToPure(
       '#GQL{' + 
-      'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
+      'type Employee implements EmployeeInterface & PersonInterface @extends(class: "Person") {\n' +
       '  title: String!\n' +
       '  startDate: StrictDate!\n' +
       '  firstName: String\n' +
@@ -398,7 +398,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
       '  age: Int!\n' +
       '}\n' +
       '\n' +
-      'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
+      'type GSEmployee implements EmployeeInterface & PersonInterface @extends(class: "Employee") {\n' +
       '  division: String!\n' +
       '  title: String!\n' +
       '  startDate: StrictDate!\n' +

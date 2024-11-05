@@ -111,7 +111,7 @@ public class CopyStatementTest
         String expectedStr = "COPY INTO \"mydb\".\"mytable1\" " +
                 "(\"field1\", \"field2\", \"field3\", \"field4\") " +
                 "FROM " +
-                "(SELECT t.$1:field1 as \"field1\",t.$1:field2 as \"field2\",t.$1:field3 as \"field3\",t.$1:field4 as \"field4\" " +
+                "(SELECT t.$1:\"field1\" as \"field1\",t.$1:\"field2\" as \"field2\",t.$1:\"field3\" as \"field3\",t.$1:\"field4\" as \"field4\" " +
                 "FROM @my_stage as t) " +
                 "PATTERN = '(my_pattern1)|(my_pattern2)' " +
                 "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +

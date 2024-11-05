@@ -16,6 +16,7 @@ package org.finos.legend.pure.generated;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.coreinstance.Package;
@@ -120,7 +121,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         ListIterable<String> fullPath = PackageableElement.splitUserPath(fullPathString);
         if (fullPath.isEmpty())
         {
-            throw new PureExecutionException(null, "Cannot create a new Class: '" + fullPathString + "'");
+            throw new PureExecutionException(null, "Cannot create a new Class: '" + fullPathString + "'", Stacks.mutable.<org.finos.legend.pure.m4.coreinstance.CoreInstance>empty());
         }
         String name = fullPath.getLast();
         org.finos.legend.pure.m3.coreinstance.Package _package = Pure.buildPackageIfNonExistent(new Package_Impl("Root")._name("Root"), fullPath.subList(0, fullPath.size() - 1), si, new DefendedFunction<String, Package>()
@@ -147,7 +148,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         ListIterable<String> fullPath = PackageableElement.splitUserPath(fullPathString);
         if (fullPath.isEmpty())
         {
-            throw new PureExecutionException(null, "Cannot create a new Association: '" + fullPathString + "'");
+            throw new PureExecutionException(null, "Cannot create a new Association: '" + fullPathString + "'", Stacks.mutable.<org.finos.legend.pure.m4.coreinstance.CoreInstance>empty());
         }
         String name = fullPath.getLast();
         org.finos.legend.pure.m3.coreinstance.Package _package = Pure.buildPackageIfNonExistent(new Package_Impl("Root")._name("Root"), fullPath.subList(0, fullPath.size() - 1), si, new DefendedFunction<String, Package>()
@@ -169,7 +170,7 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
         ListIterable<String> fullPath = PackageableElement.splitUserPath(fullPathString);
         if (fullPath.isEmpty())
         {
-            throw new PureExecutionException(null, "Cannot create a new Enumeration: '" + fullPathString + "'");
+            throw new PureExecutionException(null, "Cannot create a new Enumeration: '" + fullPathString + "'", Stacks.mutable.<org.finos.legend.pure.m4.coreinstance.CoreInstance>empty());
         }
         String name = fullPath.getLast();
         String packageName = fullPath.subList(0, fullPath.size() - 1).makeString("::");

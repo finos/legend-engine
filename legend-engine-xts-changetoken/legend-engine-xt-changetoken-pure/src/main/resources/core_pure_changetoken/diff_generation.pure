@@ -37,7 +37,7 @@ function <<access.private>> meta::pure::changetoken::diff_generation::getClasses
     $entities->packageClassesRecursive();
 }
 
-function <<access.private>> meta::pure::changetoken::diff_generation::generateDiffFromVersionsAndClasses(versions: Versions[1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): Versions[1]
+function meta::pure::changetoken::diff_generation::generateDiffFromVersionsAndClasses(versions: Versions[1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): Versions[1]
 {
     let prevVersion = if($versions.versions->size() > 0, | $versions.versions->at($versions.versions->size() - 1).version, | []);
     let version = ^Version(
@@ -158,7 +158,7 @@ function <<access.private>> meta::pure::changetoken::diff_generation::getAddFiel
             fieldName = $cp.second.name->toOne(),
             fieldType = stripVersionQualifier(printGenericType($cp.second.genericType)) + '[' + printMultiplicity($cp.second.multiplicity) + ']',
             safeCast = true,
-            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[*]}>)->eval()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
+            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition.expressionSequence->evaluateAndDeactivate()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
     ));
 }
 
@@ -218,9 +218,19 @@ function <<access.private>> meta::pure::changetoken::diff_generation::getRenamed
     )));
 }
 
-function <<access.private>> meta::pure::changetoken::diff_generation::serializeAny(any: Any[*], property: Property<Nil,Any|*>[1], typeKeyName: String[1], versionKeyName: String[0..1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::diff_generation::serializeAny(any: Any[*], property: Property<Nil,Any|*>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): JSONElement[1]
 {
     let values = $any->map(i | $i->match([
+        i: InstanceValue[1] | serializeAny($i.values, [], $typeKeyName, $versionKeyName),
+        s: SimpleFunctionExpression[1] | $s.genericType.rawType->match([
+          p: PrimitiveType[1] | if($s.functionName != 'minus', | fail('Not supported: ' + $s.functionName->toOne())->cast(@JSONElement), | serializeAny(minus($s.parametersValues->at(0)->cast(@InstanceValue).values->cast(@Number)), [], $typeKeyName, $versionKeyName)),
+          en: Enumeration<Enum>[1] | if($s.functionName != 'extractEnumValue', | fail('Not supported: ' + $s.functionName->toOne())->cast(@JSONElement), | let e = $en->enumValues()->filter(v:Enum[1]| $v->id()==$s.parametersValues->at(1)->cast(@InstanceValue).values->cast(@String))->toOne()->cast(@Enum); ^JSONString(value = stripVersionQualifier($e->type()->toOne()->elementToPath() + '.' + $e->id()));),
+          c: Class<Any>[1] | if($s.functionName != 'new', | fail('Not supported: ' + $s.functionName->toOne())->cast(@JSONElement), | newJSONObject([newJSONKeyValue($typeKeyName, ^JSONString(value = stripVersionQualifier($c->elementToPath()->toString())))]
+          ->concatenate($s.parametersValues->at(2)->cast(@InstanceValue).values->cast(@KeyExpression)->map(x | newJSONKeyValue($x.key->cast(@InstanceValue).values->toOne()->toString(), serializeAny($x.expression, $c.properties->filter(p | $p.name == $x.key->cast(@InstanceValue).values->toOne()->toString())->toOne()->cast(@Property<Nil,Any|*>), $typeKeyName, $versionKeyName))))
+          ->concatenate($c.properties->filter(p | $p.name != $versionKeyName)
+            ->filter(p | $s.parametersValues->at(2)->cast(@InstanceValue).values->cast(@KeyExpression)->map(x | $x.key->cast(@InstanceValue).values->toOne()->toString())->contains($p.name->toOne())->not())
+            ->map(p | newJSONKeyValue($p.name->toOne(), generateDefault($p, $typeKeyName, $versionKeyName))))));
+        ]),
         s: String[1] | ^JSONString(value = $s),
         d: Date[1] | ^JSONString(value = $d->toString()),
         d: DateTime[1] | ^JSONString(value = $d->toString()),
@@ -235,7 +245,10 @@ function <<access.private>> meta::pure::changetoken::diff_generation::serializeA
         l: List<Any>[1] | $l->expandValue($typeKeyName)->cast(@JSONArray).values,
         a: Any[1] | let c = $a->class(); newJSONObject([newJSONKeyValue($typeKeyName, ^JSONString(value = stripVersionQualifier($c->elementToPath()->toString())))]->concatenate($c.properties->filter(p | $p.name != $versionKeyName)->map(p | newJSONKeyValue($p.name->toOne(), serializeAny($p->eval($a), $p, $typeKeyName, $versionKeyName)))));
     ]));
-    if($property.multiplicity == PureOne || $property.multiplicity == PureZero || $property.multiplicity == ZeroOne, | if($property.multiplicity == PureZero || $property.multiplicity == ZeroOne && $values->size() == 0, | ^JSONNull(), | $values->toOne('Expecting one for property: ' + $property.name->toOne())), | ^JSONArray(values = $values));
+    let ret = if($property != [], | if($property.multiplicity == PureOne || $property.multiplicity == PureZero || $property.multiplicity == ZeroOne, | if($property.multiplicity == PureZero || $property.multiplicity == ZeroOne && $values->size() == 0, | ^JSONNull(), | $values->toOne('Expecting one for property')),
+     | if($values->size() == 1 && $values->toOne()->instanceOf(JSONArray), | $values, | ^JSONArray(values = $values))),
+     | if($values->size() == 1, | $values->toOne(), | ^JSONArray(values = $values)));
+    $ret->toOne();
 }
 
 function <<access.private>> meta::pure::changetoken::diff_generation::generateDefault(property: Property<Nil,Any|*>[1], typeKeyName: String[1], versionKeyName: String[0..1]): JSONElement[1]

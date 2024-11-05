@@ -95,11 +95,10 @@ public class Client
         this.state = new ModelState(this.legendInterface, this.replExtensions);
         this.terminal = TerminalBuilder.terminal();
         this.homeDirectory = homeDirectory;
-
         this.documentation = DocumentationGeneration.buildDocumentation();
+
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
-        replExtensions.forEach(e -> e.postInitialize(this));
 
         this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
         if (System.getProperty("legend.repl.initializationMessage") != null)
@@ -122,9 +121,7 @@ public class Client
                                 new Execute(this)
                         )
                 );
-
         this.commands.add(0, new Help(this, this.commands));
-
         this.reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 // Configure history file
@@ -150,10 +147,21 @@ public class Client
                 .completer(new JLine3Completer(this.commands))
                 .build();
 
-        this.println("Warming up...");
-        this.terminal.flush();
-        ((Execute) this.commands.getLast()).execute("1+1");
-        this.println("Ready!\n");
+        try
+        {
+            replExtensions.forEach(e -> e.postInitialize(this));
+
+            this.println("Warming up...");
+            this.terminal.flush();
+            ((Execute) this.commands.getLast()).execute("1+1");
+            this.println("Ready!\n");
+        }
+        catch (Exception exception)
+        {
+            this.printError("Failed to initialize REPL. Error:\n" + exception.getMessage());
+            // NOTE: we let people continue even if the warm-up failed, in order to let them
+            // debug the issue or take some measures to recover
+        }
     }
 
     private void initialize()

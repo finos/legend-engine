@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
@@ -83,7 +84,7 @@ public class JsonDeserializer
                 }
             }
         }
-        throw new PureExecutionException(si, String.format("Could not find a sub-type of \"%s\" with name \"%s\".", PackageableElement.getUserPathForPackageableElement(classFromPropertyDefinition), specifiedType));
+        throw new PureExecutionException(si, String.format("Could not find a sub-type of \"%s\" with name \"%s\".", PackageableElement.getUserPathForPackageableElement(classFromPropertyDefinition), specifiedType), Stacks.mutable.empty());
     }
 
     @SuppressWarnings("unchecked")
@@ -116,7 +117,7 @@ public class JsonDeserializer
             String java7runtime = "org.json.simple.JSONArray cannot be cast to org.json.simple.JSONObject";
             if (java7runtime.equals(e.getMessage()) || java11runtime.equals(e.getMessage()))
             {
-                throw new PureExecutionException(context.getSourceInformation(), "Can only deserialize root-level JSONObjects i.e. serialized single instances of PURE classes. Cannot deserialize collections of multiple PURE objects.");
+                throw new PureExecutionException(context.getSourceInformation(), "Can only deserialize root-level JSONObjects i.e. serialized single instances of PURE classes. Cannot deserialize collections of multiple PURE objects.", Stacks.mutable.empty());
             }
             else
             {

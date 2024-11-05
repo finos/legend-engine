@@ -441,19 +441,20 @@ public class LogicalPlanUtils
             .build();
     }
 
-    public static Dataset getTempDataset(Datasets datasets)
+    public static Dataset getTempDataset(Datasets datasets, String ingestRunId)
     {
         String mainDatasetName = datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        String tempDatasetName = TableNameGenUtils.generateTableName(mainDatasetName, TEMP_DATASET_BASE_NAME, ingestRunId);
         return datasets.tempDataset().orElse(DatasetDefinition.builder()
                 .schema(datasets.mainDataset().schema())
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
-                .name(mainDatasetName + UNDERSCORE + TEMP_DATASET_BASE_NAME)
+                .name(tempDatasetName)
                 .alias(TEMP_DATASET_BASE_NAME)
                 .build());
     }
 
-    public static Dataset getTempDatasetWithDeleteIndicator(Datasets datasets, String deleteIndicatorField)
+    public static Dataset getTempDatasetWithDeleteIndicator(Datasets datasets, String deleteIndicatorField, String ingestRunId)
     {
         if (datasets.tempDatasetWithDeleteIndicator().isPresent())
         {
@@ -462,6 +463,7 @@ public class LogicalPlanUtils
         else
         {
             String mainDatasetName = datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+            String tempDatasetName = TableNameGenUtils.generateTableName(mainDatasetName, TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME, ingestRunId);
             Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
             List<Field> mainFieldsPlusDeleteIndicator = new ArrayList<>(datasets.mainDataset().schema().fields());
             mainFieldsPlusDeleteIndicator.add(deleteIndicator);
@@ -469,7 +471,7 @@ public class LogicalPlanUtils
                     .schema(datasets.mainDataset().schema().withFields(mainFieldsPlusDeleteIndicator))
                     .database(datasets.mainDataset().datasetReference().database())
                     .group(datasets.mainDataset().datasetReference().group())
-                    .name(mainDatasetName + UNDERSCORE + TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
+                    .name(tempDatasetName)
                     .alias(TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
                     .build();
         }

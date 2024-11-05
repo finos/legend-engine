@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -435,12 +436,33 @@ public class TestLambdaRoundtrip
         testLambda("|%9999-12-30T19:00:00.0000->someDateFn()", "|someDateFn(%9999-12-30T19:00:00.0000)");
     }
 
+    @Test
+    public void testLambdaEndingOnComment()
+    {
+        testLambda("|1 + 1// comment here", "|1 + 1");
+    }
+
     static void testLambda(String text)
     {
-        testLambda(text, text);
+        testLambda(text, text, RenderStyle.STANDARD);
     }
 
     static void testLambda(String text, String formattedText)
+    {
+        testLambda(text, formattedText, RenderStyle.STANDARD);
+    }
+
+    static void testLambdaPretty(String text)
+    {
+        testLambda(text, text, RenderStyle.PRETTY);
+    }
+
+    static void testLambdaPretty(String text, String formattedText)
+    {
+        testLambda(text, formattedText, RenderStyle.PRETTY);
+    }
+
+    static void testLambda(String text, String formattedText, RenderStyle renderStyle)
     {
         Lambda postJSON_lambda;
         try
@@ -453,6 +475,6 @@ public class TestLambdaRoundtrip
         {
             throw new RuntimeException(e);
         }
-        Assert.assertEquals(formattedText, postJSON_lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
+        Assert.assertEquals(formattedText, postJSON_lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle).build()));
     }
 }

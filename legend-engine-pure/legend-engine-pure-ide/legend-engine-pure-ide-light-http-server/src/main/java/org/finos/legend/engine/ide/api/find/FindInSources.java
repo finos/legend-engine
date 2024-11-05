@@ -130,13 +130,13 @@ public class FindInSources
                     }
                     writeSourceCoordinatesJSON(stream, sourceCoordinates);
                     count++;
-                    if (count > limit)
+                    if (count >= limit)
                     {
                         break;
                     }
                 }
                 stream.write("]}".getBytes());
-                if (count > limit)
+                if (count >= limit)
                 {
                     break;
                 }

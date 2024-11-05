@@ -1,0 +1,57 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+function meta::external::store::relational::sqlDialectTranslation::utils::keyword(sqlDialect: SqlDialect[1], keyword: String[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  if($config.formatConfig.upperCaseKeywords, | $keyword->toUpper(), | $keyword)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::qualifiedName(sqlDialect: SqlDialect[1], qualifiedName: QualifiedName[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $qualifiedName.parts->map(p | $sqlDialect->executeIdentifierProcessor($p, false, $state, $config))->joinStrings('.')
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::failWithMessage(message: String[1]): String[1]
+{
+  fail($message); '';
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::executeIfNotEmptyElseReturnEmptyString<T>(collection: T[*], processor:Function<{->String[1]}>[1]): String[1]
+{
+  if ($collection->isNotEmpty(), | $processor->eval(), | '')  
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::differentLogicalBinaryExpressionTypes(e1: meta::external::query::sql::metamodel::Expression[1], e2: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $e1->match([
+    l1: LogicalBinaryExpression[1] |  $e2->match([
+      l2: LogicalBinaryExpression[1] | $l1.type != $l2.type,
+      a: Any[*] | false
+    ]),
+    a: Any[*] | false
+  ])
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::isDivideExpr(e: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $e->match([
+    a: ArithmeticExpression[1] |  $a.type == ArithmeticType.DIVIDE,
+    a: Any[*] | false
+  ])
+}

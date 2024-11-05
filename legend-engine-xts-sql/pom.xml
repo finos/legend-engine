@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.62.2-SNAPSHOT</version>
+        <version>4.65.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,10 +30,8 @@
 
     <modules>
         <module>legend-engine-xt-sql-compiler</module>
-        <module>legend-engine-xt-sql-grammar</module>
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-postgres-server</module>
-        <module>legend-engine-xt-sql-protocol</module>
         <module>legend-engine-xt-sql-providers</module>
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-sql-http-api</module>

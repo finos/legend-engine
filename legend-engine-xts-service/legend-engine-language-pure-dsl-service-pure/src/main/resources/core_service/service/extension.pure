@@ -30,7 +30,7 @@ function meta::legend::service::serviceExtension() : Extension[1]
                                                                                                                                                       i:InstanceValue[1]      |$i.values]));
                                                      let fromSingleExecParams           = $resolvedParameters->at(0)->cast(@meta::legend::service::metamodel::SingleExecutionParameters);
                                                      let fromMapping                    = $fromSingleExecParams.mapping;
-                                                     let fromRuntime                    = $fromSingleExecParams.runtime;
+                                                     let fromRuntime                    = $fromSingleExecParams.runtime->toOne();
 
                                                      let currentRoutingStrategy = $state.routingStrategy;
                                                      let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $fromMapping, $fromRuntime, $extensions);

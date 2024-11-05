@@ -5,6 +5,7 @@
     "core",
     "core_relational",
     "core_data_space_metamodel",
+    "core_functions_unclassified",
     "platform",
     "platform_dsl_store",
     "platform_dsl_graph",

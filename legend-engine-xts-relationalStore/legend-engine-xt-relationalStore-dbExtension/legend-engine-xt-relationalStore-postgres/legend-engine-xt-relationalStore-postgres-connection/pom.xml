@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
-        <version>4.62.2-SNAPSHOT</version>
+        <version>4.65.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

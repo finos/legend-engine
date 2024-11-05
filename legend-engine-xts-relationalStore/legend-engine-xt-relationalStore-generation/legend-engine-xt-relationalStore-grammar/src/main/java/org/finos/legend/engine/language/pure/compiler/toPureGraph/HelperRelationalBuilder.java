@@ -606,14 +606,20 @@ public class HelperRelationalBuilder
         return results;
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.join.Join processDatabaseJoin(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Join srcJoin, CompileContext context, Database database)
+    public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.join.Join processDatabaseJoinFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Join srcJoin, CompileContext context, Database database)
     {
+        return new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name, SourceInformationHelper.toM3SourceInformation(srcJoin.sourceInformation), context.pureModel.getClass(M2RelationalPaths.Join))
+                ._name(srcJoin.name)
+                ._database(database);
+    }
+
+    public static void processDatabaseJoinSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Join srcJoin, CompileContext context, Database database, int index)
+    {
+        Join join = database._joins().toList().get(index);
         MutableMap<String, TableAlias> aliasMap = MapAdapter.adapt(new LinkedHashMap<>());
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets = Lists.mutable.empty();
         Operation op = (Operation) processRelationalOperationElement(srcJoin.operation, context, aliasMap, selfJoinTargets);
         MutableList<TableAlias> aliases = Lists.mutable.withAll(aliasMap.values());
-        Join join = new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name, SourceInformationHelper.toM3SourceInformation(srcJoin.sourceInformation), context.pureModel.getClass(M2RelationalPaths.Join))
-                ._name(srcJoin.name);
         if (aliases.size() == 2)
         {
             join._target(aliases.select(tableAlias -> tableAlias._name().equals(srcJoin.target)).getLast());
@@ -672,22 +678,23 @@ public class HelperRelationalBuilder
                                 ._first(aliases.get(1))
                                 ._second(aliases.get(0))
                       )
-                )._database(database)
-                ._operation(op);
-        return join;
+                )._operation(op);
     }
 
-    public static Filter processDatabaseFilter(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter srcFilter, CompileContext context, Database database)
+    public static Filter processDatabaseFilterFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter srcFilter, CompileContext context, Database database)
     {
         org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(srcFilter.sourceInformation);
+        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::MultiGrainFilter")) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::Filter"));
+        return filter._name(srcFilter.name)
+                ._database(database);
+    }
+
+    public static void processDatabaseFilterSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter srcFilter, CompileContext context, Database database, int index)
+    {
+        Filter filter = database._filters().toList().get(index);
         MutableMap<String, TableAlias> aliasMap = Maps.mutable.empty();
         Operation op = (Operation) processRelationalOperationElement(srcFilter.operation, context, aliasMap, Lists.mutable.empty());
-        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::MultiGrainFilter")) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name, m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::Filter"));
-        filter
-                ._name(srcFilter.name)
-                ._database(database)
-                ._operation(op);
-        return filter;
+        filter._operation(op);
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType transformDatabaseDataType(DataType dataType, CompileContext context)

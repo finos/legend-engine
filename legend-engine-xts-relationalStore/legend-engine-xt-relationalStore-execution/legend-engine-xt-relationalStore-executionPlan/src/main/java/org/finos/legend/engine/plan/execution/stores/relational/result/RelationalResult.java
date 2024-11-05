@@ -600,7 +600,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (SQLException e)
         {
-            return new ErrorResult(-1, "Error realizing the relational result in memory : " + e.getMessage());
+            throw new RuntimeException("Failed to realize in memory", e);
         }
     }
 

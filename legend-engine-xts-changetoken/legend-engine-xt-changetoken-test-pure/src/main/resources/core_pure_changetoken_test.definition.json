@@ -1,0 +1,5 @@
+{
+  "name" : "core_pure_changetoken_test",
+  "pattern" : "(meta::pure::changetoken)(::.*)?",
+  "dependencies" : ["core_pure_changetoken", "platform", "core_functions_unclassified", "core_functions_json", "core", "core_external_language_java", "core_external_language_java_compiler"]
+}

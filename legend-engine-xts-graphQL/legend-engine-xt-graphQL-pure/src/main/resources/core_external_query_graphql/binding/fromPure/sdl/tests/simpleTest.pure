@@ -21,6 +21,18 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Pers
   age : Integer[1];
 }
 
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::NonEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
+{
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::SelfEmployed extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::NonEmployee
+{
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Contractor extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::SelfEmployed
+{
+}
+
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
 {
   title: String[1];
@@ -30,6 +42,11 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Empl
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::GSEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee
 {
   division: String[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::NonGSEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee
+{
+  company: String[1];
 }
 
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Team
@@ -473,7 +490,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([GSEmployee, Employee, Person]);
 
   assertEquals(
-    'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
+    'type Employee implements EmployeeInterface & PersonInterface @extends(class: "Person") {\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
     '  firstName: String\n' +
@@ -502,7 +519,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  _exists: Employee_bool_exp\n' +
     '}\n' +
     '\n' +
-    'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
+    'type GSEmployee implements EmployeeInterface & PersonInterface @extends(class: "Employee") {\n' +
     '  division: String!\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
@@ -547,6 +564,93 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Person_exists_exp {\n' +
     '  _exists: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testClassWithDeepMultipleInheritance():Boolean[1]
+{
+  let res = typesToGraphQLStringWithoutDynamicFilter([GSEmployee, NonGSEmployee, Employee, Person, NonEmployee, SelfEmployed, Contractor]);
+
+  assertEquals(
+    'type Contractor implements SelfEmployedInterface & NonEmployeeInterface & PersonInterface @extends(class: "SelfEmployed") {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Employee implements EmployeeInterface & PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface EmployeeInterface implements PersonInterface {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type GSEmployee implements EmployeeInterface & PersonInterface @extends(class: "Employee") {\n' +
+    '  division: String!\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type NonEmployee implements NonEmployeeInterface & PersonInterface @extends(class: "Person") {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface NonEmployeeInterface implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type NonGSEmployee implements EmployeeInterface & PersonInterface @extends(class: "Employee") {\n' +
+    '  company: String!\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type SelfEmployed implements SelfEmployedInterface & NonEmployeeInterface & PersonInterface @extends(class: "NonEmployee") {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface SelfEmployedInterface implements NonEmployeeInterface & PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
     '}\n' +
     '\n' +
     'scalar StrictDate\n' +

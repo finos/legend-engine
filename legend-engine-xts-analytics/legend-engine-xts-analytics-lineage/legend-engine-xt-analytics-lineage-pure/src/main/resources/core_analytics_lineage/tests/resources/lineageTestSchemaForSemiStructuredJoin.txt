@@ -1,0 +1,117 @@
+###Relational
+Database my::store::H2DB
+(
+  Schema TEST_SCHEMA
+  (
+    Table FirmTable
+    (
+      ID VARCHAR(255) PRIMARY KEY,
+      LEGAL_NAME VARCHAR(255)
+    )
+    Table PersonTable
+    (
+      ID VARCHAR(255) PRIMARY KEY,
+      PERSON_DETAILS SEMISTRUCTURED NOT NULL
+    )
+  )
+  Join Firm_Person(extractFromSemiStructured(explodeSemiStructured(TEST_SCHEMA.PersonTable.PERSON_DETAILS, 'firm', 'SEMISTRUCTURED'), 'ID', 'VARCHAR') = TEST_SCHEMA.FirmTable.ID)
+)
+
+
+###Pure
+Class my::model::Firm
+{
+  ID: String[1];
+  legalName: String[1];
+}
+
+Class my::model::Person
+{
+  ID: String[1];
+  name: String[1];
+  firm: my::model::Firm[0..1];
+}
+
+function my::test::testSemiStructuredMappingQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  my::model::Person.all()->project(
+    [
+      p|$p.name,
+      p|$p.firm.legalName
+    ],
+    [
+      'employeeName',
+      'firmName'
+    ]
+  )
+}
+
+
+###Mapping
+Mapping my::mapping::H2Mapping
+(
+  *my::model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [my::store::H2DB]TEST_SCHEMA.FirmTable.ID
+    )
+    ~mainTable [my::store::H2DB]TEST_SCHEMA.FirmTable
+    ID: [my::store::H2DB]TEST_SCHEMA.FirmTable.ID,
+    legalName: [my::store::H2DB]TEST_SCHEMA.FirmTable.LEGAL_NAME
+  }
+  *my::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [my::store::H2DB]TEST_SCHEMA.PersonTable.ID
+    )
+    ~mainTable [my::store::H2DB]TEST_SCHEMA.PersonTable
+    ID: [my::store::H2DB]TEST_SCHEMA.PersonTable.ID,
+    name: extractFromSemiStructured([my::store::H2DB]TEST_SCHEMA.PersonTable.PERSON_DETAILS, 'name', 'VARCHAR'),
+    firm[my_model_Firm]: [my::store::H2DB]@Firm_Person
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::connection::H2Connection
+{
+  store: my::store::H2DB;
+  type: H2;
+  quoteIdentifiers: false;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP SCHEMA IF EXISTS TEST_SCHEMA;',
+      'CREATE SCHEMA TEST_SCHEMA;',
+      'SET SCHEMA TEST_SCHEMA;',
+      'DROP TABLE IF EXISTS FirmTable;',
+      'CREATE TABLE FirmTable(ID VARCHAR(255) PRIMARY KEY, FIRM_DETAILS VARCHAR(255));',
+      'INSERT INTO FirmTable(ID,FIRM_DETAILS) VALUES (\'1\',\'{"legalName": "GS", "city": "New York"}\');',
+      'INSERT INTO FirmTable(ID,FIRM_DETAILS) VALUES (\'2\',\'{"legalName": "BOFA", "city": "Charlotte"}\');',
+      'DROP TABLE IF EXISTS PersonTable;',
+      'CREATE TABLE PersonTable(ID VARCHAR(255) PRIMARY KEY, PERSON_DETAILS VARCHAR(1000));',
+      'INSERT INTO PersonTable(ID,PERSON_DETAILS) VALUES (\'1\',\'{"name": "ABC", "firm": {"ID": 1, "joinDate": "2024-09-01"}}\');',
+      'INSERT INTO PersonTable(ID,PERSON_DETAILS) VALUES (\'2\',\'{"name": "XYZ", "firm": {"ID": 2, "joinDate": "2024-10-01"}}\');'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime::H2Runtime
+{
+  mappings:
+  [
+    my::mapping::H2Mapping
+  ];
+  connections:
+  [
+    my::store::H2DB:
+    [
+      connection_1: my::connection::H2Connection
+    ]
+  ];
+}

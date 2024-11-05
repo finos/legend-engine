@@ -39,18 +39,18 @@ public class DataQualityLambdaGenerator
 {
     public static final int DEFAULT_QUERY_LIMIT = 100;
 
-    public static LambdaFunction generateLambda(PureModel pureModel, String qualifiedPath)
+    public static LambdaFunction generateLambda(PureModel pureModel, String qualifiedPath, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        return generateLambda(pureModel, packageableElement);
+        return generateLambda(pureModel, packageableElement, extensions);
     }
 
-    public static LambdaFunction generateLambda(PureModel pureModel, PackageableElement packageableElement)
+    public static LambdaFunction generateLambda(PureModel pureModel, PackageableElement packageableElement, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
-        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality) packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 
-    public static LambdaFunction generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit)
+    public static LambdaFunction generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
         int trialQueryLimit = DEFAULT_QUERY_LIMIT;
@@ -58,7 +58,8 @@ public class DataQualityLambdaGenerator
         {
             trialQueryLimit = queryLimit;
         }
-        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_executeDataQualityValidation_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.of((long)trialQueryLimit), pureModel.getExecutionSupport());
+        
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.of((long)trialQueryLimit), pureModel.getExecutionSupport());
     }
 
     public static Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)

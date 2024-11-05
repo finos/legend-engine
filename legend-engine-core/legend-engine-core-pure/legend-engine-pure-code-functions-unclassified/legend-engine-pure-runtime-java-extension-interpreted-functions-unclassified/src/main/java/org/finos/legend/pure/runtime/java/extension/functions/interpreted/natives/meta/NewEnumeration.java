@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.functions.interpreted.nativ
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -48,13 +49,13 @@ public class NewEnumeration extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport)
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport)
     {
         String fullPathString = PrimitiveUtilities.getStringValue(Instance.getValueForMetaPropertyToOneResolved(params.getFirst(), M3Properties.values, processorSupport));
         ListIterable<String> fullPath = PackageableElement.splitUserPath(fullPathString);
         if (fullPath.isEmpty())
         {
-            throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "Cannot create a new Enumeration: '" + fullPathString + "'");
+            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "Cannot create a new Enumeration: '" + fullPathString + "'", functionExpressionCallStack);
         }
         String name = fullPath.getLast();
         CoreInstance pack = _Package.findOrCreatePackageFromUserPath(fullPath.subList(0, fullPath.size() - 1), this.repository, processorSupport);

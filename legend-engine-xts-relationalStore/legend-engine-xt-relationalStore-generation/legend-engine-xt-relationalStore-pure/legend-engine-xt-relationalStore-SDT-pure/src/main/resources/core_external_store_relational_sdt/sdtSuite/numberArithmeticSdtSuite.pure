@@ -1,0 +1,87 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sdt::framework::*;
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::add(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^IntegerLiteral(value = 202), type = ArithmeticType.ADD),
+    303
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::subtract(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^IntegerLiteral(value = 202), type = ArithmeticType.SUBTRACT),
+    -101
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::multiply(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^IntegerLiteral(value = 202), type = ArithmeticType.MULTIPLY),
+    20402
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::divide(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^IntegerLiteral(value = 202), type = ArithmeticType.DIVIDE),
+    0.5
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::divideComplexCase1(): SqlDialectTest[1]
+{
+  // 101 / (202 * 1.0)  =>  0.5
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(
+      left = ^IntegerLiteral(value = 101),
+      right = ^ArithmeticExpression(left = ^IntegerLiteral(value = 202), right = ^DoubleLiteral(value = 1.0), type = ArithmeticType.MULTIPLY),
+      type = ArithmeticType.DIVIDE
+    ),
+    0.5
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::precedence1(): SqlDialectTest[1]
+{
+  // (2 * 3) + 4  =>  10
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(
+      left = ^ArithmeticExpression(left = ^IntegerLiteral(value = 2), right = ^IntegerLiteral(value = 3), type = ArithmeticType.MULTIPLY),
+      right = ^IntegerLiteral(value = 4),
+      type = ArithmeticType.ADD
+    ),
+    10
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::precedence2(): SqlDialectTest[1]
+{
+  // 2 * (3 + 4)  =>  14
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(
+      left = ^IntegerLiteral(value = 2),
+      right = ^ArithmeticExpression(left = ^IntegerLiteral(value = 3), right = ^IntegerLiteral(value = 4), type = ArithmeticType.ADD),
+      type = ArithmeticType.MULTIPLY
+    ),
+    14
+  )
+}

@@ -31,15 +31,15 @@ public class TestAssertEquals extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("\nexpected: 1\nactual:   2", 3, 9, "assertEquals(1, 2)");
+        assertExpressionRaisesPureException("\nexpected: 1\nactual:   2", 21, 5, "assertEquals(1, 2)");
     }
 
     @Test
     public void testFailureWithCollections()
     {
-        assertExpressionRaisesPureException("\nexpected: [1, 3, 2]\nactual:   [2, 4, 1, 5]", 3, 9, "assertEquals([1, 3, 2], [2, 4, 1, 5])");
-        assertExpressionRaisesPureException("\nexpected: [1, 2]\nactual:   [2, 1]", 3, 9, "assertEquals([1, 2], [2, 1])");
-        assertExpressionRaisesPureException("\nexpected: ['aaa', 2]\nactual:   [2, 'aaa']", 3, 9, "assertEquals(['aaa', 2], [2, 'aaa'])");
+        assertExpressionRaisesPureException("\nexpected: [1, 3, 2]\nactual:   [2, 4, 1, 5]", 21, 5, "assertEquals([1, 3, 2], [2, 4, 1, 5])");
+        assertExpressionRaisesPureException("\nexpected: [1, 2]\nactual:   [2, 1]", 21, 5, "assertEquals([1, 2], [2, 1])");
+        assertExpressionRaisesPureException("\nexpected: ['aaa', 2]\nactual:   [2, 'aaa']", 21, 5, "assertEquals(['aaa', 2], [2, 'aaa'])");
     }
 
     protected static FunctionExecution getFunctionExecution()

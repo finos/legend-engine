@@ -1,0 +1,52 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::postgresSql::parser::*;
+import meta::pure::functions::meta::*;
+import meta::json::*;
+
+native function <<access.private>> meta::external::store::relational::postgresSql::parser::parseSqlStatementToJson(sql: String[1]): String[1];
+
+function meta::external::store::relational::postgresSql::parser::parseSqlStatement(sql: String[1]): Statement[1]
+{
+  let statementJson = $sql->parseSqlStatementToJson();
+  $statementJson->fromJSON(
+    Statement,
+    ^JSONDeserializationConfig(
+      typeKeyName = '_type',
+      failOnUnknownProperties = true,
+      typeLookup = typeLookupPairs()
+    )
+  );
+}
+
+function <<access.private>> meta::external::store::relational::postgresSql::parser::typeLookupPairs(): Pair<String, String>[*]
+{
+  getAllPackageElements(meta::external::query::sql::metamodel, false)
+    ->filter(x | $x->instanceOf(Class))
+    ->cast(@Class<Any>)
+    ->map(x | pair($x.name->toLowerFirstCharacter()->toOne(), $x->elementToPath()))
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testParseSqlStatement(): Boolean[1]
+{
+  let statement = parseSqlStatement('SELECT 1 + 2 as result');
+  assert($statement->instanceOf(Query));
+  assert($statement->cast(@Query).queryBody->instanceOf(QuerySpecification));
+  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->size() == 1);
+  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->instanceOf(SingleColumn));
+  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).alias == 'result');
+  assert($statement->cast(@Query).queryBody->cast(@QuerySpecification).select.selectItems->toOne()->cast(@SingleColumn).expression->instanceOf(ArithmeticExpression));
+}

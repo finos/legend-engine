@@ -29,7 +29,9 @@ SERVICE_FUNCTION:                   'query';
 SERVICE_EXECUTION_KEY:              'key';
 SERVICE_MAPPING:                    'mapping';
 SERVICE_RUNTIME:                    'runtime';
-
+SERVICE_COMPONENT_BINDING:          'binding';
+SERVICE_COMPONENT_CLASS:            'class';
+SERVICE_RUNTIME_COMPONENTS:         'runtimeComponents';
 SERVICE_TEST_SUITES:                'testSuites';
 SERVICE_TEST_DATA:                  'data';
 SERVICE_TEST_CONNECTION_DATA:       'connections';

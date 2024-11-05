@@ -17,6 +17,7 @@ package org.finos.legend.pure.generated;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
@@ -141,7 +142,7 @@ public class JsonGen
                     {
                         PackageableElement.writeUserPathForPackageableElement(builder, propertyType);
                     }
-                    throw new PureExecutionException(builder.toString());
+                    throw new PureExecutionException(builder.toString(), Stacks.mutable.<org.finos.legend.pure.m4.coreinstance.CoreInstance>empty());
                 }
 
                 return (T) CompiledSupport.newUnitInstance(unitRetrieved, unitValue, es);

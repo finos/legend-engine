@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sqld
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
 public class StagedFilesField extends Value
@@ -63,7 +64,7 @@ public class StagedFilesField extends Value
         builder.append(String.format("$%d", columnNumber));
         if (StringUtils.notEmpty(elementPath))
         {
-            builder.append(":").append(elementPath);
+            builder.append(":").append(SqlGenUtils.getQuotedField(elementPath, getQuoteIdentifier()));
         }
     }
 

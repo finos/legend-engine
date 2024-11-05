@@ -24,6 +24,7 @@ public enum PackageableElementType
     FUNCTION,
     STORE,
     RUNTIME,
+    BINDING,
     MAPPING,
     SERVICE,
     PERSISTENCE,

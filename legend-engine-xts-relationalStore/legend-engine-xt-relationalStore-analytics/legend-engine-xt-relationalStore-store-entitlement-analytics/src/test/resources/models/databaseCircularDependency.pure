@@ -1,0 +1,32 @@
+###Relational
+Database store::CovidDataStoreA
+(
+   include store::CovidDataStoreB
+)
+
+Database store::CovidDataStoreB
+(
+   include store::CovidDataStoreC
+)
+
+Database store::CovidDataStoreC
+(
+  include store::CovidDataStoreA
+
+  Table DEMOGRAPHICS
+  (
+    FIPS VARCHAR(200),
+    STATE VARCHAR(200)
+  )
+  Table COVID_DATA
+  (
+    ID INTEGER PRIMARY KEY,
+    FIPS VARCHAR(200),
+    DATE DATE,
+    CASE_TYPE VARCHAR(200),
+    CASES INTEGER,
+    LAST_REPORTED_FLAG BIT
+  )
+
+  Join CovidDataDemographicsJoin(DEMOGRAPHICS.FIPS = COVID_DATA.FIPS)
+)

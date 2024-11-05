@@ -493,3 +493,52 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
                                         '[type: [ProductClassificationSystemTable.id <JoinTreeNode>, ProductClassificationSystemTable.name <RelationalOperationElementWithJoin>, ProductTable.classificationSystemId <JoinTreeNode>]]',
                                           $lineage);
 }
+
+###Pure
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testMapWithPath():Boolean[1]
+{
+  let lineage = meta::analytics::lineage::computeLineage( | Person.all()
+     ->filter(x | $x->map(#/Person/firm/legalName#) != 'Goldman Sachs')
+     ->project([
+                p|$p.lastName
+              ],
+              [
+                'employeeLastName'
+              ])
+    ,
+    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  meta::analytics::lineage::assertLineage(['Lambda', 'tb_dbIncdefaultfirmTable','tb_dbIncdefaultpersonTable','db_dbInc'],
+                                          ['Lambda', 'meta::relational::tests::model::simple::Firm','meta::relational::tests::model::simple::Person','pack_meta::relational::tests::model::simple'],
+                                          '[employeeLastName: [personTable.LASTNAME <TableAliasColumn>]]',
+                                           $lineage);
+}
+
+###Pure
+import meta::legend::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::analytics::lineage::tests::relational::testSemiStructuredMapping():Boolean[1]
+{
+  let grammar = readFile('/core_analytics_lineage/tests/resources/lineageTestSchemaForSemiStructuredJoin.txt')->toOne();
+  let elements = compileLegendGrammar($grammar);
+  let runtime = $elements->filter(e|$e->instanceOf(PackageableRuntime))->at(0)->cast(@PackageableRuntime).runtimeValue->cast(@Runtime);
+  let mapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition))->at(0)->cast(@FunctionDefinition<{->TabularDataSet[1]}>);
+  let lineage = meta::analytics::lineage::computeLineage($function, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+  let expectedRelationTree =  'root\n' +
+                              '  ------> (t) PersonTable [ID, PERSON_DETAILS]\n' +
+                              '    ------> (t) PersonTable(equal_rootID_Firm_Person_d#4_d_m2leftJoinKey_0) [ID, PERSON_DETAILS]\n' +
+                              '      ------> (t) FirmTable(equal_extractFromSemiStructured_explodedflattened_prop_ID_VARCHAR_FirmTableID) [ID, LEGAL_NAME]\n';
+  let actualRelationTree = meta::pure::lineage::scanRelations::relationTreeAsString($lineage.relationTree);
+  assertEquals($expectedRelationTree, $actualRelationTree);
+
+  meta::analytics::lineage::assertLineage(['my::test::testSemiStructuredMappingQuery__TabularDataSet_1_','tb_H2DBTEST_SCHEMAPersonTable','tb_H2DBTEST_SCHEMAFirmTable','db_H2DB'],
+                                          ['my::test::testSemiStructuredMappingQuery__TabularDataSet_1_','my::model::Person','my::model::Firm','pack_my::model'],
+                                          '[employeeName: [PersonTable.PERSON_DETAILS <DynaFunction>], firmName: [FirmTable.ID <JoinTreeNode>, FirmTable.LEGAL_NAME <TableAliasColumn>, PersonTable.PERSON_DETAILS <JoinTreeNode>]]',
+                                           $lineage);
+}

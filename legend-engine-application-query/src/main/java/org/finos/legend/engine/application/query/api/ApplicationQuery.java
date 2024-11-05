@@ -21,6 +21,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.application.query.model.DataCubeQuery;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
@@ -32,15 +33,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -51,10 +44,12 @@ import java.util.List;
 public class ApplicationQuery
 {
     private final QueryStoreManager queryStoreManager;
+    private final DataCubeQueryStoreManager dataCubeQueryStoreManager;
 
     public ApplicationQuery(MongoClient mongoClient)
     {
         this.queryStoreManager = new QueryStoreManager(mongoClient);
+        this.dataCubeQueryStoreManager = new DataCubeQueryStoreManager(mongoClient);
     }
 
     private static String getCurrentUser(ProfileManager<CommonProfile> profileManager)
@@ -253,6 +248,134 @@ public class ApplicationQuery
                 return ((ApplicationQueryException) e).toResponse();
             }
             return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_EVENTS_ERROR, null);
+        }
+    }
+
+
+    @POST
+    @Path("dataCube/search")
+    @ApiOperation(value = "Search DataCube queries")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response searchDataCubeQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try
+        {
+            return Response.ok().entity(this.dataCubeQueryStoreManager.searchQueries(searchSpecification, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.SEARCH_QUERIES_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("dataCube/batch")
+    @ApiOperation(value = "Get the DataCube queries with specified IDs")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getDataCubeQueries(@QueryParam("queryIds") @ApiParam("The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
+    {
+        try
+        {
+            return Response.ok(this.dataCubeQueryStoreManager.getQueries(queryIds)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("dataCube/{queryId}")
+    @ApiOperation(value = "Get the DataCube query with specified ID")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getDataCubeQuery(@PathParam("queryId") String queryId)
+    {
+        try
+        {
+            return Response.ok(this.dataCubeQueryStoreManager.getQuery(queryId)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
+        }
+    }
+
+    @POST
+    @Path("dataCube")
+    @ApiOperation(value = "Create a new DataCube query")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response createDataCubeQuery(DataCubeQuery query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            return Response.ok().entity(this.dataCubeQueryStoreManager.createQuery(query, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @PUT
+    @Path("dataCube/{queryId}")
+    @ApiOperation(value = "Update DataCube query")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response updateDataCubeQuery(@PathParam("queryId") String queryId, DataCubeQuery query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            return Response.ok().entity(this.dataCubeQueryStoreManager.updateQuery(queryId, query, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @DELETE
+    @Path("dataCube/{queryId}")
+    @ApiOperation(value = "Delete the DataCube query with specified ID")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response deleteDataCubeQuery(@PathParam("queryId") String queryId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = Identity.makeIdentity(profiles);
+        try
+        {
+            this.dataCubeQueryStoreManager.deleteQuery(queryId, getCurrentUser(profileManager));
+            return Response.noContent().build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, identity.getName());
         }
     }
 }

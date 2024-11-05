@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.runtime.extensions.interpreted.natives;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -49,23 +50,23 @@ public class LegendExtensions extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         MutableList<String> allSignatures = PureCoreExtensionLoader.extensions().collect(LegendPureCoreExtension::functionSignature);
         if (allSignatures.contains(null))
         {
             String message = PureCoreExtensionLoader.extensions().select(c -> c.functionSignature() == null).collect(z -> z.getClass().getSimpleName() + " didn't define a functionSignature!").makeString(", ");
-            throw new PureExecutionException(message);
+            throw new PureExecutionException(message, functionExpressionCallStack);
         }
-        return ValueSpecificationBootstrap.wrapValueSpecification(allSignatures.flatCollect(this::eval), true, processorSupport);
+        return ValueSpecificationBootstrap.wrapValueSpecification(allSignatures.flatCollect(x -> eval(x, functionExpressionCallStack)), true, processorSupport);
     }
 
-    private ListIterable<? extends CoreInstance> eval(String name) throws PureExecutionException
+    private ListIterable<? extends CoreInstance> eval(String name, MutableStack<CoreInstance> functionExpressionCallStack) throws PureExecutionException
     {
         CoreInstance func = _Package.getByUserPath(name, functionExecution.getRuntime().getProcessorSupport());
         if (func == null)
         {
-            throw new PureExecutionException("The function '" + name + "' can't be found in the Pure graph.");
+            throw new PureExecutionException("The function '" + name + "' can't be found in the Pure graph.", functionExpressionCallStack);
         }
         CoreInstance ci = functionExecution.start(func, Lists.mutable.empty());
         return ci.getValueForMetaPropertyToMany("values");

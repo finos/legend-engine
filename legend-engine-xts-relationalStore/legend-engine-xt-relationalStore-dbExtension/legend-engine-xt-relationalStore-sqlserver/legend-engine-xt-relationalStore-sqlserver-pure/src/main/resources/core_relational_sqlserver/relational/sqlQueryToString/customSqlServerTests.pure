@@ -31,6 +31,15 @@ function <<test.Test>> meta::relational::sqlServer::tests::testSqlGenerationDivi
    assertSameSQL($expectedSQL, $resultSqlServer);
 }
 
+function <<test.Test>> meta::relational::sqlServer::tests::testReprocessGroupByAliasSQLServer():Boolean[1]
+{
+   let query  = {|Trade.all()
+                 ->groupBy([x | $x.id,x | $x.settlementDateTime],[agg(x | $x.quantity, y | $y->sum())],['id','settlementDateTime','quantity'])};
+ 
+   let sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime", sum("root".quantity) as "quantity" from tradeTable as "root" group by "root".ID,"root".settlementDateTime', $sql);
+}
+ 
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringConcatSQLServer():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')

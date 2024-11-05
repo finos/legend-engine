@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.shared.conversion;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 
 public class GenericAndAnyTypeNotSupportedConversion<T> implements Conversion<Object, T>
@@ -23,7 +24,7 @@ public class GenericAndAnyTypeNotSupportedConversion<T> implements Conversion<Ob
     @Override
     public T apply(Object value, ConversionContext context)
     {
-        throw new PureExecutionException("Deserialization of generics currently not supported!");
+        throw new PureExecutionException("Deserialization of generics currently not supported!", Stacks.mutable.empty());
     }
 
     @Override

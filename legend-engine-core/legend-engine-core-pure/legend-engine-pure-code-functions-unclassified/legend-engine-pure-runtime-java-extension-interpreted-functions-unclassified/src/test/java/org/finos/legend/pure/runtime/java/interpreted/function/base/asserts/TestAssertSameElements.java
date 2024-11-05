@@ -31,8 +31,8 @@ public class TestAssertSameElements extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("\nexpected: [1, 2, 3]\nactual:   [1, 2, 4, 5]", 3, 9, "assertSameElements([1, 3, 2], [2, 4, 1, 5])");
-        assertExpressionRaisesPureException("\nexpected: [1, 3, '2']\nactual:   [1, 4, 5, '2']", 3, 9, "assertSameElements([1, 3, '2'], ['2', 4, 1, 5])");
+        assertExpressionRaisesPureException("\nexpected: [1, 2, 3]\nactual:   [1, 2, 4, 5]", 31, 5, "assertSameElements([1, 3, 2], [2, 4, 1, 5])");
+        assertExpressionRaisesPureException("\nexpected: [1, 3, '2']\nactual:   [1, 4, 5, '2']", 31, 5, "assertSameElements([1, 3, '2'], ['2', 4, 1, 5])");
     }
 
     protected static FunctionExecution getFunctionExecution()

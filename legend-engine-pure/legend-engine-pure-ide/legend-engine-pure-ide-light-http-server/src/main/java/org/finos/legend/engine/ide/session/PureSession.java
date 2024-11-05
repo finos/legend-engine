@@ -140,9 +140,9 @@ public class PureSession
         this.pureRuntimeOptions.put(optionName, value);
     }
 
-    public TestRunner newTestRunner(int testRunId, TestCollection collection)
+    public TestRunner newTestRunner(int testRunId, TestCollection collection, String pctAdapter)
     {
-        TestRunnerWrapper testRunnerWrapper = new TestRunnerWrapper(collection, this.getPureRuntime().executedTestTracker);
+        TestRunnerWrapper testRunnerWrapper = new TestRunnerWrapper(collection, this.getPureRuntime().executedTestTracker, pctAdapter);
         this.testRunnersById.put(testRunId, testRunnerWrapper);
         return testRunnerWrapper.testRunner;
     }
@@ -328,9 +328,9 @@ public class PureSession
         private TestRunner testRunner;
         private final CallBack callBack;
 
-        private TestRunnerWrapper(TestCollection collection, CallBack callBack, final ExecutedTestTracker executedTestTracker)
+        private TestRunnerWrapper(TestCollection collection, CallBack callBack, final ExecutedTestTracker executedTestTracker, String pctAdapter)
         {
-            this.testRunner = new TestRunner(collection, false, PureSession.this.getFunctionExecution(), callBack)
+            this.testRunner = new TestRunner(collection, false, PureSession.this.getFunctionExecution(), callBack, pctAdapter)
             {
                 @Override
                 public void run()
@@ -346,9 +346,9 @@ public class PureSession
             this.callBack = callBack;
         }
 
-        private TestRunnerWrapper(TestCollection collection, ExecutedTestTracker executedTestTracker)
+        private TestRunnerWrapper(TestCollection collection, ExecutedTestTracker executedTestTracker, String pctAdapter)
         {
-            this(collection, new CallBack(), executedTestTracker);
+            this(collection, new CallBack(), executedTestTracker, pctAdapter);
         }
 
         void stopAndClear()

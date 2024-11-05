@@ -304,11 +304,11 @@ public class DataCubeWalkthrough implements Command
                                 "history with ArrowUp/Down key, etc.")));
                         this.println("");
                         this.println(wrap("The function documentation lookup tool can be quite helpful, for example, to view documentation and " +
-                                "usages for 'filter', use the following command:"));
-                        this.printCommand("doc meta::pure::functions::relation::filter");
+                                "usages for function 'filter', use the following command:"));
+                        this.printCommand("doc collection/iteration/filter");
                         this.println(ansiDim(printRule(null)));
                         this.println(DocumentationHelper.generateANSIFunctionDocumentation(this.client.getFunctionDocumentation("meta::pure::functions::relation::filter"), this.client.getDocumentationAdapterKeys()));
-                        this.client.addCommandToHistory("doc meta::pure::functions::relation::filter");
+                        this.client.addCommandToHistory("doc collection/iteration/filter");
                         this.println(ansiDim(printRule(null)));
                         this.println("");
                         this.println(wrap("Also, don't forget to hit the 'Tab' key while typing up an expression, the compiler can help validate " +

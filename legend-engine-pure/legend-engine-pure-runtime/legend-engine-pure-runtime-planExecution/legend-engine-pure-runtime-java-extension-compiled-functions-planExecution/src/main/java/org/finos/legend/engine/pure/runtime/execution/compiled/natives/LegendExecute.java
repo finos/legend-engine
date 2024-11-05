@@ -19,9 +19,11 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Stack;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.ListAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
@@ -80,7 +82,7 @@ public class LegendExecute extends AbstractNative
         }
 
         Map<String, Object> planVariables = pureToPlanVariables(Optional.ofNullable(variables).orElse(Lists.fixedSize.empty()));
-        return org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJson, planVariables);
+        return org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJson, planVariables, Stacks.mutable.empty());
     }
 
     private static Map<String, Object> pureToPlanVariables(RichIterable<? extends Pair<? extends String, ?>> variables)

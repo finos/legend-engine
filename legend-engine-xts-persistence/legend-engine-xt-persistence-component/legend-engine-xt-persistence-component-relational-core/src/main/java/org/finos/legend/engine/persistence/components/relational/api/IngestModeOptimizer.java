@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 
@@ -146,7 +146,7 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
 
         if (!partitionSpecResult.isEmpty())
         {
-            List<Map<String, Object>> partitionSpecRows = partitionSpecResult.get(0).getData();
+            List<Map<String, Object>> partitionSpecRows = partitionSpecResult.get(0).data();
             for (Map<String, Object> partitionSpec: partitionSpecRows)
             {
                 partitionSpecList.add(partitionSpec);
@@ -159,17 +159,13 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
 
     private List<OptimizationFilter> deriveOptimizationFilters(UnitemporalDeltaAbstract unitemporalDelta)
     {
-        List<OptimizationFilter> optimizationFilters = unitemporalDelta.optimizationFilters();
-        if (optimizationFilters == null || optimizationFilters.isEmpty())
+        List<OptimizationFilter> optimizationFilters = new ArrayList<>();
+        List<Field> primaryKeys = findCommonPrimaryFieldsBetweenMainAndStaging(datasets.mainDataset(), datasets.stagingDataset());
+        List<Field> comparablePrimaryKeys = primaryKeys.stream().filter(field -> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(field.type().dataType())).collect(Collectors.toList());
+        for (Field field : comparablePrimaryKeys)
         {
-            List<Field> primaryKeys = findCommonPrimaryFieldsBetweenMainAndStaging(datasets.mainDataset(), datasets.stagingDataset());
-            List<Field> comparablePrimaryKeys = primaryKeys.stream().filter(field -> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(field.type().dataType())).collect(Collectors.toList());
-            optimizationFilters = new ArrayList<>();
-            for (Field field : comparablePrimaryKeys)
-            {
-                OptimizationFilter filter = OptimizationFilter.of(field.name(), field.name().toUpperCase() + "_LOWER", field.name().toUpperCase() + "_UPPER");
-                optimizationFilters.add(filter);
-            }
+            OptimizationFilter filter = OptimizationFilter.of(field.name());
+            optimizationFilters.add(filter);
         }
         return optimizationFilters;
     }

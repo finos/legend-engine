@@ -1,0 +1,78 @@
+# Copyright 2024 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: SDT Test
+
+description: SDT Test
+
+inputs:
+  check-name:
+    description: 'Job/Check Name'
+    required: true
+  project-dir:
+    description: 'Project directory'
+    required: true
+  test-name:
+    description: 'SDT Test Name'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: 11
+        distribution: zulu
+        server-id: ossrh
+        server-username: CI_DEPLOY_USERNAME
+        server-password: CI_DEPLOY_PASSWORD
+
+    - name: Check Java version
+      run: java -version
+      shell: bash
+
+    - name: Build repository
+      run: mvn -B -e -pl ${{ inputs.project-dir }} clean install -am -DskipTests=true
+      shell: bash
+
+    - name: Run SDT Test
+      run: mvn -B -e -pl ${{ inputs.project-dir }} test -Dtest=${{ inputs.test-name }}
+      shell: bash
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ${{ inputs.project-dir }}/target/surefire-reports/*.xml
+
+    - name: Publish Test Results
+      uses: mikepenz/action-junit-report@v4
+      if: always()
+      with:
+        report_paths: '${{ inputs.project-dir }}/target/surefire-reports/*.xml'
+        fail_on_failure: true
+        summary: true
+        detailed_summary: true
+        include_passed: true
+        check_name: ${{ inputs.check-name }}
+        job_name: ${{ inputs.check-name }}
+
+    - name: Upload CI Event
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: event-file
+        path: ${{ github.event_path }}

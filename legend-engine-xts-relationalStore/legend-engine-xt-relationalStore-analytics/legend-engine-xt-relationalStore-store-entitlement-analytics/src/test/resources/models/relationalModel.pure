@@ -31,7 +31,6 @@ Database store::CovidDataStoreB
 
 Database store::CovidDataStoreC
 (
-  include store::CovidDataStoreA
   Table DEMOGRAPHICS
   (
     FIPS VARCHAR(200),

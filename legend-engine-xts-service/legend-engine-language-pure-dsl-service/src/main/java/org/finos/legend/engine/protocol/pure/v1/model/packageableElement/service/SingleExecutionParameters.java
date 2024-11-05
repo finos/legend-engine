@@ -22,6 +22,7 @@ public class SingleExecutionParameters extends ExecutionParameters
     public String key;
     public String mapping;
     public Runtime runtime;
+    public RuntimeComponents runtimeComponents;
     public SourceInformation sourceInformation;
     public SourceInformation mappingSourceInformation;
 }

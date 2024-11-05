@@ -17,6 +17,8 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
+import java.util.Optional;
+
 @Immutable
 @Style(
     typeAbstract = "*Abstract",
@@ -27,4 +29,5 @@ import org.immutables.value.Value.Style;
 )
 public interface DatasetReferenceImplAbstract extends DatasetReference
 {
+    Optional<DatasetAdditionalProperties> datasetAdditionalProperties();
 }

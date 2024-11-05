@@ -197,7 +197,15 @@ public class TestDataCubeHelpers
     {
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
-        testTypeahead(expectedResult, code, "#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)");
+        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)", false), pureModelContextData);
+    }
+
+    @Test
+    public void testTypeaheadPartialWithDummySource()
+    {
+        String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
+        String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
+        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>)", false), null);
     }
 
     @Test
@@ -205,7 +213,7 @@ public class TestDataCubeHelpers
     {
         String code = "#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"},{\"completion\":\"LASTNAME\",\"display\":\"LASTNAME\"}]}";
-        testTypeahead(expectedResult, code, null);
+        testTypeahead(expectedResult, code, null, pureModelContextData);
     }
 
     @Test
@@ -213,14 +221,14 @@ public class TestDataCubeHelpers
     {
         String code = "#>{test::TestDatabase.TEST0}#-->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[]}";
-        testTypeahead(expectedResult, code, null);
+        testTypeahead(expectedResult, code, null, pureModelContextData);
     }
 
-    private void testTypeahead(String expectedResult, String code, String baseQueryCode)
+    private void testTypeahead(String expectedResult, String code, Lambda lambda, PureModelContextData data)
     {
         try
         {
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, baseQueryCode, pureModelContextData, completerExtensions, legendInterface)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getCodeTypeahead(code, lambda, data, completerExtensions, legendInterface)));
         }
         catch (IOException e)
         {
@@ -233,7 +241,7 @@ public class TestDataCubeHelpers
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
         String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]}";
-        testExtractRelationReturnType(expectedResult, lambda);
+        testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
     @Test
@@ -241,7 +249,7 @@ public class TestDataCubeHelpers
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->cast(@meta::pure::metamodel::relation::Relation<(hai:String,ba:Integer)>)";
         String expectedResult = "{\"columns\":[{\"name\":\"hai\",\"type\":\"String\"},{\"name\":\"ba\",\"type\":\"Integer\"}]}";
-        testExtractRelationReturnType(expectedResult, lambda);
+        testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
     @Test
@@ -249,7 +257,7 @@ public class TestDataCubeHelpers
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~newCol:c|'ok')";
         String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"}]}";
-        testExtractRelationReturnType(expectedResult, lambda);
+        testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
     @Test
@@ -257,16 +265,23 @@ public class TestDataCubeHelpers
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
         String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
-        testExtractRelationReturnType(expectedResult, lambda);
+        testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
-    private void testExtractRelationReturnType(String expectedResult, String code)
+    @Test
+    public void testExtractRelationReturnTypeWithDummySource()
+    {
+        String lambda = "|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String,LASTNAME:String)>)->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
+        String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
+        testExtractRelationReturnType(expectedResult, lambda, null);
+    }
+
+    private void testExtractRelationReturnType(String expectedResult, String code, PureModelContextData data)
     {
         try
         {
             Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, false);
-            PureModelContextData data = DataCubeHelpers.injectNewFunction(pureModelContextData, lambda).getOne();
-            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(legendInterface, data)));
+            Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(legendInterface, lambda, data)));
         }
         catch (IOException e)
         {
@@ -278,23 +293,22 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeWithParserError()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#-->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        testExtractRelationReturnTypeFailure("PARSER error at [1:31]: Unexpected token '-'. Valid alternatives: [';']", lambda);
+        testExtractRelationReturnTypeFailure("PARSER error at [1:31]: Unexpected token '-'. Valid alternatives: [';']", lambda, pureModelContextData);
     }
 
     @Test
     public void testExtractRelationReturnTypeWithCompilationError()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME2])";
-        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda);
+        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda, pureModelContextData);
     }
 
-    private void testExtractRelationReturnTypeFailure(String errorMessage, String code)
+    private void testExtractRelationReturnTypeFailure(String errorMessage, String code, PureModelContextData data)
     {
         EngineException e = Assert.assertThrows(EngineException.class, () ->
         {
             Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, true);
-            PureModelContextData data = DataCubeHelpers.injectNewFunction(pureModelContextData, lambda).getOne();
-            DataCubeHelpers.getRelationReturnType(legendInterface, data);
+            DataCubeHelpers.getRelationReturnType(legendInterface, lambda, data);
         });
         Assert.assertEquals(errorMessage, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), e.getErrorType()));
     }

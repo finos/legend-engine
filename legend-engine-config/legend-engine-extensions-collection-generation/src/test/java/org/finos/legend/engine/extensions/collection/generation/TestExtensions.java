@@ -44,6 +44,7 @@ import org.finos.legend.engine.language.hostedService.grammar.from.HostedService
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.memsqlFunction.grammar.to.MemSqlFunctionGrammarComposer;
+import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -378,6 +379,7 @@ public class TestExtensions
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
+                .with(PostDeploymentActionGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(MemSqlFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
@@ -416,6 +418,17 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ProfileCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.EnumerationCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ClassCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.MeasureCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.AssociationCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.FunctionCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.MappingCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableRuntimeCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableConnectionCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SectionIndexCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataElementCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatCompilerExtension.class)
@@ -584,6 +597,8 @@ public class TestExtensions
                 .with("core_nonrelational_mongodb_java_platform_binding")
                 .with("core_external_store_relational_sql_planning")
                 .with("core_external_store_relational_sql_dialect_translation")
+                .with("core_external_store_relational_sql_dialect_translation_duckdb")
+                .with("core_external_store_relational_postgres_sql_parser")
                 ;
     }
 }

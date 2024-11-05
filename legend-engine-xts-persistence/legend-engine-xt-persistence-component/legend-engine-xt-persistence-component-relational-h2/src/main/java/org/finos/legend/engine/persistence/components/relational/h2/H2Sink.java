@@ -80,7 +80,7 @@ import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
@@ -231,7 +231,7 @@ public class H2Sink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
                 .stream()
                 .findFirst()
-                .map(TabularData::getData)
+                .map(TabularData::data)
                 .flatMap(t -> t.stream().findFirst())
                 .map(Map::values)
                 .flatMap(t -> t.stream().findFirst())
@@ -315,7 +315,7 @@ public class H2Sink extends AnsiSqlSink
                         List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue.get())), sampleRowCount);
                         if (!results.isEmpty())
                         {
-                            List<Map<String, Object>> resultSets = results.get(0).getData();
+                            List<Map<String, Object>> resultSets = results.get(0).data();
                             for (Map<String, Object> row : resultSets)
                             {
                                 DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, validatedColumn.fieldName(), caseConversion);

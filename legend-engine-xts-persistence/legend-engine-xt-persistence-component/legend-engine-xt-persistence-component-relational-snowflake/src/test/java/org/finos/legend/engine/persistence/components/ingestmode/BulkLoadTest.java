@@ -85,6 +85,20 @@ public class BulkLoadTest
             .columnNumber(6)
             .build();
 
+    private static Field col6 = Field.builder()
+        .name("col_string")
+        .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
+        .columnNumber(1)
+        .elementPath("col_string")
+        .build();
+
+    private static Field col7 = Field.builder()
+        .name("col_datetime")
+        .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
+        .columnNumber(1)
+        .elementPath("col_datetime")
+        .build();
+
     private static Field col1NonNullable = Field.builder()
             .name("col_int")
             .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
@@ -870,6 +884,68 @@ public class BulkLoadTest
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location as legend_persistence_stage) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') FILE_FORMAT = (FORMAT_NAME = 'my_file_format') ON_ERROR = 'ABORT_STATEMENT'";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadWithElementPath()
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField("batch_id")
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestField("digest")
+                .digestUdfName("LAKEHOUSE_UDF")
+                .columnNameValueConcatUdfName("COLUMN_STRING_UDF")
+                .build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                SnowflakeStagedFilesDatasetProperties.builder()
+                    .location("my_location")
+                    .fileFormat(UserDefinedFileFormat.of("my_file_format"))
+                    .addAllFilePaths(filesList).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col6, col7)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database("my_db").name("my_name").alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(SnowflakeSink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRequestId("task123")
+            .ingestRunId(ingestRunId)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_string\" VARCHAR,\"col_datetime\" DATETIME,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
+
+        String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
+            "(\"col_string\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
+            "FROM (SELECT legend_persistence_stage.$1:\"col_string\" as \"col_string\",legend_persistence_stage.$1:\"col_datetime\" as \"col_datetime\"," +
+            "LAKEHOUSE_UDF(CONCAT(COLUMN_STRING_UDF('col_datetime',CAST(legend_persistence_stage.$1:\"col_datetime\" AS DATETIME)),COLUMN_STRING_UDF('col_string',CAST(legend_persistence_stage.$1:\"col_string\" AS VARCHAR))))," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
+            "FROM my_location as legend_persistence_stage) " +
+            "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') FILE_FORMAT = (FORMAT_NAME = 'my_file_format') ON_ERROR = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));

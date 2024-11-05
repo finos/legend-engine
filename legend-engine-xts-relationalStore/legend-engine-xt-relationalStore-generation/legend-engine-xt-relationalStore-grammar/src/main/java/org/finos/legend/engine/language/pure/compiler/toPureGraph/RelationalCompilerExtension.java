@@ -30,6 +30,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -76,6 +77,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Join;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
@@ -183,7 +186,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name, SourceInformationHelper.toM3SourceInformation(srcDatabase.sourceInformation), null)._name(srcDatabase.name);
 
                             database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                                    ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
+                                    ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
+                                    ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+
                             return database;
                         },
                         (Database srcDatabase, CompileContext context) ->
@@ -194,24 +199,35 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 database._includes(ListIterate.collect(srcDatabase.includedStores, include -> HelperRelationalBuilder.resolveDatabase(context.pureModel.addPrefixToTypeReference(include.path), include.sourceInformation, context)));
                             }
                             database._schemas(ListIterate.collect(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchema(_schema, context, database)));
-                        },
-                        (Database srcDatabase, CompileContext context) ->
-                        {
-                            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                             ListIterate.forEach(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchemaViewsFirstPass(_schema, context, database));
+                            checkForDuplicateJoins(srcDatabase, context);
+                            checkForDuplicateFilters(srcDatabase, context);
+                            database._joins(srcDatabase.joins == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.joins, join -> HelperRelationalBuilder.processDatabaseJoinFirstPass(join, context, database)))
+                                    ._filters(srcDatabase.filters == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.filters, filter -> HelperRelationalBuilder.processDatabaseFilterFirstPass(filter, context, database)));
                         },
                         (Database srcDatabase, CompileContext context) ->
                         {
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
-                            // TODO checkForDuplicatesByName for filters/joins
-                            database._joins(srcDatabase.joins == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.joins, join -> HelperRelationalBuilder.processDatabaseJoin(join, context, database)))
-                                    ._filters(srcDatabase.filters == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.filters, filter -> HelperRelationalBuilder.processDatabaseFilter(filter, context, database)))
-                                    ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
-                        },
-                        (Database srcDatabase, CompileContext context) ->
-                        {
-                            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
+                            if (srcDatabase.joins != null)
+                            {
+                                for (int i = 0; i < srcDatabase.joins.size(); i++)
+                                {
+                                    HelperRelationalBuilder.processDatabaseJoinSecondPass(srcDatabase.joins.get(i), context, database, i);
+                                }
+                            }
+                            if (srcDatabase.filters != null)
+                            {
+                                for (int i = 0; i < srcDatabase.filters.size(); i++)
+                                {
+                                    HelperRelationalBuilder.processDatabaseFilterSecondPass(srcDatabase.filters.get(i), context, database, i);
+                                }
+                            }
                             ListIterate.forEach(srcDatabase.schemas, _schema -> HelperRelationalBuilder.processDatabaseSchemaViewsSecondPass(_schema, context, database));
+                        },
+                        (Database srcDatabase, CompileContext context) ->
+                        {
+                            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
+                            return database._includes();
                         }
                 ),
                 Processor.newProcessor(
@@ -845,6 +861,44 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 scannedSources.add(HelperModelBuilder.getElementFullPath(((RootRelationalInstanceSetImplementation) setImplementation)._mainTableAlias()._database(), context.pureModel.getExecutionSupport()));
             }
         });
+    }
+
+    private void checkForDuplicateJoins(Database srcDatabase, CompileContext context)
+    {
+        List<Warning> warnings = Lists.mutable.empty();
+        if (srcDatabase.joins != null)
+        {
+            FastListMultimap<String, Join> nameToJoins = ListIterate.groupBy(srcDatabase.joins, join -> join.name);
+            nameToJoins.forEachKey(name ->
+            {
+                MutableList<Join> joins = nameToJoins.get(name);
+                if (joins.size() > 1)
+                {
+                    joins.forEach(join -> warnings.add(new Warning(join.sourceInformation, "Found joins with duplicate names: " + name)));
+                }
+            });
+        }
+
+        context.pureModel.addWarnings(warnings);
+    }
+
+    private void checkForDuplicateFilters(Database srcDatabase, CompileContext context)
+    {
+        List<Warning> warnings = Lists.mutable.empty();
+        if (srcDatabase.filters != null)
+        {
+            FastListMultimap<String, Filter> nameToFilters = ListIterate.groupBy(srcDatabase.filters, filter -> filter.name);
+            nameToFilters.forEachKey(name ->
+            {
+                MutableList<Filter> filters = nameToFilters.get(name);
+                if (filters.size() > 1)
+                {
+                    filters.forEach(filter -> warnings.add(new Warning(filter.sourceInformation, "Found filters with duplicate names: " + name)));
+                }
+            });
+        }
+
+        context.pureModel.addWarnings(warnings);
     }
 
     private static <T> void checkForDuplicates(List<T> list)

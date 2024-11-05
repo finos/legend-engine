@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
@@ -105,7 +106,7 @@ public abstract class JsonPropertySerialization<T> extends PropertySerialization
             }
             catch (Exception e)
             {
-                throw new PureExecutionException("Failed to encrypt serialized json property: " + this.getName() + "\nwith key: " + jsonSerializationContext.getEncryptionKey(), e);
+                throw new PureExecutionException("Failed to encrypt serialized json property: " + this.getName() + "\nwith key: " + jsonSerializationContext.getEncryptionKey(), e, Stacks.mutable.empty());
             }
         }
         return serialized;
@@ -121,7 +122,7 @@ public abstract class JsonPropertySerialization<T> extends PropertySerialization
             }
             catch (Exception e)
             {
-                throw new PureExecutionException("Failed to decrypt serialized json property: " + this.getName() + "\nwith key: " + jsonSerializationContext.getDecryptionKey(), e);
+                throw new PureExecutionException("Failed to decrypt serialized json property: " + this.getName() + "\nwith key: " + jsonSerializationContext.getDecryptionKey(), e, Stacks.mutable.empty());
             }
         }
         return serialized;

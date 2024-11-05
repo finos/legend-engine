@@ -1,0 +1,131 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sdt::framework::*;
+import meta::pure::extension::*;
+import meta::pure::functions::meta::*;
+import meta::json::*;
+
+// SDT - SQL Dialect Test
+
+native function meta::external::store::relational::sdt::framework::runSqlDialectTestQuery(dbType: String[1], testQuery: String[1], setupSqls: String[*], teardownSqls: String[*]): meta::relational::metamodel::execute::ResultSet[1];
+
+function meta::external::store::relational::sdt::framework::runSqlDialect(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): Boolean[1]
+{
+  let testQuery = $sdt->generateTestSqlForSdtTestCase($dbType, $extensions);
+  let setupSqls = $sdt->generateSetupSqlsForSdtTestCase($dbType, $extensions);
+  let teardownSqls = $sdt->generateTeardownSqlsForSdtTestCase($dbType, $extensions);
+  let result = $dbType->runSqlDialectTestQuery($testQuery, $setupSqls, $teardownSqls)->testResultFromResultSet();
+  $sdt->assertSdtTestPasses($result);
+}
+
+Profile meta::external::store::relational::sdt::framework::SDT
+{
+  stereotypes : [test];
+}
+
+Class meta::external::store::relational::sdt::framework::SqlDialectTest
+{
+  setupStatements: Statement[*];
+  teardownStatements: Statement[*];
+  testQuery: Query[1];
+  expectedResult: TestResult[1];
+}
+
+Class meta::external::store::relational::sdt::framework::TestResult
+{
+  <<equality.Key>> columnNames: String[*];
+  <<equality.Key>> rows: TestResultRow[*];
+}
+
+Class meta::external::store::relational::sdt::framework::TestResultRow
+{
+  <<equality.Key>> values: Any[*];
+}
+
+function meta::external::store::relational::sdt::framework::collectSDTTestsInPackage(pkg: String[1]): ConcreteFunctionDefinition<{->SqlDialectTest[1]}>[*]
+{
+  getAllPackageElements($pkg->pathToElement()->cast(@Package), true)
+    ->filter(x | $x->hasStereotype('test', SDT))
+    ->map(x | $x->match([
+      f: ConcreteFunctionDefinition<{->SqlDialectTest[1]}>[1] | $f,
+      a: Any[*] | $x->elementToPath() + ' element with stereotype SDT.test not a concrete function definition returning SqlDialectTest[1]'; [];
+    ]));
+}
+
+function meta::external::store::relational::sdt::framework::getSqlDialectTest(func: ConcreteFunctionDefinition<{->SqlDialectTest[1]}>[1]): SqlDialectTest[1]
+{
+  $func->eval()
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::generateSetupSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
+{
+  $sdt.setupStatements->map(s | $s->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions))
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::generateTestSqlForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[1]
+{
+  $sdt.testQuery->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions);
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::generateTeardownSqlsForSdtTestCase(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): String[*]
+{
+  $sdt.teardownStatements->map(s | $s->generateSqlDialectForStatement(sdtTestSqlDialectTranslationConfig($dbType), $extensions))
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::testResultFromResultSet(rs: meta::relational::metamodel::execute::ResultSet[1]): TestResult[1]
+{
+  ^TestResult
+  (
+    columnNames = $rs.columnNames,
+    rows = $rs.rows->map(r | ^TestResultRow(values = $r.values))
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::assertSdtTestPasses(sdt: SqlDialectTest[1], actualResult: TestResult[1]): Boolean[1]
+{
+  assertEquals($sdt.expectedResult, $actualResult, | 'Expected - ' + $sdt.expectedResult->toJSON(100) + '\n' + 'Actual - ' + $actualResult->toJSON(100));
+}
+
+function meta::external::store::relational::sdt::framework::testConfigForSimpleExpression(expression: meta::external::query::sql::metamodel::Expression[1], expected: Any[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(
+          distinct = false,
+          selectItems = ^SingleColumn(
+            expression = $expression,
+            alias = 'result'
+          )
+        )
+      )
+    ),
+    expectedResult = ^TestResult(
+      columnNames = ['result'],
+      rows = [^TestResultRow(values = $expected)]
+    )
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(dbType = $dbType),
+    formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true)
+  )
+}

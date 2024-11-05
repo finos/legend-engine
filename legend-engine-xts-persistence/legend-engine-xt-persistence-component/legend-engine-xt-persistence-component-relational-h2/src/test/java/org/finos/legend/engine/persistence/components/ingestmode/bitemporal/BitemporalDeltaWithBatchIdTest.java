@@ -1094,6 +1094,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
+
+        // Verify temp tables are dropped
+        Assertions.assertFalse(h2Sink.doesTableExist(tempTable));
+        Assertions.assertFalse(h2Sink.doesTableExist(tempTableWithDeleteIndicator));
     }
 
     /*

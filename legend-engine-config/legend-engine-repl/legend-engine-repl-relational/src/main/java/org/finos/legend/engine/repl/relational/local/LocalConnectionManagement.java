@@ -74,7 +74,7 @@ public class LocalConnectionManagement
                 res.add("###Relational\n" +
                         "Database local::" + conn + "Database" +
                         "(" +
-                        getTables(connection).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> (c.name.contains(" ") ? "\"" + c.name + "\"" : c.name) + " " + c.type).makeString(",") + ")").makeString("\n") +
+                        getTables(connection).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> PureGrammarComposerUtility.convertIdentifier(c.name, true) + " " + c.type).makeString(",") + ")").makeString("\n") +
                         ")\n");
             }
             catch (SQLException e)

@@ -31,7 +31,7 @@ public class TestAssertNotEmpty extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("Expected non-empty collection", 3, 9, "assertNotEmpty([1, 2, 3]->filter(x | $x == 5))");
+        assertExpressionRaisesPureException("Expected non-empty collection", 26, 5, "assertNotEmpty([1, 2, 3]->filter(x | $x == 5))");
     }
 
     protected static FunctionExecution getFunctionExecution()
