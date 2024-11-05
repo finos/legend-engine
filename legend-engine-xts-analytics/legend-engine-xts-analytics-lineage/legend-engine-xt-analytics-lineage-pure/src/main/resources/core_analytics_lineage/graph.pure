@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+import meta::pure::lineage::graph::*;
 import meta::analytics::lineage::flow::*;
 import meta::analytics::lineage::graph::*;
 import meta::json::*;
@@ -21,39 +22,39 @@ import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 
 
-Class meta::analytics::lineage::graph::Node
-{
-   data : NodeData[1];
-}
+// Class meta::analytics::lineage::graph::Node
+// {
+//    data : NodeData[1];
+// }
 
-Class meta::analytics::lineage::graph::NodeData
-{
-   id : String[1];
-   text : String[1];
-   type : String[1];
-   displayType : String[0..1];
-   parent : Node[0..1];
-}
+// Class meta::analytics::lineage::graph::NodeData
+// {
+//    id : String[1];
+//    text : String[1];
+//    type : String[1];
+//    displayType : String[0..1];
+//    parent : Node[0..1];
+// }
 
-Class meta::analytics::lineage::graph::Edge
-{
-   data : EdgeData[1];
-}
+// Class meta::analytics::lineage::graph::Edge
+// {
+//    data : EdgeData[1];
+// }
 
-Class meta::analytics::lineage::graph::EdgeData
-{
-   id : String[1];
-   text : String[1];
-   type : String[1];
-   source : Node[1];
-   target : Node[1];
-}
+// Class meta::analytics::lineage::graph::EdgeData
+// {
+//    id : String[1];
+//    text : String[1];
+//    type : String[1];
+//    source : Node[1];
+//    target : Node[1];
+// }
 
-Class meta::analytics::lineage::graph::Graph
-{
-   nodes : Node[*];
-   edges : Edge[*];
-}
+// Class meta::analytics::lineage::graph::Graph
+// {
+//    nodes : Node[*];
+//    edges : Edge[*];
+// }
 
 function meta::analytics::lineage::graph::toJSON(graph : Graph[1]):JSONElement[1]
 {

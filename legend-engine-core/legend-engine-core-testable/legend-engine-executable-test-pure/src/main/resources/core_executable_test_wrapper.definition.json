@@ -1,0 +1,14 @@
+{
+  "name": "core_executable_test_wrapper",
+  "pattern": "(meta::pure::test)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_store",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "core_functions_json",
+    "core_functions_standard",
+    "core_functions_unclassified",
+    "core"
+  ]
+}

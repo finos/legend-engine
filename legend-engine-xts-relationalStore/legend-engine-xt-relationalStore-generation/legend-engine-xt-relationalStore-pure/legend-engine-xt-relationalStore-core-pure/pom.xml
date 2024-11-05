@@ -125,6 +125,12 @@
                         <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-executable-test-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
                 </dependencies>
             </plugin>
             <plugin>
@@ -207,7 +213,11 @@
                         <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-executable-test-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
 <!--                    <dependency>-->
 <!--                        <groupId>org.finos.legend.pure</groupId>-->
 <!--                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->

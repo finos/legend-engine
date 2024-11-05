@@ -36,5 +36,6 @@
         <module>legend-engine-testable-http-api</module>
         <module>legend-engine-execution-test-data-generation</module>
         <module>legend-engine-execution-test-data-generation-api</module>
+        <module>legend-engine-executable-test-pure</module>
     </modules>
 </project>

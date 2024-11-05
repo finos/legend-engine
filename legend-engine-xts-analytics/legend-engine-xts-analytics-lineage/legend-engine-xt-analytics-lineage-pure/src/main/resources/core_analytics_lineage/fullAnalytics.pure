@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::lineage::graph::*;
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
 import meta::pure::lineage::scanRelations::*;
@@ -80,6 +81,86 @@ Class meta::analytics::lineage::PropertyElement
    type : String[0..1];
 }
 
+Class meta::analytics::lineage::InternalLineageResult
+{
+   databaseLineage : Graph[1];
+   relationTree : RelationTree[1];
+   classLineage : Graph[1];
+   functionTrees : PropertyPathTree[*];
+   reportLineage : ReportLineage[1];
+}
+
+
+function <<access.private>> meta::analytics::lineage::computeLineageInternal(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):meta::analytics::lineage::InternalLineageResult[1]
+{
+   let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
+   let modelToModelMappings = $mappings->init();
+
+   let sourceMapping = $mappings->last()->toOne();
+   let funcBody = $f.expressionSequence->evaluateAndDeactivate();
+   let updatedFuncBody = $funcBody->map(e|$e->meta::pure::lineage::analytics::inlineQualifiedProperties(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $f->openVariableValues(), $extensions));
+   let propertyTrees = $updatedFuncBody->map(e|$e->buildMultiLevelPropertyTrees($modelToModelMappings, $extensions));
+    
+   let combinedTrees = if( $propertyTrees->size()>1,|$propertyTrees->first()->toOne()->findAndAddChildrenAtTheEnd([],$propertyTrees->tail()),|$propertyTrees->toOne());
+
+   let reprocessedFuncBody = if($modelToModelMappings->isEmpty() && $mappings->size() == 1,
+                                |$updatedFuncBody,
+                                |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
+
+   let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
+   let relationTree = if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $r->isNotEmpty() && $modelToModelMappings->isEmpty(),
+                            | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
+                            | scanRelations($combinedTrees->last()->toOne(), $sourceMapping));
+   let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
+ 
+   ^InternalLineageResult
+   (
+      databaseLineage = $f->toFlowDatabase($sourceMapping, $combinedTrees, $r)->toGraph(),
+      classLineage = $f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(),
+      functionTrees = $combinedTrees,
+      relationTree = $relationTree,
+      reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap())
+   );
+
+}
+
+
+function meta::analytics::lineage::computeTestLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):meta::pure::lineage::result::LineageResult[1]
+{
+      let lineage = meta::analytics::lineage::computeLineageInternal($f,$m,$r,$extensions);
+     ^meta::pure::lineage::result::LineageResult(storeLineage=$lineage.databaseLineage,
+                                                 classLineage=$lineage.classLineage,
+                                                 resultLineage= $lineage.reportLineage->reportLineageToResult() );
+
+}
+
+function meta::analytics::lineage::reportLineageToResult(report:ReportLineage[1]):meta::pure::lineage::result::ResultLineage[1]
+{
+   ^meta::pure::lineage::result::ResultLineage(properties=$report.columns->map(c |  ^meta::pure::lineage::result::PropertyLineage(propertyName=$c.name, resultDetail=  $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->removeDuplicates()->sort()->makeString(': [', ', ', ']')->sort()->joinStrings('[', ', ', ']'))));
+}
+
+// Class meta::pure::lineage::result::PropertyLineage
+// {
+//    propertyName : String[1];
+//    resultDetail : String[1];   
+// }
+
+// Class meta::pure::lineage::result::ResultLineage
+// {
+//    properties : PropertyLineage[*];
+// }
+
+
+// Class meta::pure::lineage::result::LineageResult
+// {
+//   storeLineage: meta::pure::lineage::graph::Graph[1];
+//   classLineage: meta::pure::lineage::graph::Graph[1];
+//   resultLineage : ResultLineage[1];   
+// }
+
+
+
+
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {
    let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
@@ -110,6 +191,11 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
       reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap())
    );
 }
+
+
+
+
+
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {

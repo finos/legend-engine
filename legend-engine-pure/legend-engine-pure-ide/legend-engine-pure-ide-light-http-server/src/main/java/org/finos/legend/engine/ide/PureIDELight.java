@@ -122,6 +122,8 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-dataquality/legend-engine-xt-dataquality-pure", "dataquality"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-sqlPlanning-pure", "external-store-relational-sql-planning"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation"))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-testable/legend-engine-executable-test-pure", "executable-test-wrapper"))
+
                 ;
     }
 

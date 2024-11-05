@@ -1,0 +1,102 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// ###Pure
+// import meta::analytics::lineage::*;
+// import meta::pure::lineage::*;
+// import meta::relational::tests::model::simple::*;
+// import meta::relational::tests::mapping::association::embedded::*;
+// function  meta::pure::test::testWrapper::testPersonToOrganisationsExample():Boolean[1]
+// {
+//   meta::relational::tests::mapping::association::embedded::setUp();
+//   let result = meta::pure::test::testWrapper::testWrapper(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+//   let lineage = $result->meta::pure::test::testWrapper::getLineage();
+//   assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'], ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],'[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]',$lineage);
+//   let tds=  $result->meta::pure::test::testWrapper::getTabularDatasetResult().values->at(0);
+//   assertEquals(5, $tds.rows->size()); 
+//   assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $tds.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
+// }
+
+
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::test::testWrapper::*;
+function  meta::pure::test::testWrapper::getLineage(result:Map<TestType,meta::pure::test::testWrapper::Result>[1]):meta::pure::lineage::result::LineageResult[1]
+{
+$result->get(TestType.lineage)->cast(@meta::pure::test::testWrapper::LineageResult).result->toOne();
+
+}
+
+function  meta::pure::test::testWrapper::getTabularDatasetResult(result:Map<TestType,meta::pure::test::testWrapper::Result>[1]):meta::pure::mapping::Result<TabularDataSet|*>[1]
+{
+$result->get(TestType.execution)->cast(@ExecuteResult<TabularDataSet>).result->toOne();
+
+}
+
+function  meta::pure::test::testWrapper::testWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Map<TestType,meta::pure::test::testWrapper::Result>[1]
+{
+
+    newMap([meta::pure::test::testWrapper::executeWrapper($f,$m,$runtime,$extensions),
+          meta::pure::test::testWrapper::lineageWrapper($f,$m,$runtime,$extensions)
+          ]);
+}
+
+function  meta::pure::test::testWrapper::executeWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Pair<TestType,meta::pure::test::testWrapper::Result>[1]
+{
+  pair(TestType.execution,^ExecuteResult<T>(result=meta::pure::router::execute($f,$m,$runtime,$extensions)));
+}
+
+function  meta::pure::test::testWrapper::lineageWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Pair<TestType,meta::pure::test::testWrapper::Result>[1]
+{
+  let fStr = 'meta::analytics::lineage::computeTestLineage_FunctionDefinition_1__Mapping_1__Runtime_$0_1$__Extension_MANY__LineageResult_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Mapping[1], Runtime[1], meta::pure::extension::Extension[*]->meta::pure::lineage::result::LineageResult[1]}>);
+  $func->eval($f, $m,$runtime, $extensions);
+  pair(TestType.lineage,^meta::pure::test::testWrapper::LineageResult(result=  $func->eval($f, $m,$runtime, $extensions)));
+}
+ 
+Enum meta::pure::test::testWrapper::TestType
+{
+  execution,
+  lineage
+}
+
+Class meta::pure::test::testWrapper::Result
+{
+
+}
+ 
+Class meta::pure::test::testWrapper::ExecuteResult<T> extends meta::pure::test::testWrapper::Result
+{
+  result:meta::pure::mapping::Result<T|*>[1];
+  
+}
+
+Class meta::pure::test::testWrapper::LineageResult extends meta::pure::test::testWrapper::Result
+{
+    result:meta::pure::lineage::result::LineageResult[1];
+}
+
+
+function <<access.private>> meta::pure::test::testWrapper::resultLineageToString(reportLineage:meta::pure::lineage::result::ResultLineage[1]):String[1]
+{
+  $reportLineage.properties->map(c | $c.propertyName + '-' + $c.resultDetail)->sort()->joinStrings('[', ', ', ']');
+}
+
+function meta::pure::test::testWrapper::assertLineage(storeLineage:String[*], classLineage:String[*], reportLineage:String[1], result:meta::pure::lineage::result::LineageResult[1]):Boolean[1]
+{
+  assertSameElements($storeLineage, $result.storeLineage.nodes.data.id) && assertSameElements($classLineage, $result.classLineage.nodes.data.id) && assertEquals($reportLineage, meta::pure::test::testWrapper::resultLineageToString($result.resultLineage));
+}
