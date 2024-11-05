@@ -26,7 +26,7 @@ public class GenericType
     public Type rawType;
     public List<GenericType> typeArguments = Lists.mutable.empty();
     public List<Multiplicity> multiplicityArguments = Lists.mutable.empty();
-    public List<ValueSpecification> typeVariables = Lists.mutable.empty();
+    public List<ValueSpecification> typeVariableValues = Lists.mutable.empty();
     public SourceInformation sourceInformation;
 
     public GenericType()

@@ -1572,7 +1572,7 @@ public class TestCompatibilityAndMigration
                         "                  \"fullPath\": \"String\"\n" +
                         "                },\n" +
                         "                \"typeArguments\": [],\n" +
-                        "                \"typeVariables\": []\n" +
+                        "                \"typeVariableValues\": []\n" +
                         "              },\n" +
                         "              \"multiplicity\": {\n" +
                         "                \"lowerBound\": 1,\n" +
@@ -1734,10 +1734,10 @@ public class TestCompatibilityAndMigration
                         "                  \"fullPath\": \"String\"\n" +
                         "                },\n" +
                         "                \"typeArguments\": [],\n" +
-                        "                \"typeVariables\": []\n" +
+                        "                \"typeVariableValues\": []\n" +
                         "              }\n" +
                         "            ],\n" +
-                        "            \"typeVariables\": []\n" +
+                        "            \"typeVariableValues\": []\n" +
                         "          },\n" +
                         "          \"multiplicity\": {\n" +
                         "            \"lowerBound\": 1,\n" +

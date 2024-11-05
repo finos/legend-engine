@@ -149,7 +149,7 @@
               }
             },
             "typeArguments": [],
-            "typeVariables": []
+            "typeVariableValues": []
           },
           "multiplicity": {
             "lowerBound": 1,
