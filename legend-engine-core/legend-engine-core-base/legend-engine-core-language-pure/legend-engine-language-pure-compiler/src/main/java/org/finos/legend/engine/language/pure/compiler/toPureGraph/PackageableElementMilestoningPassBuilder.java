@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 
@@ -68,8 +69,8 @@ public class PackageableElementMilestoningPassBuilder implements PackageableElem
     @Override
     public PackageableElement visit(Association srcAssociation)
     {
-        String property0Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(0).type);
-        String property1Ref = this.context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(1).type);
+        String property0Ref = this.context.pureModel.addPrefixToTypeReference(((PackageableType) srcAssociation.properties.get(0).genericType.rawType).fullPath);
+        String property1Ref = this.context.pureModel.addPrefixToTypeReference(((PackageableType) srcAssociation.properties.get(1).genericType.rawType).fullPath);
 
         String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.context.pureModel.getAssociation(packageString, srcAssociation.sourceInformation);

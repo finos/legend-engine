@@ -14,30 +14,81 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processMany;
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
+
+@JsonDeserialize(using = Function.FunctionDeserializer.class)
 public class Function extends PackageableElement
 {
     public List<Constraint> preConstraints = Collections.emptyList();
     public List<Constraint> postConstraints = Collections.emptyList();
     public List<Variable> parameters = Collections.emptyList();
-    public String returnType;
+    public GenericType returnGenericType;
     public Multiplicity returnMultiplicity;
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public List<ValueSpecification> body = Collections.emptyList();
-    public List<FunctionTestSuite> tests;
+    public List<FunctionTestSuite> tests = Collections.emptyList();
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class FunctionDeserializer extends JsonDeserializer<Function>
+    {
+        @Override
+        public Function deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            Function result = new Function();
+
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
+
+            result.name = processOne(node, "name", String.class, codec);
+            result._package = processOne(node, "package", String.class, codec);
+            result.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+
+            result.preConstraints = processMany(node, "preConstraints", Constraint.class, codec);
+            result.postConstraints = processMany(node, "postConstraints", Constraint.class, codec);
+            result.parameters = processMany(node, "parameters", Variable.class, codec);
+
+            result.returnGenericType = processOne(node, "returnGenericType", GenericType.class, codec);
+            // Backward compatibility --------------
+            if (node.get("returnType") != null)
+            {
+                String fullPath = node.get("returnType").asText();
+                result.returnGenericType = new GenericType(new PackageableType(fullPath));
+            }
+            // Backward compatibility --------------
+
+            result.returnMultiplicity = processOne(node, "returnMultiplicity", Multiplicity.class, codec);
+            result.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
+            result.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
+            result.body = processMany(node, "body", ValueSpecification.class, codec);
+            result.tests = processMany(node, "tests", FunctionTestSuite.class, codec);
+
+            return result;
+        }
     }
 }

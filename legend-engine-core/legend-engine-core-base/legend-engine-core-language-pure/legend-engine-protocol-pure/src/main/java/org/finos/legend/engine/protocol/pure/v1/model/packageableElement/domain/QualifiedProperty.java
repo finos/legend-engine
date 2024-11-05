@@ -14,21 +14,68 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processMany;
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
+
+@JsonDeserialize(using = QualifiedProperty.QualifiedPropertyDeserializer.class)
 public class QualifiedProperty
 {
     public String name;
     public List<Variable> parameters = Collections.emptyList();
-    public String returnType;
+    public GenericType returnGenericType;
     public Multiplicity returnMultiplicity;
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public List<ValueSpecification> body = Collections.emptyList();
     public SourceInformation sourceInformation;
+
+    public static class QualifiedPropertyDeserializer extends JsonDeserializer<QualifiedProperty>
+    {
+        @Override
+        public QualifiedProperty deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            QualifiedProperty result = new QualifiedProperty();
+
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
+
+            result.name = node.get("name").asText();
+            result.parameters = processMany(node, "parameters", Variable.class, codec);
+
+            result.returnGenericType = processOne(node, "returnGenericType", GenericType.class, codec);
+            // Backward compatibility --------------
+            if (node.get("returnType") != null)
+            {
+                String fullPath = node.get("returnType").asText();
+                result.returnGenericType = new GenericType(new PackageableType(fullPath));
+            }
+            // Backward compatibility --------------
+
+            result.returnMultiplicity = processOne(node, "returnMultiplicity", Multiplicity.class, codec);
+            result.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
+            result.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
+            result.body = processMany(node, "body", ValueSpecification.class, codec);
+            result.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+
+            return result;
+        }
+
+
+    }
 }
