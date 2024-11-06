@@ -117,8 +117,8 @@ public class FunctionCompilerExtension implements CompilerExtension
 
     private void functionThirdPass(Function function, CompileContext context)
     {
-        String packageString = context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = context.pureModel.getConcreteFunctionDefinition(function);
+        String packageString = context.pureModel.buildPackageString(function._package, targetFunc._name());
         ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Third Pass");
         MutableList<ValueSpecification> body;
         try

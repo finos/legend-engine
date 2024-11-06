@@ -78,21 +78,7 @@ public class TestCompilationFromGrammar
                     modelData = objectMapper.readValue(json, PureModelContextData.class);
                 }
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
-                modelData.getElements().parallelStream().forEach(element ->
-                {
-                    String fullPath;
-                    if (element instanceof Function)
-                    {
-                        Function function = (Function) element;
-                        String functionSignature = HelperModelBuilder.getSignature(function);
-                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
-                    }
-                    else
-                    {
-                        fullPath = element.getPath();
-                    }
-                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
-                });
+                modelData.getElements().parallelStream().forEach(pureModel::getPackageableElement);
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");
@@ -157,21 +143,7 @@ public class TestCompilationFromGrammar
                 }
                 PureModelProcessParameter pureModelProcessParameter = PureModelProcessParameter.newBuilder().withEnablePartialCompilation(true).build();
                 PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName(), null, pureModelProcessParameter);
-                modelData.getElements().parallelStream().forEach(element ->
-                {
-                    String fullPath;
-                    if (element instanceof Function)
-                    {
-                        Function function = (Function) element;
-                        String functionSignature = HelperModelBuilder.getSignature(function);
-                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
-                    }
-                    else
-                    {
-                        fullPath = element.getPath();
-                    }
-                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
-                });
+                modelData.getElements().parallelStream().forEach(pureModel::getPackageableElement);
 
                 Set<String> engineExceptions = pureModel.getEngineExceptions().stream().map(EngineException::toPretty).collect(Collectors.toSet());
                 if (expectedEngineExceptions != null)

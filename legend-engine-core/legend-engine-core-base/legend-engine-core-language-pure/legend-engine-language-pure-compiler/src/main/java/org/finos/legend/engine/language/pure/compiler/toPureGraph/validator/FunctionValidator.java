@@ -51,8 +51,7 @@ public class FunctionValidator
         if (func.tests != null && !func.tests.isEmpty())
         {
             PureModel pureModel = compileContext.pureModel;
-            String packageString = pureModel.buildPackageString(func._package, HelperModelBuilder.getSignature(func));
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = pureModel.getConcreteFunctionDefinition(packageString, func.sourceInformation);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = pureModel.getConcreteFunctionDefinition(func);
             for (org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test test: targetFunc._tests())
             {
                 Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) test;
