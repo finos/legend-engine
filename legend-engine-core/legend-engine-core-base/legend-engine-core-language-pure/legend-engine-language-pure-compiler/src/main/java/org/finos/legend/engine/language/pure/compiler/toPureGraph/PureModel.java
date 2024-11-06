@@ -48,6 +48,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Pure
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -667,7 +668,14 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return this.getPackageableElement(element.getPath(), element.sourceInformation);
+        if (element instanceof Function)
+        {
+            return this.getConcreteFunctionDefinition((Function) element);
+        }
+        else
+        {
+            return this.getPackageableElement(element.getPath(), element.sourceInformation);
+        }
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement getPackageableElement(String fullPath)
@@ -998,6 +1006,11 @@ public class PureModel implements IPureModel
         return profile;
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(Function function)
+    {
+        String packageString = this.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
+        return this.getConcreteFunctionDefinition(packageString, function.sourceInformation);
+    }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
