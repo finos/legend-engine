@@ -331,7 +331,8 @@ function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecificat
                         i:ClassConstraintValueSpecificationContext[1] | $i.type->cast(@PackageableElement),
                         i:InstanceValueSpecificationContext[1] | $i.instanceValue->meta::pure::functions::meta::findPackagableElement(),
                         p:ParameterValueSpecificationContext[1] | $p.functionExpression->meta::pure::functions::meta::findPackagableElement(),
-                        k:KeyValueValueSpecificationContext[1] | $k.functionExpression->meta::pure::functions::meta::findPackagableElement()
+                        k:KeyValueValueSpecificationContext[1] | $k.functionExpression->meta::pure::functions::meta::findPackagableElement(),
+                        p:PropertyMappingValueSpecificationContext[1] | $p.propertyMapping.owner.parent->toOne()
                 ]);
 }
 

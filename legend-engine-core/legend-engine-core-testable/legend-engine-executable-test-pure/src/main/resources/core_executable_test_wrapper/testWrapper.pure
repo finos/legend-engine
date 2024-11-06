@@ -20,13 +20,13 @@ import meta::pure::mapping::*;
 import meta::pure::test::testWrapper::*;
 function  meta::pure::test::testWrapper::getLineage(result:Map<TestType,meta::pure::test::testWrapper::Result>[1]):meta::pure::lineage::result::LineageResult[1]
 {
-$result->get(TestType.lineage)->cast(@meta::pure::test::testWrapper::LineageResult).result->toOne();
+    $result->get(TestType.lineage)->cast(@meta::pure::test::testWrapper::LineageResult).result->toOne();
 
 }
 
 function  meta::pure::test::testWrapper::getTabularDatasetResult(result:Map<TestType,meta::pure::test::testWrapper::Result>[1]):meta::pure::mapping::Result<TabularDataSet|*>[1]
 {
-$result->get(TestType.execution)->cast(@ExecuteResult<TabularDataSet>).result->toOne();
+    $result->get(TestType.execution)->cast(@ExecuteResult<TabularDataSet>).result->toOne();
 
 }
 
@@ -34,7 +34,7 @@ function  meta::pure::test::testWrapper::testWrapper<T|y>(f:FunctionDefinition<{
 {
 
     newMap([meta::pure::test::testWrapper::executeWrapper($f,$m,$runtime,$extensions),
-          meta::pure::test::testWrapper::lineageWrapper($f,$m,$runtime,$extensions)
+            meta::pure::test::testWrapper::lineageWrapper($f,$m,$runtime,$extensions)
           ]);
 }
 
@@ -47,8 +47,8 @@ function  meta::pure::test::testWrapper::lineageWrapper<T|y>(f:FunctionDefinitio
 {
   let fStr = 'meta::analytics::lineage::computeTestLineage_FunctionDefinition_1__Mapping_1__Runtime_$0_1$__Extension_MANY__LineageResult_1_';
   let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Mapping[1], Runtime[1], meta::pure::extension::Extension[*]->meta::pure::lineage::result::LineageResult[1]}>);
-  $func->eval($f, $m,$runtime, $extensions);
-  pair(TestType.lineage,^meta::pure::test::testWrapper::LineageResult(result=  $func->eval($f, $m,$runtime, $extensions)));
+  let result = $func->eval($f, $m,$runtime, $extensions);
+  pair(TestType.lineage,^meta::pure::test::testWrapper::LineageResult(result= $result));
 }
  
 Enum meta::pure::test::testWrapper::TestType
