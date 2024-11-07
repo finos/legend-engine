@@ -66,12 +66,12 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
      properties = [
         ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
           name = 'value',
-          type = 'T',
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='T')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         ),
         ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
           name = 'expression',
-          type = 'String',
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='String')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         )
      ],
@@ -116,7 +116,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                                 ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(
                                   _type = 'var',
                                   name = 'b',
-                                  class = 'Boolean',
+                                  genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'Boolean')),
                                   multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                                 )
                               ]
@@ -415,7 +415,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
         {stringVal: String[1] |
           ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
             name = $name,
-            type = 'String',
+            genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'String')),
             multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
             defaultValue = ^meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue(
               value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString(_type = 'string', value = $stringVal)
@@ -429,7 +429,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
       let multiplicity = $property.type->propertyTypeMultiplicity($property.required, $state);
       let pureProperty = ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
         name = $name,
-        type = $pureType,
+        genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = $pureType)),
         multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
       );
     }
@@ -447,7 +447,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
   );
 
   $state.log(|'Processing property finished: %s (kind: %s)'->format([$property.name, $property.type->type()->elementToPath()]));
-  if($fullProp.type == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
+  if($fullProp.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
 }
 
 function
