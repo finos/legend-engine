@@ -3501,7 +3501,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    let distinctTransformers = $propertyMappings->filter(m|$m->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping).transformer->distinct();
    let semiStructuredMappings = $propertyMappings->filter(m|$m->instanceOf(RelationalPropertyMapping))->forAll(x|$x->instanceOf(SemiStructuredRelationalPropertyMapping));
 
-   assertFalse($distinctTransformers->size() > 1, 'Unable to determine a unique Enum property mapping for an if stmt (returning an Enum)');
+   assertFalse($distinctTransformers->size() > 1 && ($distinctTransformers->removeDuplicates({t1, t2 | meta::pure::mapping::valueTransformerEquality($t1, $t2, $extensions)})->size() > 1), 'Unable to determine a unique Enum property mapping for an if stmt (returning an Enum)');
    if ($semiStructuredMappings,
        | print(if(!$context.debug, |'', |$context.space+'  Ignoring distinct transformer check as all property mappings are semi structured property mappings\n'));,
        | assertFalse($distinctTransformers->isEmpty(), 'Unable to determine the Enum property mapping for an if stmt (returning an Enum)');
