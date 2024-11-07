@@ -146,6 +146,22 @@ function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): Enumeration
   $m.enumerationMappings->concatenate($m.includes->map(i | $i.included->allEnumerationMappings()))
 }
 
+function meta::pure::mapping::valueTransformerEquality(a:ValueTransformer<Any>[0..1], b:ValueTransformer<Any>[0..1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
+{
+  if($a->isEmpty() && $b->isEmpty(),
+      | true,
+      | if($a->isNotEmpty() && $b->isNotEmpty() && $a->type() == $b->type(),
+            | $a->match([
+                          i:EnumerationMapping<Any>[1]| $i.enumeration == $b->cast(@EnumerationMapping<Any>).enumeration && enumValueMappingsEquality($i.enumValueMappings->zip($b->cast(@EnumerationMapping<Any>).enumValueMappings));
+                        ]),
+            | false));
+}
+
+function meta::pure::mapping::enumValueMappingsEquality(pairs:Pair<EnumValueMapping,EnumValueMapping>[*]):Boolean[1]
+{  
+  $pairs.first.enum == $pairs.second.enum && $pairs.first.sourceValues == $pairs.second.sourceValues
+}
+
 function meta::pure::mapping::allSuperSetImplementations(set :PropertyMappingsImplementation[1], m:Mapping[1]):PropertyMappingsImplementation[*]
 {
       if ($set.superSetImplementationId->isEmpty(),
