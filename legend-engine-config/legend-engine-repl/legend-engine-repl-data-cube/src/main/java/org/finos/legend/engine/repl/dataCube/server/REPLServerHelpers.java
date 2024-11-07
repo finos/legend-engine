@@ -119,7 +119,7 @@ public class REPLServerHelpers
                         String newRuntime = ((PackageableElementPtr) fn.parameters.get(1)).fullPath;
                         if (runtime != null && !runtime.equals(newRuntime))
                         {
-                            throw new RuntimeException("Can't initialize DataCube. Source query contains multiple different ->from(), only one is expected");
+                            throw new RuntimeException("Can't launch DataCube. Source query contains multiple different ->from(), only one is expected");
                         }
                         runtime = newRuntime;
                     }
@@ -130,7 +130,7 @@ public class REPLServerHelpers
                         String newRuntime = ((PackageableElementPtr) fn.parameters.get(2)).fullPath;
                         if ((mapping != null && !mapping.equals(newMapping)) || (runtime != null && !runtime.equals(newRuntime)))
                         {
-                            throw new RuntimeException("Can't initialize DataCube. Source query contains multiple different ->from(), only one is expected");
+                            throw new RuntimeException("Can't launch DataCube. Source query contains multiple different ->from(), only one is expected");
                         }
                         mapping = newMapping;
                         runtime = newRuntime;
@@ -183,7 +183,7 @@ public class REPLServerHelpers
             }
             catch (Exception e)
             {
-                throw new RuntimeException("Can't initialize DataCube: expected to get a relation type");
+                throw new RuntimeException("Can't launch DataCube: expected to get a relation type");
             }
             this.initialize(pureModelContextData, ListIterate.collect(RelationTypeHelper.convert(relationType).columns, col -> new DataCubeQueryColumn(col.name, col.type)));
         }
@@ -192,7 +192,7 @@ public class REPLServerHelpers
         {
             if (!(executeResultSummary.result instanceof RelationalResult) || !(((RelationalResult) executeResultSummary.result).builder instanceof TDSBuilder))
             {
-                throw new RuntimeException("Can't initialize DataCube: last executed query did not produce a TDS (i.e. data-grid), try a different query...");
+                throw new RuntimeException("Can't launch DataCube: last executed query did not produce a TDS (i.e. data-grid), try a different query...");
             }
 
             RelationType relationType;
@@ -202,7 +202,7 @@ public class REPLServerHelpers
             }
             catch (Exception e)
             {
-                throw new RuntimeException("Can't initialize DataCube: last executed query must return a relation type, try a different query...");
+                throw new RuntimeException("Can't launch DataCube: last executed query must return a relation type, try a different query...");
             }
 
             boolean isDynamic = false;
@@ -220,7 +220,7 @@ public class REPLServerHelpers
             }
             if (isDynamic)
             {
-                throw new RuntimeException("Can't initialize DataCube: last executed query produced dynamic result, try casting the result with cast(@" + M3Paths.Relation + "<(...)>) syntax or use 'cache' command to dump the data out to a table and query against that table instead...");
+                throw new RuntimeException("Can't launch DataCube: last executed query produced dynamic result, try casting the result with cast(@" + M3Paths.Relation + "<(...)>) syntax or use 'cache' command to dump the data out to a table and query against that table instead...");
             }
 
             RelationalResult result = (RelationalResult) executeResultSummary.result;
