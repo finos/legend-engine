@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.dataCube.client;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.repl.client.Client;
@@ -21,10 +22,15 @@ import org.finos.legend.engine.repl.dataCube.DataCubeReplExtension;
 import org.finos.legend.engine.repl.relational.RelationalReplExtension;
 import org.finos.legend.engine.repl.relational.autocomplete.RelationalCompleterExtension;
 
+import java.nio.file.Paths;
+
 public class DataCubeClient
 {
     public static void main(String[] args) throws Exception
     {
+        // NOTE: this is exclusively used for development of DataCube when we need to boot multiple instances
+        // of the REPL at the same time and want to avoid locking on the DuckDB instances
+        String DEV__homeDir = System.getProperty("legend.repl.dataCube.devHomeDir");
         Client client = new Client(
                 Lists.mutable.with(
                         new DataCubeReplExtension(),
@@ -33,7 +39,8 @@ public class DataCubeClient
                 Lists.mutable.with(
                         new RelationalCompleterExtension()
                 ),
-                PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build()
+                PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build(),
+                DEV__homeDir != null ? Paths.get(DEV__homeDir) : FileUtils.getUserDirectory().toPath().resolve(".legend/repl")
         );
         client.loop();
     }
