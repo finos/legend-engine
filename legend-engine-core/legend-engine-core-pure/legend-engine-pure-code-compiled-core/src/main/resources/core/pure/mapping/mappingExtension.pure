@@ -146,7 +146,7 @@ function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): Enumeration
   $m.enumerationMappings->concatenate($m.includes->map(i | $i.included->allEnumerationMappings()))
 }
 
-function meta::pure::mapping::valueTransformerEquality(a:ValueTransformer<Any>[0..1], b:ValueTransformer<Any>[0..1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
+function meta::pure::mapping::valueTransformerEquality(a:ValueTransformer<Any>[0..1], b:ValueTransformer<Any>[0..1]):Boolean[1]
 {
   if($a->isEmpty() && $b->isEmpty(),
       | true,
