@@ -206,7 +206,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::Property extends meta::p
    defaultValue : meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue[0..1];
    name : String[1];
    multiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
-   type : String[1];
+   genericType : meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1];
    propertyTypeSourceInformation: SourceInformation[0..1];
 }
 
@@ -214,7 +214,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty extend
 {
    name : String[1];
    parameters : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
-   returnType : String[1];
+   returnGenericType : meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1];
    returnMultiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
    body : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
 }
@@ -254,7 +254,23 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::Unit
    conversionFunction : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::type::Type
+{
+  _type : String[1];
+}
 
+Class meta::protocols::pure::vX_X_X::metamodel::type::PackageableType extends meta::protocols::pure::vX_X_X::metamodel::type::Type, meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+{
+  
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::type::GenericType
+{
+    rawType : meta::protocols::pure::vX_X_X::metamodel::type::Type[1];
+    typeArguments : meta::protocols::pure::vX_X_X::metamodel::type::GenericType[*];
+    multiplicityArguments : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[*];
+    typeVariableValues : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
+}
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
 {
@@ -268,7 +284,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable ext
    supportsStream : Boolean[0..1];
    // To Remove
    multiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[0..1];
-   class : String[0..1];
+   genericType : meta::protocols::pure::vX_X_X::metamodel::type::GenericType[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::FunctionApplication extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
@@ -310,9 +326,9 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpr
    expression: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
-
+  genericType : meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumValue extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
@@ -842,7 +858,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::Function extends meta::p
 {
    preConstraints:meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[*];
    postConstraints:meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[*];
-   returnType:String[1];
+   returnGenericType:meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1];
    returnMultiplicity:meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
    parameters : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
    body : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
