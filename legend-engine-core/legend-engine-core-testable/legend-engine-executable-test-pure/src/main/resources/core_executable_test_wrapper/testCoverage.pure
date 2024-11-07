@@ -1,0 +1,42 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::testCoverage::*;
+
+Class meta::pure::test::testCoverage::FunctionTestCoverageResult
+{
+  function: String[1];
+  testsLineage: Boolean[1];
+  testExecution :Boolean[1];
+  assertsLineage :Boolean[1];
+}
+
+function  meta::pure::test::testCoverage::getTestCoverageForPath(p:Package[1]):FunctionTestCoverageResult[*]
+{
+  let executeApplications = meta::pure::router::execute_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__Result_1_.applications->evaluateAndDeactivate()->map(a|$a->meta::pure::functions::meta::findPackagableElement());
+  let assertLineage = meta::pure::test::testWrapper::assertLineage_String_MANY__String_MANY__String_1__LineageResult_1__Boolean_1_.applications->evaluateAndDeactivate()->map(a|$a->meta::pure::functions::meta::findPackagableElement());
+  let testWrapper =  meta::pure::test::testWrapper::testWrapper_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__Map_1_.applications->evaluateAndDeactivate()->map(a|$a->meta::pure::functions::meta::findPackagableElement());
+  let testfns = $p->getAllPackageElements(true)->filter(p|$p->hasStereotype('Test', test) && $p->instanceOf(ConcreteFunctionDefinition) )->map(a|$a->cast(@ConcreteFunctionDefinition<Any>));
+
+$testfns ->map( v |   let hasAssertLineage = $v->in($assertLineage);
+                      let hasTestWrapper = $v->in($testWrapper);
+                      let hasExecute =  $v->in($executeApplications);
+                    ^FunctionTestCoverageResult(function=$v->elementToPath(),
+                                               testExecution= $hasExecute || $hasTestWrapper,
+                                               assertsLineage = $hasAssertLineage,
+                                               testsLineage = $hasTestWrapper
+                                              );
+              ); 
+}
+
