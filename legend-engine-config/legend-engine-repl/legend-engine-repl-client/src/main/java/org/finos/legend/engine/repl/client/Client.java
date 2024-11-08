@@ -100,7 +100,8 @@ public class Client
         this.initialize();
         replExtensions.forEach(e -> e.initialize(this));
 
-        this.printDebug("[DEV] Legend REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("[DEV] REPL v" + DeploymentStateAndVersions.sdlc.buildVersion + " (" + DeploymentStateAndVersions.sdlc.commitIdAbbreviated + ")");
+        this.printDebug("[DEV] REPL dir: " + this.getHomeDir().toUri());
         if (System.getProperty("legend.repl.initializationMessage") != null)
         {
             this.printDebug(StringEscapeUtils.unescapeJava(System.getProperty("legend.repl.initializationMessage")));

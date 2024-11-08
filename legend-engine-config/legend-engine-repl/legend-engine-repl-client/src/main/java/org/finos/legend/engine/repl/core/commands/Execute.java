@@ -31,6 +31,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.printExecutionTime;
 import static org.finos.legend.engine.repl.shared.REPLHelper.ansiGreen;
 
 public class Execute implements Command
@@ -51,7 +52,9 @@ public class Execute implements Command
     @Override
     public boolean process(String line) throws Exception
     {
+        long startTime = System.currentTimeMillis();
         this.client.println(execute(line));
+        this.client.println(printExecutionTime(startTime));
         return true;
     }
 
