@@ -781,7 +781,12 @@
             "lowerBound": 1
           },
           "name": "name",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -789,7 +794,12 @@
             "lowerBound": 1
           },
           "name": "location",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -813,7 +823,12 @@
             "lowerBound": 1
           },
           "name": "fullname",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -821,7 +836,12 @@
             "lowerBound": 1
           },
           "name": "passportId",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "fullPath": "Integer",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -829,7 +849,12 @@
             "lowerBound": 0
           },
           "name": "firmname",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -837,7 +862,12 @@
             "lowerBound": 0
           },
           "name": "location",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -861,7 +891,12 @@
             "lowerBound": 1
           },
           "name": "cityId",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "fullPath": "Integer",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -869,7 +904,12 @@
             "lowerBound": 0
           },
           "name": "name",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -893,7 +933,12 @@
             "lowerBound": 1
           },
           "name": "passportId",
-          "type": "Integer"
+          "genericType": {
+            "rawType": {
+              "fullPath": "Integer",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -901,7 +946,12 @@
             "lowerBound": 0
           },
           "name": "countryName",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -925,7 +975,12 @@
             "lowerBound": 1
           },
           "name": "name",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -949,7 +1004,12 @@
             "lowerBound": 1
           },
           "name": "name",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -957,7 +1017,12 @@
             "lowerBound": 1
           },
           "name": "location",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -981,7 +1046,12 @@
             "lowerBound": 1
           },
           "name": "name",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -989,7 +1059,12 @@
             "lowerBound": 1
           },
           "name": "location",
-          "type": "String"
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -1013,14 +1088,24 @@
             "lowerBound": 1
           },
           "name": "companyEmployeeTestSchema1Company",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Company"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Company",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 1
           },
           "name": "companyEmployeeTestSchema1Employee",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Employee",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -1043,14 +1128,24 @@
             "lowerBound": 1
           },
           "name": "employeeCityTestSchema1Employee",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Employee",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 1
           },
           "name": "employeeCityTestSchema1City",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::City"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::City",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -1074,7 +1169,12 @@
             "lowerBound": 1
           },
           "name": "employeePassportTestSchema1Employee",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Employee",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -1082,7 +1182,12 @@
             "lowerBound": 1
           },
           "name": "employeePassportTestSchema1Passport",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Passport",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -1105,7 +1210,12 @@
             "lowerBound": 1
           },
           "name": "passportCountryTestSchema1Passport",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Passport"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Passport",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
@@ -1113,7 +1223,12 @@
             "lowerBound": 1
           },
           "name": "passportCountryTestSchema1Country",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Country"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Country",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     },
@@ -1137,14 +1252,24 @@
             "lowerBound": 1
           },
           "name": "companyEmployeeFromDifferentSchemasTestSchema2Company",
-          "type": "meta::relational::transform::autogen::tests::testSchema2::Company"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema2::Company",
+              "_type": "packageableType"
+            }
+          }
         },
         {
           "multiplicity": {
             "lowerBound": 1
           },
           "name": "companyEmployeeFromDifferentSchemasTestSchema1Employee",
-          "type": "meta::relational::transform::autogen::tests::testSchema1::Employee"
+          "genericType": {
+            "rawType": {
+              "fullPath": "meta::relational::transform::autogen::tests::testSchema1::Employee",
+              "_type": "packageableType"
+            }
+          }
         }
       ]
     }
