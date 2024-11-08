@@ -449,3 +449,26 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
   let tds = $result.values->at(0);
   assertSize($tds.rows, 3);
 }
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testEnumValueReturnedInIfExpMatch():Boolean[1]
+{  
+  let result =  execute({|Employee.all()->project(
+                            [
+                              x|$x.type,
+                              x|if(true,
+                                  | $x.type,
+                                  | $x.type
+                                  )
+                            ],
+                            [
+                              'Type' ,
+                              'Type If'
+                            ]
+                          );
+                        }, employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                      );
+ 
+  assertSameElements($result.values.rows.getEnum('Type If'), $result.values.rows.getEnum('Type'));
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+}

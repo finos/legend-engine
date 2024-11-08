@@ -646,7 +646,7 @@ function meta::pure::router::routing::resolveVar(va:VariableExpression[1], state
    let res = $state.propertyMap.v->filter(p|$p.first == $va.name);
    let fullRes = if (!$res->isEmpty(),
                      |let routed = $res.second->evaluateAndDeactivate()->cast(@ExtendedRoutedValueSpecification)->at(0)->toOne();
-                      ^$state(value=^$routed(value = $va));,
+                      ^$state(value=^$routed(value = $va, genericType = $va.genericType));,
                      |^$state(value=$va)
                  );
    print(if($debug.debug,|$debug.space+'~>V) ('+$fullRes.routingStrategy.toString()+') '+$fullRes.value->evaluateAndDeactivate()->cast(@ValueSpecification)->toOne()->asString()+'\n',|''));
