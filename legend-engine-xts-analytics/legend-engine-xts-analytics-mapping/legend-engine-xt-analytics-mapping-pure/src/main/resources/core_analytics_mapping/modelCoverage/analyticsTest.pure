@@ -17,7 +17,7 @@ import meta::pure::mapping::*;
 
 function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
 {
-  meta::analytics::mapping::modelCoverage::analyze($mapping, true, true, false);
+  meta::analytics::mapping::modelCoverage::analyze($mapping, false, false, false);
 }
 
 function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
@@ -36,9 +36,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   assertContains($mappedEntityForFirm.properties.name, 'employeeSize');
   // embedded relational mapping
   assertContains($mappedEntityForFirm.properties.name, 'employees');
-  println($result, 5);
   assertContains($result.mappedEntities.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
-
 
   let mappedEntityForLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
   assert($mappedEntityForLegalEntity.properties->size() == 2);
