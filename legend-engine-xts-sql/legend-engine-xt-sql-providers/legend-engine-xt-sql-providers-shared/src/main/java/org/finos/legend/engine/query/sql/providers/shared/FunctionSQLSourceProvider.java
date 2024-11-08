@@ -24,7 +24,6 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.query.sql.providers.core.SQLContext;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
@@ -85,7 +84,7 @@ public class FunctionSQLSourceProvider implements SQLSourceProvider
 
             Function function = SQLProviderUtils.extractElement("function", Function.class, resolvedProject.getData(), f -> path.equals(f.getPath()));
 
-            if (!TABULAR_TYPES.contains(((PackageableType) function.returnGenericType.rawType).fullPath))
+            if (!TABULAR_TYPES.contains(function.returnType))
             {
                 throw new EngineException("Function " + path + " does not return Tabular data type");
             }

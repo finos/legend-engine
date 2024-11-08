@@ -210,7 +210,10 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance
    (
       _type = 'genericTypeInstance',
-      genericType = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType)
+      fullPath = $v.genericType.rawType->toOne()->match([
+         d:DataType[1]|$d->makeString(),
+         c:Class<Any>[1]|$c->elementToPath()
+         ])
    )
 }
 
@@ -225,7 +228,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                 _type = 'var',
                 multiplicity = $v.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
                 name = $v.name,
-                genericType = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType)
+                class = $v.genericType.rawType->toOne()->elementToPath()
             );
     ,|^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable
                 (
@@ -238,7 +241,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedUnit(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance(_type='genericTypeInstance', genericType=meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType));
+   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance(_type='genericTypeInstance', fullPath=$v.genericType.rawType->toOne()->elementToPath());
 }
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformUnitInstance(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance[1]
@@ -770,9 +773,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(as:Any[*], separator:String[1]):String[1]{
    $as->map(a|$a->match([ c:meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]| let nonAnySuperTypes = $c.superTypes->filter(s|$s != 'meta::pure::metamodel::type::Any');
                                                                                        '\nClass '+ if($c.stereotypes->isNotEmpty(),|'\t<<'+$c.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($c.taggedValues->isNotEmpty(),|'\t{'+$c.taggedValues->classElementsToPure(',')+'}\n',|'') + if($c.package->isEmpty(),|$c.name,|$c.package->toOne()+'::'+$c.name) + if($nonAnySuperTypes->isNotEmpty(),| ' extends '+$nonAnySuperTypes->makeString(','),|'') +'\n{\n' + $c.properties->classElementsToPure('\n') + '\n' + $c.qualifiedProperties->classElementsToPure('\n')+'\n}\n';,
-                          p:meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]| if($p.stereotypes->isNotEmpty(),|'\t<<'+$p.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($p.taggedValues->isNotEmpty(),|'\t{'+$p.taggedValues->classElementsToPure(',')+'}\n',|'') + '\t'+$p.name+':'+$p.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath+'['+$p.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
-                          q:meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty[1]| '\t'+$q.name+'('+$q.parameters->tail()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(',')+'){'+$q.body->toPure()->replace('\n','')+'}:'+$q.returnGenericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath+'['+$q.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
-                          v:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[1]|$v.name + ':' + $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne() +'['+$v.multiplicity->toOne()->mapToString()+']',
+                          p:meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]| if($p.stereotypes->isNotEmpty(),|'\t<<'+$p.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($p.taggedValues->isNotEmpty(),|'\t{'+$p.taggedValues->classElementsToPure(',')+'}\n',|'') + '\t'+$p.name+':'+$p.type+'['+$p.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
+                          q:meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty[1]| '\t'+$q.name+'('+$q.parameters->tail()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(',')+'){'+$q.body->toPure()->replace('\n','')+'}:'+$q.returnType+'['+$q.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
+                          v:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[1]|$v.name + ':' + $v.class->toOne() +'['+$v.multiplicity->toOne()->mapToString()+']',
                           s:meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[1]|$s.profile+'.'+$s.value,
                           t:meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]|$t.tag.profile+'.'+$t.tag.value+'=\''+$t.value->replace('\'','\\\'')->replace('\n',' ')+'\''
    ]))->makeString($separator)
@@ -889,13 +892,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          l : Lambda[1]|
             let pStr = $l.parameters->map(p|$p->match([
                v : Variable[1]|
-               if ($v.genericType->isEmpty(),
+               if ($v.class->isEmpty(),
                    |$v.name,
-                   |let cName = if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->in([Float, Any, String, Integer, Boolean, Date, DateTime, StrictDate]->map(x|$x->makeString())),
-                     | $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->makeString(),
-                     | if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->isInMeta(),
-                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->substring($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->lastIndexOf('::')+2),
-                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()
+                   |let cName = if($v.class->in([Float, Any, String, Integer, Boolean, Date, DateTime, StrictDate]->map(x|$x->makeString())),
+                     | $v.class->toOne()->makeString(),
+                     | if($v.class->toOne()->isInMeta(),
+                          |$v.class->toOne()->substring($v.class->toOne()->lastIndexOf('::')+2),
+                          |$v.class->toOne()
                        );
                      )->toOne();
                     let m = $v.multiplicity->toOne()->mapToString();
@@ -907,14 +910,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
 
             '{%s|%s}'->format([$pStr, $bStr]);,
          v : Variable[1]|'$' + $v.name,
-         hackedClass :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]|'@' + $hackedClass.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath,
+         hackedClass :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]|'@' + $hackedClass.fullPath,
          ci : ClassInstance[1] |
             $ci.value->match(
                 [
                      aggValue : TDSAggregateValue[1]| 'agg(\'%s\', %s, %s)'->format([$aggValue.name, $state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      aggValue : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue[1]| 'agg(%s, %s)'->format([$state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      sortInfo : TDSSortInformation[1]| '^SortInformation(column = \'%s\', direction = SortDirection.%s)'->format([$sortInfo.column, $sortInfo.direction]),
-                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@Lambda).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
+                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@Lambda).parameters->at(0).class->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
                      path : Path[1]| '#/%s/%s%s#'->format([$path.startType, $path.path->map(p|$p->match([ppe:PropertyPathElement[1]|$ppe.property]))->joinStrings('.'), if($path.name->isEmpty() || ($path.name->toOne()->length() == 0), |'', |'!' + $path.name->toOne())]);,
                      or : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1]|
                         '^TdsOlapRank<TDSRow>(func = %s)'->format($state->toPure($or.function)),

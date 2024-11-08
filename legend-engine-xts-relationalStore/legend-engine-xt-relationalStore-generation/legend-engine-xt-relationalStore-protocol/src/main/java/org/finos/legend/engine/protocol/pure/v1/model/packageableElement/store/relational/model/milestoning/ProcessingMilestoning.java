@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDate;
 
 public class ProcessingMilestoning extends Milestoning
 {

@@ -240,7 +240,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeGroupBy()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]}";
+        String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -248,7 +248,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeCast()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->cast(@meta::pure::metamodel::relation::Relation<(hai:String,ba:Integer)>)";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"name\":\"hai\",\"type\":\"String\"},{\"name\":\"ba\",\"type\":\"Integer\"}]}";
+        String expectedResult = "{\"columns\":[{\"name\":\"hai\",\"type\":\"String\"},{\"name\":\"ba\",\"type\":\"Integer\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -256,7 +256,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeSimpleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~newCol:c|'ok')";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"}]}";
+        String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -264,7 +264,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeMultipleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
+        String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -272,7 +272,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeWithDummySource()
     {
         String lambda = "|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String,LASTNAME:String)>)->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
+        String expectedResult = "{\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"},{\"name\":\"newCol\",\"type\":\"String\"},{\"name\":\"colX\",\"type\":\"String\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, null);
     }
 

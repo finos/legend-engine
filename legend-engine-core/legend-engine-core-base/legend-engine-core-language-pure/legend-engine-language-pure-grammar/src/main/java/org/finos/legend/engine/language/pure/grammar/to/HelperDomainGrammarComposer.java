@@ -93,7 +93,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderAnnotations(property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderAnnotations(property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     private static String renderAggregation(AggregationKind aggregationKind)
@@ -136,7 +136,7 @@ public class HelperDomainGrammarComposer
                 .collect(qualifiedProperty.body, b -> b.accept(transformer))
                 .makeString("\n" + getTabString(2), ";\n" + getTabString(2), ";\n" + getTabString()))
                 + "}: "
-                + HelperValueSpecificationGrammarComposer.printGenericType(qualifiedProperty.returnGenericType, transformer) + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
+                + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
 
     public static String renderConstraint(Constraint constraint, List<Constraint> allConstraints, DEPRECATED_PureGrammarComposerCore transformer)
@@ -182,7 +182,7 @@ public class HelperDomainGrammarComposer
     public static String renderFunctionTestSuites(Function function, PureGrammarComposerContext context)
     {
         StringBuilder stringBuilder = new StringBuilder();
-        if (function.tests.isEmpty())
+        if (function.tests == null)
         {
             return stringBuilder.toString();
         }
@@ -198,7 +198,7 @@ public class HelperDomainGrammarComposer
         StringBuilder str = new StringBuilder();
         if (!functionTestSuite.id.equals(DEFAULT_TESTABLE_ID))
         {
-            str.append(getTabString(baseIndentation)).append(functionTestSuite.id).append("\n").append(getTabString(baseIndentation)).append("(\n");
+           str.append(getTabString(baseIndentation)).append(functionTestSuite.id).append("\n").append(getTabString(baseIndentation)).append("(\n");
             if (functionTestSuite.testData != null && !functionTestSuite.testData.isEmpty())
             {
                 str.append(String.join("\n", ListIterate.collect(functionTestSuite.testData, test -> renderFunctionTestData(test, baseIndentation + 1, context)))).append("\n");
@@ -279,7 +279,7 @@ public class HelperDomainGrammarComposer
     {
         if (testAssertion instanceof EqualTo)
         {
-            return ((EqualTo) testAssertion).expected.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+            return ((EqualTo)testAssertion).expected.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
         }
         else if (testAssertion instanceof EqualToJson)
         {

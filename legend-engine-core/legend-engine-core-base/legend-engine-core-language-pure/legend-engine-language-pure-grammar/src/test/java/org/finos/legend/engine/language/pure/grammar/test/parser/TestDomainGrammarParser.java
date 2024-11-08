@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -162,45 +161,5 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
         Assert.assertEquals(3, profile.tags.get(1).sourceInformation.endLine);
         Assert.assertEquals(18, profile.tags.get(1).sourceInformation.startColumn);
         Assert.assertEquals(21, profile.tags.get(1).sourceInformation.endColumn);
-    }
-
-    @Test
-    public void testPreventTypeParametersInClass()
-    {
-        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
-                "Class x::X<T>{}"));
-        Assert.assertEquals("PARSER error at [1:11-13]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "Class x::X<|m>{}"));
-        Assert.assertEquals("PARSER error at [1:11-14]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "Class x::X<T|m>{}"));
-        Assert.assertEquals("PARSER error at [1:11-15]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "Class x::X<T,U|m,n>{}"));
-        Assert.assertEquals("PARSER error at [1:11-19]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-    }
-
-    @Test
-    public void testPreventTypeParametersInFunction()
-    {
-        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
-                "function x::f<T>(x:String[1]):String[1]{'ok'}"));
-        Assert.assertEquals("PARSER error at [1:14-16]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "function x::f<|m>(x:String[1]):String[1]{'ok'}"));
-        Assert.assertEquals("PARSER error at [1:14-17]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "function x::f<T|m>(x:String[1]):String[1]{'ok'}"));
-        Assert.assertEquals("PARSER error at [1:14-18]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
-
-        e = Assert.assertThrows(EngineException.class, () -> test(
-                "function x::f<T,X|m,m>(x:String[1]):String[1]{'ok'}"));
-        Assert.assertEquals("PARSER error at [1:14-22]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
     }
 }

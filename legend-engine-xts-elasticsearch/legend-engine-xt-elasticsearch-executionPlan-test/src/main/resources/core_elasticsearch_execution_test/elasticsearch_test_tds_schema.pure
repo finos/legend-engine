@@ -41,7 +41,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::sch
 {
   let toCompile = $config.model->replace('%_url_%', 'http://localhost:1') + '\n\n' + 
   '###Pure \n\n ' + 
-  'function test::tdsSchema::func():FunctionDefinition<Any>[1] ' + 
+  'function test::tdsSchema::func():FunctionDefinition[1] ' + 
   '{\n' + 
       $code + 
   '}';

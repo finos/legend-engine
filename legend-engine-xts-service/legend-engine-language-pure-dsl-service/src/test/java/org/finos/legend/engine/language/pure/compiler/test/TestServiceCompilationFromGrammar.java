@@ -235,7 +235,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION error at [28:12-34]: Can't find type 'test::class2'");
         // test service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -303,7 +303,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      { [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [37:20-32]: Can't find type 'Result'");
+                "}\n", "COMPILATION error at [37:13-35]: Can't find type 'Result<Any|*>'");
         // check service execution embedded runtime
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -640,7 +640,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      data: 'testData';\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [28:20-31]: Can't find type 'test::class2'");
+                "}\n", "COMPILATION error at [28:12-34]: Can't find type 'test::class2'");
         // check service execution mapping
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
@@ -749,7 +749,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      asserts: [{ [], res:   Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [50:30-42]: Can't find type 'Result'");
+                "}\n", "COMPILATION error at [50:23-45]: Can't find type 'Result<Any|*>'");
 
         test(resource + "###Service\n" +
                 "Service meta::pure::myServiceMulti\n" +
@@ -887,7 +887,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "        { [], res: meta::pure::mapping::Result<test::class|*>[1]|$res.values->toOne()->size() == 1 }\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
@@ -922,7 +922,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    data: 'moreThanData';\n" +
                 "    asserts:\n" +
                 "    [\n" +
-                "        { [], res: meta::pure::mapping::Result<test::class|*>[1]|$res.values->toOne()->size() == 1 }\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
                 "}\n");

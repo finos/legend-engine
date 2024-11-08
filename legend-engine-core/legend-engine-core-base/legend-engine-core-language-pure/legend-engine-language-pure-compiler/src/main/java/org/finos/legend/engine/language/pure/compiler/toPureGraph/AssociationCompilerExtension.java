@@ -23,7 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Association_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -75,8 +74,8 @@ public class AssociationCompilerExtension implements CompilerExtension
     {
         String packageString = context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = context.pureModel.getAssociation(packageString, srcAssociation.sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = context.resolveClass(((PackageableType) srcAssociation.properties.get(0).genericType.rawType).fullPath, srcAssociation.properties.get(0).sourceInformation);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = context.resolveClass(((PackageableType) srcAssociation.properties.get(1).genericType.rawType).fullPath, srcAssociation.properties.get(1).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
 
         String property0Ref = context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, context.pureModel.getExecutionSupport()));
         String property1Ref = context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, context.pureModel.getExecutionSupport()));
@@ -107,7 +106,7 @@ public class AssociationCompilerExtension implements CompilerExtension
 
         ListIterable<QualifiedProperty<Object>> qualifiedProperties = ListIterate.collect(srcAssociation.qualifiedProperties, p ->
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = context.newGenericType(p.returnGenericType)._rawType() == source ? target : source;
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = context.resolveGenericType(p.returnType, p.sourceInformation)._rawType() == source ? target : source;
             return HelperModelBuilder.processQualifiedPropertyFirstPass(context, association, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(cl), ctx).valueOf(p);
         });
         qualifiedProperties.forEach(q ->
@@ -119,22 +118,22 @@ public class AssociationCompilerExtension implements CompilerExtension
             }
         });
         ctx.flushVariable("this");
-        association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(context, context.newGenericType(srcAssociation.properties.get(0).genericType), association)))
+        association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(context, context.pureModel.getGenericTypeFromIndex(srcAssociation.properties.get(0).type), association)))
                 ._properties(Lists.mutable.with(property1, property2))
                 ._qualifiedProperties(qualifiedProperties);
     }
 
     private void associationThirdPass(Association srcAssociation, CompileContext context)
     {
-        String property0Ref = context.pureModel.addPrefixToTypeReference(((PackageableType)srcAssociation.properties.get(0).genericType.rawType).fullPath);
-        String property1Ref = context.pureModel.addPrefixToTypeReference(((PackageableType)srcAssociation.properties.get(1).genericType.rawType).fullPath);
+        String property0Ref = context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(0).type);
+        String property1Ref = context.pureModel.addPrefixToTypeReference(srcAssociation.properties.get(1).type);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = context.pureModel.getAssociation(context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name), srcAssociation.sourceInformation);
         ProcessingContext ctx = new ProcessingContext("Association " + context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name) + " (third pass)");
 
         ListIterate.collect(srcAssociation.qualifiedProperties, property ->
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, ((PackageableType) srcAssociation.properties.get(0).genericType.rawType).fullPath.equals(((PackageableType)property.returnGenericType.rawType).fullPath) ? property1Ref : property0Ref);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, srcAssociation.properties.get(0).type.equals(property.returnType) ? property1Ref : property0Ref);
             ctx.addInferredVariables("this", thisVariable);
             ctx.push("Qualified Property " + property.name);
             ListIterate.collect(property.parameters, expression -> expression.accept(new ValueSpecificationBuilder(context, org.eclipse.collections.api.factory.Lists.mutable.empty(), ctx)));

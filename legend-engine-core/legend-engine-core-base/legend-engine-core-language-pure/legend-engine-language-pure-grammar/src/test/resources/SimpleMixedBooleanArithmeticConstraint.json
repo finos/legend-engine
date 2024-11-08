@@ -135,27 +135,18 @@
       "package": "test",
       "properties": [
         {
-          "genericType": {
-            "multiplicityArguments": [],
-            "rawType": {
-              "_type": "packageableType",
-              "fullPath": "Integer",
-              "sourceInformation": {
-                "endColumn": 14,
-                "endLine": 6,
-                "sourceId": "",
-                "startColumn": 8,
-                "startLine": 6
-              }
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
-          },
           "multiplicity": {
             "lowerBound": 1,
             "upperBound": 1
           },
           "name": "id",
+          "propertyTypeSourceInformation": {
+            "endColumn": 14,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 6
+          },
           "sourceInformation": {
             "endColumn": 18,
             "endLine": 6,
@@ -164,7 +155,8 @@
             "startLine": 6
           },
           "stereotypes": [],
-          "taggedValues": []
+          "taggedValues": [],
+          "type": "Integer"
         }
       ],
       "qualifiedProperties": [],

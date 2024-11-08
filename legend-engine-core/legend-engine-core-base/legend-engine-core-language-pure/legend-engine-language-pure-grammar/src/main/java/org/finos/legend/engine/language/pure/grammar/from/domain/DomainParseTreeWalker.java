@@ -72,27 +72,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
-import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.Type;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CByteArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
@@ -295,11 +290,7 @@ public class DomainParseTreeWalker
 
     private Class visitClass(DomainParserGrammar.ClassDefinitionContext ctx)
     {
-        if (ctx.typeParametersWithContravarianceAndMultiplicityParameters() != null && !ctx.typeParametersWithContravarianceAndMultiplicityParameters().isEmpty())
-        {
-            throw new EngineException("Type and/or multiplicity parameters are not authorized in Legend Engine", walkerSourceInformation.getSourceInformation(ctx.typeParametersWithContravarianceAndMultiplicityParameters()), EngineErrorType.PARSER);
-        }
-
+        // TODO: break if use of generics!
         Class _class = new Class();
         _class._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         _class.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
@@ -361,10 +352,11 @@ public class DomainParseTreeWalker
         property.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         property.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         // NOTE: here we limit the property type to only primitive type, class, or enumeration
-        property.genericType = processGenericType(ctx.propertyReturnType().type());
+        property.type = ctx.propertyReturnType().type().getText();
         property.multiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
         property.defaultValue = ctx.defaultValue() == null ? null : this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
         property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        property.propertyTypeSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.propertyReturnType().type());
         if (ctx.aggregation() != null)
         {
             if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null)
@@ -400,13 +392,14 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable.genericType = processGenericType(functionVariableExpressionContext.type());
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
         });
         // NOTE: we should check but here we let returned type of the derived property to be whatever
-        qualifiedProperty.returnGenericType = processGenericType(ctx.propertyReturnType().type());
+        qualifiedProperty.returnType = ctx.propertyReturnType().type().getText();
         qualifiedProperty.returnMultiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
         qualifiedProperty.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return qualifiedProperty;
@@ -433,11 +426,6 @@ public class DomainParseTreeWalker
 
     private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function visitFunction(DomainParserGrammar.FunctionDefinitionContext ctx)
     {
-        if (ctx.typeAndMultiplicityParameters() != null && !ctx.typeAndMultiplicityParameters().isEmpty())
-        {
-            throw new EngineException("Type and/or multiplicity parameters are not authorized in Legend Engine", walkerSourceInformation.getSourceInformation(ctx.typeAndMultiplicityParameters()), EngineErrorType.PARSER);
-        }
-
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function();
         func._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         func.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
@@ -448,7 +436,8 @@ public class DomainParseTreeWalker
         {
             Variable variable = new Variable();
             variable.name = PureGrammarParserUtility.fromIdentifier(functionVariableExpressionContext.identifier());
-            variable.genericType = processGenericType(functionVariableExpressionContext.type());
+            String path = functionVariableExpressionContext.type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext.type()));
             variable.multiplicity = this.buildMultiplicity(functionVariableExpressionContext.multiplicity().multiplicityArgument());
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
@@ -505,7 +494,7 @@ public class DomainParseTreeWalker
             }
             func.tests = suites;
         }
-        func.returnGenericType = processGenericType(ctx.functionTypeSignature().type());
+        func.returnType = ctx.functionTypeSignature().type().getText();
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         func.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier()) + HelperValueSpecificationGrammarComposer.getFunctionSignature(func);
@@ -751,8 +740,8 @@ public class DomainParseTreeWalker
     private ValueSpecification programLine(DomainParserGrammar.ProgramLineContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
         return (ctx.combinedExpression() == null) ?
-                letExpression(ctx.letExpression(), typeParametersNames, lambdaContext, addLines, space) :
-                combinedExpression(ctx.combinedExpression(), "line", typeParametersNames, lambdaContext, space, true, addLines);
+               letExpression(ctx.letExpression(), typeParametersNames, lambdaContext, addLines, space) :
+               combinedExpression(ctx.combinedExpression(), "line", typeParametersNames, lambdaContext, space, true, addLines);
     }
 
     public ValueSpecification combinedExpression(DomainParserGrammar.CombinedExpressionContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
@@ -845,7 +834,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification enumReference(DomainParserGrammar.EnumReferenceContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue result = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue();
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue result = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue();
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         result.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         result.value = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
@@ -902,20 +891,11 @@ public class DomainParseTreeWalker
 
     private AppliedFunction newFunction(DomainParserGrammar.ExpressionInstanceContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
-        GenericTypeInstance generic = new GenericTypeInstance(
-                new GenericType(new PackageableType("meta::pure::metamodel::type::Class"),
-                        Lists.mutable.of(
-                                new GenericType(
-                                        new PackageableType(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())),
-                                        ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType),
-                                        ListIterate.collect(ctx.multiplicityArguments() == null ? Lists.mutable.empty() : ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity)
-                                )
-                        )
-                )
-        );
+        PackageableElementPtr newClass = new PackageableElementPtr();
+        newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection(keyExpressions);
-        return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
+        return this.createAppliedFunction(Lists.mutable.with(newClass, new CString(""), valueAssignments), "new");
     }
 
     // necessary for proper compilation of new function
@@ -1281,10 +1261,11 @@ public class DomainParseTreeWalker
             {
                 return unitTypeReference(ctx.type());
             }
-            GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-            genericTypeInstance.genericType = processGenericType(ctx.type());
-            genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-            return genericTypeInstance;
+            if (ctx.type().typeArguments() != null && !ctx.type().typeArguments().type().get(0).columnType().isEmpty())
+            {
+                return processRelationColumnTypes(ctx.type());
+            }
+            return typeReference(ctx.type());
         }
         if (ctx.anyLambda() != null)
         {
@@ -1466,7 +1447,8 @@ public class DomainParseTreeWalker
         if (ctx != null && ctx.lambdaParamType() != null)
         {
             variable.multiplicity = this.buildMultiplicity(ctx.lambdaParamType().multiplicity().multiplicityArgument());
-            variable.genericType = processGenericType(ctx.lambdaParamType().type());
+            String path = ctx.lambdaParamType().type().getText();
+            variable._class = new PackageableElementPointer(PackageableElementType.CLASS, path, walkerSourceInformation.getSourceInformation(ctx.lambdaParamType().type()));
             variable.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         }
         variable.name = PureGrammarParserUtility.fromIdentifier(var);
@@ -1537,7 +1519,7 @@ public class DomainParseTreeWalker
     {
         String fullPath = ctx.getText();
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.genericType = new GenericType(new PackageableType(fullPath));
+        genericTypeInstance.fullPath = fullPath;
         genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
@@ -1546,45 +1528,33 @@ public class DomainParseTreeWalker
     {
         String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.genericType = new GenericType(new PackageableType(fullPath));
+        genericTypeInstance.fullPath = fullPath;
         genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
 
-    private GenericType processGenericType(DomainParserGrammar.TypeContext ctx)
+    private GenericTypeInstance processRelationColumnTypes(DomainParserGrammar.TypeContext ctx)
     {
-        Type type;
-        if (ctx.qualifiedName() != null)
+        String fullPath = ctx.qualifiedName().getText();
+        GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
+        genericTypeInstance.fullPath = fullPath;
+        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (!"meta::pure::metamodel::relation::Relation".equals(fullPath) && !"Relation".equals(fullPath))
         {
-            PackageableType pType = new PackageableType(ctx.qualifiedName().getText());
-            pType.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            type = pType;
+            throw new EngineException("Casting to type with generics is only supported for Relation type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
-        else if (ctx.PAREN_OPEN() != null)
+        List<DomainParserGrammar.ColumnTypeContext> columnTypeContexts = ctx.typeArguments().type().get(0).columnType();
+        ColSpecArray colSpecArr = new ColSpecArray();
+        colSpecArr.colSpecs = ListIterate.collect(columnTypeContexts, columnTypeContext ->
         {
-            type = new RelationType(ListIterate.collect(ctx.columnInfo(), x ->
-            {
-                Column column = new Column(x.columnName().getText(), x.columnType().getText());
-                column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
-                return column;
-            }));
-        }
-        else if (ctx.unitName() != null)
-        {
-            PackageableType pType = new PackageableType(ctx.getText());
-            pType.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            type = pType;
-        }
-        else
-        {
-            throw new EngineException("The type " + ctx.getText() + " is not supported yet", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        GenericType result = new GenericType(type, ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType));
-        if (ctx.multiplicityArguments() != null)
-        {
-            result.multiplicityArguments = ListIterate.collect(ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity);
-        }
-        return result;
+            ColSpec colSpec = new ColSpec();
+            colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(columnTypeContext);
+            colSpec.name = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(0));
+            colSpec.type = PureGrammarParserUtility.fromIdentifier(columnTypeContext.identifier().get(1));
+            return colSpec;
+        });
+        genericTypeInstance.typeArguments = Lists.mutable.with(DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(ctx), "colSpecArray"));
+        return genericTypeInstance;
     }
 
     private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, ValueSpecification instance, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)

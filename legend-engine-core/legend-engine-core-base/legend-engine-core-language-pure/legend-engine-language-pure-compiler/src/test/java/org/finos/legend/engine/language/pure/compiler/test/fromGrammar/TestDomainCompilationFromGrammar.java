@@ -724,7 +724,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   name : String[*];\n" +
                 "   xza(s:z::k::B[1]){$s + 'ok'}:String[1];\n" +
-                "}\n", "COMPILATION error at [4:10-16]: Can't find type 'z::k::B'");
+                "}\n", "COMPILATION error at [4:8-19]: Can't find type 'z::k::B'");
     }
 
     @Test

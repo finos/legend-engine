@@ -19,7 +19,6 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
 import java.util.List;
@@ -65,7 +64,7 @@ class FunctionParameterProcessor
         }
         catch (Exception e)
         {
-            throw new IllegalArgumentException("Failed to process " + ((PackageableType) param.genericType.rawType).fullPath + " parameter in plan for " + paramName + ", message: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to process " + param._class.path + " parameter in plan for " + paramName + ", message: " + e.getMessage());
         }
     }
 }

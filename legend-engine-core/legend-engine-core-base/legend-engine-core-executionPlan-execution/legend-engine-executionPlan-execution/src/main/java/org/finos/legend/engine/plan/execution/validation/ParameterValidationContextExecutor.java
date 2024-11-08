@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.validation;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.EnumValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContextVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
 import java.util.List;
@@ -40,6 +39,6 @@ public class ParameterValidationContextExecutor implements ParameterValidationCo
         {
             throw new IllegalArgumentException("Collection of Enums (" + value + ") is not supported as service parameter");
         }
-        return (validEnumValues.contains(value.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + ((PackageableType) var.genericType.rawType).fullPath + ", valid enum values: " + validEnumValues);
+        return (validEnumValues.contains(value.toString())) ? ValidationResult.successValidationResult() : ValidationResult.errorValidationResult("Invalid enum value " + value + " for " + var._class.path + ", valid enum values: " + validEnumValues);
     }
 }
