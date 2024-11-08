@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
@@ -44,7 +45,7 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
     }
 
     @Override
-    public ValueSpecification visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr packageableElementPtr)
+    public ValueSpecification visit(PackageableElementPtr packageableElementPtr)
     {
         if (packageableElementPtr.fullPath.contains("~"))
         {
@@ -57,7 +58,8 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
         if (packageableElement instanceof Root_meta_pure_runtime_PackageableRuntime)
         {
             Root_meta_core_runtime_Runtime resolvedRuntime = this.context.resolveRuntime(packageableElementPtr.fullPath);
-            GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime"));
+            GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
+                    ._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime"));
             return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                     ._genericType(runtimeGenericType)
                     ._multiplicity(this.context.pureModel.getMultiplicity("one"))
