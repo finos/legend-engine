@@ -23,22 +23,18 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.Type;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
@@ -97,7 +93,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" +  (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
@@ -293,7 +289,7 @@ public class HelperValueSpecificationGrammarComposer
         String packageName = function._package;
         String functionName = getFunctionNameWithNoPackage(function);
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getFunctionDescriptorParameterSignature).select(Objects::nonNull).makeString(",");
-        String returnTypeSignature = getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath);
+        String returnTypeSignature = getClassSignature(function.returnType);
         String returnMultiplicitySignature = HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity);
         builder.append(packageName)
                 .append("::")
@@ -324,18 +320,18 @@ public class HelperValueSpecificationGrammarComposer
     public static String getFunctionSignature(Function function)
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
-                + "__" + getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
     private static String getParameterSignature(Variable p)
     {
-        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getFunctionDescriptorParameterSignature(Variable p)
     {
-        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
+        return p._class != null ? getClassSignature(p._class.path) + "[" + HelperDomainGrammarComposer.renderMultiplicity(p.multiplicity) + "]" : null;
     }
 
     private static String getClassSignature(String _class)
@@ -363,30 +359,5 @@ public class HelperValueSpecificationGrammarComposer
     public static String generateValidDateValueContainingPercent(String date)
     {
         return date.indexOf(DateParseTreeWalker.DATE_PREFIX) != -1 ? date : DateParseTreeWalker.DATE_PREFIX + date;
-    }
-
-    public static String printGenericType(GenericType genericType, DEPRECATED_PureGrammarComposerCore transformer)
-    {
-        return printType(genericType.rawType, transformer) +
-                (genericType.typeArguments.isEmpty() && genericType.multiplicityArguments.isEmpty() ?
-                        "" :
-                        "<" +
-                                ListIterate.collect(genericType.typeArguments, x -> printGenericType(x, transformer)).makeString(", ") +
-                                (genericType.multiplicityArguments.isEmpty() ? "" : "|" + ListIterate.collect(genericType.multiplicityArguments, HelperDomainGrammarComposer::renderMultiplicity).makeString(",")) +
-                                ">"
-                );
-    }
-
-    public static String printType(Type type, DEPRECATED_PureGrammarComposerCore transformer)
-    {
-        if (type instanceof PackageableType)
-        {
-            return printFullPath(((PackageableType) type).fullPath, transformer);
-        }
-        else if (type instanceof RelationType)
-        {
-            return "(" + ListIterate.collect(((RelationType) type).columns, x -> x.name + ":" + x.type).makeString(", ") + ")";
-        }
-        throw new RuntimeException(type.getClass().getSimpleName() + ": Not supported");
     }
 }

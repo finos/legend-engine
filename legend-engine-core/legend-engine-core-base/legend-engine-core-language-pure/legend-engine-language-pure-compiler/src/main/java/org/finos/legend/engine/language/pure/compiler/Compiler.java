@@ -66,7 +66,7 @@ public class Compiler
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) type;
     }
 
-    public static org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
+    public static org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
     {
         return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel));
     }

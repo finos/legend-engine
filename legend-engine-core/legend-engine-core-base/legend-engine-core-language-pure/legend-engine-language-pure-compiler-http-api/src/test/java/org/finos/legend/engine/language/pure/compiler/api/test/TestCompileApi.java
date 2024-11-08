@@ -17,17 +17,19 @@ package org.finos.legend.engine.language.pure.compiler.api.test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.jsonunit.JsonAssert;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
+import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -111,9 +113,9 @@ public class TestCompileApi
         lambdaReturnTypeInput.model = text;
         lambdaReturnTypeInput.lambda = lambda;
         String stringResult = objectMapper.writeValueAsString(compileApi.lambdaRelationType(lambdaReturnTypeInput, null, null).getEntity());
-        RelationType relationType = objectMapper.readValue(stringResult, RelationType.class);
+        org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType relationType = objectMapper.readValue(stringResult, RelationType.class);
         Assert.assertEquals(1, relationType.columns.size());
-        Column column = relationType.columns.get(0);
+        org.finos.legend.engine.protocol.pure.v1.model.relationType.Column column = relationType.columns.get(0);
         Assert.assertEquals("Person Name", column.name);
         Assert.assertEquals("String", column.type);
     }

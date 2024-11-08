@@ -36,9 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
+import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -194,7 +192,7 @@ public class DataCubeHelpers
         Function func = new Function();
         func.name = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::") + 2);
         func._package = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(0, REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::"));
-        func.returnGenericType = new GenericType(new PackageableType(M3Paths.Any));
+        func.returnType = M3Paths.Any;
         func.returnMultiplicity = new Multiplicity(0, null);
         func.body = lambda.body;
         return func;
@@ -210,7 +208,7 @@ public class DataCubeHelpers
         func.name = originalFunction.name;
         func._package = originalFunction._package;
         func.parameters = originalFunction.parameters;
-        func.returnGenericType = originalFunction.returnGenericType;
+        func.returnType = originalFunction.returnType;
         func.returnMultiplicity = originalFunction.returnMultiplicity;
         func.body = lambda != null ? lambda.body : func.body; // if no lambda is specified, we'll just use the original function
 

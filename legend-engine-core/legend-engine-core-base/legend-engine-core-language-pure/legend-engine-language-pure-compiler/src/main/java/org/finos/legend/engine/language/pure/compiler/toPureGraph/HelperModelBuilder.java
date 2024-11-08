@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -84,11 +83,11 @@ public class HelperModelBuilder
                 defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::DefaultValue"));
                 defaultValue._functionDefinition(lambdaFunction);
             }
-            GenericType returnGenericType = context.newGenericType(property.genericType);
+            GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                     ._name(property.name)
                     ._defaultValue(defaultValue)
-                    ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.Property), Lists.fixedSize.of(genericType, returnGenericType), Lists.fixedSize.of(context.pureModel.getMultiplicity(property.multiplicity))))
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
                     ._genericType(returnGenericType)
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
@@ -137,7 +136,7 @@ public class HelperModelBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification createVariableValueSpecification(CompileContext context, String variableName)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(variableName);
-        final GenericType genericType = context.newGenericType(context.pureModel.getType("Number"));
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("Number"));
         ve._genericType(genericType);
         ve._multiplicity(context.pureModel.getMultiplicity(Multiplicity.PURE_ONE));
         return ve;
@@ -146,7 +145,7 @@ public class HelperModelBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction<?> mapFn, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("mapped");
-        final GenericType genericType = context.newGenericType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
         ve._genericType(genericType);
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 0;
@@ -169,18 +168,12 @@ public class HelperModelBuilder
             return new Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), null)
                     ._name(property.name)
                     ._functionName(property.name)
-                    ._genericType(context.newGenericType(property.returnGenericType))
+                    ._genericType(context.resolveGenericType(property.returnType, property.sourceInformation))
                     ._multiplicity(context.pureModel.getMultiplicity(property.returnMultiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                     ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                    ._classifierGenericType(
-                            context.newGenericType(
-                                    context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"),
-                                    Lists.fixedSize.of(
-                                            PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.newGenericType(property.returnGenericType), context.pureModel.getMultiplicity(property.returnMultiplicity), context.pureModel)
-                                    )
-                            )
-                    )
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
+                            ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity), context.pureModel))))
                     ._owner(owner);
         };
     }
@@ -315,14 +308,14 @@ public class HelperModelBuilder
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
-                + "__" + getClassSignature(((PackageableType) function.returnGenericType.rawType).fullPath) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+                + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.isEmpty() ? functionSignature : ("_" + functionSignature);
     }
 
 
     private static String getParameterSignature(Variable p)
     {
-        return p.genericType != null ? getClassSignature(((PackageableType) p.genericType.rawType).fullPath) + "_" + getMultiplicitySignature(p.multiplicity) : null;
+        return p._class != null ? getClassSignature(p._class.path) + "_" + getMultiplicitySignature(p.multiplicity) : null;
     }
 
     private static String getClassSignature(String _class)
@@ -424,7 +417,7 @@ public class HelperModelBuilder
     public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         AbstractProperty<?> prop = null;
-        if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
+        if (propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) propertyOwner;
             prop = _class._properties().detect(p -> name.equals(p.getName()));
@@ -446,7 +439,7 @@ public class HelperModelBuilder
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association = (Association) propertyOwner;
             prop = _association._properties().detect(p -> name.equals(p.getName()));
         }
-        String propertyOwnerType = propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class ? "class" : "association";
+        String propertyOwnerType = propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class ? "class" : "association";
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in " + propertyOwnerType + " '" + (getElementFullPath(propertyOwner, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
     }
@@ -459,7 +452,7 @@ public class HelperModelBuilder
         return getPropertyOrResolvedEdgePointProperty(context, _class, parameters, name, false, sourceInformation);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters,  String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, excludeQualified, sourceInformation);
         if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
@@ -542,7 +535,7 @@ public class HelperModelBuilder
 
     public static boolean isCompatibleDerivedPropertyWithParameters(QualifiedProperty<?> o, List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> params)
     {
-        FunctionType rawType = (FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType();
+        FunctionType  rawType = (FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType();
         return rawType._parameters().size() == params.size();
 //                && rawType._parameters().zip(params).allSatisfy(v1 -> v1.getOne()._name().equals(((Variable) v1.getTwo()).name));
 //        FIXME: we might need to be smarter about which property to choose (use types for example)
@@ -553,7 +546,7 @@ public class HelperModelBuilder
 
     public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty p)
     {
-        return o._name().equals(p.name) && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
+        return o._name() == p.name && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }
 
     public static String getTypeFullPath(Type type, CompiledExecutionSupport executionSupport)

@@ -186,13 +186,12 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                     {
                                         FunctionType fType = (FunctionType) assertion._classifierGenericType()._typeArguments().getFirst()._rawType();
                                         Assert.assertTrue(fType._parameters() != null && fType._parameters().size() == 1, () -> "Post validation assertion function expects 1 parameter");
-                                        Assert.assertTrue(org.finos.legend.pure.m3.navigation.generictype.GenericType.genericTypesEqual(executionFunctionType._returnType(), fType._parameters().getFirst()._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport())
-                                                        && Multiplicity.multiplicitiesEqual(executionFunctionType._returnMultiplicity(), fType._parameters().getAny()._multiplicity()),
+                                        Assert.assertTrue(executionFunctionType._returnType().equals(fType._parameters().getFirst()._genericType()) && executionFunctionType._returnMultiplicity().equals(fType._parameters().getAny()._multiplicity()),
                                                 () -> "Post validation assertion function parameter type '" +
-                                                        org.finos.legend.pure.m3.navigation.generictype.GenericType.print(fType._parameters().getFirst()._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport()) +
+                                                        fType._parameters().getFirst()._genericType()._rawType()._name() +
                                                         Multiplicity.print(fType._parameters().getFirst()._multiplicity()) +
                                                         "' does not match with service execution return type '" +
-                                                        org.finos.legend.pure.m3.navigation.generictype.GenericType.print(executionFunctionType._returnType(), context.pureModel.getExecutionSupport().getProcessorSupport()) +
+                                                        executionFunctionType._returnType()._rawType()._name() +
                                                         Multiplicity.print(executionFunctionType._returnMultiplicity()) +
                                                         "'"
                                         );

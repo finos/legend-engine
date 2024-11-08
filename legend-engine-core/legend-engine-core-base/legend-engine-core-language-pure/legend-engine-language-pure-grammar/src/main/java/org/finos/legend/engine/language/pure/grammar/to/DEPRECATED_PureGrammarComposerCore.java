@@ -63,32 +63,32 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.AppliedQualifiedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CByteArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.UnitInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Whatever;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
@@ -402,7 +402,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
-                + ": " + HelperValueSpecificationGrammarComposer.printGenericType(function.returnGenericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
+                + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
                 LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
                 "\n}" +
@@ -651,7 +651,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Class _class)
+    public String visit(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class _class)
     {
         return HelperValueSpecificationGrammarComposer.printFullPath(_class.fullPath, this);
     }
@@ -681,7 +681,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 (this.isVariableInFunctionSignature ? "" : "$") +
                 PureGrammarComposerUtility.convertIdentifier(variable.name) +
                 (this.isRenderingHTML() ? "</span>" : "") +
-                (variable.genericType != null ? ": " + HelperValueSpecificationGrammarComposer.printGenericType(variable.genericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
+                (variable._class != null ? ": " + HelperValueSpecificationGrammarComposer.printFullPath(variable._class.path, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
 
     @Override
@@ -747,7 +747,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this) + ")";
             case "tdsAggregateValue":
                 TDSAggregateValue tdsAggregateValue = (TDSAggregateValue) iv.value;
-                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + convertString(tdsAggregateValue.name, true) + "," + tdsAggregateValue.mapFn.accept(this) + ", " + tdsAggregateValue.aggregateFn.accept(this) + ")";
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" +  convertString(tdsAggregateValue.name,true) + "," + tdsAggregateValue.mapFn.accept(this) + ", " + tdsAggregateValue.aggregateFn.accept(this) + ")";
 
             default:
                 PureGrammarComposerContext context = this.toContext();
@@ -763,9 +763,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(AppliedFunction appliedFunction)
     {
-        String _function = appliedFunction.function;
-        int index = _function.lastIndexOf("::");
-        String function = index == -1 ? _function : _function.substring(index + 2);
+        String function = appliedFunction.function;
         List<ValueSpecification> parameters = appliedFunction.parameters;
 
         if ("getAll".equals(function))
@@ -780,28 +778,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value) + " = " + parameters.get(1).accept(this);
         }
-        else if ("cast".equals(function))
-        {
-            return parameters.get(0).accept(this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
-        }
-        else if ("subType".equals(function))
-        {
-            return parameters.get(0).accept(this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
-        }
         else if ("new".equals(function))
         {
             ValueSpecification param = parameters.get(parameters.size() - 1);
             List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Arrays.asList(param);
-            String type;
-            if (parameters.get(0) instanceof GenericTypeInstance)
-            {
-                type = printGenericType(((GenericTypeInstance) parameters.get(0)).genericType.typeArguments.get(0), this);
-            }
-            else
-            {
-                type = parameters.get(0).accept(this);
-            }
-            return "^" + type + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
+            return "^" + parameters.get(0).accept(this) + "(" + Lists.mutable.withAll(values).collect(v -> v.accept(this)).makeString(" , ") + ")";
         }
         else if ("not".equals(function))
         {
@@ -1061,7 +1042,22 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(GenericTypeInstance genericTypeInstance)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(printGenericType(genericTypeInstance.genericType, this));
+        builder.append('@' + HelperValueSpecificationGrammarComposer.printFullPath(genericTypeInstance.fullPath, this));
+        if (genericTypeInstance.typeArguments != null && !genericTypeInstance.typeArguments.isEmpty() && genericTypeInstance.typeArguments.get(0) instanceof ClassInstance && ((ClassInstance) genericTypeInstance.typeArguments.get(0)).type.equals("colSpecArray"))
+        {
+            ColSpecArray colSpecArray = (ColSpecArray) ((ClassInstance) genericTypeInstance.typeArguments.get(0)).value;
+            builder.append("<(");
+            if (this.isRenderingPretty())
+            {
+                builder.append(this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + " ");
+            }
+            builder.append(LazyIterate.collect(colSpecArray.colSpecs, colSpec -> HelperValueSpecificationGrammarComposer.printColSpec(colSpec, this)).makeString("," + (this.isRenderingPretty() ? this.returnChar() + " " + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")));
+            if (this.isRenderingPretty())
+            {
+                builder.append(this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, 0)).append(" ");
+            }
+            builder.append(")>");
+        }
         return builder.toString();
     }
 

@@ -267,12 +267,7 @@
             "lowerBound": 1
           },
           "name": "name",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         },
         {
           "multiplicity": {
@@ -280,12 +275,7 @@
             "lowerBound": 1
           },
           "name": "location",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         }
       ]
     },
@@ -309,12 +299,7 @@
             "lowerBound": 1
           },
           "name": "fullname",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         },
         {
           "multiplicity": {
@@ -322,12 +307,7 @@
             "lowerBound": 1
           },
           "name": "passportId",
-          "genericType": {
-            "rawType": {
-              "fullPath": "Integer",
-              "_type": "packageableType"
-            }
-          }
+          "type": "Integer"
         },
         {
           "multiplicity": {
@@ -335,12 +315,7 @@
             "lowerBound": 0
           },
           "name": "firmname",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         },
         {
           "multiplicity": {
@@ -348,12 +323,7 @@
             "lowerBound": 0
           },
           "name": "location",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         }
       ]
     },
@@ -377,24 +347,14 @@
             "lowerBound": 1
           },
           "name": "companyEmployeeTestSchema1Company",
-          "genericType": {
-            "rawType": {
-              "fullPath": "model::testSchema1::Company",
-              "_type": "packageableType"
-            }
-          }
+          "type": "model::testSchema1::Company"
         },
         {
           "multiplicity": {
             "lowerBound": 1
           },
           "name": "companyEmployeeTestSchema1Employee",
-          "genericType": {
-            "rawType": {
-              "fullPath": "model::testSchema1::Employee",
-              "_type": "packageableType"
-            }
-          }
+          "type": "model::testSchema1::Employee"
         }
       ]
     },
@@ -593,12 +553,7 @@
             "lowerBound": 1
           },
           "name": "name",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         },
         {
           "multiplicity": {
@@ -606,12 +561,7 @@
             "lowerBound": 0
           },
           "name": "addressId",
-          "genericType": {
-            "rawType": {
-              "fullPath": "Integer",
-              "_type": "packageableType"
-            }
-          }
+          "type": "Integer"
         }
       ]
     },
@@ -635,12 +585,7 @@
             "lowerBound": 1
           },
           "name": "id",
-          "genericType": {
-            "rawType": {
-              "fullPath": "String",
-              "_type": "packageableType"
-            }
-          }
+          "type": "String"
         }
       ]
     },
@@ -663,12 +608,7 @@
             "lowerBound": 1
           },
           "name": "personAddressHrPerson",
-          "genericType": {
-            "rawType": {
-              "fullPath": "model::HR::Person",
-              "_type": "packageableType"
-            }
-          }
+          "type": "model::HR::Person"
         },
         {
           "multiplicity": {
@@ -676,12 +616,7 @@
             "lowerBound": 1
           },
           "name": "personAddressHrAddress",
-          "genericType": {
-            "rawType": {
-              "fullPath": "model::HR::Address",
-              "_type": "packageableType"
-            }
-          }
+          "type": "model::HR::Address"
         }
       ]
     }

@@ -30,10 +30,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
@@ -45,6 +45,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFe
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_SubTypeGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl;
@@ -67,7 +68,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
-import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 
 import java.util.HashSet;
@@ -134,7 +134,7 @@ public class HelperValueSpecificationBuilder
         }
 
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
-                ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
@@ -266,8 +266,15 @@ public class HelperValueSpecificationBuilder
                 }
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
-                GenericType inferredVariableType = inferredVariable._genericType();
-                automaLambdaparam.genericType = CompileContext.convertGenericType(inferredVariableType);
+                Type inferredVariableType = inferredVariable._genericType()._rawType();
+                if (inferredVariableType instanceof RelationType)
+                {
+                    automaLambdaparam.relationType = RelationTypeHelper.convert((RelationType<?>) inferredVariableType);
+                }
+                else
+                {
+                    automaLambdaparam._class = new PackageableElementPointer(PackageableElementType.CLASS, HelperModelBuilder.getTypeFullPath(inferredVariableType, context.pureModel.getExecutionSupport()));
+                }
                 automaLambdaparam.multiplicity = Multiplicity.PURE_ONE;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
@@ -416,7 +423,9 @@ public class HelperValueSpecificationBuilder
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree> children = ListIterate.collect(rootGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, _class, openVariables, processingContext));
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.SubTypeGraphFetchTree> subTypeTrees = ListIterate.collect(rootGraphFetchTree.subTypeTrees, subTypeTree -> buildSubTypeGraphFetchTree((SubTypeGraphFetchTree) subTypeTree, context, _class, openVariables, processingContext));
         Class<?> classifier = context.pureModel.getClass("meta::pure::graphFetch::RootGraphFetchTree");
-        GenericType genericType = context.newGenericType(classifier, Lists.fixedSize.of(context.pureModel.getGenericType(_class)));
+        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(classifier)
+                ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(_class)));
         return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", SourceInformationHelper.toM3SourceInformation(rootGraphFetchTree.sourceInformation), classifier)
                 ._class(_class)
                 ._classifierGenericType(genericType)

@@ -48,7 +48,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.function.Function;
@@ -150,11 +149,11 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity oneMultiplicity = this.context.pureModel.getMultiplicity("one");
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thisVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this");
-        thisVariable._genericType(context.newGenericType(thisClass));
+        thisVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(thisClass));
         thisVariable._multiplicity(oneMultiplicity);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thatVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("that");
-        thatVariable._genericType(context.newGenericType(thatClass));
+        thatVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(thatClass));
         thatVariable._multiplicity(oneMultiplicity);
 
         MutableList<VariableExpression> pureParameters = FastList.newListWith(thisVariable, thatVariable);
@@ -177,7 +176,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         }
 
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(parent._id() + "." + propertyMapping.property.property, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
-                ._classifierGenericType(context.newGenericType(this.context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
