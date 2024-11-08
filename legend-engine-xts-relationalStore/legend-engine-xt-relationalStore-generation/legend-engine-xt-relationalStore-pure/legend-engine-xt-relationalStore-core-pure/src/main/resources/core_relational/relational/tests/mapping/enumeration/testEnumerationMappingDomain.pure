@@ -250,26 +250,6 @@ Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeT
     }
 )
 
-Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTypeInfoDistinctTransformersMapping
-(
-  include meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping
-
-    EmployeeType: EnumerationMapping Foo3
-    {
-        CONTRACT:  ['FTC', 'FTO', 'FTP'],
-        FULL_TIME: 'FTE'
-    }
-
-    EmployeeTypeInfo: Relational
-    {
-        scope([myDB]default.employeeTable)
-        (
-            type : EnumerationMapping Foo : type,
-            employeeType : EnumerationMapping Foo3 : type
-        )
-    }
-)
-
 Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping2
 (
 
