@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-snowflakeApp</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.65.3-SNAPSHOT</version>
+        <version>4.65.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
