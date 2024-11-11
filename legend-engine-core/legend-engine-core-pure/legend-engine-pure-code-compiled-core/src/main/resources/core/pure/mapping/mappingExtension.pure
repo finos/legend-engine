@@ -149,7 +149,8 @@ function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): Enumeration
 function meta::pure::mapping::valueTransformerEquality(a:ValueTransformer<Any>[0..1], b:ValueTransformer<Any>[0..1]):Boolean[1]
 {
   ($a->isEmpty() && $b->isEmpty()) || ($a->isNotEmpty() && $b->isNotEmpty() && $a->type() == $b->type() && $a->match([
-                                                                                                                      i:EnumerationMapping<Any>[1]| $i.enumeration == $b->cast(@EnumerationMapping<Any>).enumeration && enumValueMappingsEquality($i.enumValueMappings->zip($b->cast(@EnumerationMapping<Any>).enumValueMappings));
+                                                                                                                      i:EnumerationMapping<Any>[1]| $i.enumeration == $b->cast(@EnumerationMapping<Any>).enumeration && enumValueMappingsEquality($i.enumValueMappings->zip($b->cast(@EnumerationMapping<Any>).enumValueMappings));,
+                                                                                                                      v:ValueTransformer<Any>[1]| false
                                                                                                                     ]))
 }
 
