@@ -83,3 +83,36 @@ function meta::pure::test::testWrapper::assertLineage(storeLineage:String[*], cl
 {
   assertSameElements($storeLineage, $result.storeLineage.nodes.data.id) && assertSameElements($classLineage, $result.classLineage.nodes.data.id) && assertEquals($reportLineage, meta::pure::test::testWrapper::resultLineageToString($result.resultLineage));
 }
+
+
+Class my::C<T>
+{
+  fn:FunctionDefinition<{->T[1]}>[1];
+}
+
+Class my::Result<T>
+{
+    result:T[1];
+}
+
+function my::f():String[1]
+{
+  'test';
+}
+
+function my::test<T>(f:Function<{my::C<T>[1]->my::Result<T>[1]}>[1]):Boolean[1]
+{
+  ^my::C<T>(fn=my::f());
+  true;
+}
+
+ function  my::evalFN<T>(holder:my::C<T>[1]):my::Result<T>[1]
+{
+   ^my::Result<T>(result= $holder.fn->eval());
+}
+
+function my::go():Any[*]
+{
+  assert(my::test(my::evalFN_C_1__Result_1_)=='test');
+}
+ 
