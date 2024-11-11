@@ -150,7 +150,7 @@ function meta::pure::mapping::valueTransformerEquality(a:ValueTransformer<Any>[0
 {
   ($a->isEmpty() && $b->isEmpty()) || ($a->isNotEmpty() && $b->isNotEmpty() && $a->type() == $b->type() && $a->match([
                                                                                                                       i:EnumerationMapping<Any>[1]| $i.enumeration == $b->cast(@EnumerationMapping<Any>).enumeration && enumValueMappingsEquality($i.enumValueMappings->zip($b->cast(@EnumerationMapping<Any>).enumValueMappings));,
-                                                                                                                      v:ValueTransformer<Any>[1]| false
+                                                                                                                      v:ValueTransformer<Any>[1]| fail('UnSupported Operation: Only supports EnumerationMapping')
                                                                                                                     ]))
 }
 
