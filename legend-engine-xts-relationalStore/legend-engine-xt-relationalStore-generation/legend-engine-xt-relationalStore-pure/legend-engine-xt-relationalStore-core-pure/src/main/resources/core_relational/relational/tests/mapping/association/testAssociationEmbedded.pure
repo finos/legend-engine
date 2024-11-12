@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::pct::*;
 import meta::pure::test::fct::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
@@ -31,72 +32,24 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::association::e
 }
 
 
-
-// function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisations():Boolean[1]
-// {
-//    let testWrapper = meta::pure::test::testWrapper::testWrapper(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-//    let result1 =$testWrapper->meta::pure::test::testWrapper::getTabularDatasetResult().values->at(0);     
-//    let lineage = $testWrapper->meta::pure::test::testWrapper::getLineage();
-//     meta::pure::test::testWrapper::assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'],
-//                                                 ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-//                                                '[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]',$lineage);
-//    assertEquals(5, $result1.rows->size());
-//    assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
-// }
-
-function <<FCT.test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisations<T>(f:Function<{FunctionDefinition<T>[1],meta::pure::mapping::Mapping[1],meta::core::runtime::Runtime[1],meta::pure::extension::Extension[*]->meta::pure::test::fct::Result<T>[1]}>[1]):Boolean[1]
+function <<PCT.test>> meta::relational::tests::mapping::association::embedded::testEmbbeddedAssociation<T>(f:Function<{FunctionDefinition<T>[1],TestParameters[1]->TestResult[1]}>[1]):Boolean[1]
 {
-                                                                                                               //Function<{FunctionDefinition<Any>[1],Mapping[1],Runtime[1],Extension[*]}>
-//Function<{Function<{->T[m]}>[1]->T[m]}>[1],_:LambdaFunction<{->TabularDataSet[1]}>[1],_:Mapping[1],_:Runtime[1],_:Extension[*])
- 
-   let testWrapper =     $f->eval(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team']), associationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let fn = {|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team'])};
+   let parameters  =  meta::pure::test::fct::testParameters(  associationMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let fctResult = $f->eval($fn,$parameters);
    
-   
-  if(pair( $testWrapper->instanceOf(ExecuteResult),  
-           {|let result1 = $testWrapper->cast(@ExecuteResult<TabularDataSet>).result.values->at(0);
-           assertEquals(5, $result1.rows->size());
-           assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
-            }            ),
-    pair($testWrapper->instanceOf(meta::pure::testWrapper::LineageResult),                   
-           //assertLineage             
-           []
-        ) ,true            
-                        );
+   assertTDSExecuteResult($fctResult,   
+          { result: Result<TabularDataSet|*>[1] |
+             let result1 = $result.values->at(0);
+            assertEquals(5, $result1.rows->size());
+            assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
+            } );
+    assertLineageResult($fctResult,['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'],
+                                   ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
+                                   '[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]');
+                           
 
-   
-   let result1 = $testWrapper->cast(@ExecuteResult<TabularDataSet>).result.values->at(0);
-  
-   // let result1 =$testWrapper->meta::pure::test::testWrapper::getTabularDatasetResult().values->at(0);     
-  //  let lineage = $testWrapper->meta::pure::test::testWrapper::getLineage();
-  //   meta::pure::test::testWrapper::assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'],
-  //                                               ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-  //                                              '[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]',$lineage);
-
-true;
-}
-
-
-// function <<FCT.test>> meta::relational::tests::mapping::association::embedded::testPersonToOrganisationsHolder<T|m>(f:Function<{ExecuteHolder<T|m>[1]->ExecuteResult2[1]}>[1]):Boolean[1]
-// {
-//                                                                                                                //Function<{FunctionDefinition<Any>[1],Mapping[1],Runtime[1],Extension[*]}>
-// //Function<{Function<{->T[m]}>[1]->T[m]}>[1],_:LambdaFunction<{->TabularDataSet[1]}>[1],_:Mapping[1],_:Runtime[1],_:Extension[*])
-//   let ex =   ^meta::pure::test::fct::ExecuteHolder<T|*>( fn = {|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.organizations.name], ['name', 'firm', 'team'])},
-//                                             mapping =  associationMapping,
-//                                             runtime = meta::external::store::relational::tests::testRuntime(),
-//                                             extensions = meta::relational::extension::relationalExtensions());
-
-
-//    let testWrapper =     $f->eval($ex).result->cast(@meta::pure::mapping::Result<TabularDataSet|*>);
-  
-//    let result1 =$testWrapper.values->at(0);     
-//   //  let lineage = $testWrapper->meta::pure::test::testWrapper::getLineage();
-//   //   meta::pure::test::testWrapper::assertLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultORGANIZATIONS', 'tb_myDBdefaultPERSON_FIRM_DENORM'],
-//   //                                               ['Lambda', 'meta::relational::tests::model::simple::Firm', 'meta::relational::tests::model::simple::Organization', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
-//   //                                              '[firm: [PERSON_FIRM_DENORM.FIRM_LEGALNAME <TableAliasColumn>], name: [PERSON_FIRM_DENORM.PERSON_LASTNAME <TableAliasColumn>], team: [ORGANIZATIONS.FIRM_ID <JoinTreeNode>, ORGANIZATIONS.NAME <TableAliasColumn>, PERSON_FIRM_DENORM.FIRM_ID <JoinTreeNode>]]',$lineage);
-//     assertEquals(5, $result1.rows->size());
-//     assertSameElements(['Smith Firm X Team 1', 'Smith Firm X Team 2', 'Johnson Firm X Team 1', 'Johnson Firm X Team 2', 'Roberts Firm A Team 3'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('team')));
-// true;
-// }
+}                          
 
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testFirmToOrganisations():Boolean[1]
