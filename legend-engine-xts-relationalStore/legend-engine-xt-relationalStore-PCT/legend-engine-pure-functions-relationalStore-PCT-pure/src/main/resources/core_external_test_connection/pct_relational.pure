@@ -29,7 +29,7 @@ import meta::pure::metamodel::relation::*;
 import meta::relational::tests::pct::process::*;
 import meta::pure::test::pct::*;
 
-function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithH2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='H2'} meta::relational::tests::pct::testAdapterForRelationalWithH2Execution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,
@@ -37,7 +37,7 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
-function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='DuckDB'} meta::relational::tests::pct::testAdapterForRelationalWithDuckDBExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,
@@ -45,7 +45,7 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
-function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='PostgreSQL'} meta::relational::tests::pct::testAdapterForRelationalWithPostgresExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,
@@ -53,7 +53,7 @@ function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalW
   )
 }
 
-function <<PCT.adapter>> meta::relational::tests::pct::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::pct::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
   meta::relational::tests::pct::testAdapterForRelationalExecution(
       $f,

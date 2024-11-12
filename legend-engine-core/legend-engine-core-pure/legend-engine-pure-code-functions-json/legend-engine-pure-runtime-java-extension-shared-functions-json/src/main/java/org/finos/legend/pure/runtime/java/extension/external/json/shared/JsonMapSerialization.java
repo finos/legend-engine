@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -58,7 +59,7 @@ public class JsonMapSerialization<T extends CoreInstance> extends MapConversion<
         {
             StringBuilder builder = new StringBuilder("Only String-key map conversions are supported, found key type: ");
             PackageableElement.writeUserPathForPackageableElement(builder, type);
-            throw new PureExecutionException(builder.toString());
+            throw new PureExecutionException(builder.toString(), Stacks.mutable.empty());
         }
         Conversion<Object, String> keyConcreteConversion = (Conversion<Object, String>)context.getConversionCache().getConversion(TypeCoreInstanceWrapper.toType(type), context);
         return keyConcreteConversion.apply(context.extractPrimitiveValue(key), context);

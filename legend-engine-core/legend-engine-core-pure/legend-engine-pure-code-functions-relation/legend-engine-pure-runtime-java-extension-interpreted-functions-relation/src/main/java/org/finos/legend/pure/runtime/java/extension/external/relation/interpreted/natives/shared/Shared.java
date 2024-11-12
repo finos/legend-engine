@@ -19,6 +19,7 @@ import io.deephaven.csv.reading.CsvReader;
 import io.deephaven.csv.sinks.SinkFactory;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
@@ -59,9 +60,9 @@ public abstract class Shared extends NativeFunction
         return (RelationType<?>) params.get(i).getValueForMetaPropertyToOne("genericType").getValueForMetaPropertyToMany("typeArguments").getFirst().getValueForMetaPropertyToOne("rawType");
     }
 
-    public static CoreInstance getReturnGenericType(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, CoreInstance functionExpressionToUseInStack, ProcessorSupport processorSupport)
+    public static CoreInstance getReturnGenericType(Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport)
     {
-        return GenericType.makeTypeArgumentAsConcreteAsPossible(functionExpressionToUseInStack.getValueForMetaPropertyToOne("genericType"), resolvedTypeParameters.get(0), resolvedMultiplicityParameters.get(0), processorSupport);
+        return GenericType.makeTypeArgumentAsConcreteAsPossible(functionExpressionCallStack.peek().getValueForMetaPropertyToOne("genericType"), resolvedTypeParameters.get(0), resolvedMultiplicityParameters.get(0), processorSupport);
     }
 
 

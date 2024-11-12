@@ -16,6 +16,7 @@ package org.finos.legend.engine.pure.runtime.external.relational.postgresSql.par
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -43,7 +44,7 @@ public class ParseSqlStatementToJson extends AbstractNativeFunctionGeneric
         }
         catch (JsonProcessingException e)
         {
-            throw new PureExecutionException(e);
+            throw new PureExecutionException(e, Stacks.mutable.empty());
         }
     }
 }

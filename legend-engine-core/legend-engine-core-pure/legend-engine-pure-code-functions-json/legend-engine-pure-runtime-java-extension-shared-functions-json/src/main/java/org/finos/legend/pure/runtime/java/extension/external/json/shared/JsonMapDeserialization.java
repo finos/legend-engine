@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.shared.conversion.ConversionContext;
@@ -29,6 +30,6 @@ public class JsonMapDeserialization<T extends CoreInstance> extends MapConversio
     @Override
     public T apply(Object input, ConversionContext context)
     {
-        throw new PureExecutionException("Map deserialization is not currently supported.");
+        throw new PureExecutionException("Map deserialization is not currently supported.", Stacks.mutable.empty());
     }
 }

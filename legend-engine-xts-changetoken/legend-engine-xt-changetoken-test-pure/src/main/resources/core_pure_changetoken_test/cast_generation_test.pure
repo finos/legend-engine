@@ -1,0 +1,153 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::compiler::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::json::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+import meta::pure::changetoken::tests::*;
+
+function <<test.Test>> meta::pure::changetoken::tests::testToMultiplicity(): Any[*]
+{
+    assertToMultiplicity('0', 0, 0, PureZero);
+    assertToMultiplicity('1', 1, 1, PureOne);
+    assertToMultiplicity('0..1', 0, 1, ZeroOne);
+    assertToMultiplicity('2', 2, 2, []);
+    assertToMultiplicity('2..2', 2, 2, []);
+    assertToMultiplicity('*', 0, [], ZeroMany);
+    assertToMultiplicity('0..*', 0, [], ZeroMany);
+    assertToMultiplicity('1..*', 1, [], OneMany);
+    assertToMultiplicity('2..4', 2, 4, []);
+    assertToMultiplicity('0..4', 0, 4, []);
+    assertToMultiplicity('5..*', 5, [], []);
+}
+
+function <<access.private>> meta::pure::changetoken::tests::assertToMultiplicity(input: String[1], min: Integer[1], max: Integer[0..1], expected: Multiplicity[0..1]): Boolean[1]
+{
+    let multiplicity = $input->toMultiplicity();
+    assertEquals($min, $multiplicity->getLowerBound());
+    assertEquals($max, if($multiplicity->hasUpperBound(), | $multiplicity->getUpperBound(), | []));
+    if($expected != [], | assertEquals($expected, $multiplicity), | true);
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::testExtractTypeMultiplicity(): Any[*]
+{
+    assertExtractTypeMultiplicity('String[1]', 'String', 1, 1);
+    assertExtractTypeMultiplicity('Integer[*]', 'Integer', 0, []);
+    assertExtractTypeMultiplicity('Float[0..1]', 'Float', 0, 1);
+    assertExtractTypeMultiplicity('Decimal[10]', 'Decimal', 10, 10);
+}
+
+function <<access.private>> meta::pure::changetoken::tests::assertExtractTypeMultiplicity(input: String[1], type: String[1], min: Integer[1], max: Integer[0..1]): Boolean[1]
+{
+    let typeMultiplicity = $input->extractTypeMultiplicity();
+    assertEquals($type, $typeMultiplicity.first);
+    let multiplicity = $typeMultiplicity.second;
+    assertEquals($min, $multiplicity->getLowerBound());
+    assertEquals($max, if($multiplicity->hasUpperBound(), | $multiplicity->getUpperBound(), | []));
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromJson(json: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $json->setupSuiteFromJson('@type', 'version', true, false, true);
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromJson(json: String[1], alwaysStampAtRootVersion: Boolean[1], optionalStampAllVersions: Boolean[1], obsoleteJsonAsString: Boolean[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $json->setupSuiteFromJson('@type', 'version', $alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString);
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromJson(json: String[1], typeKeyName: String[1], versionKeyName: String[0..1]): meta::external::language::java::metamodel::Class[1]
+{
+  $json->setupSuiteFromJson($typeKeyName, $versionKeyName, true, false, true);
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromJson(json: String[1], typeKeyName: String[1], versionKeyName: String[0..1], alwaysStampAtRootVersion: Boolean[1], optionalStampAllVersions: Boolean[1], obsoleteJsonAsString: Boolean[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $json->jsonToVersions($typeKeyName)->setupSuiteFromVersions($typeKeyName, $versionKeyName, $alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString);
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromVersions(versions: Versions[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $versions->setupSuiteFromVersions('@type', 'version', true, false, true);
+}
+
+function meta::pure::changetoken::tests::setupSuiteFromVersions(versions: Versions[1], typeKeyName: String[1], versionKeyName: String[0..1], alwaysStampAtRootVersion: Boolean[1], optionalStampAllVersions: Boolean[1], obsoleteJsonAsString: Boolean[1]): meta::external::language::java::metamodel::Class[1]
+{
+  let project = generateCastFromVersions($alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString, $typeKeyName, $versionKeyName, $versions, 'TestCast');
+  let classes = allClasses($project);
+  $classes->toOne();
+}
+
+function meta::pure::changetoken::tests::upcast(class: meta::external::language::java::metamodel::Class[1], json: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('upcast', $json->parseJSON()->inlineJsonValue(), javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::upcast(class: meta::external::language::java::metamodel::Class[1], json: String[1], currentVersion: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('upcast', [$json->parseJSON()->inlineJsonValue(), j_string($currentVersion)], javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::downcast(class: meta::external::language::java::metamodel::Class[1], json: String[1], targetVersion: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('downcast', [$json->parseJSON()->inlineJsonValue(), j_string($targetVersion)], javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::downcast(class: meta::external::language::java::metamodel::Class[1], json: String[1], targetVersion: String[1], currentVersion: String[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaMap(javaString(), javaObject()), 'test', [], j_return($class->j_invoke('downcast', [$json->parseJSON()->inlineJsonValue(), j_string($targetVersion), j_string($currentVersion)], javaMap(javaString(), javaObject())))));
+}
+
+function meta::pure::changetoken::tests::versions(class: meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+  $class->addMethod(javaMethod(['public', 'static'], javaList(javaString()), 'test', [], j_return($class->j_invoke('versions', []))));
+}
+
+function meta::pure::changetoken::tests::expect(class: meta::external::language::java::metamodel::Class[1], json: String[1]): Boolean[1]
+{
+  let ret = compileAndExecuteJava($class, ^CompilationConfiguration(classpath=[]), ^ExecutionConfiguration(class='org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.TestCast', method='test'));
+  assert($ret.compilationResult.errors->isEmpty(), | $ret.compilationResult.errors->joinStrings('expected no errors, got: \'', '\', \'', '\''));
+  assert($ret.compilationResult.successful, | 'expected successful compilation');
+  assert($ret.executionResult->toOne().error->isEmpty(), | 'expected no execution error, got: ' + $ret.executionResult->toOne().error->toOne());
+  assert($ret.executionResult->toOne().successful, | 'expected successful execution');
+  assert(!$ret.executionResult->isEmpty(), | 'expected non-empty execution result');
+  let retJson = $ret.executionResult->toOne().returnValue->toOne()->toCompactJSONString();
+  assert($retJson->parseJSON()->sort()->toCompactJSONString() == $json->parseJSON()->sort()->toCompactJSONString(), | 'unexpected return value, got: ' + $retJson);
+}
+
+function meta::pure::changetoken::tests::exception(class: meta::external::language::java::metamodel::Class[1], error: String[1]): Boolean[1]
+{
+  let ret = compileAndExecuteJava($class, ^CompilationConfiguration(classpath=[]), ^ExecutionConfiguration(class='org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.TestCast', method='test'));
+  assert($ret.compilationResult.errors->isEmpty(), | $ret.compilationResult.errors->joinStrings('expected no errors, got: \'', '\', \'', '\''));
+  assert($ret.compilationResult.successful, | 'expected successful compilation');
+  assert($ret.executionResult->toOne().error->isEmpty()->not(), | 'expected execution error');
+  assert($ret.executionResult->toOne().successful->not(), | 'expected not successful execution');
+  assert(!$ret.executionResult->isEmpty(), | 'expected non-empty execution result');
+  assert($ret.executionResult->toOne().returnValue->isEmpty(), | 'unexpected no return value, got: ' + $ret.executionResult->toOne().returnValue->toOne()->toString());
+  assert($ret.executionResult->toOne().error->toOne()->toString()->contains($error), | 'expected execution error, got: ' + $ret.executionResult->toOne().error->toOne()->toString());
+}
+
+function <<access.private>> meta::pure::changetoken::tests::toCompactJSONString(json:JavaValue[1]):String[1]
+{
+    $json->match([
+                  s:JavaObject[1] | if($s.class->in(['java.lang.Boolean', 'java.lang.Integer', 'java.lang.Double']), | $s.string, | '"' + $s.string->meta::json::escape() + '"'),
+                  n:JavaNull[1] | 'null',
+                  a:JavaIterable[1] | $a.values->map(v | $v->toCompactJSONString())->joinStrings('[', ',', ']'),
+                  o:JavaMap[1] | $o.keyValuePairs->map(kv | $kv.first->toCompactJSONString() + ':' + $kv.second->toCompactJSONString())->joinStrings('{', ',', '}')
+                 ])
+}

@@ -67,12 +67,22 @@ function <<access.private>> meta::external::store::relational::modelJoins::getCl
   $classMappings->filter(c| $c.id == $id)->toOne('More than one class mapping at the given id: ' + $id);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::getAttributeRelationalOperationElement(propertyImplementations:SimpleFunctionExpression[*], thisOrThat:String[1], id:String[1], classMappings:RootRelationalInstanceSetImplementation[*]):RelationalOperationElement[1]
+function <<access.private>> meta::external::store::relational::modelJoins::convertToRelationalElement(vs:ValueSpecification[1], sourceSet:RootRelationalInstanceSetImplementation[1], targetSet: RootRelationalInstanceSetImplementation[1]):RelationalOperationElement[1]
 {
-  let propertyImplementation = $propertyImplementations->filter(p|$p.parametersValues->cast(@VariableExpression).name->toOne()==$thisOrThat).func->toOne();
-  let classMapping = $classMappings->getClassMappingAtId($id);
-  let relationalPropertyMapping = $classMapping.propertyMappings->filter(p|$p.property==$propertyImplementation)->cast(@RelationalPropertyMapping)->toOne();
-  $relationalPropertyMapping.relationalOperationElement->toOne('Localized relational model joins cannot support more than one relational operation element per property mapping. Found on class mapping id: ' + $id);
+  $vs->match([
+    p : SimpleFunctionExpression[1] | 
+      assert($p.func->instanceOf(Property),|'Expected only property function calls in model joins.');
+      let var = $p.parametersValues->evaluateAndDeactivate()->at(0);
+      assert($var->instanceOf(VariableExpression) && $var->cast(@VariableExpression).name->in(['this','that']),|'Properties of $this or $that can be accessed in model joins.');
+      let classMapping = if($var->cast(@VariableExpression).name == 'this', | $sourceSet, | $targetSet);
+      let relationalPropertyMapping = $classMapping.propertyMappings->filter(x|$x.property==$p.func)->cast(@RelationalPropertyMapping)->toOne();
+      $relationalPropertyMapping.relationalOperationElement->toOne('Localized relational model joins cannot support more than one relational operation element per property mapping. Found on class mapping id: ' + $classMapping.id);,
+
+    v : InstanceValue[1] |
+      assert($v.values->size() == 1 && ($v.values->toOne()->instanceOf(String) || $v.values->toOne()->instanceOf(Number) || $v.values->toOne()->instanceOf(Date)),|'The join key should only have one mapping.');
+      ^Literal(value=$v.values->toOne());
+  ]);
+
 }
 
 function <<access.private>> meta::external::store::relational::modelJoins::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:RootRelationalInstanceSetImplementation[*]): Join[1]
@@ -85,16 +95,15 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
   let targetDatabase = $targetMainTableAlias.database->toOne();
   let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
 
-  assertContains(['equal', 'not', 'and', 'or'], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
+  assertContains(['equal', 'not', 'and', 'or', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
 
   let join = if(
-    $functionOperator=='equal' || $functionOperator=='not',
-    | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
+    $functionOperator->in(['equal', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ]),
+    | let expressionParameters = $expressionSequence.parametersValues->evaluateAndDeactivate();
+      let sourceSet = getClassMappingAtId($classMappings, $sourceId);
+      let targetSet = getClassMappingAtId($classMappings, $targetId);
 
-      let sourceRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'this', $sourceId, $classMappings);
-      let targetRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'that', $targetId, $classMappings);
-
-      let parameters = $sourceRelationalOperationElement->concatenate($targetRelationalOperationElement);
+      let parameters = $expressionParameters->map(e | $e->convertToRelationalElement($sourceSet, $targetSet));
       let operation = ^DynaFunction(name=$functionOperator, parameters=$parameters);
       ^Join(
         name=$joinName,
@@ -117,4 +126,3 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
   );
 
 }
-

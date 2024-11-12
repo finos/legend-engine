@@ -80,7 +80,7 @@ public class HelperModelBuilder
             if (property.defaultValue != null)
             {
                 LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(Collections.singletonList(property.defaultValue.value), Collections.emptyList(), context);
-                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), null);
+                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::DefaultValue"));
                 defaultValue._functionDefinition(lambdaFunction);
             }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
@@ -203,7 +203,7 @@ public class HelperModelBuilder
     public static void processClassConstraints(Class srcClass, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass, ProcessingContext ctx, ValueSpecification thisVariable)
     {
         ctx.addInferredVariables("this", thisVariable);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ClassConstraintValueSpecificationContext classConstraintValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::ClassConstraintValueSpecificationContext"))._class(targetClass);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ClassConstraintValueSpecificationContext classConstraintValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::ClassConstraintValueSpecificationContext"))._type(targetClass);
         RichIterable<Constraint> pureConstraints = processConstraints(srcClass.constraints, context, srcClass._package, srcClass.name, classConstraintValueSpecificationContext, ctx);
         ctx.flushVariable("this");
         targetClass._constraints(pureConstraints);

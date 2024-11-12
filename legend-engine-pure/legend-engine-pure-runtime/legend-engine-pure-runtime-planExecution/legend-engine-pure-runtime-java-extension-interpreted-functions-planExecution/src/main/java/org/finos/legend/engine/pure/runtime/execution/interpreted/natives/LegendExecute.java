@@ -16,6 +16,7 @@ package org.finos.legend.engine.pure.runtime.execution.interpreted.natives;
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -52,14 +53,14 @@ public class LegendExecute extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         CoreInstance planAsJson = params.get(0);
         CoreInstance vars = params.get(1);
 
         String planAsJsonValue = Instance.getValueForMetaPropertyToOneResolved(planAsJson, M3Properties.values, processorSupport).getName();
         Map<String, Object> planVars = this.pureToPlanVariables(vars, processorSupport);
-        String result = org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJsonValue, planVars);
+        String result = org.finos.legend.engine.pure.runtime.execution.shared.LegendExecute.doExecute(planAsJsonValue, planVars, functionExpressionCallStack);
         return ValueSpecificationBootstrap.newStringLiteral(this.repository, result, processorSupport);
     }
 

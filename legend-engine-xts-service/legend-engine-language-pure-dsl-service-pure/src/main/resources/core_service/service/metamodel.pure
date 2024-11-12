@@ -103,12 +103,31 @@ Class meta::legend::service::metamodel::ExecutionParameters
 }
 
 Class meta::legend::service::metamodel::SingleExecutionParameters extends ExecutionParameters
+[
+  runtimeOrFunction: assert($this.runtime->concatenate($this.runtimeComponents)->size() == 1, 'Must specify either a runtime or a runtime function')
+]
 {
     key : String[1];
     mapping : Mapping[1];
-    runtime : Runtime[1];
+    runtime : Runtime[0..1];
+    runtimeComponents : meta::legend::service::metamodel::RuntimeComponents[0..1];
+
+    rebuildRuntime(data:String[1])
+    {
+        assert($this.runtimeComponents->isNotEmpty(), 'Must exist');
+        let r = $this.runtimeComponents->toOne();
+        mergeRuntimes([getRuntimeWithModelQueryConnection($r.class, $r.binding, $data), $r.runtime]);
+    }:Runtime[1];
+    
 }
 
+Class meta::legend::service::metamodel::RuntimeComponents
+{
+    runtime : Runtime[1];
+    binding: meta::external::format::shared::binding::Binding[1];
+    class: Class<Any>[1];
+
+}
 Class meta::legend::service::metamodel::MultiExecutionParameters extends ExecutionParameters
 {
     masterKey: String[1];

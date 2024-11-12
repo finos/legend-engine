@@ -31,7 +31,7 @@ public class TestAssertSize extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("expected size: 3, actual size: 2", 3, 9, "assertSize([1, 2], 3)");
+        assertExpressionRaisesPureException("expected size: 3, actual size: 2", 21, 5, "assertSize([1, 2], 3)");
     }
 
     protected static FunctionExecution getFunctionExecution()

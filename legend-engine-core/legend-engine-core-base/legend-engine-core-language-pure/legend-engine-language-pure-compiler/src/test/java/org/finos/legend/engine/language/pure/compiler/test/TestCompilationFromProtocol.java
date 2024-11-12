@@ -53,21 +53,7 @@ public class TestCompilationFromProtocol
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
                 PureModel pureModel = Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity().getName());
-                pureModelContextData.getElements().parallelStream().forEach(element ->
-                {
-                    String fullPath;
-                    if (element instanceof Function)
-                    {
-                        Function function = (Function) element;
-                        String functionSignature = HelperModelBuilder.getSignature(function);
-                        fullPath = pureModel.buildPackageString(function._package, functionSignature);
-                    }
-                    else
-                    {
-                        fullPath = element.getPath();
-                    }
-                    pureModel.getPackageableElement(fullPath, element.sourceInformation);
-                });
+                pureModelContextData.getElements().parallelStream().forEach(pureModel::getPackageableElement);
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

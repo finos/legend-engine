@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -48,7 +49,7 @@ public class LegendTest extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         String clientVersion = System.getProperty("legend.test.clientVersion");
         String serverVersion = System.getProperty("legend.test.serverVersion");
@@ -60,7 +61,7 @@ public class LegendTest extends NativeFunction
         {
             if (port == -1)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'legend.test.server.host' is set to '" + host + "' however 'legend.test.server.port' has not been set!");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'legend.test.server.host' is set to '" + host + "' however 'legend.test.server.port' has not been set!", functionExpressionCallStack);
             }
             if (serializationKind == null || !(serializationKind.equals("text") || serializationKind.equals("json")))
             {
@@ -68,11 +69,11 @@ public class LegendTest extends NativeFunction
             }
             if (clientVersion == null)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'legend.test.clientVersion' should be set");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'legend.test.clientVersion' should be set", functionExpressionCallStack);
             }
             if (serverVersion == null)
             {
-                throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "The system variable 'legend.test.serverVersion' should be set");
+                throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "The system variable 'legend.test.serverVersion' should be set", functionExpressionCallStack);
             }
             MutableList<CoreInstance> fParams = Lists.mutable.with(
                     ValueSpecificationBootstrap.newStringLiteral(this.repository, clientVersion, this.functionExecution.getProcessorSupport()),
@@ -86,7 +87,7 @@ public class LegendTest extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);
@@ -98,7 +99,7 @@ public class LegendTest extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);

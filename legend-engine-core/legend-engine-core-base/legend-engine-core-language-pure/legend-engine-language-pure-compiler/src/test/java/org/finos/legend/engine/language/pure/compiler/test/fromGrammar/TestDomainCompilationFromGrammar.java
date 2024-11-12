@@ -2410,6 +2410,78 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties for association", 1, worksForPropertyFromAssoc.size());
     }
 
+    @Test
+    public void testClassesWithBusinessTemporalMilesoning()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Employee \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "  firm: apps::Firm[1]; \n" +
+                        "}\n\n" +
+                        "Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Firm \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "} \n" +
+                        "Association apps::Employee_Firm \n" +
+                        "{ \n" +
+                        "  worksFor: apps::Firm[*]; \n" +
+                        "  employs: apps::Employee[*]; \n" +
+                        "} \n");
+        PureModel model = modelWithInput.getTwo();
+        Class<?> typeEmployee = model.getClass("apps::Employee", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<?, ?>> firmProperty = typeEmployee._originalMilestonedProperties().select(p -> p.getName().equals("firm"));
+        Assert.assertEquals("Missing firm property in _originalMilestonedProperties", 1, firmProperty.size());
+        RichIterable<? extends Property<?, ?>> worksForProperty = typeEmployee._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties", 1, worksForProperty.size());
+
+        Class<?> typeFirm = model.getClass("apps::Firm", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<?, ?>> employsProperty = typeFirm._originalMilestonedProperties().select(p -> p.getName().equals("employs"));
+        Assert.assertEquals("Missing employs property in _originalMilestonedProperties", 1, employsProperty.size());
+
+        Association association = model.getAssociation("apps::Employee_Firm", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<? extends Object, ? extends Object>> originalMilestonedProperties = association._originalMilestonedProperties();
+        Assert.assertEquals("Expected 2 original milestoned properties, but found " + originalMilestonedProperties.size(), 2, originalMilestonedProperties.size());
+        RichIterable<? extends Property<?, ?>> worksForPropertyFromAssoc = originalMilestonedProperties.select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties for association", 1, worksForPropertyFromAssoc.size());
+        RichIterable<? extends Property<?, ?>> employsPropertyFromAssoc = originalMilestonedProperties.select(p -> p.getName().equals("employs"));
+        Assert.assertEquals("Missing employs property in _originalMilestonedProperties for association", 1, employsPropertyFromAssoc.size());
+    }
+
+    @Test
+    public void testClassesWithBusinessTemporalMilesoningWithDuplicatePropertyName()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Employee \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "  firm: apps::Firm[1]; \n" +
+                        "}\n\n" +
+                        "Class <<meta::pure::profiles::temporal.businesstemporal>> apps::Firm \n" +
+                        "{ \n" +
+                        "  name: String[1]; \n" +
+                        "  employs: apps::Employee[1]; \n" +
+                        "} \n" +
+                        "Association apps::Employee_Firm \n" +
+                        "{ \n" +
+                        "  worksFor: apps::Firm[*]; \n" +
+                        "  employs: apps::Employee[*]; \n" +
+                        "} \n");
+        PureModel model = modelWithInput.getTwo();
+        Class<?> type = model.getClass("apps::Employee", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<?, ?>> firmProperty = type._originalMilestonedProperties().select(p -> p.getName().equals("firm"));
+        Assert.assertEquals("Missing firm property in _originalMilestonedProperties", 1, firmProperty.size());
+        RichIterable<? extends Property<?, ?>> worksForProperty = type._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties", 1, worksForProperty.size());
+
+        Association association = model.getAssociation("apps::Employee_Firm", SourceInformation.getUnknownSourceInformation());
+        RichIterable<? extends Property<?, ?>> worksForPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("worksFor"));
+        Assert.assertEquals("Missing worksFor property in _originalMilestonedProperties for association", 1, worksForPropertyFromAssoc.size());
+
+        RichIterable<? extends Property<?, ?>> employsPropertyFromAssoc = association._originalMilestonedProperties().select(p -> p.getName().equals("employs"));
+        Assert.assertEquals("Missing employs property in _originalMilestonedProperties for association", 1, employsPropertyFromAssoc.size());
+    }
+
     public String getMilestoningModelWithDatePropagationAndInheritance()
     {
         return "###Pure\n" +

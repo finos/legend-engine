@@ -365,7 +365,11 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
                 let fromMapping            = $resolvedParameters->at(0)->cast(@Mapping);
-                let fromRuntime            = $resolvedParameters->at(1)->cast(@Runtime);
+                let fromRuntime            = $resolvedParameters->at(1)
+                                              ->match([
+                                                 r:Runtime[1]| $r,
+                                                 fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)          
+                                              ])->toOne()->cast(@Runtime);
                 let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@meta::pure::runtime::ExecutionContext), | $executionContext);
 
                 let currentRoutingStrategy = $state.routingStrategy;

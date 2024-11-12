@@ -328,7 +328,7 @@ function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecificat
                                                                                        ->findPackagableElement(),
                                                                               p : PackageableElement[1] | $p
                                                                            ]);,
-                        i:ClassConstraintValueSpecificationContext[1] | $i.class,
+                        i:ClassConstraintValueSpecificationContext[1] | $i.type->cast(@PackageableElement),
                         i:InstanceValueSpecificationContext[1] | $i.instanceValue->meta::pure::functions::meta::findPackagableElement(),
                         p:ParameterValueSpecificationContext[1] | $p.functionExpression->meta::pure::functions::meta::findPackagableElement(),
                         k:KeyValueValueSpecificationContext[1] | $k.functionExpression->meta::pure::functions::meta::findPackagableElement()

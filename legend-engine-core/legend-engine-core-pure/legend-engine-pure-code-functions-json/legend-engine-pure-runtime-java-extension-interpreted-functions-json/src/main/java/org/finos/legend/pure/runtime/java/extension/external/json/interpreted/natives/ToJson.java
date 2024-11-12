@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
@@ -62,7 +63,7 @@ public class ToJson extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, final Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, final Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, final VariableContext variableContext, final CoreInstance functionExpressionToUseInStack, final Profiler profiler, final InstantiationContext instantiationContext, final ExecutionSupport executionSupport, Context context, final ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, final Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, final Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, final VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, final Profiler profiler, final InstantiationContext instantiationContext, final ExecutionSupport executionSupport, Context context, final ProcessorSupport processorSupport) throws PureExecutionException
     {
         ListIterable<? extends CoreInstance> pureObjects = Instance.getValueForMetaPropertyToManyResolved(params.get(0), M3Properties.values, processorSupport);
         if (pureObjects.getFirst() instanceof SimpleCoreInstance && !"Map".equals(pureObjects.getFirst().getClassifier().getName()))
@@ -83,7 +84,7 @@ public class ToJson extends NativeFunction
         ListIterable<? extends CoreInstance> encryptionStereotypes = jsonConfig.getValueForMetaPropertyToMany("encryptionStereotypes");
         ListIterable<? extends CoreInstance> decryptionStereotypes = jsonConfig.getValueForMetaPropertyToMany("decryptionStereotypes");
 
-        String json = JsonSerializer.toJson(pureObjects, processorSupport, new JsonSerializationContext<CoreInstance, CoreInstance>(new JsonSerializationCache(), functionExpressionToUseInStack.getSourceInformation(), processorSupport, new Stack<>(), typeKeyName, includeType, fullyQualifiedTypePath, serializeQualifiedProperties, dateTimeFormat, serializePackageableElementName, removePropertiesWithEmptyValues, serializeMultiplicityAsNumber, encryptionKey, encryptionStereotypes, decryptionKey, decryptionStereotypes)
+        String json = JsonSerializer.toJson(pureObjects, processorSupport, new JsonSerializationContext<CoreInstance, CoreInstance>(new JsonSerializationCache(), functionExpressionCallStack.peek().getSourceInformation(), processorSupport, new Stack<>(), typeKeyName, includeType, fullyQualifiedTypePath, serializeQualifiedProperties, dateTimeFormat, serializePackageableElementName, removePropertiesWithEmptyValues, serializeMultiplicityAsNumber, encryptionKey, encryptionStereotypes, decryptionKey, decryptionStereotypes)
         {
             @Override
             protected Object extractPrimitiveValue(Object potentiallyWrappedPrimitive)
@@ -96,7 +97,7 @@ public class ToJson extends NativeFunction
             @Override
             protected Object getValueForProperty(CoreInstance pureObject, Property property, String className)
             {
-                CoreInstance res = ToJson.this.functionExecution.executeProperty(property, true, resolvedTypeParameters, resolvedMultiplicityParameters, getParentOrEmptyVariableContext(variableContext), profiler, Lists.immutable.with(ValueSpecificationBootstrap.wrapValueSpecification(pureObject, true, processorSupport)), functionExpressionToUseInStack, instantiationContext, executionSupport);
+                CoreInstance res = ToJson.this.functionExecution.executeProperty(property, true, resolvedTypeParameters, resolvedMultiplicityParameters, getParentOrEmptyVariableContext(variableContext), profiler, Lists.immutable.with(ValueSpecificationBootstrap.wrapValueSpecification(pureObject, true, processorSupport)), functionExpressionCallStack, instantiationContext, executionSupport);
 
                 if (res instanceof InstanceValue)
                 {
@@ -109,7 +110,7 @@ public class ToJson extends NativeFunction
             @Override
             protected Object evaluateQualifiedProperty(CoreInstance pureObject, QualifiedProperty qualifiedProperty, Type type, Multiplicity multiplicity, String propertyName)
             {
-                CoreInstance res = ToJson.this.functionExecution.executeFunction(false, qualifiedProperty, Lists.immutable.with(ValueSpecificationBootstrap.wrapValueSpecification(pureObject, true, processorSupport)), new Stack<>(), new Stack<>(), getParentOrEmptyVariableContextForLambda(variableContext, qualifiedProperty), functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
+                CoreInstance res = ToJson.this.functionExecution.executeFunction(false, qualifiedProperty, Lists.immutable.with(ValueSpecificationBootstrap.wrapValueSpecification(pureObject, true, processorSupport)), new Stack<>(), new Stack<>(), getParentOrEmptyVariableContextForLambda(variableContext, qualifiedProperty), functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 if (res instanceof InstanceValue)
                 {
                     return ((InstanceValue) res)._values();
@@ -130,7 +131,7 @@ public class ToJson extends NativeFunction
                 return KeyValues.executeMap(repository, newPureObjects, processorSupport);
             }
 
-        }, functionExpressionToUseInStack.getSourceInformation());
+        }, functionExpressionCallStack.peek().getSourceInformation());
         return ValueSpecificationBootstrap.newStringLiteral(this.repository, json, processorSupport);
     }
 }

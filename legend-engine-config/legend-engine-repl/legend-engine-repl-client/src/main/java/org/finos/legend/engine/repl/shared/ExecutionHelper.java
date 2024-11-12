@@ -100,6 +100,11 @@ public class ExecutionHelper
         return resultHandler.value(res, pmcd, pureModel, execPlan);
     }
 
+    public static String printExecutionTime(long startTime)
+    {
+        return String.format("%.1f", (float) (System.currentTimeMillis() - startTime) / 1000) + "s";
+    }
+
     public static class ExecuteResultSummary
     {
         public final PureModelContextData pureModelContextData;

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.ide.api.execution.function;
 
 import io.swagger.annotations.Api;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.ide.api.execution.function.manager.ContentType;
 import org.finos.legend.engine.ide.api.execution.function.manager.ExecutionManager;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.util.Map;
+import java.util.Stack;
 
 @Api(tags = "Execute")
 @Path("/")
@@ -56,7 +58,7 @@ public class Execute
                 FunctionExecution functionExecution = this.pureSession.getFunctionExecution();
                 if (null == functionExecution || !functionExecution.isFullyInitializedForExecution())
                 {
-                    throw new PureExecutionException("System not initialized. Make sure that your pure code has compiled successfully in the IDE.");
+                    throw new PureExecutionException("System not initialized. Make sure that your pure code has compiled successfully in the IDE.", Stacks.mutable.empty());
                 }
                 ExecutionManager executionManager = new ExecutionManager(functionExecution);
 

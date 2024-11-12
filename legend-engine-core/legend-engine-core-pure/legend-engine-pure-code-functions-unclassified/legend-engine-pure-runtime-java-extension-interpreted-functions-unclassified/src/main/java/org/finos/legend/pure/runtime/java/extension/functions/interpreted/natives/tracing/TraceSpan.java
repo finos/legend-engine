@@ -20,6 +20,7 @@ import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -83,7 +84,7 @@ public class TraceSpan extends NativeFunction
     public CoreInstance execute(ListIterable<? extends CoreInstance> params,
                                 Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters,
                                 Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters,
-                                VariableContext variableContext, CoreInstance functionExpressionToUseInStack,
+                                VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack,
                                 Profiler profiler,
                                 InstantiationContext instantiationContext,
                                 ExecutionSupport executionSupport,
@@ -92,7 +93,7 @@ public class TraceSpan extends NativeFunction
     {
         if (Instance.instanceOf(Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.values, processorSupport), M3Paths.Nil, processorSupport))
         {
-            throw new PureExecutionException(functionExpressionToUseInStack.getSourceInformation(), "Evaluate can't take an instance of Nil as a function");
+            throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), "Evaluate can't take an instance of Nil as a function", functionExpressionCallStack);
         }
 
         // add check to disable tracing - use isRegistered()
@@ -109,7 +110,7 @@ public class TraceSpan extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);
@@ -119,7 +120,7 @@ public class TraceSpan extends NativeFunction
                 resolvedTypeParameters,
                 resolvedMultiplicityParameters,
                 variableContext,
-                functionExpressionToUseInStack,
+                functionExpressionCallStack,
                 profiler,
                 instantiationContext,
                 executionSupport,
@@ -131,7 +132,7 @@ public class TraceSpan extends NativeFunction
     private CoreInstance executeWithTrace(ListIterable<? extends CoreInstance> params,
                                           Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters,
                                           Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters,
-                                          VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler,
+                                          VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler,
                                           InstantiationContext instantiationContext, ExecutionSupport executionSupport,
                                           ProcessorSupport processorSupport, CoreInstance functionToApplyTo, String traceName)
     {
@@ -147,7 +148,7 @@ public class TraceSpan extends NativeFunction
                 }
 
                 resolveTagsAndAddToTrace(params, resolvedTypeParameters, resolvedMultiplicityParameters,
-                        variableContext, functionExpressionToUseInStack, profiler,
+                        variableContext, functionExpressionCallStack, profiler,
                         instantiationContext, executionSupport, processorSupport,
                         tagsCritical, span);
             }
@@ -158,7 +159,7 @@ public class TraceSpan extends NativeFunction
                     resolvedTypeParameters,
                     resolvedMultiplicityParameters,
                     getParentOrEmptyVariableContext(variableContext),
-                    functionExpressionToUseInStack,
+                    functionExpressionCallStack,
                     profiler,
                     instantiationContext,
                     executionSupport);
@@ -175,7 +176,7 @@ public class TraceSpan extends NativeFunction
     private void resolveTagsAndAddToTrace(ListIterable<? extends CoreInstance> params,
                                           Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters,
                                           Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters,
-                                          VariableContext variableContext, CoreInstance functionExpressionToUseInStack,
+                                          VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack,
                                           Profiler profiler, InstantiationContext instantiationContext,
                                           ExecutionSupport executionSupport, ProcessorSupport processorSupport,
                                           boolean tagsCritical, Span span)
@@ -192,7 +193,7 @@ public class TraceSpan extends NativeFunction
                             Lists.mutable.empty(), resolvedTypeParameters,
                             resolvedMultiplicityParameters,
                             getParentOrEmptyVariableContext(variableContext),
-                            functionExpressionToUseInStack, profiler, instantiationContext,
+                            functionExpressionCallStack, profiler, instantiationContext,
                             executionSupport);
                     MutableMap<CoreInstance, CoreInstance> tagsMap = ((MapCoreInstance) Instance.getValueForMetaPropertyToManyResolved(coreInstance, M3Properties.values, processorSupport).getFirst()).getMap();
                     addTags(span, tagsMap);

@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.json.compiled;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
@@ -90,11 +91,11 @@ public class JsonNativeImplementation
                 }
                 catch (NoSuchMethodException e)
                 {
-                    throw new PureExecutionException(si, "Error retrieving value of a property: " + propertyName + " from the class " + className + ". Property might not exist", e);
+                    throw new PureExecutionException(si, "Error retrieving value of a property: " + propertyName + " from the class " + className + ". Property might not exist", e, Stacks.mutable.empty());
                 }
                 catch (Exception e)
                 {
-                    throw new PureExecutionException(si, "Error serializing property: " + propertyName, e);
+                    throw new PureExecutionException(si, "Error serializing property: " + propertyName, e, Stacks.mutable.empty());
                 }
             }
         }, si);

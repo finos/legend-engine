@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -35,7 +36,7 @@ public class JsonEnumerationDeserialization<T extends CoreInstance> extends Enum
         T value = (T) this.valueMap.get(enumName);
         if (value == null)
         {
-            throw new PureExecutionException(context.getSourceInformation(), "Unknown enum: " + this.enumerationName() + "." + enumName);
+            throw new PureExecutionException(context.getSourceInformation(), "Unknown enum: " + this.enumerationName() + "." + enumName, Stacks.mutable.empty());
         }
         return value;
     }

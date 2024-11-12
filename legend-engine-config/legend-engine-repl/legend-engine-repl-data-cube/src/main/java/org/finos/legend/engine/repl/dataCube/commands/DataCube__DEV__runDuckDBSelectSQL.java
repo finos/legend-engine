@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResultGridPrintUtility.prettyGridPrint;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.printExecutionTime;
 
 public class DataCube__DEV__runDuckDBSelectSQL implements Command
 {
@@ -79,6 +80,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
             {
                 try (Statement statement = connection.createStatement())
                 {
+                    long startTime = System.currentTimeMillis();
                     ResultSet result = statement.executeQuery(expression);
                     List<String> columnNames = Lists.mutable.empty();
                     List<String> columnTypes = Lists.mutable.empty();
@@ -89,6 +91,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                     }
                     this.client.println("Executed SELECT SQL: '" + expression + "'");
                     this.client.println(prettyGridPrint(result, columnNames, columnNames, 40, 60));
+                    this.client.println(printExecutionTime(startTime));
                 }
             }
 

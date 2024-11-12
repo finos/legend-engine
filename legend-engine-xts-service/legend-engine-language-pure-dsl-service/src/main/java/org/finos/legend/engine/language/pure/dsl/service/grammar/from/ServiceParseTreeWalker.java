@@ -28,6 +28,8 @@ import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -47,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidationAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.RuntimeComponents;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
@@ -584,8 +587,16 @@ public class ServiceParseTreeWalker
         singleExecParams.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
         singleExecParams.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
         // runtime
-        ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceRuntime()), "runtime", singleExecParams.sourceInformation);
-        singleExecParams.runtime = this.visitRuntime(runtimeContext);
+        ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceRuntime(), "runtime", singleExecParams.sourceInformation);
+        if (runtimeContext != null)
+        {
+            singleExecParams.runtime = this.visitRuntime(runtimeContext);
+        }
+        ServiceParserGrammar.ServiceRuntimeComponentsContext serviceRuntimeComponentsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceRuntimeComponents(), "runtimeComponents", singleExecParams.sourceInformation);
+        if (serviceRuntimeComponentsContext != null)
+        {
+            singleExecParams.runtimeComponents = this.visitRuntimeComponents(serviceRuntimeComponentsContext);
+        }
         return singleExecParams;
     }
 
@@ -596,5 +607,31 @@ public class ServiceParseTreeWalker
         List<ServiceParserGrammar.SingleExecEnvContext> singleExecCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.singleExecEnv(), "executions", walkerSourceInformation.getSourceInformation(ctx));
         multiExecParams.singleExecutionParameters = ListIterate.collect(singleExecCtxList, this::visitSingleExecutionParameters);
         return multiExecParams;
+    }
+
+    private RuntimeComponents visitRuntimeComponents(ServiceParserGrammar.ServiceRuntimeComponentsContext ctx)
+    {
+        RuntimeComponents runtimeComponents = new RuntimeComponents();
+
+        ServiceParserGrammar.ComponentRuntimeContext componentRuntime = ctx.componentRuntime().get(0);
+        ServiceParserGrammar.ComponentClassContext componentClass = ctx.componentClass().get(0);
+        ServiceParserGrammar.ComponentBindingContext componentBinding = ctx.componentBinding().get(0);
+        RuntimePointer runtimePtr = new RuntimePointer();
+        runtimePtr.runtime = PureGrammarParserUtility.fromQualifiedName(componentRuntime.runtimePointer().qualifiedName().packagePath() == null ? Collections.emptyList() : componentRuntime.runtimePointer().qualifiedName().packagePath().identifier(), componentRuntime.runtimePointer().qualifiedName().identifier());
+        runtimePtr.sourceInformation = walkerSourceInformation.getSourceInformation(componentRuntime);
+        PackageableElementPointer bindingPtr = new PackageableElementPointer();
+        bindingPtr.type = PackageableElementType.BINDING;
+        bindingPtr.path = PureGrammarParserUtility.fromQualifiedName(componentBinding.qualifiedName().packagePath() == null ? Collections.emptyList() : componentBinding.qualifiedName().packagePath().identifier(), componentBinding.qualifiedName().identifier());
+        bindingPtr.sourceInformation = walkerSourceInformation.getSourceInformation(componentBinding);
+
+        PackageableElementPointer classPtr = new PackageableElementPointer();
+        classPtr.type = PackageableElementType.CLASS;
+        classPtr.path = PureGrammarParserUtility.fromQualifiedName(componentClass.qualifiedName().packagePath() == null ? Collections.emptyList() : componentClass.qualifiedName().packagePath().identifier(), componentClass.qualifiedName().identifier());
+        classPtr.sourceInformation = walkerSourceInformation.getSourceInformation(componentClass);
+
+        runtimeComponents.clazz = classPtr;
+        runtimeComponents.binding = bindingPtr;
+        runtimeComponents.runtime = runtimePtr;
+        return runtimeComponents;
     }
 }

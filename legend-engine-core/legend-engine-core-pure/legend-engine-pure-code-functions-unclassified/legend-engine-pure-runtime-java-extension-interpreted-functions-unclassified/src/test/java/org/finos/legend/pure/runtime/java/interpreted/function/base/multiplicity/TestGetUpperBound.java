@@ -31,13 +31,13 @@ public class TestGetUpperBound extends PureExpressionTest
     @Test
     public void testGetUpperBoundZeroManyError()
     {
-        assertExpressionRaisesPureException("Cannot cast a collection of size 0 to multiplicity [1]", 3, 19, "ZeroMany->getUpperBound()");
+        assertExpressionRaisesPureException("Cannot cast a collection of size 0 to multiplicity [1]", 19, 46, "ZeroMany->getUpperBound()");
     }
 
     @Test
     public void testGetUpperBoundOneManyError()
     {
-        assertExpressionRaisesPureException("Cannot cast a collection of size 0 to multiplicity [1]", 3, 18, "OneMany->getUpperBound()");
+        assertExpressionRaisesPureException("Cannot cast a collection of size 0 to multiplicity [1]", 19, 46, "OneMany->getUpperBound()");
     }
 
     protected static FunctionExecution getFunctionExecution()

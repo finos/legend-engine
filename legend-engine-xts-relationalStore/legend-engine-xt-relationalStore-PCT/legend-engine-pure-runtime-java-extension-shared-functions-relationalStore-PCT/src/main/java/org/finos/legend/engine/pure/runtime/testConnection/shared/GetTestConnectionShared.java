@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.pure.runtime.testConnection.shared;
 
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -27,7 +28,7 @@ public class GetTestConnectionShared
         TestConnectionIntegration found = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == dbType).getFirst();
         if (found == null)
         {
-            throw new PureExecutionException("Can't find a TestConnectionIntegration for dbType " + dbType + ". Available ones are " + TestConnectionIntegrationLoader.extensions().collect(c -> c.getDatabaseType().name()));
+            throw new PureExecutionException("Can't find a TestConnectionIntegration for dbType " + dbType + ". Available ones are " + TestConnectionIntegrationLoader.extensions().collect(c -> c.getDatabaseType().name()), Stacks.mutable.empty());
         }
         return found.getConnection();
     }

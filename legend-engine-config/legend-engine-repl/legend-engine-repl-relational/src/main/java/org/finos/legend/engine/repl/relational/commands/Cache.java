@@ -46,6 +46,7 @@ import java.util.List;
 
 import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.printExecutionTime;
 
 public class Cache implements Command
 {
@@ -91,6 +92,7 @@ public class Cache implements Command
 
             try
             {
+                long startTime = System.currentTimeMillis();
                 executeCode(expression, this.client, (Result res, PureModelContextData pmcd, PureModel pureModel, SingleExecutionPlan plan) ->
                 {
                     if (res instanceof RelationalResult)
@@ -117,6 +119,7 @@ public class Cache implements Command
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile(), relationalResultColumns));
                                     this.client.println("Cached into table: '" + tableName + "'");
+                                    this.client.println(printExecutionTime(startTime));
                                 }
                             }
                             catch (SQLException e)

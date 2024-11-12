@@ -17,6 +17,7 @@ package org.finos.legend.pure.runtime.java.extension.functions.interpreted.nativ
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -60,20 +61,20 @@ public class Profile extends NativeFunction
     }
 
     @Override
-    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
+    public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         ActiveProfiler activeProfiler = new ActiveProfiler(processorSupport, PrimitiveUtilities.getBooleanValue(params.get(1).getValueForMetaPropertyToOne(M3Properties.values)));
-        activeProfiler.start(functionExpressionToUseInStack);
-        CoreInstance result = this.functionExecution.executeValueSpecification(params.get(0), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack,
+        activeProfiler.start(functionExpressionCallStack.peek());
+        CoreInstance result = this.functionExecution.executeValueSpecification(params.get(0), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack,
                 this.getParentOrEmptyVariableContext(variableContext), activeProfiler, instantiationContext, executionSupport);
-        activeProfiler.end(functionExpressionToUseInStack);
-        this.print.execute(Lists.immutable.with(ValueSpecificationBootstrap.newStringLiteral(this.repository, activeProfiler.getReport(), processorSupport), ValueSpecificationBootstrap.newIntegerLiteral(this.repository, PRINT_DEPTH, processorSupport)), resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, context, processorSupport);
+        activeProfiler.end(functionExpressionCallStack.peek());
+        this.print.execute(Lists.immutable.with(ValueSpecificationBootstrap.newStringLiteral(this.repository, activeProfiler.getReport(), processorSupport), ValueSpecificationBootstrap.newIntegerLiteral(this.repository, PRINT_DEPTH, processorSupport)), resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, context, processorSupport);
 
         CoreInstance profileResultType = processorSupport.package_getByUserPath("meta::pure::functions::tools::ProfileResult");
         CoreInstance profileResult = this.repository.newEphemeralAnonymousCoreInstance(null, profileResultType);
 
         CoreInstance genericTypeType = processorSupport.package_getByUserPath(M3Paths.GenericType);
-        CoreInstance classifierGenericType = this.repository.newAnonymousCoreInstance(functionExpressionToUseInStack.getSourceInformation(), genericTypeType);
+        CoreInstance classifierGenericType = this.repository.newAnonymousCoreInstance(functionExpressionCallStack.peek().getSourceInformation(), genericTypeType);
         Instance.addValueToProperty(classifierGenericType, M3Properties.rawType, profileResultType, processorSupport);
         CoreInstance T = Instance.extractGenericTypeFromInstance(result, processorSupport);
         Instance.addValueToProperty(classifierGenericType, M3Properties.typeArguments, T, processorSupport);

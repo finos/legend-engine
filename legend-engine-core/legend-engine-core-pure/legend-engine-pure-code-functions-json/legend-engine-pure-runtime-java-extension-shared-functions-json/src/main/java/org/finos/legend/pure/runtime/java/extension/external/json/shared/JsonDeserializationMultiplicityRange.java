@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.external.json.shared;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Stacks;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -46,7 +47,7 @@ public class JsonDeserializationMultiplicityRange<T> extends JsonPropertyDeseria
         {
             if (!isFromAssociation() && (this.lowerBound > 0))
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found 0 value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found 0 value(s).", Stacks.mutable.empty());
             }
             return Lists.immutable.empty();
         }
@@ -55,7 +56,7 @@ public class JsonDeserializationMultiplicityRange<T> extends JsonPropertyDeseria
             JSONArray jsonValues = (JSONArray) jsonValue;
             if ((jsonValues.size() < this.lowerBound) || (jsonValues.size() > this.upperBound))
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found " + jsonValues.size() + " value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found " + jsonValues.size() + " value(s).", Stacks.mutable.empty());
             }
             return applyConversion((JSONArray) jsonValue, jsonDeserializationContext);
         }
@@ -63,7 +64,7 @@ public class JsonDeserializationMultiplicityRange<T> extends JsonPropertyDeseria
         {
             if ((this.lowerBound > 1) || (this.upperBound < 1))
             {
-                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found 1 value(s).");
+                throw new PureExecutionException(jsonDeserializationContext.getSourceInformation(), "Expected value(s) of multiplicity " + this.humanReadableMultiplicity + ", found 1 value(s).", Stacks.mutable.empty());
             }
             return this.applyConversion(jsonValue, jsonDeserializationContext);
         }

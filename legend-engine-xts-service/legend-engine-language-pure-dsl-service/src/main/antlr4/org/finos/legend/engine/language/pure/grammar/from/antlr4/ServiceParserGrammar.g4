@@ -21,7 +21,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
                                         | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
-                                        | EXEC_ENV
+                                        | EXEC_ENV | SERVICE_COMPONENT_BINDING | SERVICE_COMPONENT_CLASS | SERVICE_RUNTIME_COMPONENTS
 ;
 
 
@@ -269,8 +269,20 @@ execParams:                             singleExecEnv | multiExecEnv
 singleExecEnv:                          identifier COLON
                                             BRACE_OPEN
                                                 serviceMapping
-                                                serviceRuntime
+                                                (serviceRuntime | serviceRuntimeComponents) +
                                             BRACE_CLOSE
 ;
 multiExecEnv:                           identifier COLON BRACKET_OPEN singleExecEnv (COMMA singleExecEnv)* BRACKET_CLOSE
+;
+
+serviceRuntimeComponents:               SERVICE_RUNTIME_COMPONENTS COLON BRACE_OPEN (componentRuntime  | componentClass| componentBinding )* BRACE_CLOSE
+;
+
+componentRuntime:                       SERVICE_RUNTIME COLON runtimePointer
+;
+
+componentClass:                         SERVICE_COMPONENT_CLASS COLON qualifiedName SEMI_COLON
+;
+
+componentBinding:                       SERVICE_COMPONENT_BINDING COLON qualifiedName SEMI_COLON
 ;

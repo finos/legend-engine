@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.pure.runtime.execution.shared;
 
+import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +35,7 @@ public class LegendExecute
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendExecute.class);
 
-    public static String doExecute(String jsonPlan, Map<String, Object> variables)
+    public static String doExecute(String jsonPlan, Map<String, Object> variables, MutableStack<CoreInstance> functionExpressionCallStack)
     {
         // create plan executor
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
@@ -70,7 +72,7 @@ public class LegendExecute
         catch (Exception e)
         {
             LOGGER.error("Failed to execute plan", e);
-            throw new PureExecutionException("Failed to execute plan - " + e.getClass().getSimpleName() + " - " + e.getMessage(), e);
+            throw new PureExecutionException("Failed to execute plan - " + e.getClass().getSimpleName() + " - " + e.getMessage(), e, functionExpressionCallStack);
         }
     }
 }

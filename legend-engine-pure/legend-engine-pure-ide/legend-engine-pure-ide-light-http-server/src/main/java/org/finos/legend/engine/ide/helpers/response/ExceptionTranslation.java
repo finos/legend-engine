@@ -25,6 +25,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.ide.session.PureSession;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.exception.PureUnmatchedFunctionException;
 import org.finos.legend.pure.m3.exception.PureUnresolvedIdentifierException;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -230,7 +231,15 @@ public class ExceptionTranslation
             response.appendText(pureResponseStr);
         }
 
-        if (e.hasPureStackTrace())
+        if (e instanceof PureExecutionException)
+        {
+            response.appendText(original.getMessage());
+            response.appendText("\n");
+            StringBuffer buffer = new StringBuffer();
+            ((PureExecutionException) e).printPureStackTrace(buffer, "", session.getFunctionExecution().getProcessorSupport());
+            response.appendText(buffer.toString());
+        }
+        else if (e.hasPureStackTrace())
         {
             response.appendText(original.getMessage() + "\n" + e.getPureStackTrace("    "));
         }

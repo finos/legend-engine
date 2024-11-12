@@ -31,7 +31,7 @@ public class TestAssertContains extends PureExpressionTest
     @Test
     public void testFailure()
     {
-        assertExpressionRaisesPureException("[1, 2, 5, 2, 'a', true, %2014-02-01, 'c'] does not contain false", 3, 9, "assertContains([1, 2, 5, 2, 'a', true, %2014-02-01, 'c'], false)");
+        assertExpressionRaisesPureException("[1, 2, 5, 2, 'a', true, %2014-02-01, 'c'] does not contain false", 37, 5, "assertContains([1, 2, 5, 2, 'a', true, %2014-02-01, 'c'], false)");
     }
 
     protected static FunctionExecution getFunctionExecution()

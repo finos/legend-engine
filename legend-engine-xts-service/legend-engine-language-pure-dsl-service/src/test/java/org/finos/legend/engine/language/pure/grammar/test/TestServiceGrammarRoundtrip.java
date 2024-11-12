@@ -1350,6 +1350,34 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  executions:\n" +
                 "  [\n" +
                 "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping1;\n" +
+                "      runtimeComponents:\n" +
+                "      {\n" +
+                "        class: test::myClass;\n" +
+                "        binding: test::Binding;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      }\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping2;\n" +
+                "      runtimeComponents:\n" +
+                "      {\n" +
+                "        class: test::myClass;\n" +
+                "        binding: test::Binding;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
                 "    [\n" +
                 "      abc:\n" +
                 "      {\n" +
@@ -1541,6 +1569,21 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "      ];\n" +
                 "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "Service meta::pure::myServiceMulti2\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: {env: String[1],data: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->getWithRuntime($env, $data))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)};\n" +
                 "  }\n" +
                 "}\n" +
                 "\n" +

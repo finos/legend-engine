@@ -3492,5 +3492,100 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ];\n" +
                 "}\n","COMPILATION error at [27:16-31]: Can't find runtime 'test::myRuntime1'");
+
+        test(resource + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::myRuntime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::myRuntime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:20 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
+
+        String binding = "###ExternalFormat\n" +
+                "Binding test::bind\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::class\n" +
+                "  ];\n" +
+                "}\n";
+        test(resource + binding + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::runtime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::runtime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test(resource + binding + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::runtime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::runtime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [32:5-42:5]: Cannot use both runtime and runtime components");
+
     }
 }

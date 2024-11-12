@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -58,7 +59,7 @@ public abstract class AggregationShared extends Shared
         super(functionExecution, repository);
     }
 
-    protected ColumnValue processOneAggColSpec(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> aggregationScope, Window window, AggColSpec<?, ?, ?> aggColSpec, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, boolean compress, boolean twoParamsFunc, GenericType sourceTDSType)
+    protected ColumnValue processOneAggColSpec(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> aggregationScope, Window window, AggColSpec<?, ?, ?> aggColSpec, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, boolean compress, boolean twoParamsFunc, GenericType sourceTDSType)
     {
         String name = aggColSpec.getValueForMetaPropertyToOne("name").getName();
         LambdaFunction<CoreInstance> mapF = (LambdaFunction<CoreInstance>) LambdaFunctionCoreInstanceWrapper.toLambdaFunction(aggColSpec.getValueForMetaPropertyToOne("map"));
@@ -73,19 +74,19 @@ public abstract class AggregationShared extends Shared
         if (type == _Package.getByUserPath("String", processorSupport))
         {
             String[] finalRes = new String[size];
-            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
             return new ColumnValue(name, DataType.STRING, finalRes);
         }
         else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
             int[] finalRes = new int[size];
-            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
             return new ColumnValue(name, DataType.INT, finalRes);
         }
         else if (type == _Package.getByUserPath("Float", processorSupport) || type == _Package.getByUserPath("Number", processorSupport))
         {
             double[] finalRes = new double[size];
-            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            performAggregation(aggregationScope, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
             return new ColumnValue(name, DataType.FLOAT, finalRes);
         }
         else
@@ -94,7 +95,7 @@ public abstract class AggregationShared extends Shared
         }
     }
 
-    protected void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource, Window window, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, VariableContext mapFVarContext, VariableContext reduceFVarContext, boolean compress, boolean twoParamFunc, GenericType sourceTDSType)
+    protected void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource, Window window, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, VariableContext mapFVarContext, VariableContext reduceFVarContext, boolean compress, boolean twoParamFunc, GenericType sourceTDSType)
     {
         FixedSizeList<CoreInstance> mapParameters = twoParamFunc ? Lists.fixedSize.with((CoreInstance) null,(CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
         FixedSizeList<CoreInstance> reduceParameters = Lists.fixedSize.with((CoreInstance) null);
@@ -113,14 +114,14 @@ public abstract class AggregationShared extends Shared
                     mapParameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new Extend.RepoPrimitiveBuilder(repository)), false, processorSupport));
                 }
                 mapParameters.set(twoParamFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType, -1, this.repository, false), true, processorSupport));
-                CoreInstance oneRes = this.functionExecution.executeFunction(false, mapF, mapParameters, resolvedTypeParameters, resolvedMultiplicityParameters, mapFVarContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport).getValueForMetaPropertyToOne("values");
+                CoreInstance oneRes = this.functionExecution.executeFunction(false, mapF, mapParameters, resolvedTypeParameters, resolvedMultiplicityParameters, mapFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport).getValueForMetaPropertyToOne("values");
                 subList.add(oneRes);
             }
             if (compress)
             {
                 subList.removeIf(Objects::isNull);
                 reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(subList, true, processorSupport));
-                CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
+                CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 setter.value(j, re.getValueForMetaPropertyToOne("values"));
             }
             else
@@ -130,7 +131,7 @@ public abstract class AggregationShared extends Shared
                     MutableList<CoreInstance> l = framedList(subList, window.getFrame(), i);
                     l.removeIf(Objects::isNull);
                     reduceParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(l, true, processorSupport));
-                    CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionToUseInStack, profiler, instantiationContext, executionSupport);
+                    CoreInstance re = this.functionExecution.executeFunction(false, reduceF, reduceParameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                     setter.value(r.getOne() + i, re.getValueForMetaPropertyToOne("values"));
                 }
             }

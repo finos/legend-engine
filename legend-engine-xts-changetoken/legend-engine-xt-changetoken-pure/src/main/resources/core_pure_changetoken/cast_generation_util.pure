@@ -68,7 +68,7 @@ function meta::pure::changetoken::cast_generation::toMultiplicity(type: String[1
     )))));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::inlineJsonValue(json: JSONElement[1]): Code[1]
+function meta::pure::changetoken::cast_generation::inlineJsonValue(json: JSONElement[1]): Code[1]
 {
     $json->match([
         b: JSONBoolean[1] | j_boolean($b.value),
