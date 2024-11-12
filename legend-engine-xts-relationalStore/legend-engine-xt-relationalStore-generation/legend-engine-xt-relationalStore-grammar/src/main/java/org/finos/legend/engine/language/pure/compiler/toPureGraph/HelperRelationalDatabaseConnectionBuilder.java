@@ -42,10 +42,14 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
-    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
+    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Integer queryTimeOutInSeconds, Boolean quoteIdentifiers, CompileContext context)
     {
         Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
         connection._timeZone(timeZone);
+        if (queryTimeOutInSeconds != null)
+        {
+            connection._queryTimeOutInSeconds(Long.valueOf(queryTimeOutInSeconds));
+        }
         connection._quoteIdentifiers(quoteIdentifiers);
         if (element != null)
         {
