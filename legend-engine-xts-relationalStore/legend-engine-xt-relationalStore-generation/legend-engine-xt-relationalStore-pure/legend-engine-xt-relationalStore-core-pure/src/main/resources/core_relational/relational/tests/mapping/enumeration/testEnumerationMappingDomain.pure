@@ -39,6 +39,11 @@ Class meta::relational::tests::mapping::enumeration::model::domain::Employee
     skills:Skills[*];
 }
 
+Class meta::relational::tests::mapping::enumeration::model::domain::EmployeeTypeInfo extends Employee
+{
+    employeeType: EmployeeType[0..1];
+}
+
 Class meta::relational::tests::mapping::enumeration::model::domain::ConciseEmployee
 {
     name: String[1];
@@ -221,6 +226,26 @@ Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeT
             dateOfHire: doh,
             type : EnumerationMapping Foo : type,
             active : EnumerationMapping Active : active
+        )
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTypeInfoNonDistinctTransformersMapping
+(
+  include meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping
+
+    EmployeeType: EnumerationMapping Foo2
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    EmployeeTypeInfo: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            type : EnumerationMapping Foo : type,
+            employeeType : EnumerationMapping Foo2 : type
         )
     }
 )
