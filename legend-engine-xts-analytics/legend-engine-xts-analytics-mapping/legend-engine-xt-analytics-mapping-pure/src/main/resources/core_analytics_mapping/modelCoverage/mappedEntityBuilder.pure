@@ -74,15 +74,33 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildProper
    type:Type[1],
    targetName:String[0..1],
    propertyInfo:PropertyInfo[1],
-   config: AnalysisConfiguration[1]
+   config: AnalysisConfiguration[1],
+   isQualifiedProp: Boolean[*]
 ): MappedProperty[1]
 {
    $type->match([
       pt:PrimitiveType[1] |
-         ^MappedProperty(name = $propertyInfo.name, info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = $type->mapType(), multiplicity = $propertyInfo.multiplicity), | [])),
+         ^MappedProperty(name = $propertyInfo.name, info = if($config.returnMappedPropertyInfo == true,
+         | ^MappedPropertyInfo(
+          type = $type->mapType(),
+          multiplicity = $propertyInfo.multiplicity,
+          taggedValues = $propertyInfo.taggedValues,
+          qualifiers = $propertyInfo.qualifiers,
+          isQualifiedProp = $isQualifiedProp,
+          stereotypes = $propertyInfo.stereotypes),
+          | [])),
       et:Enumeration<Any>[1] |
          ^EnumMappedProperty(
-            name = $propertyInfo.name, enumPath = $type->elementToPath(), info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = MappedPropertyType.Enumeration, multiplicity = $propertyInfo.multiplicity), | [])),
+            name = $propertyInfo.name, enumPath = $type->elementToPath(), info = if($config.returnMappedPropertyInfo == true,
+            | ^MappedPropertyInfo(
+            type = MappedPropertyType.Enumeration,
+            taggedValues = $propertyInfo.taggedValues,
+            qualifiers = $propertyInfo.qualifiers,
+            stereotypes = $propertyInfo.stereotypes,
+            classPath = $type->elementToPath(),
+            isQualifiedProp = $isQualifiedProp,
+            multiplicity = $propertyInfo.multiplicity),
+            | [])),
       ot:Any[1] |
          let subType = if ($p.genericType.rawType != $type,
             | $type->elementToPath(),
@@ -91,16 +109,34 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildProper
             a:Association[1] |
                ^AssociatedMappedProperty(
                   name = $propertyInfo.name,
-                  info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = $propertyInfo.multiplicity), | []),
                   entityPath = $targetName->toOne(),
                   association = $a->elementToPath(),
-                  subType = $subType),
+                  subType = $subType,
+                  info = if($config.returnMappedPropertyInfo == true,
+                  | ^MappedPropertyInfo(
+                     type = MappedPropertyType.Entity,
+                    multiplicity = $propertyInfo.multiplicity,
+                    taggedValues = $propertyInfo.taggedValues,
+                    qualifiers = $propertyInfo.qualifiers,
+                    isQualifiedProp = $isQualifiedProp,
+                    classPath = if($p.genericType.rawType->isNotEmpty(),| $p.genericType.rawType->toOne()->meta::pure::functions::meta::elementToPath(),|[]),
+                    stereotypes = $propertyInfo.stereotypes),
+                  | [])),
             a:Any[*] |
                ^EntityMappedProperty(
                   name = $propertyInfo.name,
-                  info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = $propertyInfo.multiplicity), | []),
                   entityPath = $targetName->toOne(),
-                  subType = $subType)
+                  subType = $subType,
+                  info = if($config.returnMappedPropertyInfo == true, |
+                  ^MappedPropertyInfo(
+                    type = MappedPropertyType.Entity,
+                     multiplicity = $propertyInfo.multiplicity,
+                     classPath = if($p.genericType.rawType->isNotEmpty(),| $p.genericType.rawType->toOne()->meta::pure::functions::meta::elementToPath(),|[]),
+                     taggedValues = $propertyInfo.taggedValues,
+                     qualifiers = $propertyInfo.qualifiers,
+                     isQualifiedProp = $isQualifiedProp,
+                     stereotypes = $propertyInfo.stereotypes),
+                  | []))
             ]);
       ]);
 }
@@ -115,7 +151,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::processProp
 {
    let type = getPropertyTargetType($p, $rootClassMappings);
    let name = getPropertyTargetName($p, $type, $rootClassMappings);
-   $p.property->buildProperty($type, $name, $p.property->getPropertyInfo($propertyMap), $config);
+   $p.property->buildProperty($type, $name, $p.property->getPropertyInfo($propertyMap), $config, false);
 }
 
 function <<access.private>> meta::analytics::mapping::modelCoverage::processMultiPropertyMapping(
@@ -129,7 +165,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::processMult
 
    let type = $property.genericType.rawType->toOne();
 
-   let dataSetProperty = $property->buildProperty($type, $type->elementToPath(), $property->getPropertyInfo($propertyMap), $config);
+   let dataSetProperty = $property->buildProperty($type, $type->elementToPath(), $property->getPropertyInfo($propertyMap), $config, false);
 
    let inheritanceKeyValue = $inheritanceMap->keyValues()
       ->filter(i | $i.first.class == $type)->last()
@@ -183,6 +219,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::processProp
 {
    let grouped = $p->groupBy(p | $p.property);
    $grouped->keyValues()->sort({x,y|$x.first.name->toOne()->compare($y.first.name->toOne())})->map(kv |
+
       $kv.second.values->match([
          e:PropertyMapping[1] | $e->processPropertyMapping($rootClassMappings, $propertyMap, $config),
          e:PropertyMapping[*] | $e->processMultiPropertyMapping($inheritanceMap, $propertyMap, $config)
@@ -234,7 +271,13 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildEntity
    ^MappedEntity(
       path = $path,
       properties = $properties->removeDuplicatesBy(x | $x.name),
-      info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $class->elementToPath()), | [])
+      info = if($config.returnMappedEntityInfo == true,
+      | ^MappedEntityInfo(
+        stereotypes = $classInfo.stereotypes,
+        taggedValues = $classInfo.taggedValues,
+        isRootEntity = $isRootEntity,
+        classPath = $class->elementToPath()),
+      | [])
    );
 }
 
@@ -289,7 +332,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 
          let qpTarget = getQualifiedPropertyTarget($qp, $classMappings, $setImplementation, $class, $target, $rootClassMappings);
          $qp->buildProperty(
-            $qualifiedPropertyType->toOne(), $qpTarget.second, $qp->getPropertyInfo($propertiesMap), $config
+            $qualifiedPropertyType->toOne(), $qpTarget.second, $qp->getPropertyInfo($propertiesMap), $config, true
          ); //TODO check how types work with qp's.we n eed to filter on whether the type is root supported currently
    );
 
@@ -329,7 +372,9 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
    if($property->isPrimitiveValueProperty(),
       |let mappedProp = ^MappedProperty(name = $property.name->toOne(),
                        info = if($config.returnMappedPropertyInfo == true,
-                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
+                              | ^MappedPropertyInfo(
+                                type = $property.genericType.rawType->toOne()->mapType(),
+                                multiplicity = $property.multiplicity->toOne()),
                               | []));
       ^AutoMappedHelperClass(mappedProperties = [$mappedProp], mappedEntities=[]);,
      |
@@ -338,19 +383,22 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
          |let entityMappedProp = ^EntityMappedProperty(entityPath=$visited->filter(p|$p.first->elementToPath()==$property.genericType.rawType->toOne()->elementToPath())->at(0).second,
                                                     name=$property.name->toOne(),
                                                     info = if($config.returnMappedPropertyInfo == true,
-                                                             | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
+                                                             | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), classPath = $property.genericType.rawType->toOne()->elementToPath(), multiplicity = $property.multiplicity->toOne()),
                                                              | []));
 
          ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[]);,
          |let entityPath = $prefix + $property.name->toOne();
          let entityMappedProp = ^EntityMappedProperty(entityPath=$entityPath,name=$property.name->toOne(),
                                                     info = if($config.returnMappedPropertyInfo == true,
-                                                             | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
+                                                             | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), classPath = $property.genericType.rawType->toOne()->elementToPath() , multiplicity = $property.multiplicity->toOne()),
                                                              | []));
           let newVisited = $visited->concatenate([^Pair<Class<Any>, String>(first = $property.genericType.rawType->toOne()->cast(@Class<Any>), second = $entityPath)]);
             let propertyType = $property.genericType.rawType->toOne()->cast(@Class<Any>);
             let children = $propertyType.properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $isRootEntity, $config, $newVisited));
-            let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties), info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $propertyType->elementToPath()), | []));
+            let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties),
+            info = if($config.returnMappedEntityInfo == true,
+            | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $propertyType->elementToPath()),
+            | []));
          ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[$currentMappedEntity]->concatenate($children->map(c|$c.mappedEntities)));
          );
      )
@@ -368,7 +416,9 @@ function meta::analytics::mapping::modelCoverage::buildAutoMappedProperty(
                                               ->filter(p|$srcClass.properties->exists(sp|$sp.name == $p.name && $sp.genericType.rawType == $p.genericType.rawType && $sp.multiplicity == $p.multiplicity));
   let primitiveProperties = $autoMappedProperties->filter(p|$p->isPrimitiveValueProperty());
 
-  $primitiveProperties->map(p|^MappedProperty(name = $p.name->toOne(), info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = $p.genericType.rawType->toOne()->mapType(), multiplicity = $p.multiplicity->toOne()), | [])));
+  $primitiveProperties->map(p|^MappedProperty(name = $p.name->toOne(), info = if($config.returnMappedPropertyInfo == true,
+  | ^MappedPropertyInfo(type = $p.genericType.rawType->toOne()->mapType(), multiplicity = $p.multiplicity->toOne()),
+  | [])));
 }
 
 function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheritanceEntitiesImpl(
@@ -417,14 +467,14 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
       i:InstanceSetImplementation[1] | $i->allPropertyMappings()
    ]);
 
-   let propertyFilter = {a:AbstractProperty<Any>[1] | 
+   let propertyFilter = {a:AbstractProperty<Any>[1] |
          let ownerClass = $a->ownerClass();
-         if ($mapping.class == $baseMapping.class, 
-            | $ownerClass->in($mapping.class->superTypes()->concatenate($mapping.class)), 
-            | $ownerClass == $mapping.class || $ownerClass->in($mapping.class->superTypes(false)->removeAll($seenInheritanceTypes))) 
+         if ($mapping.class == $baseMapping.class,
+            | $ownerClass->in($mapping.class->superTypes()->concatenate($mapping.class)),
+            | $ownerClass == $mapping.class || $ownerClass->in($mapping.class->superTypes(false)->removeAll($seenInheritanceTypes)))
          && $originalPropertyFilter->eval($a);
    };
-   
+
    let inheritanceTypes = $mapping->match([
       o:OperationSetImplementation[1] | $seenInheritanceTypes->add($o.class),
       i:InstanceSetImplementation[1] | $seenInheritanceTypes
@@ -446,7 +496,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
       let name = $cm.class.name->toOne();
       ^InheritanceMappedProperty(
          name = $name->substring(0, 1)->toLower() + $name->substring(1),
-         info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = MappedPropertyType.Entity, multiplicity = PureOne), | []),
+         info = if($config.returnMappedPropertyInfo == true, | ^MappedPropertyInfo(type = MappedPropertyType.Entity, classPath = $cm.class->elementToPath(), multiplicity = PureOne), | []),
          entityPath = $namePrefix + $cm.class->createInheritanceName(),
          subType = $cm.class->elementToPath()
       );

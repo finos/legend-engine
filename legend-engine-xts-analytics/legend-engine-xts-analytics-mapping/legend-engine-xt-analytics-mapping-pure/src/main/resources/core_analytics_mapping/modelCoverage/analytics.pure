@@ -47,24 +47,56 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
     Unknown
 }
 
+Class meta::analytics::mapping::modelCoverage::TaggedValueInfo
+{
+  tagOwner: String[1];
+  tagValue: String[1];
+  value: String[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::StereotypeInfo
+{
+  profilePath: String[1];
+  value: String[1];
+}
+
 Class meta::analytics::mapping::modelCoverage::MappedEntityInfo
 {
-   isRootEntity : Boolean[0..1];
-   classPath: String[1];
-   subClasses : String[*];
+  isRootEntity : Boolean[0..1];
+  classPath: String[1];
+  subClasses : String[*];
+  taggedValues: TaggedValueInfo[*];
+  stereotypes : StereotypeInfo[*];
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedEntity
 {
-   path : String[1];
+   path : String[1];  
    properties : MappedProperty[*];
    info: MappedEntityInfo[0..1];
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedPropertyQualifier
+{
+   name : String[1];
+   type : MappedPropertyType[1];
+   multiplicity :Multiplicity[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::MappedPropertyEnumQualifier extends MappedPropertyQualifier
+{
+   enumName : String[1];
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo
 {
   type : MappedPropertyType[1];
-  multiplicity: Multiplicity[1];
+  multiplicity: Multiplicity[1]; 
+  qualifiers : MappedPropertyQualifier[*];
+  taggedValues: TaggedValueInfo[*];
+  stereotypes : StereotypeInfo[*];
+  classPath: String[*]; // use * to make this optional 
+  isQualifiedProp: Boolean[*]; // use * to make this optional, when it's false or undefined, it means it's not a qualified prop
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedProperty
