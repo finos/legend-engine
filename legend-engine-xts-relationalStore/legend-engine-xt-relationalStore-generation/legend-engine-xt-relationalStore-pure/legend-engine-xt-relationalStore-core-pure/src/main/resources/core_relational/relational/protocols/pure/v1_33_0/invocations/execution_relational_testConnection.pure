@@ -91,7 +91,6 @@ function meta::protocols::pure::v1_33_0::transformation::toPureGraph::connection
         ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
               timeZone = $conn.timeZone,
               quoteIdentifiers = $conn.quoteIdentifiers,
-              queryTimeOutInSeconds = $conn.queryTimeOutInSeconds,
               type = $type,
               datasourceSpecification = $conn.datasourceSpecification->meta::protocols::pure::v1_33_0::transformation::toPureGraph::connection::transformDatasourceSpecification($extensions),
               authenticationStrategy = $conn.authenticationStrategy->meta::protocols::pure::v1_33_0::transformation::toPureGraph::connection::transformAuthenticationStrategy($extensions),

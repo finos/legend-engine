@@ -449,7 +449,6 @@ public class ServiceTestGenerationHelper
         if (connection instanceof DatabaseConnection)
         {
             relationalDatabaseConnection.timeZone = ((DatabaseConnection) connection).timeZone;
-            relationalDatabaseConnection.queryTimeOutInSeconds = ((DatabaseConnection) connection).queryTimeOutInSeconds;
         }
 
         LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();

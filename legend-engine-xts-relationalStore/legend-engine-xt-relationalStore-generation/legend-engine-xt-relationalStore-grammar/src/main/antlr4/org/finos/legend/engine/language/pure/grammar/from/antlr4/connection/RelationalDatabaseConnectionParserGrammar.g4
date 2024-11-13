@@ -12,7 +12,7 @@ options
 
 identifier:                             VALID_STRING | STRING
                                         | STORE
-                                        | TYPE | QUERY_TIMEOUT | RELATIONAL_DATASOURCE_SPEC | RELATIONAL_AUTH_STRATEGY
+                                        | TYPE | RELATIONAL_DATASOURCE_SPEC | RELATIONAL_AUTH_STRATEGY
                                         | DB_TIMEZONE | QUOTE_IDENTIFIERS
 ;
 
@@ -22,7 +22,6 @@ identifier:                             VALID_STRING | STRING
 definition:                             (
                                             connectionStore
                                             | dbType
-                                            | queryTimeOutInSeconds
                                             | connectionMode
                                             | dbConnectionTimezone
                                             | dbQuoteIdentifiers
@@ -39,8 +38,6 @@ dbConnectionTimezone:                   DB_TIMEZONE COLON TIMEZONE SEMI_COLON
 dbQuoteIdentifiers:                     QUOTE_IDENTIFIERS COLON BOOLEAN SEMI_COLON
 ;
 dbType:                                 TYPE COLON identifier SEMI_COLON
-;
-queryTimeOutInSeconds:                  QUERY_TIMEOUT COLON INTEGER SEMI_COLON
 ;
 
 connectionMode:                         MODE COLON identifier SEMI_COLON
@@ -71,4 +68,3 @@ specificationValueBody:       BRACE_OPEN (specificationValue)*
 
 specificationValue:           SPECIFICATION_BRACE_OPEN | SPECIFICATION_CONTENT | SPECIFICATION_BRACE_CLOSE
 ;
-

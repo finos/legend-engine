@@ -11,7 +11,6 @@ MODE:                                   'mode';
 RELATIONAL_DATASOURCE_SPEC:             'specification';
 RELATIONAL_AUTH_STRATEGY:               'auth';
 RELATIONAL_POST_PROCESSORS:             'postProcessors';
-QUERY_TIMEOUT:                          'queryTimeOutInSeconds';
 
 DB_TIMEZONE:                            'timezone';
 TIMEZONE:                                TimeZone;
