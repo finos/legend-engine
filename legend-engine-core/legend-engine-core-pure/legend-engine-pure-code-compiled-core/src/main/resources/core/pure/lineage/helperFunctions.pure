@@ -40,3 +40,17 @@ function meta::pure::lineage::analytics::inlineQualifiedProperties(vs: ValueSpec
       v  : ValueSpecification[1] | $v
    ]);
 }
+
+
+function  meta::pure::lineage::analytics::reportLineageToString(report:meta::pure::lineage::result::ReportLineage[1]):String[1]
+{
+  $report.properties->map(c | $c.propertyName  + $c.resultDetail)->sort()->joinStrings('[', ', ', ']');
+}
+
+function meta::pure::lineage::test::assertLineage(storeLineage:String[*], classLineage:String[*], reportLineage:String[1], result:meta::pure::lineage::result::LineageResult[1]):Boolean[1]
+{
+ 
+  assertSameElements($storeLineage, $result.storeLineage.nodes.data.id) && assertSameElements($classLineage, $result.classLineage.nodes.data.id) && assertEquals($reportLineage, meta::pure::lineage::analytics::reportLineageToString($result.reportLineage));
+}
+
+

@@ -80,6 +80,22 @@ Class meta::analytics::lineage::PropertyElement
    type : String[0..1];
 }
 
+
+// function meta::analytics::lineage::computeTestLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):meta::pure::lineage::result::LineageResult[1]
+// {
+//       let lineage = meta::analytics::lineage::computeLineage($f,$m,$r,$extensions);
+//      ^meta::pure::lineage::result::LineageResult(storeLineage=$lineage.databaseLineage,
+//                                                  classLineage=$lineage.classLineage,
+//                                                  reportLineage= $lineage.reportLineage->reportLineageToResult() );
+
+// }
+
+// function meta::analytics::lineage::reportLineageToResult(report:ReportLineage[1]):meta::pure::lineage::result::ReportLineage[1]
+// {
+//    ^meta::pure::lineage::result::ReportLineage(properties=$report.columns->map(c | ^meta::pure::lineage::result::PropertyLineage(propertyName=$c.name, resultDetail=  $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->removeDuplicates()->sort()->makeString(': [', ', ', ']'))));
+// }
+
+
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {
    let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));

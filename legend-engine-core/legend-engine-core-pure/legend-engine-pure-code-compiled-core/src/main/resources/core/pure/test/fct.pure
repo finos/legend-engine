@@ -1,0 +1,89 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::test::fct::*;
+
+
+function
+
+   meta::pure::test::fct::executeWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1],holder:meta::pure::test::fct::TestParameters[1]):meta::pure::test::fct::ExecuteResult<T>[1]
+{
+  ^ExecuteResult<T>(result=meta::pure::router::execute($f,$holder.mapping,$holder.runtime,$holder.context,$holder.extensions));
+}
+
+
+Class meta::pure::test::fct::TestResult
+{
+
+}
+ 
+Class meta::pure::test::fct::ExecuteResult<T> extends meta::pure::test::fct::TestResult
+{
+  result:meta::pure::mapping::Result<T|*>[1];
+  
+}
+
+function meta::pure::test::fct::assertTDSExecuteResult<T>(result:meta::pure::test::fct::TestResult[1],assertion:Function<{meta::pure::mapping::Result<T|*>[1]->Boolean[1]}>[1]):Boolean[1]
+{
+
+  if($result->instanceOf(ExecuteResult),  
+           |let tds = $result->cast(@ExecuteResult<TabularDataSet>).result;
+              $assertion->eval($tds);,
+          | true);
+}
+
+
+function meta::pure::test::fct::assertLineageResult(result:meta::pure::test::fct::TestResult[1], storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):Boolean[1]
+{
+
+  if($result->instanceOf(meta::pure::test::fct::LineageResult),  
+           | let lineage = $result->cast(@meta::pure::test::fct::LineageResult).result;
+            meta::pure::lineage::test::assertLineage($storeLineage,$classLineage,$reportLineage,$lineage);,
+           | true);
+}
+
+Class meta::pure::test::fct::LineageResult extends  meta::pure::test::fct::TestResult
+{
+    result:meta::pure::lineage::result::LineageResult[1];
+}
+
+
+function meta::pure::test::fct::testParameters(mapping:meta::pure::mapping::Mapping[1],runtime:meta::core::runtime::Runtime[1],extensions:meta::pure::extension::Extension[*]):meta::pure::test::fct::TestParameters[1]
+{
+  ^meta::pure::test::fct::TestParameters( mapping =  $mapping,
+                                          runtime = $runtime,
+                                          extensions = $extensions,
+                                          context = ^meta::pure::runtime::ExecutionContext());
+}
+
+function meta::pure::test::fct::testParameters(mapping:meta::pure::mapping::Mapping[1],runtime:meta::core::runtime::Runtime[1],context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):meta::pure::test::fct::TestParameters[1]
+{
+  ^meta::pure::test::fct::TestParameters( mapping =  $mapping,
+                                          runtime = $runtime,
+                                          extensions = $extensions,
+                                          context = $context);
+}
+
+
+
+Class  meta::pure::test::fct::TestParameters
+{
+  mapping:meta::pure::mapping::Mapping[1];
+  runtime:meta::core::runtime::Runtime[1];
+  extensions:meta::pure::extension::Extension[*];
+  context:meta::pure::runtime::ExecutionContext[1]; 
+}
+

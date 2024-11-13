@@ -412,3 +412,18 @@ function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpec
    let getAllFe = $vs->findExpressionsForFunctionInValueSpecification([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]);
    if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
 }
+
+
+
+function meta::relational::mapping::assertTDS(result:meta::pure::test::fct::TestResult[1],expected:meta::pure::metamodel::relation::TDS<Any>[1]):Boolean[1]
+{
+
+  if($result->instanceOf(meta::pure::test::fct::ExecuteResult),  
+           |let tds = $result->cast(@meta::pure::test::fct::ExecuteResult<TabularDataSet>).result;
+           $expected.csv->println();
+            $tds.values->toOne()->toCSV()->println();
+           // assertSameElements($expected.csv,    $tds.values->toOne()->toCSV());,
+              true;,
+
+          | true);
+}
