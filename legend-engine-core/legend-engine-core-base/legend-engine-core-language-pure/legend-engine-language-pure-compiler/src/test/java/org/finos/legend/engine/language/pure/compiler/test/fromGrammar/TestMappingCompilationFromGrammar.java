@@ -861,7 +861,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    ~src ui::Person2\n" +
                 "    name: 'aa'\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [10:10-20]: Can't find class 'ui::Person2'");
+                ")\n", "COMPILATION error at [10:10-20]: Can't find type 'ui::Person2'");
         // check set implementation root resolution
         test("Class ui::Person\n" +
                         "{\n" +
