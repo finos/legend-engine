@@ -198,11 +198,14 @@ function <<access.protected>> meta::protocols::pure::v1_33_0::transformation::fr
 
 function  meta::protocols::pure::v1_33_0::transformation::fromPureGraph::findTypesFromPureInstanceSetImplementation(p:PureInstanceSetImplementation[1]):Type[*]
 {
-   let srcClass = $p.srcClass->cast(@Class<Any>);
-   $p.class->concatenate($srcClass)
-      ->concatenate($srcClass.constraints->map(c|$c.functionDefinition.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
-      ->concatenate($srcClass.constraints->map(c|$c.messageFunction.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
-      ->concatenate($p.propertyMappings->filter(x | $x->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping).transform.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan()));
+  if($p.srcClass->isNotEmpty() && $p.srcClass->toOne()->instanceOf(Class),
+    | let srcClass = $p.srcClass->cast(@Class<Any>);
+      $p.class->concatenate($srcClass)
+        ->concatenate($srcClass.constraints->map(c|$c.functionDefinition.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
+        ->concatenate($srcClass.constraints->map(c|$c.messageFunction.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
+        ->concatenate($p.propertyMappings->filter(x | $x->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping).transform.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan()));,
+    | $p.class->concatenate($p.srcClass);
+  )
 }
 
 function <<access.private>> meta::protocols::pure::v1_33_0::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::PackageableElement[*]
