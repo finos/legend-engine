@@ -22,7 +22,6 @@ import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
@@ -46,7 +45,7 @@ public abstract class SQLResult extends Result implements StoreExecutable
 
     private final RequestContext requestContext;
 
-    public SQLResult(String status, Connection connection, DatabaseConnection protocolConnection, List<ExecutionActivity> activities, String databaseType, List<String> temporaryTables, RequestContext requestContext)
+    public SQLResult(String status, Connection connection, List<ExecutionActivity> activities, String databaseType, List<String> temporaryTables, RequestContext requestContext)
     {
         super(status, activities);
 
@@ -61,10 +60,6 @@ public abstract class SQLResult extends Result implements StoreExecutable
             if (DatabaseType.MemSQL.name().equals(databaseType))
             {
                 this.statement.setFetchSize(100);
-            }
-            if (protocolConnection.queryTimeOutInSeconds != null)
-            {
-                this.statement.setQueryTimeout(protocolConnection.queryTimeOutInSeconds);
             }
         }
         catch (Throwable e)

@@ -87,7 +87,6 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    userNameVaultReference: 'value';\n" +
                 "    passwordVaultReference: 'value';\n" +
                 "  };\n" +
-                "  queryTimeOutInSeconds: 7777;\n" +
                 "}\n");
     }
 
@@ -139,13 +138,10 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "  auth: Test\n" +
                 "  {\n" +
                 "  };\n" +
-                "  queryTimeOutInSeconds: 7777;\n" +
                 "}\n");
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
         Boolean quoteIdentifiers = connection._quoteIdentifiers();
-        Long expectedQueryTimeOutInSeconds = 7777L;
 
         Assert.assertTrue(quoteIdentifiers);
-        Assert.assertEquals(expectedQueryTimeOutInSeconds, connection._queryTimeOutInSeconds());
     }
 }

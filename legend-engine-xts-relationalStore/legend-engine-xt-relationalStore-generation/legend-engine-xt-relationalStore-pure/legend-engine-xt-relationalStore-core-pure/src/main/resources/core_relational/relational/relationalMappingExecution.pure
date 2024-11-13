@@ -367,12 +367,9 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
    print(if(!$debug.debug, |'', | $debug.space+'>Execute SQL: '+$sql+'\n'));
 
    let queryTimeOutInSeconds = if($g_queryTimeOutInSeconds->isNotEmpty(),
-                                             | $g_queryTimeOutInSeconds->toOne(),
-                                             | if($connection.queryTimeOutInSeconds->isNotEmpty(),
-                                                | $connection.queryTimeOutInSeconds->toOne(),
-                                                | 3600
-                                               );
-                                             );
+                                       | $g_queryTimeOutInSeconds->toOne(),
+                                       | 3600 //1 hour
+                                       );
    let sqlComment = sqlCommentPureExecution();
    let res = executeInDb($sqlComment + '\n' + $sql, $connection->cast(@DatabaseConnection), $queryTimeOutInSeconds, 1000);
     //let res = ^ResultSet(connectionAcquisitionTimeInNanoSecond=1,executionTimeInNanoSecond=2);
