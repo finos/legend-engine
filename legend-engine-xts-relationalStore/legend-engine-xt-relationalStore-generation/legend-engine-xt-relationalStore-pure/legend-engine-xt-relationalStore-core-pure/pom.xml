@@ -178,11 +178,11 @@
                         <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
 
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
@@ -280,10 +280,10 @@
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -436,6 +436,16 @@
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-planExecution</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-framework</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-fct</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- TEST -->
     </dependencies>
@@ -469,7 +479,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
+                   </plugins>
             </build>
         </profile>
     </profiles>

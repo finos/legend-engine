@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.22.2-SNAPSHOT</legend.pure.version>
+        <legend.pure.version>5.22.1</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>12.59.0</legend.web-application.version>
 
@@ -2369,6 +2369,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-testable-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-fct</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
