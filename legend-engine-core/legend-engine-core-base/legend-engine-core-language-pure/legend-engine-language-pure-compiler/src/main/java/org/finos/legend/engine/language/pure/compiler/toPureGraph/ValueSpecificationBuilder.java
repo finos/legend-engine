@@ -28,33 +28,33 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.AppliedQualifiedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CByteArray;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.ExecutionContextInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
@@ -161,7 +161,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             // for backward compatibility, since some protocol versions use PackageableElementPtr for units
             return visit(new UnitType(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation));
         }
-
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(packageableElement._classifierGenericType())
@@ -705,19 +704,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     public ValueSpecification visit(Variable variable)
     {
         openVariables.add(variable.name);
-        if ((variable._class != null || variable.relationType != null) && variable.multiplicity != null)
+        if (variable.genericType != null && variable.multiplicity != null)
         {
             VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(variable.sourceInformation), this.context.pureModel.getClass(M3Paths.VariableExpression))
                     ._name(variable.name);
-            GenericType genericType =
-                    // Bad Hack to compensate the fact that 'generics' are not supported in the type system ...
-                    variable.relationType != null && variable._class != null ?
-                            new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
-                                    ._rawType(context.pureModel.getClass(variable._class.path))
-                                    ._typeArguments(Lists.immutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(RelationTypeHelper.convert(variable.relationType, this.context.pureModel.getExecutionSupport().getProcessorSupport(), null)))) :
-                            variable.relationType != null ?
-                                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(RelationTypeHelper.convert(variable.relationType, this.context.pureModel.getExecutionSupport().getProcessorSupport(), null)) :
-                                    this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class.path), variable.sourceInformation);
+            GenericType genericType = context.newGenericType(variable.genericType);
             ve._genericType(genericType);
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
             processingContext.addInferredVariables(variable.name, ve);
@@ -755,13 +746,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(GenericTypeInstance genericTypeInstance)
     {
-        // Support casting to a relation
-        if (genericTypeInstance.typeArguments != null && !genericTypeInstance.typeArguments.isEmpty() && genericTypeInstance.typeArguments.get(0) instanceof ClassInstance && ((ClassInstance) genericTypeInstance.typeArguments.get(0)).type.equals("colSpecArray"))
-        {
-            return proccessColSpecArray((ColSpecArray) ((ClassInstance) genericTypeInstance.typeArguments.get(0)).value);
-        }
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, this.context.pureModel.getClass(M3Paths.InstanceValue))
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(this.context.resolveType(genericTypeInstance.fullPath, genericTypeInstance.sourceInformation)))
+                ._genericType(context.newGenericType(genericTypeInstance.genericType))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"));
     }
 

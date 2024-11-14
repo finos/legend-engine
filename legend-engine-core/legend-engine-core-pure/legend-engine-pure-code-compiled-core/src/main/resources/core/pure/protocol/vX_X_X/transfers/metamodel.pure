@@ -138,6 +138,20 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(genericType:GenericType[1]):meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1]
+{
+      ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType
+      (
+          rawType = ^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType
+                    (
+                      _type='packageableType',
+                      fullPath=$genericType.rawType->toOne()->elementToPath()                                   
+                    ),
+          typeArguments = $genericType.typeArguments->map(ta|$ta->transformGenericType()),
+          multiplicityArguments = $genericType.multiplicityArguments->map(ma|$ma->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
+      )
+}
+
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformProperty(property:Property<Nil,Any|*>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
@@ -145,7 +159,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
       defaultValue = if($property.defaultValue->isEmpty(),|[],|$property.defaultValue->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue($extensions)->toOne()),
       name = $property.name->toOne(),
       multiplicity = $property.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-      type = $property.genericType.rawType->toOne()->elementToPath(),
+      genericType = transformGenericType($property.genericType),
       stereotypes = $property.stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
       taggedValues = $property.taggedValues->map(t|$t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformTaggedValue())
    )
@@ -164,7 +178,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    (
       name = $qualifiedProperty.name->toOne(),
       parameters = $fType.parameters->tail()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)),
-      returnType = $fType.returnType.rawType->toOne()->elementToPath(),
+      returnGenericType = transformGenericType($fType.returnType),
       returnMultiplicity = $fType.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       body = $qualifiedProperty->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions),
       stereotypes = $qualifiedProperty.stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
@@ -235,7 +249,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transform
       parameters = $f->functionType().parameters->map(p |
          $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)
       ),
-      returnType = $f->functionReturnType().rawType->toOne()->elementToPath(),
+      returnGenericType = transformGenericType($f->functionReturnType()),
       returnMultiplicity = $f->functionReturnMultiplicity()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       preConstraints  = $f.preConstraints->map(c |$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint($extensions)),
       postConstraints  = $f.postConstraints->map(c |$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint($extensions)),

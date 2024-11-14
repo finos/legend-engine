@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applic
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AbstractAppliedFunction;
 
 import java.util.Collections;
 import java.util.List;

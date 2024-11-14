@@ -22,6 +22,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
@@ -33,6 +34,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -47,6 +50,8 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -57,7 +62,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
+import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._class._Class;
 import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -540,23 +550,106 @@ public class CompileContext
 
     public GenericType newGenericType(Type rawType)
     {
-        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                ._rawType(rawType);
+        return newGenericType(rawType, this.pureModel);
     }
 
     public GenericType newGenericType(Type rawType, GenericType typeArgument)
     {
-        return newGenericType(rawType, Lists.fixedSize.with(typeArgument));
+        return newGenericType(rawType, this.pureModel)._typeArguments(Lists.fixedSize.with(typeArgument));
     }
 
     public GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments)
     {
-        return newGenericType(rawType)._typeArguments(typeArguments);
+        return newGenericType(rawType, this.pureModel)._typeArguments(typeArguments);
     }
+
+    public GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments, RichIterable<? extends Multiplicity> multiplicityArguments)
+    {
+        return newGenericType(rawType, this.pureModel)._typeArguments(typeArguments)._multiplicityArguments(multiplicityArguments);
+    }
+
+    public static org.finos.legend.engine.protocol.pure.v1.model.type.GenericType convertGenericType(GenericType genericType)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.type.Type rType;
+        if (genericType._rawType() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType)
+        {
+            rType = RelationTypeHelper.convert((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) genericType._rawType());
+        }
+        else
+        {
+            rType = new PackageableType(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(genericType._rawType()));
+        }
+        return new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
+    }
+
+    public GenericType newGenericType(org.finos.legend.engine.protocol.pure.v1.model.type.GenericType genericType)
+    {
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType));
+        SourceInformation si = null;
+        org.finos.legend.engine.protocol.pure.v1.model.type.Type protocolType = genericType.rawType;
+        Type type = null;
+        if (protocolType instanceof PackageableType)
+        {
+            si = ((PackageableType) protocolType).sourceInformation;
+            type = this.resolveType(((PackageableType) protocolType).fullPath, si);
+        }
+        else if (protocolType instanceof RelationType)
+        {
+            si = ((RelationType) protocolType).sourceInformation;
+            type = _RelationType.build(
+                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, x.type, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport)),
+                    SourceInformationHelper.toM3SourceInformation(si),
+                    processorSupport
+            );
+        }
+        else
+        {
+            throw new EngineException(genericType.rawType.getClass() + " is not supported yet!", genericType.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        if (type instanceof Class)
+        {
+            if ((((Class<?>) type)._typeParameters().size() != genericType.typeArguments.size()))
+            {
+                throw new EngineException("Missing type arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if ((((Class<?>) type)._multiplicityParameters().size() != genericType.multiplicityArguments.size()))
+            {
+                throw new EngineException("Missing multiplicity arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+        return gt._rawType(type)
+                ._typeArguments(ListIterate.collect(genericType.typeArguments, this::newGenericType))
+                ._multiplicityArguments(ListIterate.collect(genericType.multiplicityArguments, pureModel::getMultiplicity));
+    }
+
+
+    public static GenericType newGenericType(Type rawType, PureModel pureModel)
+    {
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                ._rawType(rawType);
+    }
+
+    public static GenericType newGenericType(Type rawType, GenericType typeArgument, PureModel pureModel)
+    {
+        return newGenericType(rawType, pureModel)._typeArguments(Lists.fixedSize.with(typeArgument));
+    }
+
+    public static GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments, PureModel pureModel)
+    {
+        return newGenericType(rawType, pureModel)._typeArguments(typeArguments);
+    }
+
+    public static GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments, RichIterable<? extends Multiplicity> multiplicityArguments, PureModel pureModel)
+    {
+        return newGenericType(rawType, pureModel)._typeArguments(typeArguments)._multiplicityArguments(multiplicityArguments);
+    }
+
 
     public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue taggedValue)
     {
-        return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))
+        return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass(M3Paths.TaggedValue))
                 ._tag(resolveTag(taggedValue.tag))
                 ._value(taggedValue.value);
     }

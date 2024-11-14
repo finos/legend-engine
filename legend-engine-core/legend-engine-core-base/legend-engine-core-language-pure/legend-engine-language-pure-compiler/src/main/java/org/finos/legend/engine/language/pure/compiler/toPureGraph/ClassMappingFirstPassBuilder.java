@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MergeOperationSetImplementation_Impl;
@@ -119,7 +121,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             {
                 Variable param = new Variable();
                 param.name = "src";
-                param._class = new PackageableElementPointer(PackageableElementType.CLASS, classMapping.srcClass);
+                param.genericType = new GenericType(new PackageableType(classMapping.srcClass));
                 param.multiplicity = new Multiplicity(1, 1);
                 params = Lists.mutable.with(param);
             }
