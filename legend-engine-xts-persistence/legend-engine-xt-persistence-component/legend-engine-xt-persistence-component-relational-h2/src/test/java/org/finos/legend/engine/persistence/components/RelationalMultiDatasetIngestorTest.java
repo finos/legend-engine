@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
@@ -43,7 +44,10 @@ import org.finos.legend.engine.persistence.components.relational.api.DatasetInge
 import org.finos.legend.engine.persistence.components.relational.api.DatasetIngestResults;
 import org.finos.legend.engine.persistence.components.relational.api.DryRunResult;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
+import org.finos.legend.engine.persistence.components.relational.api.ExceptionSafeIngestStageCallBack;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStage;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStageCallBack;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStageMetadata;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStageResult;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalMultiDatasetIngestor;
@@ -59,6 +63,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -360,6 +366,25 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         // Register UDF
         H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
 
+        // Prepare for testing callbacks
+        IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
+        List<Event> events = new ArrayList<>();
+        List<Event> expectedEvents = new ArrayList<>();
+        IngestStageCallBack ingestStageCallBack = new ExceptionSafeIngestStageCallBack(new IngestStageCallBack()
+        {
+            @Override
+            public void onStageStart(String datasetName, long batchId, IngestMode ingestMode, Instant stageStartInstant)
+            {
+                incrementalClock.instant();
+            }
+
+            @Override
+            public void onStageSuccess(String datasetName, long batchId, IngestMode ingestMode, List<IngestStageResult> ingestStageResults)
+            {
+                incrementalClock.instant();
+                events.add(new Event(datasetName, batchId, ingestMode instanceof BulkLoad));
+            }
+        });
 
 
         // Batch 1
@@ -369,6 +394,7 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
             .ingestRequestId(requestId1)
             .caseConversion(CaseConversion.TO_UPPER)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestStageCallBack(ingestStageCallBack)
             .build();
 
         List<DatasetIngestDetails> datasetIngestDetails = configureForTest2("src/test/resources/data/multi-dataset/set2/input/file1_for_dataset1.csv", "src/test/resources/data/multi-dataset/set2/input/file1_for_dataset2.csv");
@@ -412,8 +438,13 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
                 Arrays.stream(new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new),
                 Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdName}).map(String::toUpperCase).toArray(String[]::new),
                 Arrays.stream(new String[]{idName, nameName, ratingName, startTimeName, versionName, digestName, batchIdInName, batchIdOutName}).map(String::toUpperCase).toArray(String[]::new)));
-
-
+        // Verify callbacks
+        Assertions.assertEquals("FixedClock[2000-01-01T00:00:08Z,Z,1000]", incrementalClock.toString());
+        expectedEvents.add(new Event(dataset1, 11, true));
+        expectedEvents.add(new Event(dataset1, 11, false));
+        expectedEvents.add(new Event(dataset2, 11, true));
+        expectedEvents.add(new Event(dataset2, 11, false));
+        Assertions.assertEquals(expectedEvents, events);
 
         // Batch 2 (empty batch)
         ingestor = RelationalMultiDatasetIngestor.builder()
@@ -1157,5 +1188,34 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         errorDetails.put(DataError.COLUMN_NAME, columnName);
         errorDetails.put(DataError.RECORD_NUMBER, recordNumber);
         return errorDetails;
+    }
+
+    public class Event
+    {
+        String dataset;
+        long batchId;
+        boolean isBulkLoad;
+
+        public Event(String dataset, long batchId, boolean isBulkLoad)
+        {
+            this.dataset = dataset;
+            this.batchId = batchId;
+            this.isBulkLoad = isBulkLoad;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+            Event event = (Event) o;
+            return batchId == event.batchId && isBulkLoad == event.isBulkLoad && Objects.equals(dataset, event.dataset);
+        }
     }
 }
