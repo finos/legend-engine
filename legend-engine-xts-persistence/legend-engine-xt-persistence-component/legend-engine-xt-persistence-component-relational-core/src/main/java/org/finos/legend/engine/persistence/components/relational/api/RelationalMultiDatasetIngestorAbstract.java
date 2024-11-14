@@ -96,7 +96,6 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     public abstract Optional<IngestStageCallBack> ingestStageCallBack();
 
-
     //-------------------- FLAGS --------------------
 
     @Value.Default

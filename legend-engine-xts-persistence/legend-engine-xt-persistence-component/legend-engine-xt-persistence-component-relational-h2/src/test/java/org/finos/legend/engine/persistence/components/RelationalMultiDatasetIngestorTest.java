@@ -47,7 +47,6 @@ import org.finos.legend.engine.persistence.components.relational.api.ErrorCatego
 import org.finos.legend.engine.persistence.components.relational.api.ExceptionSafeIngestStageCallBack;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStage;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStageCallBack;
-import org.finos.legend.engine.persistence.components.relational.api.IngestStageMetadata;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStageResult;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalMultiDatasetIngestor;
