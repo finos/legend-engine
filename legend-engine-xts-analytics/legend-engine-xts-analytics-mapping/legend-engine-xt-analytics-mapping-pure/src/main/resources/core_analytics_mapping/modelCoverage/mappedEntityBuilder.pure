@@ -75,31 +75,35 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildProper
    targetName:String[0..1],
    propertyInfo:PropertyInfo[1],
    config: AnalysisConfiguration[1],
-   isQualifiedProp: Boolean[*]
+   isQualifiedProp: Boolean[0..1]
 ): MappedProperty[1]
 {
    $type->match([
       pt:PrimitiveType[1] |
-         ^MappedProperty(name = $propertyInfo.name, info = if($config.returnMappedPropertyInfo == true,
-         | ^MappedPropertyInfo(
-          type = $type->mapType(),
-          multiplicity = $propertyInfo.multiplicity,
-          taggedValues = $propertyInfo.taggedValues,
-          qualifiers = $propertyInfo.qualifiers,
-          isQualifiedProp = $isQualifiedProp,
-          stereotypes = $propertyInfo.stereotypes),
+         ^MappedProperty(
+          name = $propertyInfo.name, 
+          info = if($config.returnMappedPropertyInfo == true,
+          | ^MappedPropertyInfo(
+             type = $type->mapType(),
+             multiplicity = $propertyInfo.multiplicity,
+             taggedValues = $propertyInfo.taggedValues,
+             qualifiers = $propertyInfo.qualifiers,
+             isQualifiedProp = $isQualifiedProp,
+             stereotypes = $propertyInfo.stereotypes),
           | [])),
       et:Enumeration<Any>[1] |
          ^EnumMappedProperty(
-            name = $propertyInfo.name, enumPath = $type->elementToPath(), info = if($config.returnMappedPropertyInfo == true,
+            name = $propertyInfo.name, 
+            enumPath = $type->elementToPath(), 
+            info = if($config.returnMappedPropertyInfo == true,
             | ^MappedPropertyInfo(
-            type = MappedPropertyType.Enumeration,
-            taggedValues = $propertyInfo.taggedValues,
-            qualifiers = $propertyInfo.qualifiers,
-            stereotypes = $propertyInfo.stereotypes,
-            classPath = $type->elementToPath(),
-            isQualifiedProp = $isQualifiedProp,
-            multiplicity = $propertyInfo.multiplicity),
+              type = MappedPropertyType.Enumeration,
+              taggedValues = $propertyInfo.taggedValues,
+              qualifiers = $propertyInfo.qualifiers,
+              stereotypes = $propertyInfo.stereotypes,
+              classPath = $type->elementToPath(),
+              isQualifiedProp = $isQualifiedProp,
+              multiplicity = $propertyInfo.multiplicity),
             | [])),
       ot:Any[1] |
          let subType = if ($p.genericType.rawType != $type,
@@ -114,7 +118,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildProper
                   subType = $subType,
                   info = if($config.returnMappedPropertyInfo == true,
                   | ^MappedPropertyInfo(
-                     type = MappedPropertyType.Entity,
+                    type = MappedPropertyType.Entity,
                     multiplicity = $propertyInfo.multiplicity,
                     taggedValues = $propertyInfo.taggedValues,
                     qualifiers = $propertyInfo.qualifiers,

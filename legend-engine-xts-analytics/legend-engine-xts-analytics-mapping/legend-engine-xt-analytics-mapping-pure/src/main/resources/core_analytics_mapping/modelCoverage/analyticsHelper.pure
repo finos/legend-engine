@@ -49,13 +49,23 @@ function meta::analytics::mapping::modelCoverage::getRealProperty(property:Abstr
       | $property);
 }
 
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildTaggedValueInfo(taggedValue:TaggedValue[1]):TaggedValueInfo[1]
+{
+  ^TaggedValueInfo(tagOwner = $taggedValue.tag.profile->elementToPath(), tagValue = $taggedValue.tag.value, value = $taggedValue.value);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildStereotypeInfo(stereotype: Stereotype[1]):StereotypeInfo[1]
+{
+  ^StereotypeInfo(profilePath = $stereotype.profile->elementToPath(), value = $stereotype.value);
+}
+
 function <<access.private>> meta::analytics::mapping::modelCoverage::buildPropertyInfo(p:AbstractProperty<Any>[1]):PropertyInfo[1]
 {
    let name = $p->originalPropertyNameForEdgePointProperty()->toOne();
    ^PropertyInfo(
-      taggedValues = $p.taggedValues->map(val | ^TaggedValueInfo(tagOwner = $val.tag.profile->elementToPath(), tagValue = $val.tag.value, value = $val.value)),
+      taggedValues = $p.taggedValues->map(val | buildTaggedValueInfo($val)),
       qualifiers = $p->buildQualifiers(),
-      stereotypes = $p.stereotypes->map(val | ^StereotypeInfo(profilePath = $val.profile->elementToPath(), value = $val.value)),
+      stereotypes = $p.stereotypes->map(val | buildStereotypeInfo($val)),
       name = $name,
       multiplicity = $p.multiplicity
    );
@@ -95,8 +105,8 @@ function meta::analytics::mapping::modelCoverage::getAllPropertyInfo(classMappin
 function <<access.private>> meta::analytics::mapping::modelCoverage::buildClassInfo(class:Class<Any>[1]):ClassInfo[1]
 {
    ^ClassInfo(      
-    taggedValues = $class.taggedValues->map(val | ^TaggedValueInfo(tagOwner = $val.tag.profile->elementToPath(), tagValue = $val.tag.value, value = $val.value)),
-    stereotypes = $class.stereotypes->map(val | ^StereotypeInfo(profilePath = $val.profile->elementToPath(), value = $val.value)),
+    taggedValues = $class.taggedValues->map(val | buildTaggedValueInfo($val)),
+    stereotypes = $class.stereotypes->map(val | buildStereotypeInfo($val)),
     qualifiedProperties = $class->qualifiedProperties())
 }
 

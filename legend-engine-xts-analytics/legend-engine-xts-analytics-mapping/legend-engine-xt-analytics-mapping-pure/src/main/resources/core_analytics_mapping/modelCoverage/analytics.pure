@@ -95,8 +95,8 @@ Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo
   qualifiers : MappedPropertyQualifier[*];
   taggedValues: TaggedValueInfo[*];
   stereotypes : StereotypeInfo[*];
-  classPath: String[*]; // use * to make this optional 
-  isQualifiedProp: Boolean[*]; // use * to make this optional, when it's false or undefined, it means it's not a qualified prop
+  classPath: String[0..1]; // use 0..1 to make this optional
+  isQualifiedProp: Boolean[0..1]; // use 0..1 to make this optional, when it's false or undefined, it means it's not a qualified prop
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedProperty
