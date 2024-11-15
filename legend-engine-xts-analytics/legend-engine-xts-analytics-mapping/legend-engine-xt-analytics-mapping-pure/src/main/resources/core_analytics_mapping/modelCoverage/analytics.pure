@@ -123,19 +123,20 @@ function meta::analytics::mapping::modelCoverage::analyze(
       let mapClassMappingsIds = $map->classMappings().id;
       pair($map, list($classMappings->filter(cm | $cm.id->in($mapClassMappingsIds))));
   ));
+  let propertyFilter = {p:AbstractProperty<Any>[1] | true};
   let entities = $classMappings->map(cm |
       $cm->match([
          o:OperationSetImplementation[1] |
             let subTypeMappings = $o->resolveOperation($mapping)->concatenate($operations->filter(op | $op.class->superTypes()->contains($o.class)));
-            buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true, $config);,
+            buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $propertyFilter, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true, $config);,
          a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] |
             buildEntity(
-               $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation->allPropertyMappings(), $rootClassMappings, $allClasses,
+               $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation->allPropertyMappings(), $propertyFilter, $rootClassMappings, $allClasses,
                $allProperties, $inheritanceMap, $mappingToClassMappings, $a.root, $config
             ),
          i:InstanceSetImplementation[1] |
             buildEntity(
-               $i.class, buildEntityName($i), $i, $i->getPropertyMappings($classMappings), $rootClassMappings, $allClasses,
+               $i.class, buildEntityName($i), $i, $i->getPropertyMappings($classMappings), $propertyFilter, $rootClassMappings, $allClasses,
                $allProperties, $inheritanceMap, $mappingToClassMappings, $i.root, $config
             );,
          an:Any[1] | []
@@ -150,7 +151,7 @@ function meta::analytics::mapping::modelCoverage::analyze(
          let superTypes = $operations->filter(o | $o.class->superTypes()->contains($op.class));
          let namePrefix = $i.entityPath->split('@')->at(0);
          let uniqueTypes = $subTypes->concatenate($superTypes)->removeDuplicatesBy(t | $t.class);
-         buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false, $config);
+         buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $propertyFilter, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false, $config);
       )->removeDuplicatesBy(x | $x.path);
   let mappedEntities = $entities->concatenate($inheritanceEntities);
   if ($returnLightGraph == true,

@@ -37,15 +37,18 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   // embedded relational mapping
   assertContains($mappedEntityForFirm.properties.name, 'employees');
   assertContains($result.mappedEntities.path, $mappedEntityForFirm.properties->filter(p|$p.name == 'employees')->toOne()->cast(@EntityMappedProperty).entityPath);
+
+  let mappedEntityForLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
+  assert($mappedEntityForLegalEntity.properties->size() == 2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalInheritanceMappingCoverage():Boolean[1]
 {
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleRelationalMapping);
   let mappedEntityForLegalEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::LegalEntity');
-  assert($mappedEntityForLegalEntity.properties->size() == 4);
+  assert($mappedEntityForLegalEntity.properties->size() == 2);
   assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, '@meta::analytics::mapping::modelCoverage::test::Firm');
-  assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, 'meta_analytics_mapping_modelCoverage_test_Firm_employees');
+  assertContains($mappedEntityForLegalEntity.properties->filter(p|$p->instanceOf(EntityMappedProperty))->cast(@EntityMappedProperty).entityPath, 'meta::analytics::mapping::modelCoverage::test::Address');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalUnionMappingCoverage():Boolean[1]

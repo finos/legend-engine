@@ -27,3 +27,27 @@ function <<test.Test>> meta::pure::functions::relation::tests::map::testSimpleMa
               #->map(x|$x.val->toOne() + 1);
     assertEquals([2,4,5], $res);
 }
+
+Primitive meta::pure::functions::relation::tests::map::SmallInt extends Integer
+[
+    $this < 5
+]
+
+function <<test.Test>> meta::pure::functions::relation::tests::map::testSimpleWithCastMap():Boolean[1]
+{
+    let res = #TDS
+                val
+                1
+                3
+                4
+              #->cast(@Relation<(val:meta::pure::functions::relation::tests::map::SmallInt)>)->map(x|$x.val->toOne() + 1);
+    assertEquals([2,4,5], $res);
+
+    let tds = #TDS
+                val
+                1
+                3
+                7
+                #;
+    assertError(|$tds->cast(@Relation<(val:meta::pure::functions::relation::tests::map::SmallInt)>)->map(x|$x.val->toOne() + 1), 'Constraint :[0] violated in the Class SmallInt');
+}

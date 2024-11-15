@@ -23,10 +23,12 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.lang.cast.Cast;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Bridge;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.PureFunction1;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.TypeProcessor;
@@ -109,9 +111,18 @@ public class RelationExtensionCompiled implements CompiledExtension
                 ProcessorSupport processorSupport = processorContext.getSupport();
                 CoreInstance nativeFunction = Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.func, processorSupport);
                 CoreInstance functionType = processorSupport.function_getFunctionType(nativeFunction);
-                String returnType = TypeProcessor.typeToJavaObjectSingle(Instance.getValueForMetaPropertyToOneResolved(functionType, M3Properties.returnType, processorSupport), true, processorSupport);
+                CoreInstance returnGenericType = Instance.getValueForMetaPropertyToOneResolved(functionType, M3Properties.returnType, processorSupport);
+                String returnType = TypeProcessor.typeToJavaObjectSingle(returnGenericType, true, processorSupport);
 
-                return "(" + returnType + ")((org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer)" + processedOwnerInstance + ").apply(\"" + Instance.getValueForMetaPropertyToOneResolved(function, M3Properties.name, processorContext.getSupport()).getName() + "\")";
+                String getValue = "(" + returnType + ")((org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.shared.RowContainer)" + processedOwnerInstance + ").apply(\"" + Instance.getValueForMetaPropertyToOneResolved(function, M3Properties.name, processorContext.getSupport()).getName() + "\")";
+                if (GenericType.testContainsExtendedPrimitiveTypes(returnGenericType, processorSupport))
+                {
+                    return "(" + returnType + ")" + Cast.buildRunnableForExtendedPrimitiveType(getValue, returnGenericType, null, processorSupport) + ".value()";
+                }
+                else
+                {
+                    return getValue;
+                }
             }
             return null;
         };
