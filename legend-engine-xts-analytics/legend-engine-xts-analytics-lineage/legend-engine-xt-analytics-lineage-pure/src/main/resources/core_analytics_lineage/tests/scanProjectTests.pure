@@ -45,12 +45,15 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithG
 
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol():Any[1]
 {
-   execute(|Firm.all()->project([
+   execute(|let name = 'foo';
+            Firm.all()->project([
                                   col(f|$f.legalName,'a'),
                                   col(f|$f.employees->map(e|$e.lastName),'b'),
-                                  col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
+                                  col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c'),
+                                  col(f|$f.employeeByLastName($name).lastName,'d')
+
                                 ]
-                               ), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                               );, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
 Class <<access.private>> meta::pure::lineage::scanProject::test::LambdaHolder
@@ -93,7 +96,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::t
 {
    let x = meta::pure::lineage::scanProject::test::executeWithProjectUsingCol__Any_1_->scanExecutes();
    let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
-   assertEquals(['a', 'b', 'c'], $p.columns.first);
+   assertEquals(['a', 'b', 'c','d'], $p.columns.first);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindProjectColInKeyExpression():Boolean[1]
