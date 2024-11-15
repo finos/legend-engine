@@ -435,8 +435,6 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
       p:PropertyGraphFetchTree[1]  | if ($p.subType->isNotEmpty(), |$p.subType->toOne(), | $p.property->functionReturnType().rawType->toOne());
    ]);
 
-   println($srcNodeOwner->instanceOf(Class));
-
    let isPropertyTemporalMilestoned = $tgtPgft.property->hasGeneratedMilestoningPropertyStereotype();
 
    let requiredProperty = if($isPropertyTemporalMilestoned, |$setImplementation.class->propertyByName($tgtPgft.property->edgePointPropertyName()->toOne()), |$tgtPgft.property);
