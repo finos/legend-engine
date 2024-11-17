@@ -554,9 +554,12 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fun
       let sep0 = $state.separatorIfPretty(0, $config);
       let sep1 = $state.separatorIfPretty(1, $config);
       
-      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($f.arguments->isEmpty(), | '', | $sep1) +
-      $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config))->joinStrings(',' + $state.separator(1, $config)) +
-      + if($f.arguments->isEmpty(), | '', | $sep0) + ')' +
+      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+      let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
+
+      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($noArgIsMultiLine, | '', | $sep1) +
+      $args->joinStrings(',' + if($noArgIsMultiLine, | ' ', | $state.separator(1, $config))) +
+      + if($noArgIsMultiLine, | '', | $sep0) + ')' +
       if ($f.window->isNotEmpty(),
           | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
           | ''
@@ -601,6 +604,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::joi
           pair(|$j.type == JoinType.CROSS, | $sqlDialect->keyword('cross join', $state, $config)),
           pair(|$j.type == JoinType.LEFT, | $sqlDialect->keyword('left outer join', $state, $config)),
           pair(|$j.type == JoinType.RIGHT, | $sqlDialect->keyword('right outer join', $state, $config)),
+          pair(|$j.type == JoinType.FULL, | $sqlDialect->keyword('full outer join', $state, $config)),
           pair(|$j.type == JoinType.INNER, | $sqlDialect->keyword('inner join', $state, $config))
         ],
         | failWithMessage('Unhandled join type: ' + $j.type->toString())
@@ -725,5 +729,17 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::sub
       '(' + $sep1 + $sqlDialect->executeNodeProcessor($s.query, $state->increaseLevel(), $config) + $sep0 + ')';
     },
     {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::tableSubqueryProcessor_default(): NodeProcessor<TableSubquery>[1]
+{
+  nodeProcessor(
+    TableSubquery,
+    {sqlDialect, s, state, config |
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
+      '(' + $sep1 + $sqlDialect->executeNodeProcessor($s.query, $state->increaseLevel(), $config) + $sep0 + ')';
+    }
   )
 }

@@ -96,7 +96,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
-    unionProcessor_default()
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
   ]
 }
 
