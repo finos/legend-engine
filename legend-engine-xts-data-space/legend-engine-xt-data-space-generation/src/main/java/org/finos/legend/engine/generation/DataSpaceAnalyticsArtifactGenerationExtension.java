@@ -43,7 +43,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGenerationExtension
 {
     public final String ROOT_PATH = "dataSpace-analytics";
-    private boolean returnLightGraph = false;
+    private boolean returnLightGraph = true;
     private final String MAIN_ANALYTICS_FILE = "AnalyticsResult.json";
     private final String MAPPING_MODEL_PREFIX = "MappingModel_";
     private final String MAPPING_ANALYSIS_FILE_PREFIX = "MappingAnalysis_";
