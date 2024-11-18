@@ -53,19 +53,11 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                             );
                                                       ),
                                                       pair('meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_',
-                                                           |let ins = $fe.parametersValues->at(1)->evaluateAndDeactivate();
-                                                            $ins->match(
-                                                               [
-                                                                 i:InstanceValue[1] |
-                                                                  let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
-                                                                  let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@BasicColumnSpecification<Any>));
-                                                                  ^Project(projectfuncEntryPoint = $fe,
-                                                                           columns = zip($colSpecs.name, $colSpecs.func->cast(@FunctionDefinition<Any>)));,
-                                                                 a:Any[*]|[]
-                                                               ]
-                                                            );
-
-                                                      ),
+                                                           |let cols = $fe.parametersValues->at(1)->evaluateAndDeactivate();
+                                                            let columns =  $cols->map(c|$c->meta::pure::lineage::scanProject::extractCol($vars));
+                                                            ^Project(projectfuncEntryPoint = $fe,
+                                                                     columns = zip($columns.name, $columns.func->cast(@FunctionDefinition<Any>)));
+                                                                     ),
                                                       pair('meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_',
                                                         | let funcs = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
                                                           let aggregateFuncs = $fe.parametersValues->at(2)->scanAggregateValue();
@@ -107,6 +99,18 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
       a:Any[1]|$project
    ]
   );
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::extractCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):BasicColumnSpecification<Any>[*]
+{ 
+ $vs->match(
+          [
+            i:InstanceValue[1] |   let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                                   let colSpecs = $cols->map(c | $c->reactivate($vars)->cast(@BasicColumnSpecification<Any>));,
+            s:SimpleFunctionExpression[1] |   $s->reactivate($vars)->cast(@BasicColumnSpecification<Any>);,
+            a:Any[*]| [] ;
+          ]
+      );
 }
 
 function <<access.private>> meta::pure::lineage::scanProject::scanRootGraphFetchTree(root:meta::pure::graphFetch::RootGraphFetchTree<Any>[1]):Pair<String, FunctionDefinition<Any>>[*]

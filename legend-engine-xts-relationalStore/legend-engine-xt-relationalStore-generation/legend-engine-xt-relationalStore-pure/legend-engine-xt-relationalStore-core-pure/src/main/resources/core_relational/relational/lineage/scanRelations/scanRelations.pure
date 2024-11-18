@@ -393,7 +393,7 @@ Class meta::pure::lineage::scanRelations::RelationalTreeAndVars
 }
 
 function <<access.private>> meta::pure::lineage::scanRelations::generatRelationalTrees(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], debug:DebugContext[1], extensions:Extension[*]):RelationalTreeAndVars[1]
-{   
+{  
    let routed         = $f->routeFunction($m, $r, $extensions, $debug);
    let routedFunction = $routed->evaluateAndDeactivate()->toOne();
    let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a |    if ($vs->isLetFunction() ,
@@ -402,8 +402,11 @@ function <<access.private>> meta::pure::lineage::scanRelations::generatRelationa
                                                                                               let inScopeVars = $a->keyValues();
                                                                                               let unavailableVars = $varExprs.name->forAll(var | $var->in($inScopeVars.first));
                                                                                              assert($unavailableVars, 'Unable to resolve var(s): '+ $varExprs.name->filter(var | !$var->in($inScopeVars.first))->joinStrings());
-                                                                                              let re    = $vs->reactivate($a);
-                                                                                              $a->put($varName->toOne(), ^List<Any>(values=$re));,
+                                                                                            let value = if($vs.genericType.rawType->toOne()->instanceOf(PrimitiveType),
+                                                                                                              | ^PlanVarPlaceHolder(name=$varName->toOne(), type = $vs.genericType.rawType->toOne(), multiplicity=$vs.multiplicity),
+                                                                                                              |  $vs->reactivate($a);
+                                                                                                          );    
+                                                                                              $a->put($varName->toOne(), ^List<Any>(values=$value));,
 
                                                                                            |  $a;
                                                                                         );
