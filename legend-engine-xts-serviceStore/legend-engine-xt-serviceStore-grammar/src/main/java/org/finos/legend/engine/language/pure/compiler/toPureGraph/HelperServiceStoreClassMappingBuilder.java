@@ -97,7 +97,7 @@ public class HelperServiceStoreClassMappingBuilder
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(serviceStoreClassMapping._class, serviceStoreClassMapping.classSourceInformation);
         String id = HelperMappingBuilder.getClassMappingId(serviceStoreClassMapping, context);
 
-        Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation res = new Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation") );
+        Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation res = new Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass mappingClass = generateMappingClass(pureClass, id, serviceStoreClassMapping, parent, context);
 
         res._id(id);
