@@ -1,0 +1,79 @@
+
+function meta::external::ingest::tests::createTablesAndFillDb():Boolean[1]
+{
+  let connection = meta::external::ingest::tests::runtime::testRuntime().connectionByElement(meta::external::ingest::tests::store::BarrierTestStore)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+   meta::relational::metamodel::execute::executeInDb('Drop table if exists BatchMetadata;', $connection);
+   meta::relational::metamodel::execute::executeInDb('Create Table BatchMetadata(PKEY  INT PRIMARY KEY,BATCH_ID INT ,DATASET_NAME VARCHAR(200),EOD BOOLEAN,INGEST_REQUEST_ID VARCHAR(200),INGEST_DEFINITION_ARN VARCHAR(200));', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into BatchMetadata (PKEY,BATCH_ID, DATASET_NAME, EOD, INGEST_REQUEST_ID,INGEST_DEFINITION_ARN ) values (1,1, \'Dataset1\',True,  \'R1 \',\' \');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into BatchMetadata (PKEY,BATCH_ID, DATASET_NAME, EOD, INGEST_REQUEST_ID,INGEST_DEFINITION_ARN ) values (4,2, \'Dataset1\',True,   \'R2 \',\' \');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into BatchMetadata (PKEY,BATCH_ID, DATASET_NAME, EOD, INGEST_REQUEST_ID,INGEST_DEFINITION_ARN ) values (5,3, \'Dataset1\',True,   \'R3 \',\' \');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into BatchMetadata (PKEY,BATCH_ID, DATASET_NAME, EOD, INGEST_REQUEST_ID,INGEST_DEFINITION_ARN ) values (6,3, \'Dataset1\',True,  \'R4 \',\' \');', $connection);
+   meta::relational::metamodel::execute::executeInDb('insert into BatchMetadata (PKEY,BATCH_ID, DATASET_NAME, EOD, INGEST_REQUEST_ID,INGEST_DEFINITION_ARN ) values (8,3, \'Dataset2\',True,  \'R5 \',\' \');', $connection);
+   
+  // let result =  meta::relational::metamodel::execute::executeInDb('Select * from BatchMetadata ;', $connection);
+  // $result.rows->map(x | println($x.values));
+  true; 
+}
+
+###Relational
+Database meta::external::ingest::tests::store::BarrierTestStore
+(
+    Table BatchMetadata (
+      PKEY  INT PRIMARY KEY,
+      BATCH_ID INT ,
+      DATASET_NAME VARCHAR(200) ,
+      EOD BIT,
+      INGEST_REQUEST_ID VARCHAR(200),
+      INGEST_DEFINITION_ARN VARCHAR(200)
+
+    )    
+)
+
+###Mapping
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::external::ingest::tests::mapping::BatchMetadataMapping
+(
+  meta::external::ingest::models::EodBatchMetadata: Relational{
+   ~primaryKey
+    (
+      [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.PKEY
+    )
+    ~mainTable [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata
+    endOfDay:[meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.EOD,
+    batchId: [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.BATCH_ID,
+    datasetName: [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.DATASET_NAME,
+    ingest_request_id: [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.INGEST_REQUEST_ID,
+    ingest_definition_urn: [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.INGEST_DEFINITION_ARN
+  }
+)
+
+###Pure
+import meta::relational::metamodel::*;
+import meta::json::*;
+import meta::json::tests::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+
+
+function meta::external::ingest::tests::runtime::testRuntime():Runtime[1]
+{
+  ^Runtime(connectionStores= meta::external::ingest::tests::testDatabaseConnection(meta::external::ingest::tests::store::BarrierTestStore,'GMT'))
+}
+
+function meta::external::ingest::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):ConnectionStore[1]
+{
+  ^ConnectionStore(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
+        type = DatabaseType.H2,
+        timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
+    ),
+    element = $db);
+}

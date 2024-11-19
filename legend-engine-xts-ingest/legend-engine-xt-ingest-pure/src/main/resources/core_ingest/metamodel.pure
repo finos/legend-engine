@@ -1,0 +1,37 @@
+import meta::external::ingest::models::*;
+
+Class meta::external::ingest::models::DatasetMark
+{
+  datasetName: String[1];
+  batchId: Integer[1];
+}
+
+Class meta::external::ingest::models::Watermark
+{
+  watermarkId: String[1];
+  datasetMarks: DatasetMark[*];
+}
+ 
+Class meta::external::ingest::models::IngestConfig<T>
+{ 
+  datasetName: String[1];  
+  metadataType: Class<T>[1];  
+}
+ 
+Class meta::external::ingest::models::BatchMetadata
+{
+  datasetName: String[1];
+  batchId: Integer[1];
+  ingest_request_id: String[1];
+  ingest_definition_urn: String[1];  
+}
+
+Class meta::external::ingest::models::EodBatchMetadata extends meta::external::ingest::models::BatchMetadata
+{
+  endOfDay: Boolean[1];
+}
+
+Class meta::external::ingest::models::BusinessDateBatchMetadata extends meta::external::ingest::models::EodBatchMetadata
+{
+  businessDate: StrictDate[1];
+}

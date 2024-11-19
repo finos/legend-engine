@@ -1,0 +1,28 @@
+import meta::external::ingest::barrier::*;
+import meta::external::ingest::models::*;
+
+function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
+{
+  let prevHighBatchId = getBatchId($ingestConfig.datasetName, $prevPublishedWatermark);
+  let currentBatchId = getBatchId($ingestConfig.datasetName, $currentStateWatermark);   
+  ($currentBatchId > $prevHighBatchId) ;                
+}
+
+function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1],filterFunc:Function<{T[1]->Boolean[1]}>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
+{
+  let prevHighBatchId = getBatchId($ingestConfig.datasetName, $prevPublishedWatermark);
+  let currentBatchId = getBatchId($ingestConfig.datasetName, $currentStateWatermark); 
+
+  $ingestConfig.metadataType->meta::pure::functions::collection::getAll()
+                  ->filter(x | $x->cast(@BatchMetadata).datasetName == $ingestConfig.datasetName)
+                  ->filter(y | ($y->cast(@BatchMetadata).batchId > $prevHighBatchId) && ($y->cast(@BatchMetadata).batchId <= $currentBatchId))
+                  ->filter($filterFunc)
+                  ->isNotEmpty();
+}
+
+
+function <<access.private>> meta::external::ingest::barrier::getBatchId(datasetName: String[1], watermark: Watermark[1]):Integer[1]
+{
+  $watermark.datasetMarks->filter(w | $w.datasetName == $datasetName)->toOne().batchId;
+}
+
