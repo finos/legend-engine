@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataQualityParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
@@ -27,8 +28,11 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecuti
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -41,12 +45,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class DataQualityTreeWalker
 {
@@ -54,13 +60,15 @@ public class DataQualityTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
+    private final PureGrammarParserContext parserContext;
 
-    public DataQualityTreeWalker(CharStream input, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
+    public DataQualityTreeWalker(CharStream input, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section, PureGrammarParserContext parserContext)
     {
         this.input = input;
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.parserContext = parserContext;
     }
 
     public void visit(DataQualityParserGrammar.DefinitionContext definitionContext)
@@ -71,7 +79,20 @@ public class DataQualityTreeWalker
         }
     }
 
-    private DataQuality visitDataQualityValidation(DataQualityParserGrammar.ValidationDefinitionContext validationDefinitionContext)
+    private PackageableElement visitDataQualityValidation(DataQualityParserGrammar.ValidationDefinitionContext validationDefinitionContext)
+    {
+        if (validationDefinitionContext.classValidationDefinition() != null)
+        {
+            return visitClassValidation(validationDefinitionContext.classValidationDefinition());
+        }
+        if (validationDefinitionContext.relationValidationDefinition() != null)
+        {
+            return visitRelationValidation(validationDefinitionContext.relationValidationDefinition());
+        }
+        throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(validationDefinitionContext), EngineErrorType.PARSER);
+    }
+
+    private DataQuality visitClassValidation(DataQualityParserGrammar.ClassValidationDefinitionContext validationDefinitionContext)
     {
         DataQuality dataQuality = new DataQuality();
         dataQuality.name = PureGrammarParserUtility.fromIdentifier(validationDefinitionContext.qualifiedName().identifier());
@@ -262,7 +283,7 @@ public class DataQualityTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + combinedExpressionContext.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(combinedExpressionContext.start.getStartIndex(), combinedExpressionContext.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext);
         if (valueSpecification instanceof Lambda)
         {
             return (Lambda) valueSpecification;
@@ -274,5 +295,65 @@ public class DataQualityTreeWalker
         lambda.body.add(valueSpecification);
         lambda.parameters = new ArrayList<>();
         return lambda;
+    }
+
+    private DataqualityRelationValidation visitRelationValidation(DataQualityParserGrammar.RelationValidationDefinitionContext relationValidationDefinitionContext)
+    {
+        DataqualityRelationValidation dataqualityRelationValidation = new DataqualityRelationValidation();
+        dataqualityRelationValidation.name = PureGrammarParserUtility.fromIdentifier(relationValidationDefinitionContext.qualifiedName().identifier());
+        dataqualityRelationValidation._package = relationValidationDefinitionContext.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(relationValidationDefinitionContext.qualifiedName().packagePath().identifier());
+        dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
+        dataqualityRelationValidation.stereotypes = relationValidationDefinitionContext.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(relationValidationDefinitionContext.stereotypes());
+        dataqualityRelationValidation.taggedValues = relationValidationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(relationValidationDefinitionContext.taggedValues());
+        dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
+
+        // query
+        DataQualityParserGrammar.RelationFuncContext relationFuncContext = PureGrammarParserUtility.validateAndExtractRequiredField(relationValidationDefinitionContext.relationFunc(),
+                "query",
+                dataqualityRelationValidation.sourceInformation);
+        dataqualityRelationValidation.query = visitLambda(relationFuncContext.combinedExpression());
+
+        // relation validations
+        DataQualityParserGrammar.ValidationsContext validationsContext = PureGrammarParserUtility.validateAndExtractRequiredField(relationValidationDefinitionContext.validations(),
+                "validations",
+                dataqualityRelationValidation.sourceInformation);
+        dataqualityRelationValidation.validations = visitValidations(validationsContext, dataqualityRelationValidation.sourceInformation);
+
+        return dataqualityRelationValidation;
+    }
+
+    private List<RelationValidation> visitValidations(DataQualityParserGrammar.ValidationsContext validationContexts, SourceInformation sourceInformation)
+    {
+        if (Objects.isNull(validationContexts.validation()))
+        {
+            return Collections.emptyList();
+        }
+        return validationContexts.validation().stream()
+                .map(validationContext -> this.visitValidation(validationContext, sourceInformation))
+                .collect(Collectors.toList());
+    }
+
+    private RelationValidation visitValidation(DataQualityParserGrammar.ValidationContext validationContext, SourceInformation sourceInformation)
+    {
+        RelationValidation relationValidation = new RelationValidation();
+        DataQualityParserGrammar.ValidationNameContext validationNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(validationContext.validationName(),
+                "name",
+                sourceInformation);
+        relationValidation.name = PureGrammarParserUtility.fromGrammarString(validationNameContext.STRING().getText(), true);
+
+        DataQualityParserGrammar.ValidationDescContext validationDescContext = PureGrammarParserUtility.validateAndExtractOptionalField(validationContext.validationDesc(),
+                "description",
+                sourceInformation);
+        if (Objects.nonNull(validationDescContext))
+        {
+            relationValidation.description = PureGrammarParserUtility.fromGrammarString(validationDescContext.STRING().getText(), true);
+        }
+
+        DataQualityParserGrammar.ValidationAssertionContext validationAssertionContext = PureGrammarParserUtility.validateAndExtractRequiredField(validationContext.validationAssertion(),
+                "assertion",
+                sourceInformation);
+        relationValidation.assertion = this.visitLambda(validationAssertionContext.combinedExpression());
+
+        return relationValidation;
     }
 }

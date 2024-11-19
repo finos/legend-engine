@@ -126,6 +126,23 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
 
+    @Test
+    public void testRelationValidation()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(RELATION_COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->select(~name);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "         description: 'test validation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+    }
 
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
@@ -230,5 +247,15 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "  ];\n" +
             "  defaultExecutionContext: 'default';\n" +
             "}\n";
+
+    private static final String RELATION_COMPILATION_PREREQUISITE_CODE = "###Relational\n" +
+            "Database my::Store" +
+            "(" +
+            "   Table myTable" +
+            "   (" +
+            "       id INT," +
+            "       name VARCHAR(200)" +
+            "   )" +
+            ")\n";
 
 }

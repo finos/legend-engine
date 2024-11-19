@@ -92,7 +92,7 @@ public class TestDataQualityLambdaGenerator
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", routerExtensions);
+        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null);
         return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
     }
 
