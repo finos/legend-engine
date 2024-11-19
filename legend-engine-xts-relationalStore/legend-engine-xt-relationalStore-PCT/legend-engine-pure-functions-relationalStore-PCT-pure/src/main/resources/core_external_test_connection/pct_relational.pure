@@ -269,7 +269,12 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                                   ],
                                 extraInstanceValueHandlers = 
                                   [
-                                    x:RelationStoreAccessor<Any>[1]|'#>{'+$x.store->elementToPath()+'.'+$x.sourceElement->cast(@Table).name->toOne()+'}#',
+                                    x:RelationStoreAccessor<Any>[1]|
+                                      let table = $x.sourceElement->cast(@Table);  
+                                      let schema = $table.schema;
+                                      let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
+                                      '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
+                                      ,
                                     t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS\n'+$t.csv->replace(' ','')+'#'
                                   ]
                             )
