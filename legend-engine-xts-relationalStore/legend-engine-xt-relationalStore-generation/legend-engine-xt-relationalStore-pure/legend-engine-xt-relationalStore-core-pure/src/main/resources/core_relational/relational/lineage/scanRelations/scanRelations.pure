@@ -402,7 +402,8 @@ function <<access.private>> meta::pure::lineage::scanRelations::generatRelationa
                                                                                               let inScopeVars = $a->keyValues();
                                                                                               let unavailableVars = $varExprs.name->forAll(var | $var->in($inScopeVars.first));
                                                                                              assert($unavailableVars, 'Unable to resolve var(s): '+ $varExprs.name->filter(var | !$var->in($inScopeVars.first))->joinStrings());
-                                                                                            let value = if($vs.genericType.rawType->toOne()->instanceOf(PrimitiveType),
+                                                                              
+                                                                                            let value = if($vs.genericType.rawType->toOne()->instanceOf(PrimitiveType) &&  !$vs->cast(@SimpleFunctionExpression).parametersValues->at(1)->instanceOf(InstanceValue),
                                                                                                               | ^PlanVarPlaceHolder(name=$varName->toOne(), type = $vs.genericType.rawType->toOne(), multiplicity=$vs.multiplicity),
                                                                                                               |  $vs->reactivate($a);
                                                                                                           );    
