@@ -1189,7 +1189,7 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         return errorDetails;
     }
 
-    public class Event
+    public static class Event
     {
         String dataset;
         long batchId;
