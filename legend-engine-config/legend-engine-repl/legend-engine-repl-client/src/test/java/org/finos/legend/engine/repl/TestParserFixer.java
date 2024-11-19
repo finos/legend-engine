@@ -37,11 +37,11 @@ public class TestParserFixer
     public void testIsland()
     {
         Assert.assertEquals("#MaGiCToKeN{}#", fixCode("#"));
-        Assert.assertEquals("#>{}#", fixCode("#>"));
-        Assert.assertEquals("#>{}#", fixCode("#>{"));
+        Assert.assertEquals("#>{MaGiCToKeN}#", fixCode("#>"));
+        Assert.assertEquals("#>{MaGiCToKeN}#", fixCode("#>{"));
         Assert.assertEquals("#>{}#", fixCode("#>{}"));
         Assert.assertEquals("#>{a::A.t}#->fil()", fixCode("#>{a::A.t}#->fil"));
-        Assert.assertEquals("#>{a::A.t}#->x(#>{}#)", fixCode("#>{a::A.t}#->x(#>"));
+        Assert.assertEquals("#>{a::A.t}#->x(#>{MaGiCToKeN}#)", fixCode("#>{a::A.t}#->x(#>"));
         Assert.assertEquals("#>{a::A.t}#->x(#>{a::A.MaGiCToKeN}#)", fixCode("#>{a::A.t}#->x(#>{a::A."));
     }
 

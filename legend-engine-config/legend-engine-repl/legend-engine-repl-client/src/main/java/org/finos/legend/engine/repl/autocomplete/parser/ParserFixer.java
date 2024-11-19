@@ -207,7 +207,7 @@ public class ParserFixer
             }
             if (content.contains("{") && !content.contains("}"))
             {
-                return value + magicToken + "}#";
+                return (value.contains(magicToken) ? value : value + magicToken) + "}#";
             }
             if (content.contains("{") && content.contains("}"))
             {
