@@ -252,7 +252,12 @@ function meta::external::format::shared::executionPlan::extractPackageableElemen
                                                                  )->concatenate($p.subType),
                                   s:SubTypeGraphFetchTree[1]   | $s.subTypeClass
                                 ])->cast(@PackageableElement);
-  $classesFromTree->concatenate($tree.subTrees->map(s | $s->extractPackageableElementFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractPackageableElementFromTree()));
+  let specializations = $classesFromTree->filter(c | $c->instanceOf(Class))->map(c | $c->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())->filter(x | $x->elementToPath() != Any->elementToPath());
+  let generalizations = $classesFromTree->filter(c | $c->instanceOf(Class))->map(c | $c->cast(@Class<Any>)->meta::pure::functions::meta::getAllTypeGeneralisations())->filter(x | $x->elementToPath() != Any->elementToPath())
+                                        ->filter(x | $x->instanceOf(PackageableElement))->cast(@PackageableElement);
+  let currentLevelClasses = $classesFromTree->concatenate($specializations)->concatenate($generalizations)->removeDuplicates({a, b | $a->elementToPath() == $b->elementToPath()});
+
+  $currentLevelClasses->concatenate($tree.subTrees->map(s | $s->extractPackageableElementFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractPackageableElementFromTree()));
 }
 
 function <<access.private>> meta::external::format::shared::executionPlan::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
