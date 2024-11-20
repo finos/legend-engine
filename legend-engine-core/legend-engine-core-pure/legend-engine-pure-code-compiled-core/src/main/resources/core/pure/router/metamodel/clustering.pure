@@ -40,27 +40,27 @@ import meta::pure::router::utils::*;
 import meta::core::runtime::*;
 function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
-  let fe = $cluster.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
+  let vs = $cluster.val->byPassValueSpecificationWrapper();
 
   $cluster->match([
       sc:StoreMappingClusteredValueSpecification[1] |
           //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
           //the only place where sql is generated for this case.
-          $sc->buildExecutionNodeForStoreClusteredVS($fe, $sc.mapping, $inScopeVars, $context, $extensions, $debugContext),
+          $sc->buildExecutionNodeForStoreClusteredVS($vs, $sc.mapping, $inScopeVars, $context, $extensions, $debugContext),
       sc:StoreClusteredValueSpecification[1] |
           //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
           //the only place where sql is generated for this case.
-          $sc->buildExecutionNodeForStoreClusteredVS($fe, [], $inScopeVars, $context, $extensions, $debugContext),
+          $sc->buildExecutionNodeForStoreClusteredVS($vs, [], $inScopeVars, $context, $extensions, $debugContext),
       ef:ExternalFormatClusteredValueSpecification[1] |
           let state = ^meta::external::format::shared::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne(), binding = $ef.binding);
-          $fe->meta::external::format::shared::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
+          $vs->meta::external::format::shared::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
       pl:PlatformClusteredValueSpecification[1] |
           let state = ^meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
-          $fe->meta::pure::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
+          $vs->meta::pure::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
   ]);
 }
 
-function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], fe:FunctionExpression[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], vs:ValueSpecification[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
     //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
     //the only place where sql is generated for this case.
@@ -74,7 +74,7 @@ function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(s
       ),      
       r:Runtime[0..1] | $r
     ]);
-    let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
+    let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, vs=$vs, inScopeVars=$inScopeVars);
     let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
     ^$res(fromCluster=$sc);
 }

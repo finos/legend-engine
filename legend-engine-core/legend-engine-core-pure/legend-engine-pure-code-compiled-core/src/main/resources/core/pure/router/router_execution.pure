@@ -97,7 +97,7 @@ function meta::pure::router::execution::executeExpression(clusters:ClusteredValu
 
 function <<access.private>> meta::pure::router::execution::getStoreQuery(store: Store[1], fe : FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):meta::pure::mapping::StoreQuery[1]
 {
-   ^meta::pure::mapping::StoreQuery(store=$store, fe=$fe, inScopeVars=$inScopeVars);
+   ^meta::pure::mapping::StoreQuery(store=$store, vs=$fe, inScopeVars=$inScopeVars);
 }
 
 function meta::pure::router::execution::resolve(v:Container[1], openVariables:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1]):Container[1]

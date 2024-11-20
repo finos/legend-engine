@@ -343,11 +343,12 @@ function meta::pure::mapping::modelToModel::inMemory::getter(o:Any[1], property:
 
 function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:meta::pure::mapping::StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[0..1], mc:ModelConnection[1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let jsonFeWithPpt = if($sq.fe.func.name == 'toJSON_T_MANY__LambdaFunction_MANY__String_1_',
-                          | let inputFeToJson = $sq.fe.parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
-                            let jsonPropertyPaths = $sq.fe.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->cast(@LambdaFunction<{Nil[1]->Any[*]}>);
+   let queryFe = $sq.vs->cast(@FunctionExpression); 
+   let jsonFeWithPpt = if($queryFe.func.name == 'toJSON_T_MANY__LambdaFunction_MANY__String_1_',
+                          | let inputFeToJson = $queryFe.parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
+                            let jsonPropertyPaths = $queryFe.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->cast(@LambdaFunction<{Nil[1]->Any[*]}>);
                             ^JsonFeWithPropertyPaths(fe=$inputFeToJson, jsonPropertyPaths=$jsonPropertyPaths);,
-                          | ^JsonFeWithPropertyPaths(fe=$sq.fe)
+                          | ^JsonFeWithPropertyPaths(fe=$queryFe)
                        );
 
    let fe = $jsonFeWithPpt.fe;

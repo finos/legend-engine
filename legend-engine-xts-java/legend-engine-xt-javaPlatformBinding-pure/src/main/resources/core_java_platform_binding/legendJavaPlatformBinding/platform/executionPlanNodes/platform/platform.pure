@@ -33,10 +33,10 @@ import meta::pure::graphFetch::execution::*;
 // Prepare
 function meta::pure::executionPlan::platformBinding::legendJava::platform::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
-   if($p.expression->cast(@FunctionExpression)->isSerialize(),
-      | prepareForSerialize($p, $path, $context, $debug),
-      | prepareForExpression($p, $path, $context, $debug)
-   );
+  $p.expression->match([
+    fe: FunctionExpression[1] | if($fe->isSerialize(), | prepareForSerialize($p, $path, $context, $debug), | prepareForExpression($p, $path, $context, $debug)),
+    vs: ValueSpecification[1] | prepareForExpression($p, $path, $context, $debug)
+  ]);
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::prepareForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
@@ -59,19 +59,22 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 // Generate
 function meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
 {
-   if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
-      | generateImplementionForNow($context.conventions),
-      |
-   if($p.expression->cast(@FunctionExpression).func == currentUserId__String_1_,
-      | generateImplementionForCurrentUserId($context.conventions),
-      |
-   if($p.expression->cast(@FunctionExpression)->isSerialize(),
-      | generateImplementionForSerialize($p, $path, $context, $debug),
-      |
-   if($p.expression->cast(@FunctionExpression)->isParseObjectReferences(),
-      | generateImplementationForParseObjectReferences($p, $path, $context, $extensions, $debug),
-      | generateImplementionForExpression($p, $path, $context, $debug)
-   ))));
+   if ($p.expression->instanceOf(FunctionExpression), 
+    | if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
+          | generateImplementionForNow($context.conventions),
+          |
+      if($p.expression->cast(@FunctionExpression).func == currentUserId__String_1_,
+          | generateImplementionForCurrentUserId($context.conventions),
+          |
+      if($p.expression->cast(@FunctionExpression)->isSerialize(),
+          | generateImplementionForSerialize($p, $path, $context, $debug),
+          |
+      if($p.expression->cast(@FunctionExpression)->isParseObjectReferences(),
+          | generateImplementationForParseObjectReferences($p, $path, $context, $extensions, $debug),
+          | generateImplementionForExpression($p, $path, $context, $debug)
+      )))), 
+    | generateImplementionForExpression($p, $path, $context, $debug)
+   );
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]

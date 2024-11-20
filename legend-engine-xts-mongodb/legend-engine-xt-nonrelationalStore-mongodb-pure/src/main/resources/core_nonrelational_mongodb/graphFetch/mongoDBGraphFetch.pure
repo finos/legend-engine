@@ -33,7 +33,7 @@ import meta::external::format::shared::executionPlan::*;
 
 function meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
 {
-  let fe = $sq.fe->evaluateAndDeactivate();
+  let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
   let lhsFe = $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
   let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
   let store = $sq.store->cast(@MongoDatabase);

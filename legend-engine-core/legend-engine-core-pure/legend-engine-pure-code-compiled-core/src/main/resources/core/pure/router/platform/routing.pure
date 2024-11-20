@@ -95,7 +95,7 @@ function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecifi
 
 function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
 {
-   $v->match([f:FunctionExpression[1]                | let params         = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));
+   $v->match([f:FunctionExpression[1]                | let params         = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));                                
                                                        let uniqueClusters = $params->filter(p | $p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | areClustersCompatible($x, $y, $extensions)});
                                                        if($uniqueClusters->size() == 1 && $uniqueClusters->toOne()->isFunctionSupportedByCluster($f),
                                                           |let uniqueCluster = $uniqueClusters->toOne();

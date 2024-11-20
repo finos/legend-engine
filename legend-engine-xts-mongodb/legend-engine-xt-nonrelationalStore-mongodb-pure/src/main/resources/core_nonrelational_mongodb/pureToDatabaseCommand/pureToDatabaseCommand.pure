@@ -56,9 +56,9 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::findS
    $supportedFunctions->get($fe.func);
 }
 
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::toDatabaseCommand(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], extensions:Extension[*]): MongoDBOperationElement[1]
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::toDatabaseCommand(vs:ValueSpecification[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], extensions:Extension[*]): MongoDBOperationElement[1]
 {
-   processValueSpecification($functionExpression, ^DatabaseCommand(type='aggregate'), $mapping, $inScopeVars, $debug);
+   processValueSpecification($vs, ^DatabaseCommand(type='aggregate'), $mapping, $inScopeVars, $debug);
 }
 
 

@@ -45,9 +45,9 @@ Class meta::external::store::service::functions::pureToServiceStoreQuery::PureFu
 {
 }
 
-function meta::external::store::service::functions::pureToServiceStoreQuery::toServiceStoreQuery(functionExpression:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
+function meta::external::store::service::functions::pureToServiceStoreQuery::toServiceStoreQuery(vs:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):ServiceStoreQuery[1]
 {
-   let res = processValueSpecification($functionExpression, ^ServiceStoreQuery(processedParamValueMap = []->newMap()), $inScopeVars, $debug);
+   let res = processValueSpecification($vs, ^ServiceStoreQuery(processedParamValueMap = []->newMap()), $inScopeVars, $debug);
    assert($res.processingParam->isEmpty() && $res.processingValue->isEmpty(), | 'Unexpected result after processing query');
    $res;
 }

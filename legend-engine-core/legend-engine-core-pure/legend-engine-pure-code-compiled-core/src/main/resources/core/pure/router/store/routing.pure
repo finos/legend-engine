@@ -345,14 +345,14 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
                 let fromRuntime            = $resolvedParameters->at(0)->cast(@Runtime);
-                routeFunctionExpression(
-                    $fe.parametersValues->at(0)->cast(@FunctionExpression),
-                    ^$state(routingStrategy = getRoutingStrategyFromRuntime($fromRuntime)),
-                    $executionContext,
-                    $vars,
-                    $inScopeVars,
-                    $extensions,
-                    $debug
+                routeValueSpecification(
+                  ^$state(value = $fe.parametersValues->at(0), 
+                  routingStrategy = getRoutingStrategyFromRuntime($fromRuntime)), 
+                  $executionContext,
+                  $vars,
+                  $inScopeVars,
+                  $extensions,
+                  $debug
                 );
         }
     ),

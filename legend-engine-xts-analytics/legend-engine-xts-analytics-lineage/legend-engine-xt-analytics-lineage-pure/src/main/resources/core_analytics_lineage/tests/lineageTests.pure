@@ -542,3 +542,24 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                                           '[employeeName: [PersonTable.PERSON_DETAILS <DynaFunction>], firmName: [FirmTable.ID <JoinTreeNode>, FirmTable.LEGAL_NAME <TableAliasColumn>, PersonTable.PERSON_DETAILS <JoinTreeNode>]]',
                                            $lineage);
 }
+
+###Pure
+import meta::analytics::lineage::*;
+import meta::relational::extension::*;
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testColWithPrimitiveLet():Boolean[1]
+{
+   let fn= {businessDate:Date[1], type:String[1]|
+             let adjustedType = $type+ 'test';
+               meta::relational::tests::milestoning::Product.all($businessDate)->project(col(p|$p.classification($businessDate).type,'type'))->filter(f|$f.getString('type')=='adjustedType');};  
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let lineage = computeLineage($fn, $mapping, $runtime, relationalExtensions());
+  
+  meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'tb_dbdefaultProductClassificationTable', 'tb_dbdefaultProductTable'],
+                                         ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::milestoning::Product', 'meta::relational::tests::milestoning::ProductClassification', 'pack_meta::pure::tds', 'pack_meta::relational::tests::milestoning'],  
+                                        '[type: [ProductClassificationTable.type <JoinTreeNode>, ProductClassificationTable.type <TableAliasColumn>, ProductTable.type <JoinTreeNode>]]',
+                                          $lineage);
+}

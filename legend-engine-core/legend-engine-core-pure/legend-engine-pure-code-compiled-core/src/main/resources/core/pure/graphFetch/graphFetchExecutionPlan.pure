@@ -116,7 +116,7 @@ function meta::pure::graphFetch::executionPlan::nodeIsMerged(node:LocalGraphFetc
 function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    print(if($debug.debug,|$debug.space+'>Generating Graph Fetch Execution Plan:\n',|''));
-   let fe = $sq.fe->evaluateAndDeactivate();
+   let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    let resultSize = $fe.parametersValues->evaluateAndDeactivate()->at(0)->match([rvs:ExtendedRoutedValueSpecification[1] | $rvs.value.multiplicity->toOne(),
                                                                                  vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
    assert($fe.func->in(graphFetchFunctions()) || $fe->isUnionOnGraphFetch(true));
@@ -194,7 +194,7 @@ function meta::pure::graphFetch::executionPlan::enrichTargetTreeForFilterPropert
 
 function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
-   let fe     = $sq.fe->evaluateAndDeactivate();
+   let fe     = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    let params = $fe.parametersValues->evaluateAndDeactivate();
    let p1     = $params->at(0);
    let p2     = $params->at(1)->cast(@InstanceValue);
@@ -214,12 +214,12 @@ function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecutio
       )->evaluateAndDeactivate()
    }, $rf->eval($sets->at(0)));
 
-   planRouterUnionGraphFetchExecution(^$sq(fe = $newFe), $ext, $mapping, $runtime, $exeCtx, $extensions, $debug);
+   planRouterUnionGraphFetchExecution(^$sq(vs = $newFe), $ext, $mapping, $runtime, $exeCtx, $extensions, $debug);
 }
 
 function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
-   let fe = $sq.fe->evaluateAndDeactivate();
+   let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    assert($fe->isUnionOnGraphFetch(true), | 'Non union graphFetch function encountered');
 
    let subClusters  = $fe.parametersValues->evaluateAndDeactivate()->map({p | $p->meta::pure::router::clustering::cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification);
