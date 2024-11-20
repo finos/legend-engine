@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.junit.Test;
 
 public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -2526,66 +2527,66 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
 
         //Should no longer throw errors. Correctly aggregates under listed connection
         test(resource + "###Service\n" +
-                        "Service test::service::FirmService\n" +
-                        "{\n" +
-                        "  pattern: '/testFirmService';\n" +
-                        "  owners:\n" +
-                        "  [\n" +
-                        "    'owner1',\n" +
-                        "    'owner2'\n" +
-                        "  ];\n" +
-                        "  documentation: '';\n" +
-                        "  autoActivateUpdates: true;\n" +
-                        "  execution: Single\n" +
-                        "  {\n" +
-                        "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
-                        "    mapping: test::mapping::FirmMapping;\n" +
-                        "    runtime: test::runtime::SFirmRuntime;\n" +
-                        "  }\n" +
-                        "  testSuites:\n" +
-                        "  [\n" +
-                        "    testSuite1:\n" +
-                        "    {\n" +
-                        "      data:\n" +
-                        "      [\n" +
-                        "        connections:\n" +
-                        "        [\n" +
-                        "          connection1:\n" +
-                        "            ExternalFormat\n" +
-                        "            #{\n" +
-                        "              contentType: 'application/json';\n" +
-                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
-                        "            }#,\n" +
-                        "          connection1:\n" +
-                        "            ExternalFormat\n" +
-                        "            #{\n" +
-                        "              contentType: 'application/json';\n" +
-                        "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
-                        "            }#\n" +
-                        "        ]\n" +
-                        "      ]\n" +
-                        "      tests:\n" +
-                        "      [\n" +
-                        "        test1:\n" +
-                        "        {\n" +
-                        "          asserts:\n" +
-                        "          [\n" +
-                        "            assert1:\n" +
-                        "              EqualToJson\n" +
-                        "              #{\n" +
-                        "                expected:\n" +
-                        "                  ExternalFormat\n" +
-                        "                  #{\n" +
-                        "                    contentType: 'application/json';\n" +
-                        "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
-                        "                  }#;\n" +
-                        "              }#\n" +
-                        "          ]\n" +
-                        "        }\n" +
-                        "      ]\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}\n"
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->graphFetch(#{test::model::Firm{employees{firstName,lastName},legalName}}#)->serialize(#{test::model::Firm{employees{firstName,lastName},legalName}}#);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#,\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}, {\"employees\":[{\"firstName\":\"firstName 37\",\"lastName\":\"lastName 78\"}],\"legalName\":\"legalName 20\"}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"employees\":[{\"firstName\":\"firstName 36\",\"lastName\":\"lastName 77\"}],\"legalName\":\"legalName 19\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n"
         );
 
         // Mis-match between parameter type & parameter value
@@ -3438,7 +3439,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     public void testExecutionEnvironmentCompilation()
     {
         test("###Service\n" +
-        "ExecutionEnvironment test::executionEnvironment\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
                 "{\n" +
                 "  executions:\n" +
                 "  [\n" +
@@ -3453,7 +3454,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::myRuntime2;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [8:16-31]: Can't find mapping 'test::myMapping1'");
+                "}\n", "COMPILATION error at [8:16-31]: Can't find mapping 'test::myMapping1'");
 
         String resource = "Class test::class\n" +
                 "{\n" +
@@ -3491,7 +3492,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      runtime: test::runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [27:16-31]: Can't find runtime 'test::myRuntime1'");
+                "}\n", "COMPILATION error at [27:16-31]: Can't find runtime 'test::myRuntime1'");
 
         test(resource + "###Service\n" +
                 "ExecutionEnvironment test::executionEnvironment\n" +
@@ -3587,5 +3588,114 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  ];\n" +
                 "}\n", "COMPILATION error at [32:5-42:5]: Cannot use both runtime and runtime components");
 
+    }
+
+    @Test
+    public void testMappingRuntimeCompatibility()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "Mapping test::mapping2\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        test(resource + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::mapping2;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", null, FastList.newListWith("COMPILATION error at [30:16-28]: Execution Environment 'test::executionEnvironment', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping2; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "}", null, FastList.newListWith("COMPILATION error at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "    key: 'env';\n" +
+                "    executions['PROD']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping2;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping2;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", null, FastList.newListWith(
+                        "COMPILATION error at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
+                "COMPILATION error at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+
+        String binding = "###ExternalFormat\n" +
+                "Binding test::bind\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [\n" +
+                "    test::class\n" +
+                "  ];\n" +
+                "}\n";
+        test(resource + binding + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::mapping2;\n" +
+                "      runtimeComponents:\n" +
+                "       {\n" +
+                "           runtime: test::runtime;\n" +
+                "           class: test::class;\n" +
+                "           binding: test::bind;\n" +
+                "       }\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", null, FastList.newListWith(
+                        "COMPILATION error at [40:12-34]: Execution Environment 'test::executionEnvironment', key: 'UAT', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"
+        ));
     }
 }
