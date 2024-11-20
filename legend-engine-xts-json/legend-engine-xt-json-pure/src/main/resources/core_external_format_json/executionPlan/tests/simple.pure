@@ -147,6 +147,15 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithInternalize(): Boolean[1]
+{
+  let query   = {data:String[1]| Target.all()->graphFetch(#{Target{targetProductId}}#)->serialize(#{Target{targetProductId}}#)->from(M2MMappingWithChild, Source->getRuntimeWithModelQueryConnection('application/json', $data))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"@type": "Source", "child": {"@type": "ProductExtended", "productId": "123"}}'));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"targetProductId":"123"}}', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJson(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -357,6 +366,20 @@ Class meta::external::format::json::executionPlan::test::simple::Product
   description: String[1];
 }
 
+Class meta::external::format::json::executionPlan::test::simple::ProductExtended extends meta::external::format::json::executionPlan::test::simple::Product
+{
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Target
+{
+  targetProductId: String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Source
+{
+  child: meta::external::format::json::executionPlan::test::simple::Product[1];
+}
+
 Class meta::external::format::json::executionPlan::test::simple::Synonym
 {
   name: String[1];
@@ -504,6 +527,15 @@ Mapping meta::external::format::json::executionPlan::test::simple::M2MMapping2
     ~src meta::external::format::json::executionPlan::test::simple::Address
 
     street : $src.street + ' refined'
+  }
+)
+
+Mapping meta::external::format::json::executionPlan::test::simple::M2MMappingWithChild
+(
+  meta::external::format::json::executionPlan::test::simple::Target: Pure
+  {
+    ~src meta::external::format::json::executionPlan::test::simple::Source
+    targetProductId: $src.child.productId
   }
 )
 
