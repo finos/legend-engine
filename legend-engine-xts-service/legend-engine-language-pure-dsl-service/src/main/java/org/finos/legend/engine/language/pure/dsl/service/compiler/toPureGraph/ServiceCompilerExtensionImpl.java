@@ -92,7 +92,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getPackageableElement(service);
 
-                            pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
+                            pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, service, context));
 
                             // Legacy flow
                             if (service.test != null)
@@ -209,6 +209,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
                             pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperServiceBuilder.processExecutionParameters(params, context)));
+                        },
+                        (execEnv, context) ->
+                        {
+                            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
+                            HelperServiceBuilder.validate(execEnv, pureExecEnv, context);
                         })
         );
     }
