@@ -49,6 +49,9 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(PropertyGraphFetchTree.class)
                         .withSubtype(DataQualityPropertyGraphFetchTree.class, "dataQualityPropertyGraphFetchTree")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(DataqualityRelationValidation.class, "dataqualityRelationValidation")
                         .build()
         ));
     }
@@ -56,6 +59,7 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(DataQuality.class, "meta::external::dataquality::DataQuality"); // TODO: check classifier path
+        return Maps.mutable.with(DataQuality.class, "meta::external::dataquality::DataQuality",
+                                 DataqualityRelationValidation.class, "meta::external::dataquality::DataQualityRelationValidation");
     }
 }

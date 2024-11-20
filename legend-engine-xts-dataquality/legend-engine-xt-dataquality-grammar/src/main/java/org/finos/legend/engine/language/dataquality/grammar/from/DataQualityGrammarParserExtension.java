@@ -56,7 +56,7 @@ public class DataQualityGrammarParserExtension implements PureGrammarParserExten
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
 
-        DataQualityTreeWalker walker = new DataQualityTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section);
+        DataQualityTreeWalker walker = new DataQualityTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section, context);
         walker.visit((DataQualityParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
