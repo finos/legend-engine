@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DuckDBDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.OracleDatasourceSpecification;
 
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class OracleProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(
             //DatasourceSpecification
             ProtocolSubTypeInfo.newBuilder(DatasourceSpecification.class)
-                .withSubtype(DuckDBDatasourceSpecification.class, "oracle")
+                .withSubtype(OracleDatasourceSpecification.class, "oracle")
                 .build()
         ));
     }

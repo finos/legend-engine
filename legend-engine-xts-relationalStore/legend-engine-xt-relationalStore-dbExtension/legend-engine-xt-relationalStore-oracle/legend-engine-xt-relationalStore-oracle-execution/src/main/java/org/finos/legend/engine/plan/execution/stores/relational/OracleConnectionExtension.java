@@ -18,10 +18,10 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.oracle.OracleCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.oracle.OracleManager;
 
-public class PostgresConnectionExtension implements RelationalConnectionExtension
+public class OracleConnectionExtension implements RelationalConnectionExtension
 {
     @Override
     public String type()
@@ -38,15 +38,15 @@ public class PostgresConnectionExtension implements RelationalConnectionExtensio
     @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
-        return Lists.mutable.of(new PostgresManager());
+        return Lists.mutable.of(new OracleManager());
     }
 
     @Override
     public Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands)
     {
-        if (databaseCommands instanceof PostgresCommands)
+        if (databaseCommands instanceof OracleCommands)
         {
-            PostgresCommands postgresCommands = (PostgresCommands) databaseCommands;
+            OracleCommands postgresCommands = (OracleCommands) databaseCommands;
 
             if (visitor.ingestionMethod == null)
             {
