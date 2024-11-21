@@ -46,11 +46,11 @@ public class OracleConnectionExtension implements RelationalConnectionExtension
     {
         if (databaseCommands instanceof OracleCommands)
         {
-            OracleCommands postgresCommands = (OracleCommands) databaseCommands;
+            OracleCommands oracleCommands = (OracleCommands) databaseCommands;
 
             if (visitor.ingestionMethod == null)
             {
-                visitor.ingestionMethod = postgresCommands.getDefaultIngestionMethod();
+                visitor.ingestionMethod = oracleCommands.getDefaultIngestionMethod();
             }
             throw new UnsupportedOperationException("not yet implemented");
         }
