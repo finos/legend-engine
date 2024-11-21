@@ -147,7 +147,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}}', $result);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithInternalize(): Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithChildSubType(): Boolean[1]
 {
   let query   = {data:String[1]| Target.all()->graphFetch(#{Target{targetProductId}}#)->serialize(#{Target{targetProductId}}#)->from(M2MMappingWithChild, Source->getRuntimeWithModelQueryConnection('application/json', $data))};
 
