@@ -17,7 +17,9 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -26,6 +28,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -37,6 +41,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class HelperServiceBuilder
@@ -79,7 +84,7 @@ public class HelperServiceBuilder
         }
     }
 
-    public static Root_meta_legend_service_metamodel_Execution processServiceExecution(Execution execution, CompileContext context)
+    public static Root_meta_legend_service_metamodel_Execution processServiceExecution(Execution execution, Service service, CompileContext context)
     {
         if (execution instanceof PureSingleExecution)
         {
@@ -92,7 +97,7 @@ public class HelperServiceBuilder
                 mapping = context.resolveMapping(pureSingleExecution.mapping, pureSingleExecution.mappingSourceInformation);
                 inferEmbeddedRuntimeMapping(pureSingleExecution.runtime, pureSingleExecution.mapping);
                 runtime = HelperRuntimeBuilder.buildPureRuntime(pureSingleExecution.runtime, context);
-                HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, pureSingleExecution.runtime.sourceInformation);
+                checkMappingRuntimeCompatibility(() -> "Service '" + service.getPath() + "'", runtime, pureSingleExecution.runtime, mapping, pureSingleExecution.mapping, pureSingleExecution.runtime.sourceInformation, context.pureModel);
                 lambda = HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context);
             }
             else
@@ -119,7 +124,7 @@ public class HelperServiceBuilder
                 return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
                         ._executionKey(pureMultiExecution.executionKey)
                         ._func(lambda)
-                        ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
+                        ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, service, context, executionKeyValues)));
             }
             else
             {
@@ -132,12 +137,13 @@ public class HelperServiceBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
     }
 
-    private static Root_meta_legend_service_metamodel_KeyedExecutionParameter processServiceKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, CompileContext context, Set<String> executionKeyValues)
+    private static Root_meta_legend_service_metamodel_KeyedExecutionParameter processServiceKeyedExecutionParameter(KeyedExecutionParameter keyedExecutionParameter, Service service, CompileContext context, Set<String> executionKeyValues)
     {
         Mapping mapping = context.resolveMapping(keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation);
         inferEmbeddedRuntimeMapping(keyedExecutionParameter.runtime, keyedExecutionParameter.mapping);
         Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(keyedExecutionParameter.runtime, context);
-        HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, keyedExecutionParameter.runtime.sourceInformation);
+
+        checkMappingRuntimeCompatibility(() -> "Service '" + service.getPath() + "', key: '" + keyedExecutionParameter.key + "',", runtime, keyedExecutionParameter.runtime, mapping, keyedExecutionParameter.mapping, keyedExecutionParameter.runtime.sourceInformation, context.pureModel);
         if (!executionKeyValues.add(keyedExecutionParameter.key))
         {
             throw new EngineException("Execution parameter with key '" + keyedExecutionParameter.key + "' already existed", keyedExecutionParameter.sourceInformation, EngineErrorType.COMPILATION);
@@ -191,10 +197,10 @@ public class HelperServiceBuilder
                 InstanceValue paramValue = (InstanceValue) parameterValue.get()._value().getOnly();
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramMultiplicity = param._multiplicity();
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramValueMultiplicity = paramValue._multiplicity();
-               if (!"Nil".equals(paramValue._genericType()._rawType()))
-               {
-                   HelperModelBuilder.checkCompatibility(context, paramValue._genericType()._rawType(), paramValueMultiplicity, param._genericType()._rawType(), paramMultiplicity, "Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation);
-               }
+                if (!"Nil".equals(paramValue._genericType()._rawType()))
+                {
+                    HelperModelBuilder.checkCompatibility(context, paramValue._genericType()._rawType(), paramValueMultiplicity, param._genericType()._rawType(), paramMultiplicity, "Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation);
+                }
             }
             else
             {
@@ -296,14 +302,14 @@ public class HelperServiceBuilder
             {
                 inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
                 Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
-                HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
+
                 param._runtime(runtime);
             }
             else
             {
                 Assert.assertTrue(execParams.runtimeComponents != null, () -> "Runtime components must be specified when runtime isn't");
                 RuntimeComponents c = execParams.runtimeComponents;
-                PackageableElement binding = null;
+                PackageableElement binding;
                 try
                 {
                     binding = platform_pure_essential_meta_graph_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(c.binding.path, context.getExecutionSupport());
@@ -331,5 +337,63 @@ public class HelperServiceBuilder
                             param -> (Root_meta_legend_service_metamodel_SingleExecutionParameters) processExecutionParameters(param, context)));
         }
         throw new UnsupportedOperationException("Unsupported service execution type '" + params.getClass().getSimpleName() + "'");
+    }
+
+    private static void checkMappingRuntimeCompatibility(Supplier<String> context, Root_meta_core_runtime_Runtime pureRuntime, Runtime runtime, Mapping pureMapping, String mapping, SourceInformation sourceInformation, PureModel pureModel)
+    {
+        boolean compatible = !(pureRuntime instanceof Root_meta_core_runtime_EngineRuntime) || HelperRuntimeBuilder.isRuntimeCompatibleWithMapping((Root_meta_core_runtime_EngineRuntime) pureRuntime, pureMapping);
+
+        if (!compatible)
+        {
+            String runtimeName = runtime instanceof RuntimePointer ? " '" + ((RuntimePointer) runtime).runtime + "'" : "";
+            pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, context.get() + " Runtime" + runtimeName + " does not cover mapping '" + mapping + "'")));
+        }
+    }
+
+    public static void validate(ExecutionEnvironmentInstance execEnv, Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv, CompileContext compileContext)
+    {
+        checkRuntimeMappingCompatibility(execEnv, pureExecEnv, compileContext);
+    }
+
+    public static void checkRuntimeMappingCompatibility(ExecutionEnvironmentInstance execEnv, Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv, CompileContext compileContext)
+    {
+        Map<String, SingleExecutionParameters> params = IterableIterate.flatCollect(execEnv.executionParameters, p ->
+        {
+            if (p instanceof SingleExecutionParameters)
+            {
+                return FastList.newListWith((SingleExecutionParameters) p);
+            }
+            else if (p instanceof MultiExecutionParameters)
+            {
+                return FastList.newList(((MultiExecutionParameters) p).singleExecutionParameters);
+            }
+            return FastList.newList();
+        }).groupByUniqueKey(s -> s.key);
+
+        IterableIterate.forEach(pureExecEnv._executionParameters(), e ->
+        {
+            if (e instanceof Root_meta_legend_service_metamodel_MultiExecutionParameters)
+            {
+                IterableIterate.forEach(((Root_meta_legend_service_metamodel_MultiExecutionParameters) e)._singleExecutionParameters(),
+                        s -> checkMappingRuntimeCompatibility(execEnv, s._key(), s, params.get(s._key()), compileContext)
+                );
+            }
+            else if (e instanceof Root_meta_legend_service_metamodel_SingleExecutionParameters)
+            {
+                Root_meta_legend_service_metamodel_SingleExecutionParameters param = (Root_meta_legend_service_metamodel_SingleExecutionParameters) e;
+                checkMappingRuntimeCompatibility(execEnv, param._key(), param, params.get(param._key()), compileContext);
+            }
+            else
+            {
+                throw new UnsupportedOperationException("Unsupported service execution type '" + execEnv.getClass().getSimpleName() + "'");
+            }
+        });
+    }
+
+    private static void checkMappingRuntimeCompatibility(ExecutionEnvironmentInstance execEnv, String key, Root_meta_legend_service_metamodel_SingleExecutionParameters pureParam, SingleExecutionParameters param, CompileContext compileContext)
+    {
+        Root_meta_core_runtime_Runtime pureRuntime = pureParam._runtime() == null ? pureParam._runtimeComponents()._runtime() : pureParam._runtime();
+        Runtime runtime = param.runtime == null ? param.runtimeComponents.runtime : param.runtime;
+        checkMappingRuntimeCompatibility(() -> "Execution Environment '" + execEnv.getPath() + "', key: '" + key + "',", pureRuntime, runtime, pureParam._mapping(), param.mapping, runtime.sourceInformation, compileContext.pureModel);
     }
 }
