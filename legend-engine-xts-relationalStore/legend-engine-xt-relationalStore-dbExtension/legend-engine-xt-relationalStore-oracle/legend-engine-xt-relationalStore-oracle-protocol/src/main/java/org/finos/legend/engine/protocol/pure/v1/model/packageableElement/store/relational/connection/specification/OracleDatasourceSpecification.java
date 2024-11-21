@@ -18,7 +18,7 @@ public class OracleDatasourceSpecification extends DatasourceSpecification
 {
     public String host;
     public int port;
-    public String schema;
+    public String databaseName;
 
 
     @Override

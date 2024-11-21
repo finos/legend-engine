@@ -14,19 +14,36 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.oracle.OracleCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.oracle.OracleManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.OracleDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.OracleDatasourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.OracleDatasourceSpecification;
 
-public class OracleConnectionExtension implements RelationalConnectionExtension
+import java.util.List;
+import java.util.function.Function;
+
+public class OracleConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
     public String type()
     {
-        return "(Connection)ConnectionExtension";
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
     }
 
     @Override
@@ -55,5 +72,52 @@ public class OracleConnectionExtension implements RelationalConnectionExtension
             throw new UnsupportedOperationException("not yet implemented");
         }
         return null;
+    }
+
+    @Override
+    public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
+    {
+        return authenticationStrategy -> null;
+    }
+
+    @Override
+    public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
+    {
+        return authenticationStrategy -> null;
+    }
+
+    @Override
+    public Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>> getExtraDataSourceSpecificationKeyGenerators(int testDbPort)
+    {
+        return connection -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof OracleDatasourceSpecification)
+            {
+                OracleDatasourceSpecification oracleDatasourceSpecification = (OracleDatasourceSpecification) datasourceSpecification;
+                return new OracleDatasourceSpecificationKey(
+                        oracleDatasourceSpecification.host,
+                        oracleDatasourceSpecification.port,
+                        oracleDatasourceSpecification.databaseName
+                );
+            }
+            return null;
+        };
+    }
+
+    @Override
+    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
+    {
+        return (connection, connectionKey) -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof OracleDatasourceSpecification)
+            {
+                return new OracleDataSourceSpecification(
+                        (OracleDatasourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
+                        new OracleManager(),
+                        authenticationStrategyProvider.apply(connection)
+                );
+            }
+            return null;
+        };
     }
 }
