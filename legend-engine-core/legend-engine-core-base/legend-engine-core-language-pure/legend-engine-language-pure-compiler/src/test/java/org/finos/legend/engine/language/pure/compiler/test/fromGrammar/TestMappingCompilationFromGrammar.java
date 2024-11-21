@@ -152,6 +152,23 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testPrimitiveTypeMapping()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "  d : StrictDate[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::PrimitiveMapping (\n" +
+                "  test::A : Pure\n" +
+                "  {\n" +
+                "     ~src StrictDate\n" +
+                "  }\n" +
+                ")\n"
+                );
+    }
+
+    @Test
     public void testFaultyMappingInclude()
     {
         test("###Mapping\n" +
@@ -844,7 +861,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    ~src ui::Person2\n" +
                 "    name: 'aa'\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [10:10-20]: Can't find class 'ui::Person2'");
+                ")\n", "COMPILATION error at [10:10-20]: Can't find type 'ui::Person2'");
         // check set implementation root resolution
         test("Class ui::Person\n" +
                         "{\n" +
