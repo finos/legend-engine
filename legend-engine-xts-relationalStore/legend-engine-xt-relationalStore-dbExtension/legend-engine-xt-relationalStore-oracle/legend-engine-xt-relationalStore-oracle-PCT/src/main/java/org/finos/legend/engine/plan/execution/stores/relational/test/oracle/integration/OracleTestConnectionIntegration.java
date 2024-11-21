@@ -63,17 +63,17 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
             // Start the container is the function is called from within the IDE
             this.setup();
         }
-        StaticDatasourceSpecification postgresDatasourceSpecification = new StaticDatasourceSpecification();
-        postgresDatasourceSpecification.host = this.oracleContainer.getHost();
-        postgresDatasourceSpecification.port = this.oracleContainer.getOraclePort();
-        postgresDatasourceSpecification.databaseName = "test";
+        StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
+        staticDatasourceSpecification.host = this.oracleContainer.getHost();
+        staticDatasourceSpecification.port = this.oracleContainer.getOraclePort();
+        staticDatasourceSpecification.databaseName = "test";
 
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "oracle.";
         authSpec.userNameVaultReference = "user";
         authSpec.passwordVaultReference = "password";
 
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(postgresDatasourceSpecification, authSpec, DatabaseType.Oracle);
+        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(staticDatasourceSpecification, authSpec, DatabaseType.Oracle);
         conn.type = DatabaseType.Oracle;           // for compatibility with legacy DatabaseConnection
         conn.element = null;
         return conn;
@@ -92,7 +92,7 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
         System.out.println("Starting setup of dynamic connection for database: Oracle ");
 
         long start = System.currentTimeMillis();
-        this.oracleContainer.withUsername("system").withPassword("test");
+        this.oracleContainer.withUsername("test").withPassword("test");
         this.oracleContainer.start();
         String containerHost = this.oracleContainer.getHost();
         int containerPort = this.oracleContainer.getOraclePort();
@@ -104,7 +104,7 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
     private void registerVault()
     {
         Properties properties = new Properties();
-        properties.put("oracle.user", "system");
+        properties.put("oracle.user", "test");
         properties.put("oracle.password", "test");
         this.vaultImplementation = new PropertiesVaultImplementation(properties);
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);

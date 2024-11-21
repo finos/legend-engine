@@ -1,1 +1,1 @@
-org.finos.legend.engine.plan.execution.stores.relational.test.postgres.integration.Core_Relational_Postgres_PCTReportProvider
+org.finos.legend.engine.plan.execution.stores.relational.test.oracle.integration.Core_Relational_Oracle_PCTReportProvider
