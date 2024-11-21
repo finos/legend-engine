@@ -42,6 +42,28 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
+    @Deprecated
+    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
+    {
+        Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
+        connection._timeZone(timeZone);
+        connection._quoteIdentifiers(quoteIdentifiers);
+        if (element != null)
+        {
+            try
+            {
+                HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context);
+            }
+            catch (RuntimeException e)
+            {
+                Database db = new Database();
+                db.name = element;
+                db._package = "";
+                context.processFirstPass(db);
+            }
+        }
+    }
+
     public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Integer queryTimeOutInSeconds, Boolean quoteIdentifiers, CompileContext context)
     {
         Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
