@@ -5,6 +5,8 @@ import meta::external::ingest::metamodel::*;
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForSingleDataset() : Boolean[1]
 {
+  fail('Needs fix in plan generation and clustering');
+
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
@@ -26,6 +28,8 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasets() : Boolean[1]
 {
+  fail('Needs fix in plan generation and clustering');
+
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
@@ -49,6 +53,8 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForSingleDatasetWithFilter() : Boolean[1]
 {
+  fail('Needs fix in plan generation and clustering');
+
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
@@ -70,6 +76,8 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasetsWithFilter() : Boolean[1]
 {
+  fail('Needs fix in plan generation and clustering');
+
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
