@@ -22,7 +22,7 @@ native function <<access.private>> meta::external::store::relational::postgresSq
 function meta::external::store::relational::postgresSql::parser::parseSqlStatement(sql: String[1]): Statement[1]
 {
   let statementJson = $sql->parseSqlStatementToJson();
-  $statementJson->fromJSON(
+  $statementJson->fromJson(
     Statement,
     ^JSONDeserializationConfig(
       typeKeyName = '_type',

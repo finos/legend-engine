@@ -67,20 +67,6 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
     }
 
     @Test
-    public void testConnectionWithTimeOut()
-    {
-        test("###Connection\n" +
-                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: model::firm::Person;\n" +
-                "  queryTimeOutInSeconds: 5000;\n" +
-                "  type: H2;\n" +
-                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
-                "  auth: DefaultH2;\n" +
-                "}\n\n");
-    }
-
-    @Test
     public void testTimezoneConfiguration()
     {
         // With Offset

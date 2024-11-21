@@ -198,6 +198,80 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
 
     }
 
+    @Test
+    public void testParserForValidRelationValidationGrammar()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "         description: 'test validation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+        // with description as optional
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+    }
+
+    @Test
+    public void testParserErrorForMandatoryFields_relationalValidations()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "         description: 'test validation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "PARSER error at [2:1-11:1]: Field 'query' is required");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "}", "PARSER error at [2:1-5:1]: Field 'validations' is required");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         description: 'test validation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "PARSER error at [2:1-11:1]: Field 'name' is required");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", "PARSER error at [2:1-10:1]: Field 'assertion' is required");
+    }
 
 
 }

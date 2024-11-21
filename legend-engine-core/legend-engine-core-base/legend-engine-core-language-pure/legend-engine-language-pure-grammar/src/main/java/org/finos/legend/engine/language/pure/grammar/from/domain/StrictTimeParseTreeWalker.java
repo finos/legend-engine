@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class StrictTimeParseTreeWalker

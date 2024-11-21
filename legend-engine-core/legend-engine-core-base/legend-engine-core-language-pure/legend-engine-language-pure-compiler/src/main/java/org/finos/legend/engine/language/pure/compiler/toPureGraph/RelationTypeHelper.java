@@ -15,8 +15,8 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.relationType.Column;
-import org.finos.legend.engine.protocol.pure.v1.model.relationType.RelationType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
+import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;

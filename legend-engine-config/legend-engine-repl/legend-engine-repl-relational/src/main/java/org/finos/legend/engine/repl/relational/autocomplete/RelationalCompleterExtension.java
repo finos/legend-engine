@@ -15,9 +15,12 @@
 package org.finos.legend.engine.repl.relational.autocomplete;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
@@ -25,6 +28,9 @@ import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 
 public class RelationalCompleterExtension implements CompleterExtension
 {
@@ -33,30 +39,55 @@ public class RelationalCompleterExtension implements CompleterExtension
     {
         if (islandExpr instanceof RelationStoreAccessor)
         {
-            MutableList<String> path = Lists.mutable.withAll(((RelationStoreAccessor) islandExpr).path);
-            String writtenPath = path.makeString("::").replace(ParserFixer.magicToken, "");
-            MutableList<Store> elements = pureModel.getAllStores().select(c -> nameMatch(c, writtenPath)).toList();
-            if (elements.size() == 1 &&
-                    writtenPath.startsWith(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0))) &&
-                    !writtenPath.equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0)))
-            )
+            RelationStoreAccessor relationStoreAccessor = (RelationStoreAccessor) islandExpr;
+            MutableList<String> path = Lists.adapt(relationStoreAccessor.path);
+
+            if (path.anySatisfy(x -> x.isEmpty() || x.contains(ParserFixer.magicToken)))
             {
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
-                String tableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
-                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> tables = db._schemas().isEmpty() ? Lists.mutable.empty() : db._schemas().getFirst()._tables().toList();
-                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> foundTables = tables.select(c -> c._name().startsWith(tableName));
-                if ((foundTables.size() == 1 && foundTables.get(0)._name().equals(path.getLast())))
+                String writtenPath = path.get(0).replace(ParserFixer.magicToken, "");
+                MutableList<Store> elements = pureModel.getAllStores().select(c -> nameMatch(c, writtenPath)).toList();
+
+                MutableList<CompletionItem> completionItems = Lists.mutable.empty();
+
+                if (elements.size() == 1 && path.size() > 1)
                 {
-                    return new CompletionResult(Lists.mutable.empty());
+                    org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
+
+                    if (path.size() < 3)
+                    {
+                        String tableOrSchema = path.get(1).replace(ParserFixer.magicToken, "").replace("::", "");
+                        completionItems.addAll(getTableSuggestions(db, "default", tableOrSchema));
+                        completionItems.addAll(getSchemaSuggestions(db, tableOrSchema));
+                    }
+                    else
+                    {
+                        String schema = path.get(1);
+                        String tableName = path.get(2).replace(ParserFixer.magicToken, "").replace("::", "");
+                        completionItems.addAll(getTableSuggestions(db, schema, tableName));
+                    }
                 }
                 else
                 {
-                    return new CompletionResult(foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}")));
+                    ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c) + '.'), completionItems);
                 }
+
+                return new CompletionResult(completionItems);
             }
-            return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c))).toList());
         }
         return null;
+    }
+
+    private static MutableList<CompletionItem> getSchemaSuggestions(Database db, String schemaName)
+    {
+        MutableList<? extends Schema> foundSchemas = db._schemas().select(schema -> !schema._name().equals("default") && schema._name().startsWith(schemaName)).toSortedListBy(Schema::_name);
+        return foundSchemas.collect(c -> new CompletionItem(c._name(), c._name() + "."));
+    }
+
+    private static MutableList<CompletionItem> getTableSuggestions(Database db, String schemaName, String tableName)
+    {
+        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(db, schemaName, SourceInformation.getUnknownSourceInformation());
+        MutableList<? extends Table> foundTables = tables.select(c -> c._name().startsWith(tableName)).toSortedListBy(Table::_name);
+        return foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}#"));
     }
 
     private static boolean nameMatch(PackageableElement c, String writtenPath)

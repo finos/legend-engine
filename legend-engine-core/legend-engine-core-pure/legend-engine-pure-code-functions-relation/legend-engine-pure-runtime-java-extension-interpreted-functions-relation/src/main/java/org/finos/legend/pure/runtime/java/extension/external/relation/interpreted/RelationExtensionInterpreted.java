@@ -19,9 +19,13 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.AsOfJoin;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Columns;
@@ -58,6 +62,7 @@ import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 import org.finos.legend.pure.runtime.java.interpreted.extension.InterpretedExtension;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
+import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.lang.cast.Cast;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 
 import java.util.Stack;
@@ -104,7 +109,7 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("select_Relation_1__ColSpec_1__Relation_1_", Select::new),
                 Tuples.pair("select_Relation_1__ColSpecArray_1__Relation_1_", Select::new),
                 Tuples.pair("rowNumber_Relation_1__T_1__Integer_1_", RowNumber::new),
-                Tuples.pair("rank_Relation_1___Window_1__T_1__Integer_1_",Rank::new),
+                Tuples.pair("rank_Relation_1___Window_1__T_1__Integer_1_", Rank::new),
                 Tuples.pair("percentRank_Relation_1___Window_1__T_1__Float_1_", PercentRank::new),
                 Tuples.pair("denseRank_Relation_1___Window_1__T_1__Integer_1_", DenseRank::new),
                 Tuples.pair("ntile_Relation_1__T_1__Integer_1__Integer_1_", NTile::new),
@@ -125,6 +130,12 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
     {
         if (Instance.instanceOf(function, M3Paths.Column, processorSupport))
         {
+            CoreInstance value = ((TDSWithCursorCoreInstance) params.get(0).getValueForMetaPropertyToOne("values")).getValue(function._name());
+            GenericType colType = _Column.getColumnType((Column<?, ?>) function);
+            if (Type.isExtendedPrimitiveType(colType._rawType(), processorSupport))
+            {
+                Cast.evaluateConstraints(value, colType, interpreted, instantiationContext, functionExpressionCallStack, functionExpressionCallStack.isEmpty() ? null : functionExpressionCallStack.peek().getSourceInformation(), executionSupport, processorSupport);
+            }
             return ((TDSWithCursorCoreInstance) params.get(0).getValueForMetaPropertyToOne("values")).getValue(function._name());
         }
         return null;

@@ -140,7 +140,6 @@ public class ConnectionManagerSelector
         db.type = DatabaseType.H2;
         db.element = originalConnection.element;
         db.timeZone = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).timeZone : null;
-        db.queryTimeOutInSeconds = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).queryTimeOutInSeconds : null;
         db.quoteIdentifiers = originalConnection instanceof DatabaseConnection ? ((DatabaseConnection) originalConnection).quoteIdentifiers : null;
         return db;
     }

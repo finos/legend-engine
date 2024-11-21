@@ -92,7 +92,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getPackageableElement(service);
 
-                            pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
+                            pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, service, context));
 
                             // Legacy flow
                             if (service.test != null)
@@ -186,12 +186,13 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                     {
                                         FunctionType fType = (FunctionType) assertion._classifierGenericType()._typeArguments().getFirst()._rawType();
                                         Assert.assertTrue(fType._parameters() != null && fType._parameters().size() == 1, () -> "Post validation assertion function expects 1 parameter");
-                                        Assert.assertTrue(executionFunctionType._returnType().equals(fType._parameters().getFirst()._genericType()) && executionFunctionType._returnMultiplicity().equals(fType._parameters().getAny()._multiplicity()),
+                                        Assert.assertTrue(org.finos.legend.pure.m3.navigation.generictype.GenericType.genericTypesEqual(executionFunctionType._returnType(), fType._parameters().getFirst()._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport())
+                                                        && Multiplicity.multiplicitiesEqual(executionFunctionType._returnMultiplicity(), fType._parameters().getAny()._multiplicity()),
                                                 () -> "Post validation assertion function parameter type '" +
-                                                        fType._parameters().getFirst()._genericType()._rawType()._name() +
+                                                        org.finos.legend.pure.m3.navigation.generictype.GenericType.print(fType._parameters().getFirst()._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport()) +
                                                         Multiplicity.print(fType._parameters().getFirst()._multiplicity()) +
                                                         "' does not match with service execution return type '" +
-                                                        executionFunctionType._returnType()._rawType()._name() +
+                                                        org.finos.legend.pure.m3.navigation.generictype.GenericType.print(executionFunctionType._returnType(), context.pureModel.getExecutionSupport().getProcessorSupport()) +
                                                         Multiplicity.print(executionFunctionType._returnMultiplicity()) +
                                                         "'"
                                         );
@@ -208,6 +209,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         {
                             Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
                             pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperServiceBuilder.processExecutionParameters(params, context)));
+                        },
+                        (execEnv, context) ->
+                        {
+                            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = (Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) context.pureModel.getPackageableElement(execEnv);
+                            HelperServiceBuilder.validate(execEnv, pureExecEnv, context);
                         })
         );
     }

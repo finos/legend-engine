@@ -94,6 +94,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
     public abstract Optional<BatchErrorDataset> batchErrorDataset();
 
+    public abstract Optional<IngestStageCallBack> ingestStageCallBack();
+
     //-------------------- FLAGS --------------------
 
     @Value.Default
@@ -553,6 +555,8 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
             Planner planner = ingestStageMetadata.planner();
 
+            ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, enrichedIngestMode, stageStartInstant));
+
             try
             {
                 // 1. Check if staging dataset is empty
@@ -601,8 +605,10 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 }
 
                 // 5. Build ingest stage result
-                List<IngestStageResult> mappedResults = ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList());
+                List<IngestStageResult> mappedResults = Collections.unmodifiableList(ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
                 ingestStageResults.addAll(mappedResults);
+
+                ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageSuccess(dataset, batchId, enrichedIngestMode, mappedResults));
             }
             catch (Exception e)
             {

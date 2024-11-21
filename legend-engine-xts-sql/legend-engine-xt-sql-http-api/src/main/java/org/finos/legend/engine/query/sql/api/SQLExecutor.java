@@ -49,6 +49,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
@@ -106,11 +108,11 @@ public class SQLExecutor
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutor.class);
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Map<Class<? extends Literal>, String> LITERAL_TO_PURE_TYPES = UnifiedMap.newMapWith(
-        Tuples.pair(IntegerLiteral.class, "Integer"),
-        Tuples.pair(StringLiteral.class, "String"),
-        Tuples.pair(BooleanLiteral.class, "Boolean"),
-        Tuples.pair(LongLiteral.class, "Integer"),
-        Tuples.pair(DoubleLiteral.class, "Float")
+            Tuples.pair(IntegerLiteral.class, "Integer"),
+            Tuples.pair(StringLiteral.class, "String"),
+            Tuples.pair(BooleanLiteral.class, "Boolean"),
+            Tuples.pair(LongLiteral.class, "Integer"),
+            Tuples.pair(DoubleLiteral.class, "Float")
     );
 
     private final ModelManager modelManager;
@@ -264,7 +266,7 @@ public class SQLExecutor
                 Variable variable = new Variable();
                 variable.name = "_" + (index + 1);
                 variable.multiplicity = Multiplicity.PURE_ONE;
-                variable._class = new PackageableElementPointer(PackageableElementType.CLASS, LITERAL_TO_PURE_TYPES.get(expression.getClass()));
+                variable.genericType = new GenericType(new PackageableType(LITERAL_TO_PURE_TYPES.get(expression.getClass())));
 
                 return new SQLQueryParameter(variable, expression);
             });
@@ -382,7 +384,7 @@ public class SQLExecutor
 
     private Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel)
     {
-        Object protocol = transformToVersionedModel(lambda,  PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+        Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, Lambda.class, pureModel);
     }
 

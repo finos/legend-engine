@@ -123,34 +123,27 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "  #>{my::Store.SchemaMissing.myTable}#->filter(\n" +
                 "    c|$c.name == 'ok'\n" +
                 "  )\n" +
-                "}\n", "COMPILATION error at [19:3-38]: The schema SchemaMissing can't be found in the store Store");
+                "}\n", "COMPILATION error at [19:3-38]: Can't find schema 'SchemaMissing' in database 'Store'");
     }
 
     @Test
     public void testCompilationOfRelationStoreAccessorUnknownTable()
     {
-        try
-        {
-            test("###Relational\n" +
-                    "Database my::Store" +
-                    "(" +
-                    "   Table myTable" +
-                    "   (" +
-                    "       id INT," +
-                    "       name VARCHAR(200)" +
-                    "   )" +
-                    ")\n" +
-                    "###Pure\n" +
-                    "function my::func():Any[*]" +
-                    "{" +
-                    "   #>{my::Store.myTabe}#->filter(c|$c.name == 'ok');" +
-                    "}");
-            Assert.fail();
-        }
-        catch (EngineException e)
-        {
-            Assert.assertEquals("COMPILATION error at [4:31-51]: The table myTabe can't be found in the store Store", e.toPretty());
-        }
+        test("###Relational\n" +
+                "Database my::Store" +
+                "(" +
+                "   Table myTable" +
+                "   (" +
+                "       id INT," +
+                "       name VARCHAR(200)" +
+                "   )" +
+                ")\n" +
+                "###Pure\n" +
+                "function my::func():Any[*]" +
+                "{" +
+                "   #>{my::Store.myTabe}#->filter(c|$c.name == 'ok');" +
+                "}",
+                "COMPILATION error at [4:31-51]: Can't find table 'myTabe' in schema 'default' and database 'Store'");
     }
 
     @Test
@@ -184,28 +177,22 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     @Test
     public void testCompilationErrorMissingTable()
     {
-        try
-        {
-            test("###Relational\n" +
-                    "Database my::Store" +
-                    "(" +
-                    "   Table myTable" +
-                    "   (" +
-                    "       id INT," +
-                    "       name VARCHAR(200)" +
-                    "   )" +
-                    ")\n" +
-                    "###Pure\n" +
-                    "function my::func():Any[*]" +
-                    "{" +
-                    "   #>{my::Store}#->filter(c|$c.naeme == 'ok');" +
-                    "}");
-            Assert.fail();
-        }
-        catch (EngineException e)
-        {
-            Assert.assertEquals("COMPILATION error at [4:31-44]: Error in the accessor definition. Please provide a table.", e.toPretty());
-        }
+        test("###Relational\n" +
+                "Database my::Store" +
+                "(" +
+                "   Table myTable" +
+                "   (" +
+                "       id INT," +
+                "       name VARCHAR(200)" +
+                "   )" +
+                ")\n" +
+                "###Pure\n" +
+                "function my::func():Any[*]" +
+                "{" +
+                "   #>{my::Store}#->filter(c|$c.naeme == 'ok');" +
+                "}",
+                "COMPILATION error at [4:31-44]: Error in the accessor definition. Please provide a table."
+        );
     }
 
     @Override

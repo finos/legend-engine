@@ -451,7 +451,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
                         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
-                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.queryTimeOutInSeconds, relationalDatabaseConnection.quoteIdentifiers, context);
+                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
 
@@ -788,20 +788,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 }
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
 
-                String schemaName = (accessor.path.size() == 3) ? accessor.path.get(1) : null;
+                String schemaName = (accessor.path.size() == 3) ? accessor.path.get(1) : "default";
                 String tableName = (accessor.path.size() == 3) ? accessor.path.get(2) : accessor.path.get(1);
 
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = schemaName == null ? ds._schemas().getFirst() : ds._schemas().select(c -> c.getName().equals(schemaName)).getFirst();
-                if (schema == null)
-                {
-                    throw new EngineException(schemaName == null ? "The database " + store._name() + " has no schemas" : "The schema " + schemaName + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
-                }
-                Table table = schema._tables().select(c -> c.getName().equals(tableName)).getFirst();
-                if (table == null)
-                {
-                    throw new EngineException("The table " + accessor.path.get(1) + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
-                }
-
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = HelperRelationalBuilder.getSchema(ds, schemaName, accessor.sourceInformation);
+                Table table = (Table) HelperRelationalBuilder.getRelation(schema, tableName, accessor.sourceInformation);
                 ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
                 org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;

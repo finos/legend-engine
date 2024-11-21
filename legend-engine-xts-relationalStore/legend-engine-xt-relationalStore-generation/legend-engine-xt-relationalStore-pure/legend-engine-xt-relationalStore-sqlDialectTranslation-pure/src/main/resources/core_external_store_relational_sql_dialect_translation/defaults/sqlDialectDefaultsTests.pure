@@ -509,15 +509,9 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
 
   assertEquals('db.func()', $dialect->executeNodeProcessor(^FunctionCall(name =  $name), $state, $config));
+  assertEquals('db.func(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
   assertEquals(
-    'db.func(\n' +
-    '  101\n' +
-    ')', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
-  assertEquals(
-    'db.func(\n' +
-    '  101,\n' +
-    '  FALSE\n' +
-    ') OVER (\n' + 
+    'db.func(101, FALSE) OVER (\n' + 
     '  PARTITION BY\n' +
     '    db.schema.table.c1,\n' +
     '    db.schema.table.c2\n' +
@@ -539,6 +533,24 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
       ),
       $state, $config
     )
+  );
+
+  let caseExpression = ^SearchedCaseExpression(whenClauses = [^WhenClause(result = literal(101), operand = literal(false)), ^WhenClause(result = literal(102), operand = literal(true))]);
+  assertEquals(
+    'db.func(\n' +
+    '  101,\n' +
+    '  CASE\n' +
+    '    WHEN\n' +
+    '      FALSE\n' +
+    '    THEN\n' +
+    '      101\n' +
+    '    WHEN\n' +
+    '      TRUE\n' +
+    '    THEN\n' +
+    '      102\n' +
+    '  END\n' +
+    ')',
+    $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = [literal(101), $caseExpression]), $state, $config)
   );
 }
 
@@ -574,6 +586,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   assertEquals('db.schema.table_a CROSS JOIN db.schema.table_b', $dialect->executeNodeProcessor(^Join(left = $tblA, right = $tblB, type = JoinType.CROSS), $state, $config));
   assertEquals('db.schema.table_a LEFT OUTER JOIN db.schema.table_b', $dialect->executeNodeProcessor(^Join(left = $tblA, right = $tblB, type = JoinType.LEFT), $state, $config));
   assertEquals('db.schema.table_a RIGHT OUTER JOIN db.schema.table_b', $dialect->executeNodeProcessor(^Join(left = $tblA, right = $tblB, type = JoinType.RIGHT), $state, $config));
+  assertEquals('db.schema.table_a FULL OUTER JOIN db.schema.table_b', $dialect->executeNodeProcessor(^Join(left = $tblA, right = $tblB, type = JoinType.FULL), $state, $config));
   assertEquals('db.schema.table_a INNER JOIN db.schema.table_b', $dialect->executeNodeProcessor(^Join(left = $tblA, right = $tblB, type = JoinType.INNER), $state, $config));
   
   assertEquals(
@@ -1039,4 +1052,41 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     '  WHERE\n' +
     '    103 < 104\n' +
     ')', $dialect->executeNodeProcessor(^SubqueryExpression(query = ^Query(queryBody = $q1)), $state, $config));
+}
+
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTableSubqueryProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let q1 = ^QuerySpecification(
+    select = ^Select(selectItems = [^SingleColumn(expression = ^ArithmeticExpression(left = literal(101), right = literal(102), type = ArithmeticType.ADD))]),
+    from = ^Table(name = ^QualifiedName(parts = ['t'])),
+    where = ^ComparisonExpression(left = literal(103), right = literal(104), operator = ComparisonOperator.LESS_THAN)
+  );
+  assertEquals('(SELECT 101 + 102 FROM t WHERE 103 < 104)', $dialect->executeNodeProcessor(^TableSubquery(query = ^Query(queryBody = $q1)), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTableSubqueryPrettyFormatProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(true);
+
+  let q1 = ^QuerySpecification(
+    select = ^Select(selectItems = [^SingleColumn(expression = ^ArithmeticExpression(left = literal(101), right = literal(102), type = ArithmeticType.ADD))]),
+    from = ^Table(name = ^QualifiedName(parts = ['t'])),
+    where = ^ComparisonExpression(left = literal(103), right = literal(104), operator = ComparisonOperator.LESS_THAN)
+  );
+  assertEquals(
+    '(\n' +
+    '  SELECT\n' +
+    '    101 + 102\n' +
+    '  FROM\n' +
+    '    t\n' +
+    '  WHERE\n' +
+    '    103 < 104\n' +
+    ')', $dialect->executeNodeProcessor(^TableSubquery(query = ^Query(queryBody = $q1)), $state, $config));
 }

@@ -249,20 +249,4 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  auth: DefaultH2;\n" +
                 "}\n");
     }
-
-    @Test
-    public void testRelationalDatabaseConnectionWithTimeout()
-    {
-        test("###Connection\n" +
-                "RelationalDatabaseConnection simple::H2Connection\n" +
-                "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
-                "  type: H2;\n" +
-                "  specification: LocalH2\n" +
-                "  {\n" +
-                "  };\n" +
-                "  auth: DefaultH2;\n" +
-                "  queryTimeOutInSeconds: 5555;\n" +
-                "}\n");
-    }
 }

@@ -25,7 +25,6 @@ public abstract class DatabaseConnection extends Connection
     public DatabaseType type;
     public String timeZone;
     public Boolean quoteIdentifiers;
-    public Integer queryTimeOutInSeconds;
 
     public List<PostProcessorWithParameter> postProcessorWithParameter = Collections.emptyList();
 }

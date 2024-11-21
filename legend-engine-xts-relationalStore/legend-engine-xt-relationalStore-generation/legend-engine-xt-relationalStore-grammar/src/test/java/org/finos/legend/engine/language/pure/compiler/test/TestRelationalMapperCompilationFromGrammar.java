@@ -151,7 +151,7 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
                         "      test::OrganizationsDB.Productt -> 'ProductSchema'\n" +
                         "   ];\n" +
                         ")",
-                " at [20:1-26:1]: Error in 'test::testMapper': Can't find schema 'Productt' in database 'OrganizationsDB'"
+                "COMPILATION error at [20:1-26:1]: Error in 'test::testMapper': Can't find schema 'Productt' in database 'OrganizationsDB'"
         );
     }
 

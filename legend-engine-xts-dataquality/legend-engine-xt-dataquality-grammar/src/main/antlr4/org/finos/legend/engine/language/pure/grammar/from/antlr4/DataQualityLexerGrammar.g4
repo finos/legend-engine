@@ -16,3 +16,12 @@ GRAPH_END:                               ']$';
 // ---------------------------------- BUILDING BLOCK --------------------------------------
 
 SUBTYPE_START:                      '->subType(@';
+
+
+//----------------------- RELATION VALIDATION --------------------------------------------------
+DATAQUALITYRELATIONVALIDATION:           'DataQualityRelationValidation';
+RELATION_FUNCTION:                       'query';
+VALIDATIONS:                             'validations';
+VALIDATION_NAME:                         'name';
+VALIDATION_DESCRIPTION:                  'description';
+VALIDATION_ASSERTION:                    'assertion';

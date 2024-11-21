@@ -271,8 +271,13 @@ public class HelperRelationalBuilder
 
     public static Schema getSchema(Database db, final String _schema)
     {
+        return getSchema(db, _schema, SourceInformation.getUnknownSourceInformation());
+    }
+
+    public static Schema getSchema(Database db, final String _schema, SourceInformation sourceInformation)
+    {
         Schema s = db._schemas().detect(schema -> _schema.equals(schema.getName()));
-        Assert.assertTrue(s != null, () -> "Can't find schema '" + _schema + "' in database '" + db.getName() + "'");
+        Assert.assertTrue(s != null, () -> "Can't find schema '" + _schema + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         return s;
     }
 
@@ -379,7 +384,7 @@ public class HelperRelationalBuilder
         return tables;
     }
 
-    private static boolean schemaExists(Database database, String schemaName)
+    public static boolean schemaExists(Database database, String schemaName)
     {
         return DEFAULT_SCHEMA_NAME.equals(schemaName) || schemaExists(Sets.mutable.empty(), database, schemaName);
     }

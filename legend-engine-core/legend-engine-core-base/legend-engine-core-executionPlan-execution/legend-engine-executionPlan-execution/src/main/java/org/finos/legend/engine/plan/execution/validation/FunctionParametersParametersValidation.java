@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class FunctionParametersParametersValidation
 
         if (!missingExternalParameters.isEmpty())
         {
-            throw new IllegalArgumentException("Missing external parameter(s): " + missingExternalParameters.collect(a -> a.name + ":" + a._class.path + "[" + renderMultiplicity(a.multiplicity) + "]").makeString(","));
+            throw new IllegalArgumentException("Missing external parameter(s): " + missingExternalParameters.collect(a -> a.name + ":" + ((PackageableType) a.genericType.rawType).fullPath + "[" + renderMultiplicity(a.multiplicity) + "]").makeString(","));
         }
     }
 
@@ -72,7 +73,7 @@ public class FunctionParametersParametersValidation
 
     public static ValidationResult validate(Variable var, List<ParameterValidationContext> parameterValidationContext, Object value)
     {
-        FunctionParameterTypeValidator validator = FunctionParameterTypeValidator.externalParameterTypeValidator(var._class.path);
+        FunctionParameterTypeValidator validator = FunctionParameterTypeValidator.externalParameterTypeValidator(((PackageableType) var.genericType.rawType).fullPath);
         if (validator == null)
         {
             ValidationResult result = null;
@@ -84,7 +85,7 @@ public class FunctionParametersParametersValidation
                     return result;
                 }
             }
-            return result == null ? ValidationResult.errorValidationResult("Unknown external parameter type: " + var._class.path + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]")) : ValidationResult.successValidationResult();
+            return result == null ? ValidationResult.errorValidationResult("Unknown external parameter type: " + ((PackageableType) var.genericType.rawType).fullPath + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]")) : ValidationResult.successValidationResult();
         }
         if (value instanceof Stream)
         {
