@@ -1,0 +1,31 @@
+import meta::relational::metamodel::relation::*;
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+//   meta::pure::test::fct::executeWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1],holder:meta::pure::test::fct::TestParameters[1]):meta::pure::test::fct::ExecuteResult<T>[1]
+
+function meta::analytics::lineage::computeTestLineage<X|y>(f:FunctionDefinition<{->X[y]}>[1],parameters:meta::pure::test::fct::TestParameters[1]):meta::pure::test::fct::LineageResult[1]
+{
+      let lineage = meta::analytics::lineage::computeLineage($f,$parameters.mapping,$parameters.runtime,$parameters.extensions);
+     ^meta::pure::test::fct::LineageResult(result=  ^meta::pure::lineage::result::LineageResult(storeLineage=$lineage.databaseLineage,
+                                                                                                classLineage=$lineage.classLineage,
+                                                                                                reportLineage= $lineage.reportLineage->meta::analytics::lineage::reportLineageToPureReportLineage() ));
+
+}
+
+function meta::analytics::lineage::reportLineageToPureReportLineage(report:meta::analytics::lineage::ReportLineage[1]):meta::pure::lineage::result::ReportLineage[1]
+{
+   ^meta::pure::lineage::result::ReportLineage(properties=$report.columns->map(c | ^meta::pure::lineage::result::PropertyLineage(propertyName=$c.name, resultDetail=  $c.columns->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->removeDuplicates()->sort()->makeString(': [', ', ', ']'))));
+}

@@ -420,10 +420,10 @@ function meta::relational::mapping::assertTDS(result:meta::pure::test::fct::Test
 
   if($result->instanceOf(meta::pure::test::fct::ExecuteResult),  
            |let tds = $result->cast(@meta::pure::test::fct::ExecuteResult<TabularDataSet>).result;
-           $expected.csv->println();
-            $tds.values->toOne()->toCSV()->println();
-           // assertSameElements($expected.csv,    $tds.values->toOne()->toCSV());,
-              true;,
-
+        
+            let expetedCols = $expected->columns();
+            let header = $expetedCols->map(c|$c.name)->joinStrings(',');
+            let data =   $expetedCols->map(c|$c.name)->joinStrings(',') + '\n'+  $expected->map(x|$expetedCols->map(c|s($c->eval($x)->first()))->joinStrings(','))->joinStrings('\n')+'\n';//->joinStrings('\n')+'\n';
+            assertEquals($data,    $tds.values->toOne()->toCSV());,
           | true);
 }

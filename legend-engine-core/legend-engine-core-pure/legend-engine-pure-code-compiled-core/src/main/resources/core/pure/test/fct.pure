@@ -21,13 +21,6 @@ Profile meta::pure::test::fct::FCT
     stereotypes : [test, adapter];
 }
 
-function
-
-   meta::pure::test::fct::executeWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1],holder:meta::pure::test::fct::TestParameters[1]):meta::pure::test::fct::ExecuteResult<T>[1]
-{
-  ^ExecuteResult<T>(result=meta::pure::router::execute($f,$holder.mapping,$holder.runtime,$holder.context,$holder.extensions));
-}
-
 
 Class meta::pure::test::fct::TestResult
 {
@@ -40,28 +33,17 @@ Class meta::pure::test::fct::ExecuteResult<T> extends meta::pure::test::fct::Tes
   
 }
 
-function meta::pure::test::fct::assertTDSExecuteResult<T>(result:meta::pure::test::fct::TestResult[1],assertion:Function<{meta::pure::mapping::Result<T|*>[1]->Boolean[1]}>[1]):Boolean[1]
+
+
+
+
+
+Class  meta::pure::test::fct::TestParameters
 {
-
-  if($result->instanceOf(ExecuteResult),  
-           |let tds = $result->cast(@ExecuteResult<TabularDataSet>).result;
-              $assertion->eval($tds);,
-          | true);
-}
-
-
-function meta::pure::test::fct::assertLineageResult(result:meta::pure::test::fct::TestResult[1], storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):Boolean[1]
-{
-
-  if($result->instanceOf(meta::pure::test::fct::LineageResult),  
-           | let lineage = $result->cast(@meta::pure::test::fct::LineageResult).result;
-            meta::pure::lineage::test::assertLineage($storeLineage,$classLineage,$reportLineage,$lineage);,
-           | true);
-}
-
-Class meta::pure::test::fct::LineageResult extends  meta::pure::test::fct::TestResult
-{
-    result:meta::pure::lineage::result::LineageResult[1];
+  mapping:meta::pure::mapping::Mapping[1];
+  runtime:meta::core::runtime::Runtime[1];
+  extensions:meta::pure::extension::Extension[*];
+  context:meta::pure::runtime::ExecutionContext[1]; 
 }
 
 
@@ -81,13 +63,35 @@ function meta::pure::test::fct::testParameters(mapping:meta::pure::mapping::Mapp
                                           context = $context);
 }
 
+function
 
-
-Class  meta::pure::test::fct::TestParameters
+   meta::pure::test::fct::executeWrapper<T|y>(f:FunctionDefinition<{->T[y]}>[1],holder:meta::pure::test::fct::TestParameters[1]):meta::pure::test::fct::ExecuteResult<T>[1]
 {
-  mapping:meta::pure::mapping::Mapping[1];
-  runtime:meta::core::runtime::Runtime[1];
-  extensions:meta::pure::extension::Extension[*];
-  context:meta::pure::runtime::ExecutionContext[1]; 
+  ^ExecuteResult<T>(result=meta::pure::router::execute($f,$holder.mapping,$holder.runtime,$holder.context,$holder.extensions));
 }
 
+
+function meta::pure::test::fct::assertTDSExecuteResult<T>(result:meta::pure::test::fct::TestResult[1],assertion:Function<{meta::pure::mapping::Result<T|*>[1]->Boolean[1]}>[1]):Boolean[1]
+{
+
+  if($result->instanceOf(ExecuteResult),  
+           |let tds = $result->cast(@ExecuteResult<TabularDataSet>).result;
+              $assertion->eval($tds);,
+          | true);
+}
+
+
+Class meta::pure::test::fct::LineageResult extends  meta::pure::test::fct::TestResult
+{
+    result:meta::pure::lineage::result::LineageResult[1];
+}
+
+
+function meta::pure::test::fct::assertLineageResult( storeLineage:String[*], classLineage:String[*], reportLineage:String[1],result:meta::pure::test::fct::TestResult[1]):Boolean[1]
+{
+
+  if($result->instanceOf(meta::pure::test::fct::LineageResult),  
+           | let lineage = $result->cast(@meta::pure::test::fct::LineageResult).result;
+            meta::pure::lineage::test::assertLineage($storeLineage,$classLineage,$reportLineage,$lineage);,
+           | true);
+}

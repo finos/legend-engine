@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::fct::*;
 import meta::analytics::lineage::graph::*;
 import meta::relational::extension::*;
 import meta::pure::functions::date::calendar::*;
 import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::calendarAggregations():Boolean[1]
+function <<test.Test>> meta::analytics::lineage::tests::relational::calendarAggregations():Boolean[1]
 {
  let lineage = meta::analytics::lineage::computeLineage(|  Employee.all()
      ->groupBy(
@@ -36,23 +37,27 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
 ###Pure 
+import meta::pure::test::fct::*;
 import meta::analytics::lineage::*;
 import meta::relational::extension::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::tests::tds::tdsJoin::*;
-function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::relational::testMultipleDB():Boolean[1]
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+function <<FCT.test>> meta::analytics::lineage::tests::relational::testMultipleDB<X>(toEval:Function<{FunctionDefinition<X>[1],TestParameters[1]->TestResult[1]}>[1]):Boolean[1]
 {
 
     let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
                                      ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});};
-                       
-                        
+         
+    let parameters  =  meta::pure::test::fct::testParameters(  meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
+    let result = $toEval->eval($fn,$parameters);
 
-    let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
-  meta::analytics::lineage::assertLineage(['Lambda', 'db_database2', 'db_dbInc', 'tb_database2defaultfirmTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Firm', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::tds::tdsJoin'],
-                                          '[eID: [firmTable.ID <JoinTreeNode>, firmTable.ID <RelationalOperationElementWithJoin>, personTable.FIRMID <JoinTreeNode>], fID: [firmTable.ID <TableAliasColumn>], firstName: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>], managerID: [personTable.MANAGERID <DynaFunction>]]',
-                                           $lineage);
+  meta::pure::test::fct::assertLineageResult(['Lambda', 'db_database2', 'db_dbInc', 'tb_database2defaultfirmTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
+                                            ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Firm', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::tds::tdsJoin'],
+                                            '[eID: [firmTable.ID <JoinTreeNode>, firmTable.ID <RelationalOperationElementWithJoin>, personTable.FIRMID <JoinTreeNode>], fID: [firmTable.ID <TableAliasColumn>], firstName: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>], managerID: [personTable.MANAGERID <DynaFunction>]]',
+                                           $result);
 }
 
 
