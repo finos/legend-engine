@@ -1,5 +1,5 @@
 
-function meta::external::ingest::tests::createTablesAndFillDb():Boolean[1]
+function <<test.BeforePackage>> meta::external::ingest::tests::createTablesAndFillDb():Boolean[1]
 {
   let connection = meta::external::ingest::tests::runtime::testRuntime().connectionByElement(meta::external::ingest::tests::store::BarrierTestStore)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    meta::relational::metamodel::execute::executeInDb('Drop table if exists BatchMetadata;', $connection);
@@ -36,7 +36,7 @@ import meta::relational::tests::model::simple::*;
 
 Mapping meta::external::ingest::tests::mapping::BatchMetadataMapping
 (
-  meta::external::ingest::models::EodBatchMetadata: Relational{
+  meta::external::ingest::metamodel::EodBatchMetadata: Relational{
    ~primaryKey
     (
       [meta::external::ingest::tests::store::BarrierTestStore]BatchMetadata.PKEY

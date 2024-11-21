@@ -1,24 +1,24 @@
-import meta::external::ingest::models::*;
+import meta::external::ingest::metamodel::*;
 
-Class meta::external::ingest::models::DatasetMark
+Class meta::external::ingest::metamodel::DatasetMark
 {
   datasetName: String[1];
   batchId: Integer[1];
 }
 
-Class meta::external::ingest::models::Watermark
+Class meta::external::ingest::metamodel::Watermark
 {
   watermarkId: String[1];
   datasetMarks: DatasetMark[*];
 }
  
-Class meta::external::ingest::models::IngestConfig<T>
+Class meta::external::ingest::metamodel::IngestConfig<T>
 { 
   datasetName: String[1];  
   metadataType: Class<T>[1];  
 }
  
-Class meta::external::ingest::models::BatchMetadata
+Class meta::external::ingest::metamodel::BatchMetadata
 {
   datasetName: String[1];
   batchId: Integer[1];
@@ -26,12 +26,12 @@ Class meta::external::ingest::models::BatchMetadata
   ingest_definition_urn: String[1];  
 }
 
-Class meta::external::ingest::models::EodBatchMetadata extends meta::external::ingest::models::BatchMetadata
+Class meta::external::ingest::metamodel::EodBatchMetadata extends meta::external::ingest::metamodel::BatchMetadata
 {
   endOfDay: Boolean[1];
 }
 
-Class meta::external::ingest::models::BusinessDateBatchMetadata extends meta::external::ingest::models::EodBatchMetadata
+Class meta::external::ingest::metamodel::BusinessDateBatchMetadata extends meta::external::ingest::metamodel::EodBatchMetadata
 {
   businessDate: StrictDate[1];
 }

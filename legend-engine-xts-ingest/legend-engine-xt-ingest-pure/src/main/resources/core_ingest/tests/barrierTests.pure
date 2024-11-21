@@ -1,13 +1,10 @@
 
 import meta::legend::*;
 import meta::external::ingest::barrier::*;
-import meta::external::ingest::models::*;
+import meta::external::ingest::metamodel::*;
 
-function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::testAvailabilityForSingleDataset() : Boolean[1]
+function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForSingleDataset() : Boolean[1]
 {
-  //Test Data setup
-  meta::external::ingest::tests::createTablesAndFillDb();
-
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
@@ -27,11 +24,31 @@ function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::test
   assertEquals(true,$result);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::testEODBatchForSingleDataset() : Boolean[1]
+function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasets() : Boolean[1]
 {
-  //Test Data setup
-  meta::external::ingest::tests::createTablesAndFillDb();
+  let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
+                          datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
+  
+  let currentWM = ^Watermark(watermarkId='watermark2',
+                          datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=3)]);
+  
+  let ingestConfig1 = ^IngestConfig<EodBatchMetadata>(datasetName = 'Dataset1', metadataType = EodBatchMetadata);
+  
+  let ingestConfig2 = ^IngestConfig<EodBatchMetadata>(datasetName = 'Dataset2', metadataType = EodBatchMetadata);
+  
+  let barrierQuery = {
+    
+      prevPublishedWatermark: Watermark[1] , currentWatermark: Watermark[1] | isDatasetAvailable($ingestConfig1, $prevPublishedWatermark, $currentWatermark)
+                                                                  && isDatasetAvailable($ingestConfig2, $prevPublishedWatermark, $currentWatermark);
+  };
 
+  let result = executeLegendQuery($barrierQuery,[^Pair<String,Watermark>(first='prevPublishedWatermark',second=$prevPublishedWatermark),^Pair<String,Watermark>(first='currentWM',second=$currentWM)],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  
+  assertEquals(true,$result);
+}
+
+function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForSingleDatasetWithFilter() : Boolean[1]
+{
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
@@ -51,11 +68,8 @@ function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::test
   assertEquals(true,$result);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::testEODBatchForMultipleDatasets() : Boolean[1]
+function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasetsWithFilter() : Boolean[1]
 {
-  //Test Data setup
-  meta::external::ingest::tests::createTablesAndFillDb();
-
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
   
