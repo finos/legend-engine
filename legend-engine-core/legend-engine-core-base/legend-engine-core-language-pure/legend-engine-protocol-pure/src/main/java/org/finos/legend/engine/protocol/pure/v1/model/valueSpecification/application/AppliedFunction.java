@@ -14,12 +14,29 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.FixedSizeSet;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
+@JsonDeserialize(converter = AppliedFunction.AppliedFunctionConverter.class)
 public class AppliedFunction extends AbstractAppliedFunction
 {
     public String function;
@@ -30,5 +47,50 @@ public class AppliedFunction extends AbstractAppliedFunction
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class AppliedFunctionConverter extends StdConverter<AppliedFunction, AppliedFunction>
+    {
+        @Override
+        public AppliedFunction convert(AppliedFunction appliedFunction)
+        {
+            if (appliedFunction.function.equals("new"))
+            {
+                if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
+                {
+                    PackageableElementPtr type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+                    // Backward compatibility -------------------------------------------------------------------
+                    Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
+                            "meta::pure::tds::BasicColumnSpecification",
+                            "BasicColumnSpecification",
+                            "meta::pure::tds::TdsOlapRank",
+                            "TdsOlapRank"
+                    );
+                    if (classesThatNeedTypeFixing.contains(type.fullPath))
+                    {
+                        Collection collection = (Collection) appliedFunction.parameters.get(2);
+                        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                                .map(KeyExpression.class::cast)
+                                .map(x -> x.expression)
+                                .filter(Lambda.class::isInstance)
+                                .map(Lambda.class::cast)
+                                .filter(x -> x.parameters.size() == 1);
+
+                        if (func.isPresent())
+                        {
+                            Lambda l = func.get();
+
+                            PackageableType rawType = new PackageableType(type.fullPath);
+                            rawType.sourceInformation = type.sourceInformation;
+                            List<GenericType> classType = Lists.mutable.of(new GenericType(rawType, Lists.mutable.with(l.parameters.get(0).genericType)));
+                            GenericTypeInstance generic = new GenericTypeInstance(new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), classType));
+                            appliedFunction.parameters.set(0, generic);
+                        }
+                    }
+                    // Backward compatibility -------------------------------------------------------------------
+                }
+            }
+            return appliedFunction;
+        }
     }
 }
