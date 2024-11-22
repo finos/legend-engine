@@ -15,12 +15,16 @@
 package org.finos.legend.pure.code.core;
 
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
+import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Collection;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.LINEAGE_FUNCTION;
+import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.addCollectionToSuite;
 import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.buildFCTTestCollection;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
@@ -30,12 +34,15 @@ public class Test_Analytics_Lineage_FCT
     {
 
         CompiledExecutionSupport support = getClassLoaderExecutionSupport();
-        MutableMap<String,String> exclusions = Maps.mutable.empty();
+        MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestCollection collection = buildFCTTestCollection("meta::analytics::lineage::tests", support.getProcessorSupport());
+       TestCollection collectionRelational = Test_Pure_Relational_FCT_Collection.buildCollection(support);
+       TestCollection  collection = buildFCTTestCollection("meta::analytics::lineage::tests", support.getProcessorSupport());
+       TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunction(collection, exclusions, LINEAGE_FUNCTION, false, support);
+       addCollectionToSuite(suite,collectionRelational,exclusions,LINEAGE_FUNCTION, false,support);
         return wrapSuite(
                 () -> true,
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunction(collection, exclusions,"meta::analytics::lineage::computeTestLineage_FunctionDefinition_1__TestParameters_1__LineageResult_1_", support),
+                () -> suite,
                 () -> false,
                 Lists.mutable.empty()
         );

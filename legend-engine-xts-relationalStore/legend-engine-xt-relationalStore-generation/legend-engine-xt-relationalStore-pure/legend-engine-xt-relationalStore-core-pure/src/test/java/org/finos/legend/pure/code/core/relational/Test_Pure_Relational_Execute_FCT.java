@@ -21,23 +21,20 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.buildFCTTestCollection;
+import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.EXECUTE_FUNCTION;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
-public class Test_Pure_Relational_FCT
+public class Test_Pure_Relational_Execute_FCT
 {
     public static Test suite()
     {
         CompiledExecutionSupport support = getClassLoaderExecutionSupport();
         MutableMap<String,String> exclusions = Maps.mutable.empty();
 
-        TestCollection collection = buildFCTTestCollection("meta::relational::tests::mapping::association::embedded", support.getProcessorSupport());
         return wrapSuite(
                 () -> true,
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunction(collection, exclusions,"meta::pure::test::fct::executeWrapper_FunctionDefinition_1__TestParameters_1__ExecuteResult_1_", support),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunction(Test_Pure_Relational_FCT_Collection.buildCollection(support), exclusions,EXECUTE_FUNCTION,  true,support),
                 () -> false,
                  Lists.mutable.empty()
         );

@@ -16,11 +16,6 @@ import meta::core::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::test::fct::*;
 
-Profile meta::pure::test::fct::FCT
-{
-    stereotypes : [test, adapter];
-}
-
 
 Class meta::pure::test::fct::TestResult
 {
