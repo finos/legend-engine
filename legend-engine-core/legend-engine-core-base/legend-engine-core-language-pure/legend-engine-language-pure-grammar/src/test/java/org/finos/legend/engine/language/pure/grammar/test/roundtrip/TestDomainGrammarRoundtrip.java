@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
@@ -495,6 +496,135 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "{\n" +
                 "  %1970-01-01\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testInFixFunctionAsParameter()
+    {
+        testFormat("function test::inFix(): Any[1]\n" +
+                        "{\n" +
+                        "  %1970-01-01T00:00:00.000+0000->adjust((123 / 1000000)->cast(@Integer), DurationUnit.SECONDS)\n" +
+                        "}\n",
+                "function test::inFix(): Any[1]\n" +
+                "{\n" +
+                "  %1970-01-01T00:00:00.000+0000->adjust(cast(123 / 1000000, @Integer), DurationUnit.SECONDS)\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testNewConstructorWithTypeArgumentsIsBackwardCompatible() throws JsonProcessingException
+    {
+        testComposedGrammar("{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"function\",\n" +
+                "      \"body\": [\n" +
+                "        {\n" +
+                "          \"_type\": \"func\",\n" +
+                "          \"function\": \"new\",\n" +
+                "          \"parameters\": [\n" +
+                "            {\n" +
+                // ---------- type to construct, no type arguments
+                "              \"_type\": \"packageableElementPtr\",\n" +
+                "              \"fullPath\": \"BasicColumnSpecification\"\n" +
+                // ---------- type to construct, no type arguments
+                "            },\n" +
+                "            {\n" +
+                "              \"_type\": \"string\",\n" +
+                "              \"value\": \"\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "              \"_type\": \"collection\",\n" +
+                "              \"multiplicity\": {\n" +
+                "                \"lowerBound\": 1,\n" +
+                "                \"upperBound\": 1\n" +
+                "              },\n" +
+                "              \"values\": [\n" +
+                "                {\n" +
+                "                  \"_type\": \"keyExpression\",\n" +
+                "                  \"add\": false,\n" +
+                "                  \"expression\": {\n" +
+                "                    \"_type\": \"lambda\",\n" +
+                "                    \"body\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"integer\",\n" +
+                "                        \"value\": 1\n" +
+                "                      }\n" +
+                "                    ],\n" +
+                "                    \"parameters\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"var\",\n" +
+                "                        \"genericType\": {\n" +
+                "                          \"multiplicityArguments\": [],\n" +
+                "                          \"rawType\": {\n" +
+                "                            \"_type\": \"packageableType\",\n" +
+                "                            \"fullPath\": \"TDSRow\"\n" +
+                "                          },\n" +
+                "                          \"typeArguments\": [],\n" +
+                "                          \"typeVariableValues\": []\n" +
+                "                        },\n" +
+                "                        \"multiplicity\": {\n" +
+                "                          \"lowerBound\": 1,\n" +
+                "                          \"upperBound\": 1\n" +
+                "                        },\n" +
+                "                        \"name\": \"r\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  },\n" +
+                "                  \"key\": {\n" +
+                "                    \"_type\": \"string\",\n" +
+                "                    \"value\": \"func\"\n" +
+                "                  }\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"name\": \"new__Any_1_\",\n" +
+                "      \"package\": \"test\",\n" +
+                "      \"parameters\": [],\n" +
+                "      \"postConstraints\": [],\n" +
+                "      \"preConstraints\": [],\n" +
+                "      \"returnGenericType\": {\n" +
+                "        \"multiplicityArguments\": [],\n" +
+                "        \"rawType\": {\n" +
+                "          \"_type\": \"packageableType\",\n" +
+                "          \"fullPath\": \"Any\"\n" +
+                "        },\n" +
+                "        \"typeArguments\": [],\n" +
+                "        \"typeVariableValues\": []\n" +
+                "      },\n" +
+                "      \"returnMultiplicity\": {\n" +
+                "        \"lowerBound\": 1,\n" +
+                "        \"upperBound\": 1\n" +
+                "      },\n" +
+                "      \"stereotypes\": [],\n" +
+                "      \"taggedValues\": [],\n" +
+                "      \"tests\": []\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"_type\": \"sectionIndex\",\n" +
+                "      \"name\": \"SectionIndex\",\n" +
+                "      \"package\": \"__internal__\",\n" +
+                "      \"sections\": [\n" +
+                "        {\n" +
+                "          \"_type\": \"importAware\",\n" +
+                "          \"elements\": [\n" +
+                "            \"test::new__Any_1_\"\n" +
+                "          ],\n" +
+                "          \"imports\": [],\n" +
+                "          \"parserName\": \"Pure\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^BasicColumnSpecification<TDSRow>(func=r: TDSRow[1]|1)\n" +
+                        "}\n");
     }
 
     @Test
