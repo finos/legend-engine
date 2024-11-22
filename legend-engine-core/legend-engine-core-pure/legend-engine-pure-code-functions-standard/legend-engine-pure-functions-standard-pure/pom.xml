@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-standard</artifactId>
-        <version>4.66.2-SNAPSHOT</version>
+        <version>4.67.0</version>
     </parent>
 
     <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
