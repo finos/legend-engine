@@ -16,26 +16,23 @@ package org.finos.legend.engine.functionActivator.postDeployment;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
-
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PostDeploymentActionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PostDeploymentContract.class);
-    private static final AtomicReference<MutableList<PostDeploymentContract>> INSTANCE = new AtomicReference<>();
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PostDeploymentActionLoader.class);
+    private static final AtomicReference<MutableList<PostDeploymentActionDeploymentContract>> INSTANCE = new AtomicReference<>();
+    private static final AtomicReference<MutableList<PostDeploymentGeneration>> GENERATION_INSTANCE = new AtomicReference<>();
 
-    public static MutableList<PostDeploymentContract> extensions()
+    public static MutableList<PostDeploymentActionDeploymentContract> extensions()
     {
         return INSTANCE.updateAndGet(existing ->
         {
             if (existing == null)
             {
-                MutableList<PostDeploymentContract> extensions = Lists.mutable.empty();
-                for (PostDeploymentContract extension : ServiceLoader.load(PostDeploymentContract.class))
+                MutableList<PostDeploymentActionDeploymentContract> extensions = Lists.mutable.empty();
+                for (PostDeploymentActionDeploymentContract extension : ServiceLoader.load(PostDeploymentActionDeploymentContract.class))
                 {
                     try
                     {
@@ -43,7 +40,7 @@ public class PostDeploymentActionLoader
                     }
                     catch (Throwable throwable)
                     {
-                        LOGGER.error("Failed to load execution extension '" + extension.getClass().getSimpleName() + "'");
+                        LOGGER.error("Failed to load deployment execution extension '" + extension.getClass().getSimpleName() + "'");
                     }
                 }
                 return extensions;
@@ -52,14 +49,27 @@ public class PostDeploymentActionLoader
         });
     }
 
-    public static List<ActionContent> generateActions(Root_meta_external_function_activator_FunctionActivator activator)
+    public static MutableList<PostDeploymentGeneration> generationExtensions()
     {
-        List<ActionContent> actionsContent = Lists.mutable.empty();
-        extensions().forEach(e ->
+        return GENERATION_INSTANCE.updateAndGet(existing ->
         {
-            actionsContent.addAll(e.generate(activator._actions()));
+            if (existing == null)
+            {
+                MutableList<PostDeploymentGeneration> generationExtensions = Lists.mutable.empty();
+                for (PostDeploymentGeneration extension : ServiceLoader.load(PostDeploymentGeneration.class))
+                {
+                    try
+                    {
+                        generationExtensions.add(extension);
+                    }
+                    catch (Throwable throwable)
+                    {
+                        LOGGER.error("Failed to load generation extension '" + extension.getClass().getSimpleName() + "'");
+                    }
+                }
+                return generationExtensions;
+            }
+            return existing;
         });
-
-        return actionsContent;
     }
 }
