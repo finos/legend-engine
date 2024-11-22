@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -37,9 +38,11 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.DuckDBDigestUtil;
 import org.finos.legend.engine.persistence.components.relational.duckdb.DuckDBSink;
 import org.finos.legend.engine.persistence.components.relational.duckdb.logicalplan.datasets.DuckDBStagedFilesDatasetProperties;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -74,6 +77,7 @@ public class BulkLoadTest extends BaseTest
     private static final String APPEND_TIME = "append_time";
     private static final String DIGEST = "digest";
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
+    private static final String COLUMN_CONCAT_UDF = "COLUMN_CONCAT_UDF";
     private static final String BATCH_ID = "batch_id";
     private static final String EVENT_ID_1 = "xyz123";
     private static final String EVENT_ID_2 = "abc987";
@@ -113,6 +117,13 @@ public class BulkLoadTest extends BaseTest
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
+
+    @BeforeAll
+    public static void registerFunctions()
+    {
+        DuckDBDigestUtil.registerMD5Udf(duckDBSink, DIGEST_UDF);
+        DuckDBDigestUtil.registerColumnUdf(duckDBSink, COLUMN_CONCAT_UDF);
+    }
 
     @Test
     public void testBulkLoadWithDigestNotGeneratedAuditEnabled() throws Exception
@@ -257,6 +268,162 @@ public class BulkLoadTest extends BaseTest
     }
 
     @Test
+    public void testBulkLoadWithDigestGenerated() throws Exception
+    {
+        // register type conversion functions
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.INT, "intToString");
+        typeConversionUdfs.put(DataType.DATETIME, "datetimeToString");
+        duckDBSink.executeStatement("CREATE FUNCTION intToString(A) AS CAST(A AS VARCHAR)");
+        duckDBSink.executeStatement("CREATE FUNCTION datetimeToString(A) AS CAST(A AS VARCHAR)");
+
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file3.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName(DIGEST_UDF)
+                .columnNameValueConcatUdfName(COLUMN_CONCAT_UDF)
+                .putAllTypeConversionUdfNames(typeConversionUdfs)
+                .digestField(DIGEST).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .batchIdField(BATCH_ID)
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                DuckDBStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(DuckDBSink.get())
+            .collectStatistics(true)
+            .ingestRequestId(EVENT_ID_1)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
+            "SELECT \"col_int\",\"col_string\",\"col_decimal\",\"col_datetime\"," +
+            "LAKEHOUSE_MD5(COLUMN_CONCAT_UDF('col_datetime',datetimeToString(CAST(\"col_datetime\" AS TIMESTAMP)))||COLUMN_CONCAT_UDF('col_decimal',CAST(CAST(\"col_decimal\" AS DECIMAL(5,2)) AS VARCHAR))||COLUMN_CONCAT_UDF('col_int',intToString(CAST(\"col_int\" AS INTEGER)))||COLUMN_CONCAT_UDF('col_string',CAST(CAST(\"col_string\" AS VARCHAR) AS VARCHAR)))," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
+            "FROM READ_CSV(['src/test/resources/data/bulk-load/input/staged_file3.csv'], COLUMNS = {'col_int':'INTEGER', 'col_string':'VARCHAR', 'col_decimal':'DECIMAL(5,2)', 'col_datetime':'TIMESTAMP'}, AUTO_DETECT = FALSE)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, DIGEST, BATCH_ID, APPEND_TIME};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table3.csv";
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), ADDITIONAL_METADATA);
+        executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false, "");
+        Map<String, Object> appendMetadata = duckDBSink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, Collections.singletonList(filePath), 1, Optional.of(EVENT_ID_1), Optional.of(ADDITIONAL_METADATA));
+    }
+
+    @Test
+    public void testBulkLoadJsonWithDigestGenerated() throws Exception
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file3.json";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName(DIGEST_UDF)
+                .columnNameValueConcatUdfName(COLUMN_CONCAT_UDF)
+                .digestField(DIGEST).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .batchIdField(BATCH_ID)
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                DuckDBStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.JSON)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(DuckDBSink.get())
+            .collectStatistics(true)
+            .ingestRequestId(EVENT_ID_1)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
+            "SELECT \"col_int\",\"col_string\",\"col_decimal\",\"col_datetime\"," +
+            "LAKEHOUSE_MD5(COLUMN_CONCAT_UDF('col_datetime',CAST(CAST(\"col_datetime\" AS TIMESTAMP) AS VARCHAR))||COLUMN_CONCAT_UDF('col_decimal',CAST(CAST(\"col_decimal\" AS DECIMAL(5,2)) AS VARCHAR))||COLUMN_CONCAT_UDF('col_int',CAST(CAST(\"col_int\" AS INTEGER) AS VARCHAR))||COLUMN_CONCAT_UDF('col_string',CAST(CAST(\"col_string\" AS VARCHAR) AS VARCHAR)))," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
+            "FROM READ_JSON(['src/test/resources/data/bulk-load/input/staged_file3.json'])";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, DIGEST, BATCH_ID, APPEND_TIME};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table3.csv";
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), ADDITIONAL_METADATA);
+        executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false, "");
+        Map<String, Object> appendMetadata = duckDBSink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, Collections.singletonList(filePath), 1, Optional.of(EVENT_ID_1), Optional.of(ADDITIONAL_METADATA));
+    }
+
+    @Test
     public void testBulkLoadJsonUpperCase() throws Exception
     {
         String filePath1 = "src/test/resources/data/bulk-load/input/staged_file1.json";
@@ -322,6 +489,83 @@ public class BulkLoadTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 7);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table_json.csv";
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), new HashMap<>());
+        executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false, "");
+
+        Map<String, Object> appendMetadata = duckDBSink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadataForUpperCase(appendMetadata, Arrays.asList(filePath1, filePath2), 1, Optional.of(EVENT_ID_1), Optional.empty());
+    }
+
+    @Test
+    public void testBulkLoadJsonUpperCaseWithDigestGenerated() throws Exception
+    {
+        String filePath1 = "src/test/resources/data/bulk-load/input/staged_file1.json";
+        String filePath2 = "src/test/resources/data/bulk-load/input/staged_file2.json";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName(DIGEST_UDF)
+                .columnNameValueConcatUdfName(COLUMN_CONCAT_UDF)
+                .digestField(DIGEST).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                DuckDBStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.JSON)
+                    .addAllFilePaths(Arrays.asList(filePath1, filePath2)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(idNonPk, name, income, startTimeNonPk, expiryDate)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(DuckDBSink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .caseConversion(CaseConversion.TO_UPPER)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"MAIN\"" +
+            "(\"ID\" INTEGER,\"NAME\" VARCHAR NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,\"BATCH_ID\" INTEGER,\"APPEND_TIME\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
+            "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
+            "SELECT \"ID\",\"NAME\",\"INCOME\",\"START_TIME\",\"EXPIRY_DATE\"," +
+            "LAKEHOUSE_MD5(COLUMN_CONCAT_UDF('EXPIRY_DATE',CAST(CAST(\"EXPIRY_DATE\" AS DATE) AS VARCHAR))||COLUMN_CONCAT_UDF('ID',CAST(CAST(\"ID\" AS INTEGER) AS VARCHAR))||COLUMN_CONCAT_UDF('INCOME',CAST(CAST(\"INCOME\" AS BIGINT) AS VARCHAR))||COLUMN_CONCAT_UDF('NAME',CAST(CAST(\"NAME\" AS VARCHAR) AS VARCHAR))||COLUMN_CONCAT_UDF('START_TIME',CAST(CAST(\"START_TIME\" AS TIMESTAMP) AS VARCHAR)))," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' " +
+            "FROM READ_JSON(['src/test/resources/data/bulk-load/input/staged_file1.json','src/test/resources/data/bulk-load/input/staged_file2.json'])";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"BATCH_ID\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), BATCH_ID.toUpperCase(), APPEND_TIME.toUpperCase()};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 7);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table_json_with_digest_gen.csv";
 
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), new HashMap<>());
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false, "");

@@ -36,6 +36,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
+import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ConcatFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -47,15 +50,16 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalC
 import org.finos.legend.engine.persistence.components.relational.duckdb.jdbc.DuckDBJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBJdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.ConcatFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CopyVisitor;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.StagedFilesSelectionVisitor;
-import org.finos.legend.engine.persistence.components.relational.duckdb.sqldom.schemaops.values.ConcatFunction;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.FieldVisitor;
@@ -116,6 +120,8 @@ public class DuckDBSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(ConcatFunction.class, new ConcatFunctionVisitor());
+        logicalPlanVisitorByClass.put(CastFunction.class, new CastFunctionVisitor());
+        logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         // TODO: These two mappings have not been confirmed, to do with schema evolution
