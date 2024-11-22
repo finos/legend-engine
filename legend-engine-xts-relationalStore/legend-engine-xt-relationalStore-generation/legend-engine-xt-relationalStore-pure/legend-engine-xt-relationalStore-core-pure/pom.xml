@@ -195,7 +195,11 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-test-fct</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
@@ -455,7 +459,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-fct</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- TEST -->
