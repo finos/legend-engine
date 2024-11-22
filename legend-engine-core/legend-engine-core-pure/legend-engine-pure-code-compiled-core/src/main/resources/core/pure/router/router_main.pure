@@ -133,11 +133,11 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
                                   $fOpenVariables->putAll($inScopeVars->toOne()->keyValues());,
                                 | $fOpenVariables);
 
-   let functionExpressions = $f.expressionSequence->evaluateAndDeactivate()->cast(@FunctionExpression);
+   let valueSpecifications = $f.expressionSequence->evaluateAndDeactivate();
 
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
-   let enrichedExpressions = enrichFunctionExpressions($functionExpressions, $routingStrategy, $exeCtx, $openVariables, $graphFetchFlow, $extensions, $debug);   
+   let enrichedExpressions = enrichFunctionExpressions($valueSpecifications, $routingStrategy, $exeCtx, $openVariables, $graphFetchFlow, $extensions, $debug);   
 
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));

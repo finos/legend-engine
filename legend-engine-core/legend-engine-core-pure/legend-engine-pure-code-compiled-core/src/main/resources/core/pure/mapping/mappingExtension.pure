@@ -42,7 +42,7 @@ Class meta::pure::mapping::MappingInstanceData
 
 Class meta::pure::mapping::StoreQuery
 {
-    fe : FunctionExpression[1];
+    vs : ValueSpecification[1];
     inScopeVars : Map<String, List<Any>>[1];
     store : Store[1];
     //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query )
@@ -53,10 +53,10 @@ Class meta::pure::mapping::TabularDataSetImplementation extends TabularDataSet
   store : 	meta::pure::store::Store[1];
 }
 
-function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1], extensions:meta::pure::extension::Extension[*]): Class<Any>[1]
+function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1], extensions:meta::pure::extension::Extension[*]): Type[1]
 {
    $setImplementation->match([
-      pure: PureInstanceSetImplementation[1]             | $pure.srcClass->cast(@Class<Any>)->toOne()
+      pure: PureInstanceSetImplementation[1]             | $pure.srcClass->toOne()
    ]->concatenate($extensions.availableStores.extractSourceClassFromSetImplementation)->toOneMany());
 }
 

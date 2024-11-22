@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-bigqueryFunction</artifactId>
-        <version>4.66.2-SNAPSHOT</version>
+        <version>4.67.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

@@ -31,9 +31,9 @@ import meta::pure::router::utils::*;
 
 function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mcc:ModelChainConnection[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
-   let returnType = $f.fe.genericType.rawType->toOne();
+   let returnType = $f.vs.genericType.rawType->toOne();
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
-   let processed = $f.fe->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
+   let processed = $f.vs->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
    let existingsVars =   $f.inScopeVars->keys()->map(k|
                                                      let inScopeVarValue = $f.inScopeVars->get($k).values;
                                                      let rightValue = $inScopeVarValue->evaluateAndDeactivate();
@@ -66,7 +66,7 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
          c : Class<Any>[1] |
             if ($c->_subTypeOf(TabularDataSet),
                 |let tds = $results.values->cast(@TabularDataSet)->toOne();
-                 let enumColumns = $f.fe->identifyTDSColumns($extensions)->filter(t|$t.type->toOne()->instanceOf(Enumeration))->map(t|pair($t.type->toOne()->cast(@Enumeration<Any>), $t.offset->toOne()));
+                 let enumColumns = $f.vs->cast(@FunctionExpression)->identifyTDSColumns($extensions)->filter(t|$t.type->toOne()->instanceOf(Enumeration))->map(t|pair($t.type->toOne()->cast(@Enumeration<Any>), $t.offset->toOne()));
                   if ($enumColumns->isEmpty(),
                       |$results.values,
                       |^$tds(rows = $tds.rows->map(r|$enumColumns->fold({b,a|let val = $a.values;
@@ -103,12 +103,12 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
 
 function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[0..1], mcc:ModelChainConnection[1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let returnType = $sq.fe.genericType.rawType->toOne();
+   let returnType = $sq.vs.genericType.rawType->toOne();
    assert($returnType->_subTypeOf(TabularDataSet), 'Non TDS return type not supported for Model Connections');
 
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
 
-   let processed = $sq.fe->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
+   let processed = $sq.vs->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
    let f = ^LambdaFunction<{->Any[*]}>(expressionSequence = $processed.res->cast(@FunctionExpression))->toOne()->cast(@FunctionDefinition<Any>);
 
    let m = $mcc.mappings->last()->toOne();
@@ -141,11 +141,11 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
 
 Class meta::pure::mapping::modelToModel::chain::Container
 {
-   res : FunctionExpression[1];
+   res : ValueSpecification[1];
    ex : StoreMappingRoutedValueSpecification[*];
 }
 
-function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpression[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
+function meta::pure::mapping::modelToModel::chain::allReprocess(vs:ValueSpecification[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
 {
    $mappings->fold(
                      {a,b|
@@ -157,13 +157,13 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpres
 
                            [
                               e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, [], $extensions).newExpression);,
-                              f:FunctionExpression[1]|pair(list($r), $f->reprocess($r, $a, $mappings, [], $extensions).newExpression);
+                              f:FunctionExpression[1]|pair(list($r), $vs->reprocess($r, $a, $mappings, [], $extensions).newExpression);
                            ]
                         );
                         print(if(!$debug.debug, |'', | $debug.space+'  Chain Reprocessed Query: '+$res.second->cast(@ValueSpecification)->asString()+'\n'));
                         ^Container(res=$res.second->cast(@FunctionExpression), ex=$b.ex->concatenate($res.first.values));
                      },
-                     ^Container(res=$f)
+                     ^Container(res=$vs)
                    );
 }
 

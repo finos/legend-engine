@@ -57,7 +57,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    let store       = $sq.store;
    assert($store->instanceOf(ServiceStore), | 'Expected a ServiceStore. Found - ' + $store->cast(@Store)->elementToPath());
 
-   let fe          = $sq.fe->evaluateAndDeactivate();
+   let fe          = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
 
    let rootTree    = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
    let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
@@ -172,7 +172,7 @@ Class <<access.private>> meta::external::store::service::executionPlan::generati
 
 function meta::external::store::service::executionPlan::generation::processServiceStoreQuery(sq:StoreQuery[1], initialMap:Map<String, String>[1], debug: DebugContext[1]):ServiceStoreQueryProcessedState[1]
 {
-   let serviceStoreQuery = $sq.fe->toServiceStoreQuery($sq.inScopeVars, $debug);
+   let serviceStoreQuery = $sq.vs->toServiceStoreQuery($sq.inScopeVars, $debug);
    let paramValues       = $serviceStoreQuery.processedParamValueMap->keyValues();
 
    let literalParams     = $paramValues->filter(p | $p.second->instanceOf(LiteralValue));

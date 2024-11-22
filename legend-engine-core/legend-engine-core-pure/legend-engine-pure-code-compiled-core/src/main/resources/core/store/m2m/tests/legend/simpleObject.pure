@@ -1416,4 +1416,60 @@ Mapping meta::pure::mapping::modelToModel::test::shared::dest::MappingWithNoProp
   }
 )
 
+###Pure 
+import meta::pure::executionPlan::profiles::*;
+
+Class meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource 
+{
+  d : StrictDate[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDest
+{
+  c : meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner
+{
+  d : StrictDate[1];
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_33_0' } meta::pure::mapping::modelToModel::test::alloy::simple::testPrimitiveTypeMapping() : Boolean[1]
+{
+  let tree = #{meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDest { c {d}}}#;
+  let query = {| meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDest.all()->meta::pure::graphFetch::execution::graphFetch($tree)->meta::pure::graphFetch::execution::serialize($tree)};
+  let mapping = meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingTest;
+  let runtime = ^meta::core::runtime::Runtime(
+    connectionStores = [
+      ^meta::core::runtime::ConnectionStore(
+        element=^meta::external::store::model::ModelStore(),
+        connection = ^meta::external::store::model::JsonModelConnection(
+          class=meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource,
+          url='data:application/json,{"d":"2020-01-01"}'
+        )
+      )
+    ]
+  );
+
+  let result = execute($query, $mapping, $runtime, meta::pure::extension::defaultExtensions());
+  println($result.values);
+  assert(meta::json::jsonEquivalent('{"c":{"d":"2020-01-01"}}'->meta::json::parseJSON(), $result.values->toOne()->meta::json::parseJSON()));
+}
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingTest
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDest : Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::shared::src::PrimitiveMappingSource 
+    c[mydate] : $src.d
+  }
+
+  meta::pure::mapping::modelToModel::test::shared::dest::PrimitiveMappingDestInner[mydate] : Pure  
+  {
+    ~src StrictDate
+    d : $src
+  }
+)
+
 

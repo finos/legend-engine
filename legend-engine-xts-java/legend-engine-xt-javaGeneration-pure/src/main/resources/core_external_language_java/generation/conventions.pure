@@ -378,6 +378,14 @@ function meta::external::language::java::transform::className(conventions: Conve
    );
 }
 
+function meta::external::language::java::transform::typeName(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Type[1]
+{
+  if($type->instanceOf(meta::pure::metamodel::type::Class), 
+    | $conventions->className($type),
+    | $conventions->pureTypeToJavaType($type, PureOne)
+  )
+}
+
 function meta::external::language::java::transform::implClassName(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->generateClassName($type, 'internal', '_Impl');

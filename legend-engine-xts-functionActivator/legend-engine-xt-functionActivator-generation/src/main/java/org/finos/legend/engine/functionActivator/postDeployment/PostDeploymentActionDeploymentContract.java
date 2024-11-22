@@ -14,19 +14,13 @@
 
 package org.finos.legend.engine.functionActivator.postDeployment;
 
-import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
-import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.deployment.PostDeploymentActionResult;
-import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_postDeploymentAction_PostDeploymentAction;
 
 import java.util.List;
 
-public interface PostDeploymentContract
+public interface PostDeploymentActionDeploymentContract
 {
-    List<ActionContent> generate(RichIterable<? extends Root_meta_external_function_activator_postDeploymentAction_PostDeploymentAction> actions);
-
     List<PostDeploymentActionResult> processAction(Identity identity, FunctionActivatorArtifact artifact);
 }
