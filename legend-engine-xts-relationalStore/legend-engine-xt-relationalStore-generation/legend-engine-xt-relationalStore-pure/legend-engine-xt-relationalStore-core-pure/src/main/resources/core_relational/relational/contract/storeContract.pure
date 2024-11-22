@@ -184,7 +184,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
 // Execution flow
 function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
-   execution($sq.store->cast(@Database), $sq.fe, $ext, $m, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug);
+   execution($sq.store->cast(@Database), $sq.vs, $ext, $m, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug);
 }
 
 // Functions supported by relational execution
@@ -220,15 +220,16 @@ function meta::relational::contract::supportsStream(f:FunctionExpression[1]):Boo
 function meta::relational::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let store = $sq.store->cast(@Database);
-   let fe = $sq.fe->evaluateAndDeactivate();
+   let vs = $sq.vs->evaluateAndDeactivate();
+   let func = if($vs->instanceOf(FunctionExpression), |$vs->cast(@FunctionExpression).func, |[]);
    if([
         pair(
-          |$fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+          |$func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
           | // Graph Fetch Flow
             $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
         ),
         pair(
-          |$fe.func->in(meta::pure::mutation::mutationFunctions()),
+          |$func->in(meta::pure::mutation::mutationFunctions()),
           | // Write Flow
             $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
         )
@@ -245,7 +246,7 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                         );
      
         let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-            let originalQuery = $sq.fe->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
+            let originalQuery = $sq.vs->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
             $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
                           ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
       );

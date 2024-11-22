@@ -38,7 +38,8 @@ function meta::pure::platform::executionPlan::generation::processValueSpecificat
       f:SimpleFunctionExpression[1]         | $f->getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug),
       c:ClusteredValueSpecification[1]      | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
-      i:InstanceValue[1]                    | [],
+      i:InstanceValue[1]                    | $i->processInstanceValue($state, $extensions, $debug),
+      v:VariableExpression[1]               | $v->processVariableExpression($state, $extensions, $debug),
       v:ValueSpecification[1]               | []
    ]);
 }
@@ -58,7 +59,29 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::def
       requiredVariableInputs = $variableExpressionInputs->concatenate($varPlaceHolderInputs),
       resultSizeRange = $fe.multiplicity,
       executionNodes = $children,
-      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformCluster($fe, $state.inScopeVars)
+   );
+}
+
+function <<access.private>> meta::pure::platform::executionPlan::generation::processVariableExpression(var:VariableExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   ^VariableResolutionExecutionNode
+   (
+      varName = $var.name->toOne(),
+      resultType = ^ResultType(type=if($var.genericType.rawType->isEmpty(),|Any,|$var.genericType.rawType->toOne())),      
+      resultSizeRange = $var.multiplicity,      
+      fromCluster = generatePlatformCluster($var, $state.inScopeVars)
+   );
+}
+
+function <<access.private>> meta::pure::platform::executionPlan::generation::processInstanceValue(iv:InstanceValue[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   ^PureExpressionPlatformExecutionNode
+   (
+      expression = $iv,
+      resultType = ^ResultType(type=if($iv.genericType.rawType->isEmpty(),|Any,|$iv.genericType.rawType->toOne())),      
+      resultSizeRange = $iv.multiplicity,      
+      fromCluster = generatePlatformCluster($iv, $state.inScopeVars)
    );
 }
 
@@ -76,7 +99,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::ser
       expression = ^$fe(parametersValues=$substitute->concatenate($params->tail())),
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       executionNodes = $children,
-      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformCluster($fe, $state.inScopeVars)
    );
 }
 
@@ -92,7 +115,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::uni
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       isChildrenExecutionParallelizable = true,
       executionNodes = $updatedChildren,
-      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformCluster($fe, $state.inScopeVars)
    );
 }
 
@@ -119,13 +142,13 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::let
    );
 }
 
-function <<access.private>> meta::pure::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::generatePlatformCluster(vs:ValueSpecification[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
 {
    ^PlatformClusteredValueSpecification(
-      val = $fe,
+      val = $vs,
       executable=true,
-      multiplicity = $fe.multiplicity,
-      genericType  = $fe.genericType,
+      multiplicity = $vs.multiplicity,
+      genericType  = $vs.genericType,
       openVars = $inScopeVars
    );
 }

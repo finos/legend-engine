@@ -38,7 +38,7 @@ Class meta::pure::mapping::aggregationAware::AggregationAwareActivity extends me
    rewrittenQuery: String[1];
 }
 
-function meta::pure::mapping::aggregationAware::reprocessFunction(f:FunctionExpression[1], openVars: Map<String, List<Any>>[1], e:RoutedValueSpecification[0..1], m:Mapping[1], debug:DebugContext[1]):LambdaFunction<{->Any[*]}>[1]
+function meta::pure::mapping::aggregationAware::reprocessFunction(vs:ValueSpecification[1], openVars: Map<String, List<Any>>[1], e:RoutedValueSpecification[0..1], m:Mapping[1], debug:DebugContext[1]):LambdaFunction<{->Any[*]}>[1]
 {
    let existingsVars = $openVars->keyValues()->filter(v|!$v.second.values->at(0)->instanceOf(PlanVarPlaceHolder)).first->map(k|
                                                 let inScopeVarValue = $openVars->get($k).values;
@@ -51,12 +51,12 @@ function meta::pure::mapping::aggregationAware::reprocessFunction(f:FunctionExpr
                                                 let placeholderLet = {| let placeHolder = $rightSide } ->evaluateAndDeactivate().expressionSequence ->cast(@SimpleFunctionExpression)->toOne();
                                                 ^$placeholderLet( parametersValues = [ $leftSide, $rightSide ] );
                                               );
-   let reprocessedFunction = ^LambdaFunction<{->Any[*]}>(expressionSequence =  $existingsVars->concatenate($f->rewriteQuery($openVars, $e, $m, $debug))->toOneMany());
+   let reprocessedFunction = ^LambdaFunction<{->Any[*]}>(expressionSequence =  $existingsVars->concatenate($vs->rewriteQuery($openVars, $e, $m, $debug))->toOneMany());
 }
 
-function meta::pure::mapping::aggregationAware::rewriteQuery(f:FunctionExpression[1], inScopeVars: Map<String, List<Any>>[1], r:RoutedValueSpecification[0..1], mappings:Mapping[1], debug:DebugContext[1]):FunctionExpression[1]
+function meta::pure::mapping::aggregationAware::rewriteQuery(vs:ValueSpecification[1], inScopeVars: Map<String, List<Any>>[1], r:RoutedValueSpecification[0..1], mappings:Mapping[1], debug:DebugContext[1]):ValueSpecification[1]
 {
-   $f->reprocessVS()->reprocessVSWithInScopeVars($inScopeVars)->rewriteValueSpecification($mappings, ^Map<String, ProjectPath>(), $inScopeVars, $debug)->cast(@FunctionExpression);
+   $vs->reprocessVS()->reprocessVSWithInScopeVars($inScopeVars)->rewriteValueSpecification($mappings, ^Map<String, ProjectPath>(), $inScopeVars, $debug)->cast(@FunctionExpression);
 }
 
 function meta::pure::mapping::aggregationAware::reprocessLambda(f:FunctionDefinition<Any>[1]):FunctionDefinition<Any>[1]

@@ -31,7 +31,7 @@ function meta::external::store::rel::mapping::execution(
   debug: DebugContext[1]
 ): meta::pure::mapping::Result<Any|*>[1] {
   assert($sq.store->instanceOf(RAIDatabase), 'Rel queries can only be executed against an instance of `RAIDatabase`');
-  $sq.fe->execution($mapping, $debug, $sq.store->cast(@RAIDatabase).config, emptyTrace());
+  $sq.vs->cast(@FunctionExpression)->execution($mapping, $debug, $sq.store->cast(@RAIDatabase).config, emptyTrace());
 }
 
 function <<access.private>> meta::external::store::rel::mapping::execution(

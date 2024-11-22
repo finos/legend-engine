@@ -51,7 +51,7 @@ Class meta::pure::router::routing::PropertyMap
    v : Pair<String,Any>[*];
 }
 
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
    let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow),
                                               $expressions,
@@ -124,7 +124,7 @@ function <<access.private>> meta::pure::router::routing::routePath(state:Routing
    ^$state(value=^$path(path=$newPathElements));
 }
 
-function <<access.private>> meta::pure::router::routing::routeValueSpecification(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeValueSpecification(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    $state.value->evaluateAndDeactivate()->match(
       [

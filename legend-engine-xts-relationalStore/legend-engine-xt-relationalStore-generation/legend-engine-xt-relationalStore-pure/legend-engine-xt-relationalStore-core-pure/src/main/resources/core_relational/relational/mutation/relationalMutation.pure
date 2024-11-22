@@ -69,12 +69,14 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateG
 
 function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
-  let rootType = $sq.fe.genericType.rawType->toOne();
+  let fe = $sq.vs->cast(@FunctionExpression);
+
+  let rootType = $fe.genericType.rawType->toOne();
 
   // validate mapping is allowed -- currently only simple relational mappings against table columns are supported
   let rootMapping = validateMappingIsSupportedForMutation($mapping, $rootType);
   // validate graph fetch tree -- cannot specify properties deeper than the mapping supports, must include primary key properties
-  let rootGraphFetchTree = $sq.fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>)->toOne();
+  let rootGraphFetchTree = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>)->toOne();
   let propertyNamesInTree = validateGraphFetchTreeForMapping($rootMapping, $rootGraphFetchTree);
 
   let inScopePropertyMappings = $rootMapping.propertyMappings->cast(@RelationalPropertyMapping)->filter(pm | $pm.property.name->in($propertyNamesInTree));
@@ -158,11 +160,11 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
       equalityStatements = $databaseColumnToFreeMarkerVariable
     )->processOperation($dbConnection.type, $extensions);
 
-  let funcParams = $sq.fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
+  let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
   let varInputs = $funcParams->filter(x| $sq.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
 
   // node for providing source values
-  let children = $sq.fe.parametersValues->at(0)->toOne()->cast(@ClusteredValueSpecification)->generateExecutionNodeFromCluster($sq.inScopeVars, $exeCtx, $extensions, $debug);
+  let children = $fe.parametersValues->at(0)->toOne()->cast(@ClusteredValueSpecification)->generateExecutionNodeFromCluster($sq.inScopeVars, $exeCtx, $extensions, $debug);
 
   ^RelationalSaveNode(
     resultType = ^ResultType(type=String),

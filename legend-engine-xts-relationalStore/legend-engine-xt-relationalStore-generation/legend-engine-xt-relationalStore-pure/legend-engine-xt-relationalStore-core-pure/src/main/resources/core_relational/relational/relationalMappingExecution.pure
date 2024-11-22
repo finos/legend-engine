@@ -101,8 +101,8 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
 
 function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], query:SQLQuery[1], node:ExecutionNode[1], m:Mapping[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1]):ExecutionNode[1]
 {
-   let possibleClass = $sq.fe.genericType.rawType->toOne();
-   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+   let possibleClass = $sq.vs.genericType.rawType->toOne();
+   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.vs); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
    let resultType = if([
                           pair(
                               |$class->_subTypeOf(TabularDataSet),
@@ -113,7 +113,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                               |^TDSResultType
                                (
                                     type = $class,
-                                    tdsColumns = $sq.fe.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
+                                    tdsColumns = $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
                                                                 ^TDSColumn
                                                                 (
                                                                   name = $p.name->toOne(),
@@ -157,9 +157,9 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
 
    $resultType->match([
       t : TDSResultType[1]       | ^RelationalTdsInstantiationExecutionNode(executionNodes = $node, resultType = $t),
-      c : ClassResultType[1]     | ^RelationalClassInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity),
+      c : ClassResultType[1]     | ^RelationalClassInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.vs.multiplicity),
       r : RelationResultType[1]  | ^RelationalRelationDataInstantiationExecutionNode(executionNodes = $node, resultType = $r, resultSizeRange = ZeroMany),
-      c : DataTypeResultType[1]  | ^RelationalDataTypeInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity)
+      c : DataTypeResultType[1]  | ^RelationalDataTypeInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.vs.multiplicity)
    ]);
 }
 
@@ -307,7 +307,7 @@ function meta::relational::mapping::utcToTimeZoneSupportFunction():String[1]
 
 
 
-function meta::relational::mapping::execution(store: Database[1], f:FunctionExpression[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::relational::mapping::execution(store: Database[1], f:ValueSpecification[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let toSqlQueryStart = now();
 

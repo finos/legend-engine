@@ -58,9 +58,9 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
 function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): meta::pure::executionPlan::ExecutionNode[1]
 {
     let store = $sq.store->cast(@MongoDatabase);
-    let fe = $sq.fe->evaluateAndDeactivate();
+    let vs = $sq.vs->evaluateAndDeactivate();
 
-    if($fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+    if($vs->instanceOf(FunctionExpression) && $vs->cast(@FunctionExpression).func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
       |
         // Graph Fetch Flow
         $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
@@ -75,7 +75,7 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
                                   ^$oldRuntime(connectionStores = ^$connectionStore(connection=$dbConn));
                               );
 
-        let databaseCommand = $sq.fe->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);
+        let databaseCommand = $sq.vs->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);
 
         let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 

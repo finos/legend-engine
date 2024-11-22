@@ -248,7 +248,7 @@ Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryCros
 
 function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
-   let fe = $sq.fe->evaluateAndDeactivate();
+   let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    if ($fe->meta::pure::router::utils::isUnionOnGraphFetch(true),
        | planRouterUnionGraphFetchExecution($sq, $ext, $mapping->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug),
        | assert($fe.func->in(graphFetchFunctions()), | 'Non graphFetch function encountered');
@@ -270,7 +270,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMem
 function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
 {
    let store       = $sq.store;
-   let fe          = $sq.fe->evaluateAndDeactivate();
+   let fe          = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    let rootTree    = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
    let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
                       | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer),
@@ -582,7 +582,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generateP
 function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryStoreMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    $mapping->meta::pure::mapping::modelToModel::validateMergeMapping();
-   let fe     = $sq.fe->evaluateAndDeactivate();
+   let fe     = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    let params = $fe.parametersValues->evaluateAndDeactivate();
    let p1     = $params->at(0);
    let p2     = $params->at(1)->cast(@InstanceValue);
@@ -603,7 +603,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
                                            values = $sets->map(set |  $rf->eval($set))->evaluateAndDeactivate())
       )->evaluateAndDeactivate();
 
-   planInMemoryRouterMergeGraphFetchExecution(^$sq(fe = $newFe), $ext, $mapping, $runtime, $exeCtx, $extensions, $debug,$sq,$tree);
+   planInMemoryRouterMergeGraphFetchExecution(^$sq(vs = $newFe), $ext, $mapping, $runtime, $exeCtx, $extensions, $debug,$sq,$tree);
 }
 function <<access.protected>> meta::pure::mapping::modelToModel::validateMergeMapping(mapping:Mapping[1]):Boolean[1]
 {
@@ -621,7 +621,7 @@ function <<access.protected>> meta::pure::mapping::modelToModel::validateMergeMa
 
 function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryRouterMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1],rootSQ:StoreQuery[1],rootTree:ClusteredGraphFetchTree[1]): ExecutionNode[1]
 {
-   let fe = $sq.fe->evaluateAndDeactivate();
+   let fe = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
   let subClusters  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->cast(@ValueSpecification)->map({p | $p->cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@StoreMappingClusteredValueSpecification);
 
    let firstCluster = $subClusters->at(0);

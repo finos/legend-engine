@@ -55,8 +55,7 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
                 one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/Execute.java"),
 
                 // Let
-                one("meta::pure::functions::lang::tests::letFn::testAssignLiteralToVariable_Function_1__Boolean_1_", "\"Cast exception: VariableExpression cannot be cast to FunctionExpression\""),
-                one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Cast exception: VariableExpression cannot be cast to FunctionExpression\""),
+                one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::lang::tests::model::LA_Person\""),
                 one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/n1/Execute.java\n/_pure/plan/root/n1/Execute.java"),
 
                 // Map
