@@ -309,23 +309,50 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
                 createSchema = translateCreateSchemaStatementForOracle_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
                 dropSchema =  translateDropSchemaStatementForOracle_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
                 createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
-                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementForOracle_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::translateCreateSchemaStatementForOracle(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
 {
-   if ($createSchemaSQL.schema.name == 'default', 
-    | [], 
-    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
+    // Oracle doesn't really have schema's
+    'BEGIN\n' +
+    '   NULL;\n' +
+    'END;'
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::translateDropSchemaStatementForOracle(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
 {
-  if ($dropSchemaSQL.schema.name == 'default', 
-    |  [], 
-    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
+     // Oracle doesn't really have schema's
+     // Could use this to drop a user but doesn't seem like the right equivalence
+     //  if ($dropSchemaSQL.schema.name == 'default',
+     //    |  [],
+     //    | 'BEGIN\n' +
+     //      '    EXECUTE IMMEDIATE \'DROP USER ' + $dropSchemaSQL.schema.name + ' CASCADE\';\n' +
+     //      'EXCEPTION\n' +
+     //      '   WHEN OTHERS THEN\n' +
+     //      '         IF SQLCODE != -1918 THEN\n' +
+     //      '            RAISE;\n' +
+     //      '         END IF;\n' +
+     //      'END;')
+     'BEGIN\n' +
+     '   NULL;\n' +
+     'END;'
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::translateDropTableStatementForOracle(dropTableSQL:DropTableSQL[1], dbConfig: DbConfig[1]) : String[1]
+{
+    let t= $dropTableSQL.table;
+    'BEGIN\n' +
+    '    EXECUTE IMMEDIATE \'DROP TABLE ' + if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name + '\';\n' +
+    'EXCEPTION\n' +
+    '   WHEN OTHERS THEN\n' +
+    '         IF SQLCODE != -942 THEN\n' +
+    '            RAISE;\n' +
+    '         END IF;\n' +
+    'END;';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::regexpMatchOracle(query: String[1]): String[1]
