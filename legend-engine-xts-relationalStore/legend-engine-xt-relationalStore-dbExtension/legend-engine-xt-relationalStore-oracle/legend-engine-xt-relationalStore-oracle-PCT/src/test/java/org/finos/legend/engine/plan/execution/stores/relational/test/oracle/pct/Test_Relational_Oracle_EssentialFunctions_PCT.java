@@ -310,10 +310,7 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid input syntax for type numeric: \"3.14159d\""),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\""),
-
-            // ParseInteger
-            one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: value \"9999999999999992\" is out of range for type integer")
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"")
     );
 
     public static Test suite()

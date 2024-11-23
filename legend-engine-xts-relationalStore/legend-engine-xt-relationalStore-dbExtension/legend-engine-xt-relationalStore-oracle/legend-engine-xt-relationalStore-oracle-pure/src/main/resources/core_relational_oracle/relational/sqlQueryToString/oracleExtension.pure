@@ -29,6 +29,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForOracle_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForOracle_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierForOracle_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForOracle()
@@ -157,8 +158,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
-      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_->literalTransform())),
-      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',      transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
       pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
@@ -171,13 +170,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', '')->removeQuotesIfExist(), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net,
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForOracle($p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
-    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='date_part(\'day\', %s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='extract(day from %s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='date_part(\'doy\', %s)')),
@@ -194,7 +193,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
-    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
@@ -290,7 +289,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
-  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if($s.data == [],|' ' + $format.separator + 'from dual',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
@@ -308,7 +307,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   ^RelationalDDLCommandsTranslator(
                 createSchema = translateCreateSchemaStatementForOracle_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
                 dropSchema =  translateDropSchemaStatementForOracle_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
-                createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                createTable =  translateCreateTableStatementForOracle_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementForOracle_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
@@ -353,6 +352,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     '            RAISE;\n' +
     '         END IF;\n' +
     'END;';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::columnNameToIdentifierForOracle(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if(
+    $dbConfig.isDbReservedIdentifier($columnName->toLower()) || $columnName->startsWith('_'),
+    |'"' + $columnName + '"',
+    |$columnName
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::oracle::translateCreateTableStatementForOracle(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t= $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextDefault($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' ))
+                    + if ($t.primaryKey->isEmpty() || $applyConstraints == false || !$c->in($t.primaryKey), | '', | ' PRIMARY KEY')
+         )
+        ->joinStrings(',')
+      +');';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::regexpMatchOracle(query: String[1]): String[1]
