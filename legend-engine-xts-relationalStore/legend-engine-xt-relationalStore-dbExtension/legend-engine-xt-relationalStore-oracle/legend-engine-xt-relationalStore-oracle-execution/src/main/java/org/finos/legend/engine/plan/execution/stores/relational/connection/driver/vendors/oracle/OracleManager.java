@@ -41,7 +41,7 @@ public class OracleManager extends DatabaseManager
             additionalProperties = "?user=" + SubjectTools.getCurrentPrincipal().getName();
         }
 
-        return "jdbc:oracle:thin:@" + host + ":" + port + ":" + databaseName + additionalProperties;
+        return "jdbc:oracle:thin:@" + host + ":" + port + "/" + databaseName + additionalProperties;
     }
 
     @Override
