@@ -43,8 +43,14 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
         return DatabaseType.Oracle;
     }
 
+    private static final String USERNAME = "system";
+    private static final String PASSWORD = "testPassword";
 
-    public OracleContainer oracleContainer = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim-faststart"));
+
+    public OracleContainer oracleContainer = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim-faststart"))
+            .withDatabaseName("TESTDB")
+            //.withUsername(USERNAME)
+            .withPassword(PASSWORD);
 
     private VaultImplementation vaultImplementation;
 
@@ -66,7 +72,7 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
         StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
         staticDatasourceSpecification.host = this.oracleContainer.getHost();
         staticDatasourceSpecification.port = this.oracleContainer.getOraclePort();
-        staticDatasourceSpecification.databaseName = "test";
+        staticDatasourceSpecification.databaseName = this.oracleContainer.getDatabaseName();
 
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "oracle.";
@@ -92,7 +98,6 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
         System.out.println("Starting setup of dynamic connection for database: Oracle ");
 
         long start = System.currentTimeMillis();
-        this.oracleContainer.withUsername("test").withPassword("test");
         this.oracleContainer.start();
         String containerHost = this.oracleContainer.getHost();
         int containerPort = this.oracleContainer.getOraclePort();
@@ -104,8 +109,8 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
     private void registerVault()
     {
         Properties properties = new Properties();
-        properties.put("oracle.user", "test");
-        properties.put("oracle.password", "test");
+        properties.put("oracle.user", USERNAME);
+        properties.put("oracle.password", PASSWORD);
         this.vaultImplementation = new PropertiesVaultImplementation(properties);
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }

@@ -23,6 +23,7 @@ import org.finos.legend.engine.authentication.flows.BigQueryWithGCPWorkloadIdent
 import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.MemSQLStaticWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.OracleStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
 import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
@@ -60,7 +61,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new RedshiftWithUserPasswordFlow(),
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow()
+                new TrinoWithUserPasswordFlow(),
+                new OracleStaticWithUserPasswordFlow()
         ).withAll(
                 databaseAuthenticationFlowProviderConfiguration != null ?
                         Lists.mutable.of(
