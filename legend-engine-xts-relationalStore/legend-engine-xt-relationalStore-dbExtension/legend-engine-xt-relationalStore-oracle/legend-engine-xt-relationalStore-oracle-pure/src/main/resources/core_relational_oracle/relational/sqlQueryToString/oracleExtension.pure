@@ -173,6 +173,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='power(%s,1/3)')),
+    dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForOracle($p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
@@ -194,9 +196,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),
-    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='instr(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
-    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchOracle('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
@@ -212,7 +214,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) >= 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentOracle('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
-    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='encode(digest(%s, \'sha1\'), \'hex\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='encode(digest(%s, \'sha256\'), \'hex\')')),
@@ -238,7 +240,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   let dbSpecificUnits = [
 
      { | format('(%s)', [
-        'DATE_PART(\'year\', %s) - DATE_PART(\'year\', %s)'
+        'months_between(%s, %s) /12'
      ])},
      {| format('(%s * 12 + (%s))', [
         generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.YEARS->toString()]),
@@ -248,7 +250,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
         'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
      ])},
      {| format('(%s)', [
-        'DATE_PART(\'day\', %s - %s)'
+        'TO_DATE(%s, \'YYYY-MM-DD\') -  TO_DATE(%s, \'YYYY-MM-DD\')'
      ])},
      {| format('(%s * 24 + (%s))', [
         generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
@@ -273,7 +275,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processJoinStringsOperationForOracle(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('Text\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings(if('Text\'\'' == $sep, |' || ', |' || ' + $sep + ' || '))});
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processSelectSQLQueryForOracle(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
