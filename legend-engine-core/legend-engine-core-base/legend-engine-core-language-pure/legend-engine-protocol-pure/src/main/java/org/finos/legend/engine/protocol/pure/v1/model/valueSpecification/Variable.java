@@ -73,7 +73,7 @@ public class Variable extends ValueSpecification
             Variable variable = new Variable();
             variable.name = node.get("name").asText();
 
-            // Backward compatibility -------------------------------------------------------------------
+            // Backward compatibility - old protocol -------------------------------------------------------------------
             if (node.get("class") != null)
             {
                 String _class = node.get("class").asText();
@@ -85,11 +85,24 @@ public class Variable extends ValueSpecification
                 }
                 variable.genericType = genericType;
             }
-            // Backward compatibility -------------------------------------------------------------------
+            // Backward compatibility - old protocol -------------------------------------------------------------------
 
             else if (node.get("genericType") != null)
             {
                 variable.genericType = om.treeToValue(node.get("genericType"), GenericType.class);
+
+                // Backward compatibility - old grammar -------------------------------------------------------------------
+                if (variable.genericType.rawType instanceof PackageableType)
+                {
+                    String _class = ((PackageableType) variable.genericType.rawType).fullPath;
+                    if (("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class)) && variable.genericType.typeArguments.size() == 0)
+                    {
+                        variable.genericType.typeArguments = Lists.mutable.of(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
+                        variable.genericType.multiplicityArguments = Lists.mutable.of(Multiplicity.PURE_MANY);
+                    }
+                }
+                // Backward compatibility - old grammar -------------------------------------------------------------------
+
             }
             if (node.get("multiplicity") != null)
             {

@@ -512,7 +512,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
-    public void testNewConstructorWithTypeArgumentsIsBackwardCompatible() throws JsonProcessingException
+    public void testTypeArgumentsAreBackwardCompatibleForOldProtocolMissingIt() throws JsonProcessingException
     {
         testComposedGrammar("{\n" +
                 "  \"_type\": \"data\",\n" +
@@ -603,27 +603,86 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "      \"stereotypes\": [],\n" +
                 "      \"taggedValues\": [],\n" +
                 "      \"tests\": []\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"_type\": \"sectionIndex\",\n" +
-                "      \"name\": \"SectionIndex\",\n" +
-                "      \"package\": \"__internal__\",\n" +
-                "      \"sections\": [\n" +
-                "        {\n" +
-                "          \"_type\": \"importAware\",\n" +
-                "          \"elements\": [\n" +
-                "            \"test::new__Any_1_\"\n" +
-                "          ],\n" +
-                "          \"imports\": [],\n" +
-                "          \"parserName\": \"Pure\"\n" +
-                "        }\n" +
-                "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}",
                 "function test::new(): Any[1]\n" +
                         "{\n" +
                         "  ^BasicColumnSpecification<TDSRow>(func=r: TDSRow[1]|1)\n" +
+                        "}\n");
+
+        testComposedGrammar("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"integer\",\n" +
+                        "          \"value\": 1\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"new_Result_1__Any_1_\",\n" +
+                        "      \"package\": \"test\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        // ---------- old variable type inside class property
+                        "          \"class\": \"Result\",\n" +
+                        // ---------- old variable type inside class property
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"name\": \"res\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnGenericType\": {\n" +
+                        "        \"multiplicityArguments\": [],\n" +
+                        "        \"rawType\": {\n" +
+                        "          \"_type\": \"packageableType\",\n" +
+                        "          \"fullPath\": \"Any\"\n" +
+                        "        },\n" +
+                        "        \"typeArguments\": [],\n" +
+                        "        \"typeVariableValues\": []\n" +
+                        "      },\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 1,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": [],\n" +
+                        "      \"tests\": []\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+                        "{\n" +
+                        "  1\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testTypeArgumentsAreBackwardCompatibleForOldGrammarMissingIt() throws JsonProcessingException
+    {
+        testFormat("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^BasicColumnSpecification<TDSRow>(func=r: TDSRow[1]|1)\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^BasicColumnSpecification(func=r: TDSRow[1]|1)\n" +
+                        "}\n");
+
+        testFormat("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+                        "{\n" +
+                        "  1\n" +
+                        "}\n",
+                "function test::new(res: Result[1]): Any[1]\n" +
+                        "{\n" +
+                        "  1\n" +
                         "}\n");
     }
 

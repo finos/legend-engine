@@ -152,6 +152,10 @@ public class TestGrammarRoundtrip
             {
                 parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));
             }
+
+            // run json deserializer to apply protocol updates (migrate from old to new)...
+            parsedModel = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().convertValue(parsedModel, PureModelContextData.class);
+
             String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
             Assert.assertEquals(code, formatted);
             // NOTE: do not remove the round-trip test for formatted code as this is a very good way to ensure that grammar <-> >protocol is bijective

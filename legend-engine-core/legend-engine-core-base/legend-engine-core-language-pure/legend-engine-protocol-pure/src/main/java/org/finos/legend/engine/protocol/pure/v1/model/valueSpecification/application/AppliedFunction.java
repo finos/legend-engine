@@ -54,42 +54,58 @@ public class AppliedFunction extends AbstractAppliedFunction
         @Override
         public AppliedFunction convert(AppliedFunction appliedFunction)
         {
+            // Backward compatibility -------------------------------------------------------------------
             if (appliedFunction.function.equals("new"))
             {
+                PackageableElementPtr type;
+                // Backward compatibility - old protocol -------------------------------------------------------------------
                 if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
                 {
-                    PackageableElementPtr type = (PackageableElementPtr) appliedFunction.parameters.get(0);
-                    // Backward compatibility -------------------------------------------------------------------
-                    Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                            "meta::pure::tds::BasicColumnSpecification",
-                            "BasicColumnSpecification",
-                            "meta::pure::tds::TdsOlapRank",
-                            "TdsOlapRank"
-                    );
-                    if (classesThatNeedTypeFixing.contains(type.fullPath))
+                    type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+                }
+                else
+                {
+                    GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
+                    // Backward compatibility - old grammar -------------------------------------------------------------------
+                    if (typeInstance.genericType.typeArguments.size() == 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
                     {
-                        Collection collection = (Collection) appliedFunction.parameters.get(2);
-                        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                                .map(KeyExpression.class::cast)
-                                .map(x -> x.expression)
-                                .filter(Lambda.class::isInstance)
-                                .map(Lambda.class::cast)
-                                .filter(x -> x.parameters.size() == 1);
-
-                        if (func.isPresent())
-                        {
-                            Lambda l = func.get();
-
-                            PackageableType rawType = new PackageableType(type.fullPath);
-                            rawType.sourceInformation = type.sourceInformation;
-                            List<GenericType> classType = Lists.mutable.of(new GenericType(rawType, Lists.mutable.with(l.parameters.get(0).genericType)));
-                            GenericTypeInstance generic = new GenericTypeInstance(new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), classType));
-                            appliedFunction.parameters.set(0, generic);
-                        }
+                        type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
                     }
-                    // Backward compatibility -------------------------------------------------------------------
+                    else
+                    {
+                        return appliedFunction;
+                    }
+                }
+
+                Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
+                        "meta::pure::tds::BasicColumnSpecification",
+                        "BasicColumnSpecification",
+                        "meta::pure::tds::TdsOlapRank",
+                        "TdsOlapRank"
+                );
+                if (classesThatNeedTypeFixing.contains(type.fullPath))
+                {
+                    Collection collection = (Collection) appliedFunction.parameters.get(2);
+                    Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                            .map(KeyExpression.class::cast)
+                            .map(x -> x.expression)
+                            .filter(Lambda.class::isInstance)
+                            .map(Lambda.class::cast)
+                            .filter(x -> x.parameters.size() == 1);
+
+                    if (func.isPresent())
+                    {
+                        Lambda l = func.get();
+
+                        PackageableType rawType = new PackageableType(type.fullPath);
+                        rawType.sourceInformation = type.sourceInformation;
+                        List<GenericType> classType = Lists.mutable.of(new GenericType(rawType, Lists.mutable.with(l.parameters.get(0).genericType)));
+                        GenericTypeInstance generic = new GenericTypeInstance(new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), classType));
+                        appliedFunction.parameters.set(0, generic);
+                    }
                 }
             }
+            // Backward compatibility -------------------------------------------------------------------
             return appliedFunction;
         }
     }
