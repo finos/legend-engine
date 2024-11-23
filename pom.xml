@@ -103,6 +103,7 @@
         <!-- Application -->
         <module>legend-engine-application-query</module>
         <module>legend-engine-xts-identity</module>
+        <module>legend-engine-xts-ingest</module>
     </modules>
 
     <properties>
