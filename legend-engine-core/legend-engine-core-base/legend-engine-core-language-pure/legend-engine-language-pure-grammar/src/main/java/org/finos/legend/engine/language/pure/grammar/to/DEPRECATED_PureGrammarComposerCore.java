@@ -782,7 +782,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("cast".equals(function))
         {
-            return possiblyAddParenthesis(parameters.get(0), this) + "->cast(@" + parameters.get(1).accept(this) + ")";
+            return possiblyAddParenthesis(parameters.get(0), this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
         }
         else if ("subType".equals(function))
         {
