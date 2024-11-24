@@ -92,7 +92,7 @@ public class Variable extends ValueSpecification
                 variable.genericType = om.treeToValue(node.get("genericType"), GenericType.class);
 
                 // Backward compatibility - old grammar -------------------------------------------------------------------
-                if (variable.genericType.rawType instanceof PackageableType)
+                if (variable.genericType != null && variable.genericType.rawType instanceof PackageableType)
                 {
                     String _class = ((PackageableType) variable.genericType.rawType).fullPath;
                     if (("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class)) && variable.genericType.typeArguments.size() == 0)
