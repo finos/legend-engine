@@ -96,6 +96,7 @@ Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::
    type : String[1];
    timeZone : String[0..1];
    quoteIdentifiers : Boolean[0..1];
+   queryTimeOutInSeconds: Integer[0..1];
    postProcessorWithParameter:	meta::protocols::pure::v1_33_0::metamodel::store::relational::PostProcessorWithParameter[*];
 }
 
