@@ -77,13 +77,7 @@ public class Variable extends ValueSpecification
             if (node.get("class") != null)
             {
                 String _class = node.get("class").asText();
-                GenericType genericType = new GenericType(new PackageableType(_class));
-                if ("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class))
-                {
-                    genericType.typeArguments = Lists.mutable.of(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
-                    genericType.multiplicityArguments = Lists.mutable.of(Multiplicity.PURE_MANY);
-                }
-                variable.genericType = genericType;
+                variable.genericType = new GenericType(new PackageableType(_class));
             }
             // Backward compatibility - old protocol -------------------------------------------------------------------
 

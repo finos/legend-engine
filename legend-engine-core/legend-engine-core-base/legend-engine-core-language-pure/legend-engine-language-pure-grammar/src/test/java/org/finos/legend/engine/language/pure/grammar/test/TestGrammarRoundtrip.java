@@ -120,17 +120,12 @@ public class TestGrammarRoundtrip
 
         public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, false, false);
+            testFormat(code, unformattedCode, false);
         }
 
         public static void testFormat(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, true, false);
-        }
-
-        public static void testConvert(String code, String unformattedCode)
-        {
-            testFormat(code, unformattedCode, true, true);
+            testFormat(code, unformattedCode, true);
         }
 
         /**
@@ -148,7 +143,7 @@ public class TestGrammarRoundtrip
          * ...
          * // end of example
          */
-        private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex, boolean withConvert)
+        private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex)
         {
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
             // NOTE: no need to get source information
@@ -156,12 +151,6 @@ public class TestGrammarRoundtrip
             if (omitSectionIndex)
             {
                 parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));
-            }
-
-            if (withConvert)
-            {
-                // run json deserializer to apply protocol updates (migrate from old to new)...
-                parsedModel = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolConverterSupports().convertValue(parsedModel, PureModelContextData.class);
             }
 
             String formatted = grammarTransformer.renderPureModelContextData(parsedModel);

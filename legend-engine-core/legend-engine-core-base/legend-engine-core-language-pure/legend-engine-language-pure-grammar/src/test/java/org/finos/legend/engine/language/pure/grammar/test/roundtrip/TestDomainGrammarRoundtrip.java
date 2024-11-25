@@ -527,7 +527,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "            {\n" +
                 // ---------- type to construct, no type arguments
                 "              \"_type\": \"packageableElementPtr\",\n" +
-                "              \"fullPath\": \"BasicColumnSpecification\"\n" +
+                "              \"fullPath\": \"TdsOlapRank\"\n" +
                 // ---------- type to construct, no type arguments
                 "            },\n" +
                 "            {\n" +
@@ -608,7 +608,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}",
                 "function test::new(): Any[1]\n" +
                         "{\n" +
-                        "  ^BasicColumnSpecification<TDSRow>(func=r: TDSRow[1]|1)\n" +
+                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
                         "}\n");
 
         testComposedGrammar("{\n" +
@@ -667,58 +667,58 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testConvertBasicColumnSpecification()
     {
-        testConvert("function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello')\n" +
-                        "}\n",
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello')\n" +
+                    "}\n",
                 "function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  ^BasicColumnSpecification(func=r: TDSRow[1]|1, name='hello')\n" +
-                        "}\n");
+                    "{\n" +
+                    "  ^BasicColumnSpecification(func=r: TDSRow[1]|1, name='hello')\n" +
+                    "}\n");
 
-        testConvert("function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello', 'documentation here')\n" +
-                        "}\n",
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello', 'documentation here')\n" +
+                    "}\n",
                 "function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  ^meta::pure::tds::BasicColumnSpecification(documentation='documentation here', func=r: TDSRow[1]|1, name='hello')\n" +
-                        "}\n");
+                    "{\n" +
+                    "  ^meta::pure::tds::BasicColumnSpecification(documentation='documentation here', func=r: TDSRow[1]|1, name='hello')\n" +
+                    "}\n");
     }
 
     @Test
     public void testConvertTdsOlapRank()
     {
-        testConvert("function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
-                        "}\n",
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                    "}\n",
                 "function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  ^meta::pure::tds::TdsOlapRank(func=r: TDSRow[1]|1)\n" +
-                        "}\n");
+                    "{\n" +
+                    "  ^meta::pure::tds::TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                    "}\n");
 
-        testConvert("function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
-                        "}\n",
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                    "}\n",
                 "function test::new(): Any[1]\n" +
-                        "{\n" +
-                        "  ^TdsOlapRank(func=r: TDSRow[1]|1)\n" +
-                        "}\n");
+                    "{\n" +
+                    "  ^TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                    "}\n");
     }
 
     @Test
     public void testConvertResult()
     {
-        testConvert("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
-                        "{\n" +
-                        "  1\n" +
-                        "}\n",
+        testFormat("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+                    "{\n" +
+                    "  1\n" +
+                    "}\n",
                 "function test::new(res: Result[1]): Any[1]\n" +
-                        "{\n" +
-                        "  1\n" +
-                        "}\n");
+                    "{\n" +
+                    "  1\n" +
+                    "}\n");
     }
 
     @Test

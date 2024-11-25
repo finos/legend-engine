@@ -183,24 +183,22 @@ public class PureProtocolObjectMapperFactory
 
     public static ObjectMapper withPureProtocolConverter(ObjectMapper objectMapper)
     {
-        ObjectMapper withPureProtocolExtensions = withPureProtocolExtensions(objectMapper);
-
         List<ProtocolConverter<?>> protocolConverters = PureProtocolExtensionLoader.extensions().stream()
-                .map(PureProtocolExtension::getConverterDeserializers)
+                .map(PureProtocolExtension::getProtocolConverters)
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
         FastListMultimap<JavaType, ProtocolConverter<?>> converterByType = ListIterate.groupBy(protocolConverters, x -> x.getInputType(TypeFactory.defaultInstance()));
 
-        DeserializationConfig deserializationConfig = withPureProtocolExtensions
+        DeserializationConfig deserializationConfig = objectMapper
                 .getDeserializationConfig()
                 .with(new ConverterHandlerInstantiator(converterByType));
 
         SimpleModule module = new SimpleModule("protocol converters");
         module.setDeserializerModifier(new ConverterBeanDeserializerModifier(converterByType));
 
-        return withPureProtocolExtensions.setConfig(deserializationConfig).registerModule(module);
+        return objectMapper.setConfig(deserializationConfig).registerModule(module);
     }
 
     private static class ConverterHandlerInstantiator extends HandlerInstantiator

@@ -48,7 +48,7 @@ public interface PureProtocolExtension extends LegendLanguageExtension
         return Maps.mutable.empty();
     }
 
-    default List<ProtocolConverter<?>> getConverterDeserializers()
+    default List<ProtocolConverter<?>> getProtocolConverters()
     {
         return Lists.fixedSize.empty();
     }
