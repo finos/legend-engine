@@ -665,18 +665,53 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
-    public void testTypeArgumentsAreBackwardCompatibleForOldGrammarMissingIt() throws JsonProcessingException
+    public void testConvertBasicColumnSpecification()
     {
-        testFormat("function test::new(): Any[1]\n" +
+        testConvert("function test::new(): Any[1]\n" +
                         "{\n" +
-                        "  ^BasicColumnSpecification<TDSRow>(func=r: TDSRow[1]|1)\n" +
+                        "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello')\n" +
                         "}\n",
                 "function test::new(): Any[1]\n" +
                         "{\n" +
-                        "  ^BasicColumnSpecification(func=r: TDSRow[1]|1)\n" +
+                        "  ^BasicColumnSpecification(func=r: TDSRow[1]|1, name='hello')\n" +
                         "}\n");
 
-        testFormat("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+        testConvert("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello', 'documentation here')\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^meta::pure::tds::BasicColumnSpecification(documentation='documentation here', func=r: TDSRow[1]|1, name='hello')\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testConvertTdsOlapRank()
+    {
+        testConvert("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^meta::pure::tds::TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                        "}\n");
+
+        testConvert("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testConvertResult()
+    {
+        testConvert("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
                         "{\n" +
                         "  1\n" +
                         "}\n",

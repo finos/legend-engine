@@ -46,4 +46,9 @@ public class ObjectMapperFactory
     {
         return withStandardConfigurations(PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper()));
     }
+
+    public static ObjectMapper getNewStandardObjectMapperWithPureProtocolConverterSupports()
+    {
+        return withStandardConfigurations(PureProtocolObjectMapperFactory.withPureProtocolConverter(new ObjectMapper()));
+    }
 }

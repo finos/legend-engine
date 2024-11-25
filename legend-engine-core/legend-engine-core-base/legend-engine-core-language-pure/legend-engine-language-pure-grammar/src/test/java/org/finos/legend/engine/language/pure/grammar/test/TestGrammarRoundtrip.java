@@ -120,12 +120,17 @@ public class TestGrammarRoundtrip
 
         public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, false);
+            testFormat(code, unformattedCode, false, false);
         }
 
         public static void testFormat(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, true);
+            testFormat(code, unformattedCode, true, false);
+        }
+
+        public static void testConvert(String code, String unformattedCode)
+        {
+            testFormat(code, unformattedCode, true, true);
         }
 
         /**
@@ -143,7 +148,7 @@ public class TestGrammarRoundtrip
          * ...
          * // end of example
          */
-        private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex)
+        private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex, boolean withConvert)
         {
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
             // NOTE: no need to get source information
@@ -153,8 +158,11 @@ public class TestGrammarRoundtrip
                 parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));
             }
 
-            // run json deserializer to apply protocol updates (migrate from old to new)...
-            parsedModel = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().convertValue(parsedModel, PureModelContextData.class);
+            if (withConvert)
+            {
+                // run json deserializer to apply protocol updates (migrate from old to new)...
+                parsedModel = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolConverterSupports().convertValue(parsedModel, PureModelContextData.class);
+            }
 
             String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
             Assert.assertEquals(code, formatted);

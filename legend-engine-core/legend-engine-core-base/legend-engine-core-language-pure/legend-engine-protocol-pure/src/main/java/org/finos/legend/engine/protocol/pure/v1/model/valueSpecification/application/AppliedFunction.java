@@ -16,9 +16,12 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applic
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.set.FixedSizeSet;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
@@ -30,11 +33,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @JsonDeserialize(converter = AppliedFunction.AppliedFunctionConverter.class)
 public class AppliedFunction extends AbstractAppliedFunction
@@ -54,58 +52,42 @@ public class AppliedFunction extends AbstractAppliedFunction
         @Override
         public AppliedFunction convert(AppliedFunction appliedFunction)
         {
-            // Backward compatibility -------------------------------------------------------------------
             if (appliedFunction.function.equals("new"))
             {
-                PackageableElementPtr type;
                 // Backward compatibility - old protocol -------------------------------------------------------------------
                 if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
                 {
-                    type = (PackageableElementPtr) appliedFunction.parameters.get(0);
-                }
-                else
-                {
-                    GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
-                    // Backward compatibility - old grammar -------------------------------------------------------------------
-                    if (typeInstance.genericType.typeArguments.size() == 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
-                    {
-                        type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
-                    }
-                    else
-                    {
-                        return appliedFunction;
-                    }
-                }
+                    PackageableElementPtr packageableElementPtr = (PackageableElementPtr) appliedFunction.parameters.get(0);
 
-                Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                        "meta::pure::tds::BasicColumnSpecification",
-                        "BasicColumnSpecification",
-                        "meta::pure::tds::TdsOlapRank",
-                        "TdsOlapRank"
-                );
-                if (classesThatNeedTypeFixing.contains(type.fullPath))
-                {
-                    Collection collection = (Collection) appliedFunction.parameters.get(2);
-                    Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                            .map(KeyExpression.class::cast)
-                            .map(x -> x.expression)
-                            .filter(Lambda.class::isInstance)
-                            .map(Lambda.class::cast)
-                            .filter(x -> x.parameters.size() == 1);
-
-                    if (func.isPresent())
+                    Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
+                            "meta::pure::tds::BasicColumnSpecification",
+                            "BasicColumnSpecification",
+                            "meta::pure::tds::TdsOlapRank",
+                            "TdsOlapRank"
+                    );
+                    if (classesThatNeedTypeFixing.contains(packageableElementPtr.fullPath))
                     {
-                        Lambda l = func.get();
+                        Collection collection = (Collection) appliedFunction.parameters.get(2);
+                        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                                .map(KeyExpression.class::cast)
+                                .map(x -> x.expression)
+                                .filter(Lambda.class::isInstance)
+                                .map(Lambda.class::cast)
+                                .filter(x -> x.parameters.size() == 1);
 
-                        PackageableType rawType = new PackageableType(type.fullPath);
-                        rawType.sourceInformation = type.sourceInformation;
-                        List<GenericType> classType = Lists.mutable.of(new GenericType(rawType, Lists.mutable.with(l.parameters.get(0).genericType)));
-                        GenericTypeInstance generic = new GenericTypeInstance(new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), classType));
-                        appliedFunction.parameters.set(0, generic);
+                        if (func.isPresent())
+                        {
+                            Lambda l = func.get();
+                            PackageableType rawType = new PackageableType(packageableElementPtr.fullPath);
+                            rawType.sourceInformation = packageableElementPtr.sourceInformation;
+                            List<GenericType> classType = Lists.mutable.of(new GenericType(rawType, Lists.mutable.with(l.parameters.get(0).genericType)));
+                            GenericTypeInstance generic = new GenericTypeInstance(new GenericType(new PackageableType("meta::pure::metamodel::type::Class"), classType));
+                            appliedFunction.parameters.set(0, generic);
+                        }
                     }
                 }
+                // Backward compatibility -------------------------------------------------------------------
             }
-            // Backward compatibility -------------------------------------------------------------------
             return appliedFunction;
         }
     }
