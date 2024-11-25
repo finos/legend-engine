@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.67.1-SNAPSHOT</version>
+    <version>4.67.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -103,6 +103,7 @@
         <!-- Application -->
         <module>legend-engine-application-query</module>
         <module>legend-engine-xts-identity</module>
+        <module>legend-engine-xts-ingest</module>
     </modules>
 
     <properties>

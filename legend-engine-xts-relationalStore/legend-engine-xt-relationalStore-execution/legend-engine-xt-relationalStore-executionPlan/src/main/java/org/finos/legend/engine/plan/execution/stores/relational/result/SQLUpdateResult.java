@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -32,9 +33,9 @@ public class SQLUpdateResult extends SQLResult
 
     private final int updateCount;
 
-    public SQLUpdateResult(List<ExecutionActivity> activities, String databaseType, Connection connection, Identity identity, List<String> temporaryTables, RequestContext requestContext)
+    public SQLUpdateResult(List<ExecutionActivity> activities, String databaseType, Connection connection, DatabaseConnection protocolConnection, Identity identity, List<String> temporaryTables, RequestContext requestContext)
     {
-        super("success", connection, activities, databaseType, temporaryTables, requestContext);
+        super("success", connection, protocolConnection, activities, databaseType, temporaryTables, requestContext);
         try
         {
             long start = System.currentTimeMillis();

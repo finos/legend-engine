@@ -1,0 +1,12 @@
+{
+  "name": "core_ingest",
+  "pattern": "(meta::external::ingest)(::.*)?",
+  "dependencies": [
+    "core",
+    "platform",
+    "platform_dsl_store",
+    "platform_store_relational",
+    "core_functions_json",
+    "core_relational"
+  ]
+}
