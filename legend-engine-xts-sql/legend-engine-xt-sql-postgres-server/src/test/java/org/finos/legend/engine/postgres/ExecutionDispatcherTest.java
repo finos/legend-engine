@@ -44,6 +44,12 @@ public class ExecutionDispatcherTest
     }
 
     @Test
+    public void testSelectPgType()
+    {
+        assertMetadataSessionHandler("SELECT oid, typbasetype FROM pg_type");
+    }
+
+    @Test
     public void testSelectPgCatalog()
     {
         assertMetadataSessionHandler("SELECT * FROM pg_catalog.schemata");

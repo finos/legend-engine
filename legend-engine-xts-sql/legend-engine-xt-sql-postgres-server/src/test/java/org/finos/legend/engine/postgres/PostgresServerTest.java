@@ -21,6 +21,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
@@ -469,6 +470,25 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testPgType() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT oid, typbasetype FROM pg_type");
+                ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(24, rows);
         }
     }
 

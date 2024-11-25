@@ -21,7 +21,8 @@ public enum SystemSchemas
 {
 
     INFORMATION_SCHEMA("information_schema"),
-    PG_CATALOG("pg_catalog");
+    PG_CATALOG("pg_catalog"),
+    PG_TYPE("pg_type");
 
     private final String schemaName;
 
