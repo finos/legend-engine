@@ -246,6 +246,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                                 context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
                                         context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n"
                         )) +
+                        (relationalDatabaseConnection.queryTimeOutInSeconds != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "queryTimeOutInSeconds: " + String.valueOf(relationalDatabaseConnection.queryTimeOutInSeconds) + ";\n") : "") +
                         (postProcessors != null
                                 ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
                                 : "") +

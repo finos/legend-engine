@@ -61,6 +61,9 @@ public class RelationalDatabaseConnectionParseTreeWalker
         {
             throw new EngineException("Unknown database type '" + PureGrammarParserUtility.fromIdentifier(dbTypeCtx.identifier()) + "'", this.walkerSourceInformation.getSourceInformation(dbTypeCtx), EngineErrorType.PARSER);
         }
+        //queryTimeoutInSeconds (optional)
+        RelationalDatabaseConnectionParserGrammar.QueryTimeOutInSecondsContext queryTimeOutInSecondsCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.queryTimeOutInSeconds(), "queryTimeOutInSeconds", connectionValue.sourceInformation);
+        connectionValue.queryTimeOutInSeconds = queryTimeOutInSecondsCtx != null ? Integer.parseInt(queryTimeOutInSecondsCtx.INTEGER().getText()) : null;
         // timezone (optional)
         RelationalDatabaseConnectionParserGrammar.DbConnectionTimezoneContext timezoneCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbConnectionTimezone(), "timezone", connectionValue.sourceInformation);
         connectionValue.timeZone = timezoneCtx != null ? timezoneCtx.TIMEZONE().getText() : null;

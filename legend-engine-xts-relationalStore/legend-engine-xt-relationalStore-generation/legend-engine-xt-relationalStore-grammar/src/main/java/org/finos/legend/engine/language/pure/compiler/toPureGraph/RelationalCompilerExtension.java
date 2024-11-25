@@ -451,7 +451,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
                         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
-                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
+                        HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.queryTimeOutInSeconds, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
 

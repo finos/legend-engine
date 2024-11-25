@@ -43,6 +43,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             type = $type,
             timeZone = $test.timeZone,
             quoteIdentifiers = $test.quoteIdentifiers,
+            queryTimeOutInSeconds = $test.queryTimeOutInSeconds,
             element = $element,
             datasourceSpecification = ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification(
               _type = 'h2Local',
@@ -56,12 +57,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
          ),
       relational:meta::external::store::relational::runtime::RelationalDatabaseConnection[1] |
          let processors = transformPostProcessors($relational.postProcessors, $extensions);
-         relational($type, $element, $relational.timeZone, $relational.quoteIdentifiers, $processors, $relational.datasourceSpecification, $relational.authenticationStrategy, $extensions);,
+         relational($type, $element, $relational.timeZone, $relational.quoteIdentifiers, $relational.queryTimeOutInSeconds, $processors, $relational.datasourceSpecification, $relational.authenticationStrategy, $extensions);,
       dbCon:meta::external::store::relational::runtime::DatabaseConnection[1]|
          ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection(
                   _type = $_type,
                   timeZone = $dbCon.timeZone,
                   quoteIdentifiers = $dbCon.quoteIdentifiers,
+                  queryTimeOutInSeconds = $dbCon.queryTimeOutInSeconds,
                   element = $element,
                   postProcessorWithParameter = $postProcessorsWithParams,
                   type = $type)
@@ -101,7 +103,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
                 )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::relational(type:String[1], element:String[1], timeZone:String[0..1], quoteIdentifiers:Boolean[0..1],
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::relational(type:String[1], element:String[1], timeZone:String[0..1], quoteIdentifiers:Boolean[0..1], queryTimeOutInSeconds: Integer[0..1],
                                                                                               processors:meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor[*],
                                                                                               spec:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1],
                                                                                               auth:meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1],
@@ -111,6 +113,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
       _type = 'RelationalDatabaseConnection',
       timeZone = $timeZone,
       quoteIdentifiers = $quoteIdentifiers,
+      queryTimeOutInSeconds = $queryTimeOutInSeconds,
       element = $element,
       type = $type,
       datasourceSpecification = $spec->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatasourceSpecification($extensions),
