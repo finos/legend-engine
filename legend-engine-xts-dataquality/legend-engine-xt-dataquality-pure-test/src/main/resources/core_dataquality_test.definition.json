@@ -4,6 +4,7 @@
   "dependencies": [
     "core",
     "core_relational",
+    "core_functions_relation",
     "core_data_space_metamodel",
     "core_functions_unclassified",
     "platform",

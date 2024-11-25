@@ -1,3 +1,4 @@
+import meta::pure::metamodel::relation::*;
 import meta::pure::graphFetch::*;
 import meta::pure::extension::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -24,6 +25,18 @@ function meta::external::dataquality::tests::loadDataQuality(tree:String[1]):Dat
   $compiled->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::Validation')->toOne()->cast(@DataQuality<Any>);
 }
 
+function meta::external::dataquality::tests::loadDataQualityRelationValidation(dq:String[1]):DataQualityRelationValidation[1]
+{
+  let model = readFile('/core_dataquality_test/dataquality_test_model.pure')->toOne();
+  let extra = readFile('/core_dataquality_test/dataquality_test_model_legend.txt')->toOne();
+
+  let code = $model + '\n' + $extra + '\n' + $dq;
+
+  let compiled = meta::legend::compileLegendGrammar($code);
+
+  $compiled->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::RelationValidation')->toOne()->cast(@DataQualityRelationValidation);
+}
+
 function meta::external::dataquality::tests::doTest(tree:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
 {
   let dataQuality = loadDataQuality($tree);
@@ -41,6 +54,15 @@ function meta::external::dataquality::tests::doTest(tree:String[1], expected:Fun
 
   if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
   if ($assertJson, | assertLambdaJSONEquals($expected, $actual), | true);
+}
+
+function meta::external::dataquality::tests::doRelationTest(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName);
+  
+  assertRelationLambdaEquals($expected, $actual);
 }
 
 
@@ -63,7 +85,15 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
                                   ]
                             )
             );
+  assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
+}
 
+function meta::external::dataquality::tests::assertRelationLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  let config = ^meta::pure::metamodel::serialization::grammar::Configuration
+            (
+              fullPath = false
+            );
   assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
 }
 
