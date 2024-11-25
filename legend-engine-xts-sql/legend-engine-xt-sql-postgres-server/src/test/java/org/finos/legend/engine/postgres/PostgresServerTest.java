@@ -43,6 +43,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class PostgresServerTest
@@ -356,6 +357,9 @@ public class PostgresServerTest
         }
     }
 
+    /**
+     * This query format is used by the postgres jdbc driver
+     */
     @Test
     public void testShowTxn() throws SQLException
     {
@@ -372,6 +376,39 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(1, rows);
+        }
+    }
+
+    /**
+     * This query format is used by the postgres odbc driver
+     */
+    @Test
+    public void testShowTxnOdbc() throws SQLException
+    {
+        String sql = "SHOW transaction_isolation";
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                ResultSet psResultSet = preparedStatement.executeQuery();
+                Statement statement = connection.createStatement()
+        )
+        {
+            int psRows = 0;
+            while (psResultSet.next())
+            {
+                psRows++;
+            }
+            Assert.assertEquals(1, psRows);
+
+            Assert.assertTrue(statement.execute(sql));
+            ResultSet statementResultSet = statement.getResultSet();
+            int statementRows = 0;
+            while (statementResultSet.next())
+            {
+                statementRows++;
+            }
+            Assert.assertEquals(1, statementRows);
         }
     }
 
