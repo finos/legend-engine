@@ -30,20 +30,20 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.auth
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.AuthenticationStrategyParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapper.RelationalMapperLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapper.RelationalMapperParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategyParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.data.RelationalEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensionLoader;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapper.RelationalMapperParseTreeWalker;
@@ -108,7 +108,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         DefaultCodeSection section = new DefaultCodeSection();
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
-        RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, pureGrammarParserContext);
         walker.visit((RelationalParserGrammar.DefinitionContext) parserInfo.rootContext);
         return section;
     }
@@ -147,7 +147,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                 {
                     MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
                     SourceCodeParserInfo parserInfo = getRelationalMappingElementParserInfo(mappingElementSourceCode);
-                    RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation);
+                    RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parserInfo.walkerSourceInformation, parserContext);
                     if (parserInfo.rootContext instanceof RelationalParserGrammar.ClassMappingContext)
                     {
                         RootRelationalClassMapping classMapping = new RootRelationalClassMapping();
@@ -182,7 +182,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return Collections.singletonList(ConnectionValueParser.newParser(RELATIONAL_DATABASE_CONNECTION_TYPE, connectionValueSourceCode ->
         {
             SourceCodeParserInfo parserInfo = getRelationalDatabaseConnectionParserInfo(connectionValueSourceCode);
-            RelationalDatabaseConnectionParseTreeWalker walker = new RelationalDatabaseConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+            RelationalDatabaseConnectionParseTreeWalker walker = new RelationalDatabaseConnectionParseTreeWalker(connectionValueSourceCode.context, parserInfo.walkerSourceInformation);
             RelationalDatabaseConnection connectionValue = new RelationalDatabaseConnection();
             connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
             walker.visitRelationalDatabaseConnectionValue((RelationalDatabaseConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
@@ -411,21 +411,6 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
         return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
-    public static RelationalOperationElement parseRelationalOperationElement(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
-    {
-        CharStream input = CharStreams.fromString(code);
-        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
-        ParserErrorListener errorListener = new ParserErrorListener(parseTreeWalkerSourceInformation);
-        RelationalLexerGrammar lexer = new RelationalLexerGrammar(input);
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        RelationalParserGrammar parser = new RelationalParserGrammar(new CommonTokenStream(lexer));
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-        RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parseTreeWalkerSourceInformation);
-        return walker.visitOperation(parser.operation(), null);
-    }
-
     public static void propagateStorePath(RelationalAssociationMapping mapping)
     {
         RelationalPropertyMapping propertyMapping = (RelationalPropertyMapping) mapping.propertyMappings.stream()
@@ -442,5 +427,20 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                 mapping.stores = Lists.mutable.with(pointer.db);
             }
         }
+    }
+
+    public static RelationalOperationElement parseRelationalOperationElement(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    {
+        CharStream input = CharStreams.fromString(code);
+        ParseTreeWalkerSourceInformation parseTreeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
+        ParserErrorListener errorListener = new ParserErrorListener(parseTreeWalkerSourceInformation);
+        RelationalLexerGrammar lexer = new RelationalLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        RelationalParserGrammar parser = new RelationalParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        RelationalParseTreeWalker walker = new RelationalParseTreeWalker(parseTreeWalkerSourceInformation, new PureGrammarParserContext(PureGrammarParserExtensions.fromExtensions(PureGrammarParserExtensionLoader.extensions())));
+        return walker.visitOperation(parser.operation(), null);
     }
 }
