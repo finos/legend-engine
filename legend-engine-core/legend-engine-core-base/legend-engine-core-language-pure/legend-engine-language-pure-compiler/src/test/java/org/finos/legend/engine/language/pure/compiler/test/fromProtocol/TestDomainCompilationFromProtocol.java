@@ -97,7 +97,7 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
                 "            {\n" +
                 // ---------- type to construct, no type arguments
                 "              \"_type\": \"packageableElementPtr\",\n" +
-                "              \"fullPath\": \"BasicColumnSpecification\"\n" +
+                "              \"fullPath\": \"TdsOlapRank\"\n" +
                 // ---------- type to construct, no type arguments
                 "            },\n" +
                 "            {\n" +
