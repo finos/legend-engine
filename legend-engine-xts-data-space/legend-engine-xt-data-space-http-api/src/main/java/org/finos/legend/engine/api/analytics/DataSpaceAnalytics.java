@@ -25,9 +25,11 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
+import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -126,6 +128,35 @@ public class DataSpaceAnalytics
             try
             {
                 return ManageConstantResult.manageResult(identity.getName(), DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, true), objectMapper);
+            }
+            catch (Exception e)
+            {
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
+            }
+        }
+    }
+
+    @POST
+    @Path("generate")
+    @ApiOperation(value = "Generate data space artifacts")
+    @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateDataSpaceArtifacts(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
+        PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
+        Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + input.dataSpace + "'");
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = HelperDataSpaceBuilder.getDataSpace(input.dataSpace, null, pureModel.getContext());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+
+        try (Scope scope = GlobalTracer.get().buildSpan("Analytics: Generate data space artifacts").startActive(true))
+        {
+            try
+            {
+                return ManageConstantResult.manageResult(identity.getName(),  extension.generate(dataSpace, pureModel, pureModelContextData, input.clientVersion), objectMapper);
             }
             catch (Exception e)
             {

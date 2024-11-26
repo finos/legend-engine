@@ -68,6 +68,15 @@ public class TestDataSpaceAnalyticsApi
         testCoverageAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
     }
 
+    @Test
+    public void testDataSpaceAritfactsGeneration() throws IOException
+    {
+        PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
+        String expected = "[{\"content\":\"{\\\"defaultExecutionContext\\\":\\\"dummyContext\\\",\\\"diagrams\\\":[],\\\"elementDocs\\\":[],\\\"elements\\\":[],\\\"executables\\\":[],\\\"executionContexts\\\":[{\\\"compatibleRuntimes\\\":[\\\"model::dummyRuntime\\\"],\\\"datasets\\\":[],\\\"defaultRuntime\\\":\\\"model::dummyRuntime\\\",\\\"mapping\\\":\\\"model::dummyMapping\\\",\\\"name\\\":\\\"dummyContext\\\"}],\\\"mappingToMappingCoverageResult\\\":{},\\\"model\\\":{\\\"_type\\\":\\\"data\\\",\\\"elements\\\":[]},\\\"name\\\":\\\"AnimalDS\\\",\\\"package\\\":\\\"model::animal\\\",\\\"path\\\":\\\"model::animal::AnimalDS\\\",\\\"stereotypes\\\":[],\\\"taggedValues\\\":[]}\",\"format\":\"json\",\"path\":\"AnalyticsResult.json\"},{\"content\":\"{\\\"_type\\\":\\\"MappingModelCoveragePartition\\\",\\\"mapping\\\":\\\"model::dummyMapping\\\",\\\"model\\\":{\\\"_type\\\":\\\"data\\\",\\\"elements\\\":[]}}\",\"format\":\"json\",\"path\":\"MappingModel_0.json\"},{\"content\":\"{\\\"_type\\\":\\\"MappingAnalysisCoveragePartition\\\",\\\"analysisResult\\\":{\\\"mappedEntities\\\":[]},\\\"mapping\\\":\\\"model::dummyMapping\\\"}\",\"format\":\"json\",\"path\":\"MappingAnalysis_0.json\"}]";
+        testArtifactsGenerationWithVersions(expected, modelContextData, "model::animal::AnimalDS");
+    }
+
+
     private void testAnalyticsWithVersions(String expected, PureModelContextData modelContextData, String dataSpace)
     {
         testVersions.forEach(pureClient ->
@@ -82,6 +91,15 @@ public class TestDataSpaceAnalyticsApi
         testVersions.forEach(pureClient ->
         {
             Response response = api.analyzeDataSpaceCoverage(new DataSpaceAnalysisInput(pureClient, dataSpace, modelContextData), null);
+            Assert.assertEquals(expected, response.getEntity().toString());
+        });
+    }
+
+    private void testArtifactsGenerationWithVersions(String expected, PureModelContextData modelContextData, String dataSpace)
+    {
+        testVersions.forEach(pureClient ->
+        {
+            Response response = api.generateDataSpaceArtifacts(new DataSpaceAnalysisInput(pureClient, dataSpace, modelContextData), null);
             Assert.assertEquals(expected, response.getEntity().toString());
         });
     }
