@@ -13,26 +13,23 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.postgres;
+package org.finos.legend.engine.postgres.handler.txn;
 
-import java.util.Arrays;
+import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.handler.PostgresStatement;
+import org.finos.legend.engine.postgres.handler.SessionHandler;
 
-public enum SystemSchemas
+public class TxnIsolationSessionHandler implements SessionHandler
 {
-
-    INFORMATION_SCHEMA("information_schema"),
-    PG_CATALOG("pg_catalog"),
-    PG_TYPE("pg_type");
-
-    private final String schemaName;
-
-    SystemSchemas(String schemaName)
+    @Override
+    public PostgresPreparedStatement prepareStatement(String query)
     {
-        this.schemaName = schemaName;
+        return new TxnIsolationPreparedStatement();
     }
 
-    public static boolean contains(String schema)
+    @Override
+    public PostgresStatement createStatement()
     {
-        return Arrays.stream(SystemSchemas.values()).anyMatch(i -> i.schemaName.equalsIgnoreCase(schema));
+        return new TxnIsolationStatement();
     }
 }

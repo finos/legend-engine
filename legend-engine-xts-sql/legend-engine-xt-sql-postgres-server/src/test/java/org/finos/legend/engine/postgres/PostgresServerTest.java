@@ -21,6 +21,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.config.OpenTelemetryConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
@@ -43,6 +44,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class PostgresServerTest
@@ -356,6 +358,9 @@ public class PostgresServerTest
         }
     }
 
+    /**
+     * This query format is used by the postgres jdbc driver
+     */
     @Test
     public void testShowTxn() throws SQLException
     {
@@ -372,6 +377,39 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(1, rows);
+        }
+    }
+
+    /**
+     * This query format is used by the postgres odbc driver
+     */
+    @Test
+    public void testShowTxnOdbc() throws SQLException
+    {
+        String sql = "SHOW transaction_isolation";
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                ResultSet psResultSet = preparedStatement.executeQuery();
+                Statement statement = connection.createStatement()
+        )
+        {
+            int psRows = 0;
+            while (psResultSet.next())
+            {
+                psRows++;
+            }
+            Assert.assertEquals(1, psRows);
+
+            Assert.assertTrue(statement.execute(sql));
+            ResultSet statementResultSet = statement.getResultSet();
+            int statementRows = 0;
+            while (statementResultSet.next())
+            {
+                statementRows++;
+            }
+            Assert.assertEquals(1, statementRows);
         }
     }
 
@@ -432,6 +470,25 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testPgType() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT oid, typbasetype FROM pg_type");
+                ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(24, rows);
         }
     }
 

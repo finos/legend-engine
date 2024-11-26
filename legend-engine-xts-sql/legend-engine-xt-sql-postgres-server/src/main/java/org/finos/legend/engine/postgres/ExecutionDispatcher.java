@@ -20,12 +20,14 @@ import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParserBaseVisitor;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
+import org.finos.legend.engine.postgres.handler.txn.TxnIsolationSessionHandler;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 
 public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler>
 {
     private static final TableNameExtractor EXTRACTOR = new TableNameExtractor();
     private static final SessionHandler EMPTY_SESSION_HANDLER = new EmptySessionHandler();
+    private static final SessionHandler TXN_ISOLATION_HANDLER = new TxnIsolationSessionHandler();
     private final SessionHandler dataSessionHandler;
     private final SessionHandler metaDataSessionHandler;
 
@@ -51,8 +53,7 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
     @Override
     public SessionHandler visitShowTransaction(SqlBaseParser.ShowTransactionContext ctx)
     {
-        // TODO: Handle show transaction instead of routing to metadata session handler
-        return metaDataSessionHandler;
+        return TXN_ISOLATION_HANDLER;
     }
 
     /**
