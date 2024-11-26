@@ -57,7 +57,7 @@ public class CString extends PrimitiveValueSpecification
             {
                 return new CString("");
             }
-            return customParsePrimitive(node, x -> new CString(x.asText()));
+            return customParsePrimitive(jsonParser.getCodec(), node, x -> new CString(x.asText()));
         }
     }
 }

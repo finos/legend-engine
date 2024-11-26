@@ -14,23 +14,26 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 
-import java.util.function.Function;
-
 public abstract class PrimitiveValueSpecification extends DataTypeValueSpecification
 {
-    private static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
+    public static ValueSpecification customParsePrimitive(JsonParser parser, Function<JsonNode, ValueSpecification> func) throws IOException
+    {
+        return customParsePrimitive(parser.getCodec(), parser.readValueAsTree(), func);
+    }
 
-    public static ValueSpecification customParsePrimitive(JsonNode node, Function<JsonNode, ValueSpecification> func) throws JsonProcessingException
+    public static ValueSpecification customParsePrimitive(ObjectCodec oc, JsonNode node, Function<JsonNode, ValueSpecification> func) throws JsonProcessingException
     {
         JsonNode values = node.get("values");
         ValueSpecification result;
@@ -56,7 +59,7 @@ public abstract class PrimitiveValueSpecification extends DataTypeValueSpecifica
         JsonNode sourceInformation = node.get("sourceInformation");
         if (sourceInformation != null)
         {
-            result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+            result.sourceInformation = oc.treeToValue(sourceInformation, SourceInformation.class);
         }
         return result;
     }

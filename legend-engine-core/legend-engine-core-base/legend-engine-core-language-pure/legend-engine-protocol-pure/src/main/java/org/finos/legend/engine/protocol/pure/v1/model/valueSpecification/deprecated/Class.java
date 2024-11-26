@@ -43,7 +43,7 @@ public class Class extends PackageableElementPtr
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            return convert(jsonParser.getCodec().readTree(jsonParser));
+            return convert(jsonParser);
         }
     }
 }

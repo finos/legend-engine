@@ -60,7 +60,7 @@ public class HackedUnit extends PackageableElementPtr
             JsonNode sourceInformation = node.get("sourceInformation");
             if (sourceInformation != null)
             {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+                result.sourceInformation = jsonParser.getCodec().treeToValue(sourceInformation, SourceInformation.class);
             }
             return result;
         }

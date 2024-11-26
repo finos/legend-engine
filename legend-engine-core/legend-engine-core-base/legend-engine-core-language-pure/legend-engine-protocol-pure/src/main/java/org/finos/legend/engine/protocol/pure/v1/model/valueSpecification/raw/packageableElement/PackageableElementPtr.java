@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
@@ -26,8 +28,6 @@ import java.io.IOException;
 
 public class PackageableElementPtr extends One
 {
-    protected static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
     public String fullPath;
 
     public PackageableElementPtr()
@@ -47,14 +47,15 @@ public class PackageableElementPtr extends One
     }
 
 
-    protected static ValueSpecification convert(JsonNode node) throws IOException
+    protected static ValueSpecification convert(JsonParser parser) throws IOException
     {
+        JsonNode node = parser.readValueAsTree();
         JsonNode name = node.get("fullPath");
         ValueSpecification result = new PackageableElementPtr(name.asText());
         JsonNode sourceInformation = node.get("sourceInformation");
         if (sourceInformation != null)
         {
-            result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+            result.sourceInformation = parser.getCodec().treeToValue(sourceInformation, SourceInformation.class);
         }
         return result;
     }

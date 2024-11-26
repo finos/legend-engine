@@ -35,7 +35,6 @@ import java.util.Map;
 @JsonDeserialize(using = ClassInstance.InstanceValueDeserializer.class)
 public class ClassInstance extends One
 {
-    private static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
     private static Map<String, java.lang.Class> classMap = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings();
 
     public String type;
@@ -77,7 +76,7 @@ public class ClassInstance extends One
             {
                 ((ObjectNode) node.get("value")).set("_type", new TextNode(result.type));   // For backward compatibility
             }
-            result.value = om.treeToValue(node.get("value"), _class);
+            result.value = oc.treeToValue(node.get("value"), _class);
             return result;
         }
     }

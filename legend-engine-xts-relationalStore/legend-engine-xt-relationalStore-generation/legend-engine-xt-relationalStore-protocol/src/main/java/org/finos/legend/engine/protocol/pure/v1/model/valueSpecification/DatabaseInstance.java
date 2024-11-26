@@ -18,9 +18,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
-
 import java.io.IOException;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 
 @Deprecated
 @JsonDeserialize(using = DatabaseInstance.DatabaseInstanceDeserializer.class)
@@ -37,7 +36,7 @@ public class DatabaseInstance extends PackageableElementPtr
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            return convert(jsonParser.getCodec().readTree(jsonParser));
+            return convert(jsonParser);
         }
     }
 }
