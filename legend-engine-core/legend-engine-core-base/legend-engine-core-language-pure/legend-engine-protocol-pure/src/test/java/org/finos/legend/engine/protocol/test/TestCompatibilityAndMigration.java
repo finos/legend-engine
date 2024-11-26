@@ -1323,7 +1323,7 @@ public class TestCompatibilityAndMigration
                         "      \"_type\": \"dataElement\",\n" +
                         "      \"data\": {\n" +
                         "        \"_type\": \"reference\",\n" +
-                        "        \"dataElement\":{\"path\":\"com::path::exampleReference\",\"type\":\"DATA\"}" +
+                        "        \"dataElement\":{\"path\":\"com::path::exampleReference\"}" +
                         "      },\n" +
                         "      \"name\": \"dataElementReferenceExample\",\n" +
                         "      \"package\": \"my\"\n" +
