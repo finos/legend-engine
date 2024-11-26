@@ -16,25 +16,22 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
 public class EnumValueMappingSourceValueSerializer extends JsonSerializer<Object>
 {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException
     {
         if (value instanceof EnumValueMappingSourceValue)
         {
-            gen.writeRawValue(objectMapper.writeValueAsString(value));
+            gen.writeObject(value);
         }
         else
         {
-            gen.writeRawValue("\"" + value.toString() + "\"");
+            gen.writeString(value.toString());
         }
     }
 }
