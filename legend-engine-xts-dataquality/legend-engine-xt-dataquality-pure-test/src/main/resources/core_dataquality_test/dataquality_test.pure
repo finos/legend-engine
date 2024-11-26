@@ -185,7 +185,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
     '          }' +
     '         ];' +
-    '      }','validFirstName', {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings())->filter(row2|$row2.FIRSTNAME->isNotEmpty()->not())
+    '      }','validFirstName', {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings())->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())
     })
 }
 
@@ -202,6 +202,6 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '             assertion: row2|$row2.FIRSTNAME->size() <= 100;' +
     '          }' +
     '         ];' +
-    '      }','validFirstName', {name:String[1]|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter({n|($n == $name)})->groupBy(~[FIRSTNAME], ~[count:{x|$x.FIRSTNAME}:{y|$y->count()}])->filter(row2|not(($row2.FIRSTNAME->size() <= 100)))
+    '      }','validFirstName', {name:String[1]|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter({n|($n == $name)})->groupBy(~[FIRSTNAME], ~[count:{x|$x.FIRSTNAME}:{y|$y->meta::pure::functions::collection::count()}])->filter(row2|meta::pure::functions::boolean::not(($row2.FIRSTNAME->meta::pure::functions::collection::size() <= 100)))
     })
 }

@@ -60,9 +60,18 @@ function meta::external::dataquality::tests::doRelationTest(dq:String[1], valida
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, []);
   
-  assertRelationLambdaEquals($expected, $actual);
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+}
+
+function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $resultLimit);
+  
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
 }
 
 
@@ -84,15 +93,6 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
                                     g:GraphFetchTree[1]| treeToString($g)
                                   ]
                             )
-            );
-  assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
-}
-
-function meta::external::dataquality::tests::assertRelationLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
-{
-  let config = ^meta::pure::metamodel::serialization::grammar::Configuration
-            (
-              fullPath = false
             );
   assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
 }
