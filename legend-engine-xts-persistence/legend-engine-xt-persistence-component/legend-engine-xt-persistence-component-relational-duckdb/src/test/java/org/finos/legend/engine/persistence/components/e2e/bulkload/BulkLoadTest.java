@@ -42,7 +42,6 @@ import org.finos.legend.engine.persistence.components.relational.duckdb.DuckDBDi
 import org.finos.legend.engine.persistence.components.relational.duckdb.DuckDBSink;
 import org.finos.legend.engine.persistence.components.relational.duckdb.logicalplan.datasets.DuckDBStagedFilesDatasetProperties;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -117,13 +116,6 @@ public class BulkLoadTest extends BaseTest
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
-
-    @BeforeAll
-    public static void registerFunctions()
-    {
-        DuckDBDigestUtil.registerMD5Udf(duckDBSink, DIGEST_UDF);
-        DuckDBDigestUtil.registerColumnUdf(duckDBSink, COLUMN_CONCAT_UDF);
-    }
 
     @Test
     public void testBulkLoadWithDigestNotGeneratedAuditEnabled() throws Exception
@@ -270,7 +262,11 @@ public class BulkLoadTest extends BaseTest
     @Test
     public void testBulkLoadWithDigestGenerated() throws Exception
     {
-        // register type conversion functions
+        // Register UDF
+        DuckDBDigestUtil.registerMD5Udf(duckDBSink, DIGEST_UDF);
+        DuckDBDigestUtil.registerColumnUdf(duckDBSink, COLUMN_CONCAT_UDF);
+
+        // Register type conversion functions
         Map<DataType, String> typeConversionUdfs = new HashMap<>();
         typeConversionUdfs.put(DataType.INT, "intToString");
         typeConversionUdfs.put(DataType.DATETIME, "datetimeToString");
@@ -352,6 +348,10 @@ public class BulkLoadTest extends BaseTest
     @Test
     public void testBulkLoadJsonWithDigestGenerated() throws Exception
     {
+        // Register UDF
+        DuckDBDigestUtil.registerMD5Udf(duckDBSink, DIGEST_UDF);
+        DuckDBDigestUtil.registerColumnUdf(duckDBSink, COLUMN_CONCAT_UDF);
+
         String filePath = "src/test/resources/data/bulk-load/input/staged_file3.json";
 
         BulkLoad bulkLoad = BulkLoad.builder()
@@ -500,6 +500,10 @@ public class BulkLoadTest extends BaseTest
     @Test
     public void testBulkLoadJsonUpperCaseWithDigestGenerated() throws Exception
     {
+        // Register UDF
+        DuckDBDigestUtil.registerMD5Udf(duckDBSink, DIGEST_UDF);
+        DuckDBDigestUtil.registerColumnUdf(duckDBSink, COLUMN_CONCAT_UDF);
+
         String filePath1 = "src/test/resources/data/bulk-load/input/staged_file1.json";
         String filePath2 = "src/test/resources/data/bulk-load/input/staged_file2.json";
 
@@ -508,6 +512,7 @@ public class BulkLoadTest extends BaseTest
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
                 .digestUdfName(DIGEST_UDF)
                 .columnNameValueConcatUdfName(COLUMN_CONCAT_UDF)
+                .addAllFieldsToExcludeFromDigest(Collections.singletonList(startTimeName))
                 .digestField(DIGEST).build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
@@ -549,7 +554,7 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
             "(\"ID\", \"NAME\", \"INCOME\", \"START_TIME\", \"EXPIRY_DATE\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
             "SELECT \"ID\",\"NAME\",\"INCOME\",\"START_TIME\",\"EXPIRY_DATE\"," +
-            "LAKEHOUSE_MD5(COLUMN_CONCAT_UDF('EXPIRY_DATE',CAST(CAST(\"EXPIRY_DATE\" AS DATE) AS VARCHAR))||COLUMN_CONCAT_UDF('ID',CAST(CAST(\"ID\" AS INTEGER) AS VARCHAR))||COLUMN_CONCAT_UDF('INCOME',CAST(CAST(\"INCOME\" AS BIGINT) AS VARCHAR))||COLUMN_CONCAT_UDF('NAME',CAST(CAST(\"NAME\" AS VARCHAR) AS VARCHAR))||COLUMN_CONCAT_UDF('START_TIME',CAST(CAST(\"START_TIME\" AS TIMESTAMP) AS VARCHAR)))," +
+            "LAKEHOUSE_MD5(COLUMN_CONCAT_UDF('EXPIRY_DATE',CAST(CAST(\"EXPIRY_DATE\" AS DATE) AS VARCHAR))||COLUMN_CONCAT_UDF('ID',CAST(CAST(\"ID\" AS INTEGER) AS VARCHAR))||COLUMN_CONCAT_UDF('INCOME',CAST(CAST(\"INCOME\" AS BIGINT) AS VARCHAR))||COLUMN_CONCAT_UDF('NAME',CAST(CAST(\"NAME\" AS VARCHAR) AS VARCHAR)))," +
             "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' " +
             "FROM READ_JSON(['src/test/resources/data/bulk-load/input/staged_file1.json','src/test/resources/data/bulk-load/input/staged_file2.json'])";
 

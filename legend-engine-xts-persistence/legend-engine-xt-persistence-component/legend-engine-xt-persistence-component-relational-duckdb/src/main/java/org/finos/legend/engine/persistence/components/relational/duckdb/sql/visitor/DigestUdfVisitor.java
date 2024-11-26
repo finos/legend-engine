@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.duckdb.sql.vis
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
 import java.util.Map;
@@ -25,20 +26,39 @@ public class DigestUdfVisitor extends org.finos.legend.engine.persistence.compon
 {
     protected Value getColumnValueAsStringType(Value value, FieldType dataType, Map<DataType, String> typeConversionUdfNames)
     {
-        // TODO: verify Append Only vs Bulk Load
-        if (typeConversionUdfNames.containsKey(dataType.dataType()))
+        if (value instanceof StagedFilesFieldValue)
         {
-            // TO_STRING(CAST(field AS original_type)
-            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder()
-                .udfName(typeConversionUdfNames.get(dataType.dataType()))
-                .addParameters(CastFunction.builder().field(value).type(dataType).build()).build();
+            if (typeConversionUdfNames.containsKey(dataType.dataType()))
+            {
+                // TO_STRING(CAST(field AS original_type))
+                return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder()
+                    .udfName(typeConversionUdfNames.get(dataType.dataType()))
+                    .addParameters(CastFunction.builder().field(value).type(dataType).build()).build();
+            }
+            else
+            {
+                // CAST(CAST(field AS original_type) AS VARCHAR)
+                return CastFunction.builder()
+                    .field(CastFunction.builder().field(value).type(dataType).build())
+                    .type(FieldType.builder().dataType(DataType.VARCHAR).build()).build();
+            }
         }
         else
         {
-            // CAST((CAST(field AS original_type) AS VARCHAR)
-            return CastFunction.builder()
-                .field(CastFunction.builder().field(value).type(dataType).build())
-                .type(FieldType.builder().dataType(DataType.VARCHAR).build()).build();
+            if (typeConversionUdfNames.containsKey(dataType.dataType()))
+            {
+                // TO_STRING(field)
+                return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder()
+                    .udfName(typeConversionUdfNames.get(dataType.dataType()))
+                    .addParameters(value).build();
+            }
+            else
+            {
+                // CAST(field AS VARCHAR)
+                return CastFunction.builder()
+                    .field(value)
+                    .type(FieldType.builder().dataType(DataType.VARCHAR).build()).build();
+            }
         }
     }
 }

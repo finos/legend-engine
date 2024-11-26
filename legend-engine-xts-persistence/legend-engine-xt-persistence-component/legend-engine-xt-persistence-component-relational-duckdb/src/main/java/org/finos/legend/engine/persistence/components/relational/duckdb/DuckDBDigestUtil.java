@@ -20,14 +20,20 @@ public class DuckDBDigestUtil
 {
     private static final String CUSTOM_MD5_UDF = "MD5(SUBSTRING(HEX(IFNULL(NULLIF(A, FROM_HEX('')), FROM_HEX('DADB2C00'))), 9))";
     private static final String CUSTOM_COLUMN_UDF = "IFNULL((FROM_HEX('DADB2C00') || ENCODE(COLUMN_NAME) || FROM_HEX('DADB2C00') || ENCODE(COLUMN_VALUE)), FROM_HEX(''))";
+    private static final String MD5_UDF = "MD5(A)";
 
     public static void registerMD5Udf(JdbcHelper sink, String UdfName)
     {
-        sink.executeStatement("CREATE FUNCTION " + UdfName + "(A) AS " + CUSTOM_MD5_UDF);
+        sink.executeStatement("CREATE OR REPLACE FUNCTION " + UdfName + "(A) AS " + CUSTOM_MD5_UDF);
     }
 
     public static void registerColumnUdf(JdbcHelper sink, String UdfName)
     {
-        sink.executeStatement("CREATE FUNCTION " + UdfName + "(COLUMN_NAME, COLUMN_VALUE) AS " + CUSTOM_COLUMN_UDF);
+        sink.executeStatement("CREATE OR REPLACE FUNCTION " + UdfName + "(COLUMN_NAME, COLUMN_VALUE) AS " + CUSTOM_COLUMN_UDF);
+    }
+
+    public static void registerBasicMD5Udf(JdbcHelper sink, String UdfName)
+    {
+        sink.executeStatement("CREATE OR REPLACE FUNCTION " + UdfName + "(A) AS " + MD5_UDF);
     }
 }
