@@ -60,7 +60,7 @@ function meta::external::dataquality::tests::doRelationTest(dq:String[1], valida
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, []);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName);
   
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
 }
