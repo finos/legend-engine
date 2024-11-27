@@ -553,7 +553,8 @@ function meta::relational::functions::sqlQueryToString::default::getDDLCommandsT
 
 function meta::relational::functions::sqlQueryToString::default::processTempTableNameDefault(tempTableName:String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]) : String[1]
 {
-   $tempTableName;
+   let dbConfig = createDbConfig($dc);
+   $dbConfig.identifierProcessor($tempTableName);
 }
 
 function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
