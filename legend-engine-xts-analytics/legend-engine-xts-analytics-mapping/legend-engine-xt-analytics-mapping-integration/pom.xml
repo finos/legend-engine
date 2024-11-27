@@ -9,29 +9,6 @@
     <name>Legend Engine - XT - Analytics - Mapping - Integration</name>
     <artifactId>legend-engine-xt-analytics-mapping-integration</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>httpEnforcement</id>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>default</id>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <!-- PURE -->
         <dependency>
