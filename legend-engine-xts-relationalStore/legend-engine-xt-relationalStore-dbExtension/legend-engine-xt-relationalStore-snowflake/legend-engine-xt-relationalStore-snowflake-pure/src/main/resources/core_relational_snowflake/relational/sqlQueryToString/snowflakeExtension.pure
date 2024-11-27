@@ -114,16 +114,16 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
 function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]): String[1]
 {
    let dataSourceSpec = if($dc->instanceOf(RelationalDatabaseConnection),| $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification),| []);
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($dc);
 
    if($dataSourceSpec->isNotEmpty() &&
       $dataSourceSpec.tempTableDb->isNotEmpty() &&
       $dataSourceSpec.tempTableSchema->isNotEmpty(),
    |
-    let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($dc.type, $dc.timeZone, $dc.quoteIdentifiers);
-    $dbConfig.identifierProcessor($dataSourceSpec.tempTableDb->toOne()) + '.' + $dbConfig.identifierProcessor($dataSourceSpec.tempTableSchema->toOne()) + '.' + $tempTableName;,
+    $dbConfig.identifierProcessor($dataSourceSpec.tempTableDb->toOne()) + '.' + $dbConfig.identifierProcessor($dataSourceSpec.tempTableSchema->toOne()) + '.' + $dbConfig.identifierProcessor($tempTableName);,
    |
     assert($dataSourceSpec.tempTableDb->isEmpty() && $dataSourceSpec.tempTableSchema->isEmpty(), 'One of Database name and schema name for temp tables is missing. Please specify both.');
-    'LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.' + $tempTableName;
+    $dbConfig.identifierProcessor('LEGEND_TEMP_DB') +'.' + $dbConfig.identifierProcessor('LEGEND_TEMP_SCHEMA') + '.' + $dbConfig.identifierProcessor($tempTableName);
    );
 }
 
@@ -147,16 +147,15 @@ function meta::relational::functions::sqlQueryToString::snowflake::loadValuesToD
   if($l.absolutePathToFile->isNotEmpty(),|
                                  let createStage = 'CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE';
                                  let loadTempTableCommand = 'PUT file://'+$l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + ' @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) +  ' PARALLEL= 16 AUTO_COMPRESS=TRUE;';
-                                 let copyIntoCommand = 'COPY INTO ' + $l.table.name->toOne() + ' FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + ' file_format = (type= CSV field_optionally_enclosed_by= \'"\');';
+                                 let copyIntoCommand = 'COPY INTO ' + $l.table->tableToString($dbConfig)->toOne() + ' FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + ' file_format = (type= CSV field_optionally_enclosed_by= \'"\');';
                                  let dropStage = 'DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE';
                                  [$createStage, $loadTempTableCommand, $copyIntoCommand, $dropStage];
                               ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig))
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::translateDropTableStatementForSnowflake(dropTableSQL:DropTableSQL[1], dbConfig: DbConfig[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::snowflake::translateDropTableStatementForSnowflake(d:DropTableSQL[1], dbConfig: DbConfig[1]) : String[1]
 {
-  let t= $dropTableSQL.table;
-  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+  'Drop table if exists ' + $d.table->tableToString($dbConfig) + ';';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::getDynaFunctionToSqlForSnowflake(): DynaFunctionToSql[*]

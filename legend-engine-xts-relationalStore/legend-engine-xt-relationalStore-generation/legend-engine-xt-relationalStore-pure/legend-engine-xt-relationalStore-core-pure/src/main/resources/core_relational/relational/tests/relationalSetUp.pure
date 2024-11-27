@@ -1093,6 +1093,11 @@ function meta::external::store::relational::tests::testRuntime(timeZone:String[1
    meta::external::store::relational::tests::testRuntime(testDatabaseConnection(db, $timeZone))
 }
 
+function meta::external::store::relational::tests::testRuntime(quoteIdentifiers:Boolean[1]):Runtime[1]
+{
+   meta::external::store::relational::tests::testRuntime(testDatabaseConnection(db, [], $quoteIdentifiers))
+}
+
 function meta::external::store::relational::tests::testRuntime(db:Database[1]):Runtime[1]
 {
    meta::external::store::relational::tests::testRuntime(testDatabaseConnection($db, []))
@@ -1109,6 +1114,17 @@ function meta::external::store::relational::tests::testDatabaseConnection(db:Dat
     connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
+    ),
+    element = $db);
+}
+
+function meta::external::store::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1], quoteIdentifiers:Boolean[0..1]):ConnectionStore[1]
+{
+  ^ConnectionStore(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
+        type = DatabaseType.H2,
+        timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone),
+        quoteIdentifiers = if($quoteIdentifiers->isEmpty(), |false, |$quoteIdentifiers->toOne())
     ),
     element = $db);
 }
