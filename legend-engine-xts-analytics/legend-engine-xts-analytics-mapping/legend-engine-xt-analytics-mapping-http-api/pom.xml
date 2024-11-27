@@ -71,11 +71,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
+            <artifactId>legend-engine-xt-analytics-mapping-integration</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+            <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
 

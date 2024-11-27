@@ -29,7 +29,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisLightGraphBuilder;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -40,9 +39,6 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
-import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_analytics;
-import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_serializer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -89,12 +85,7 @@ public class MappingAnalytics
         {
             try
             {
-                Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult analysisResult = core_analytics_mapping_modelCoverage_analytics.Root_meta_analytics_mapping_modelCoverage_analyze_Mapping_1__Boolean_1__Boolean_1__Boolean_1__MappingModelCoverageAnalysisResult_1_(mapping, returnMappedEntityInfo, returnMappedPropertyInfo, returnLightGraph, pureModel.getExecutionSupport());
-                MappingModelCoverageAnalysisResult result = this.objectMapper.readValue(core_analytics_mapping_modelCoverage_serializer.Root_meta_analytics_mapping_modelCoverage_serialization_json_getSerializedMappingModelCoverageAnalysisResult_MappingModelCoverageAnalysisResult_1__String_1_(analysisResult, pureModel.getExecutionSupport()), MappingModelCoverageAnalysisResult.class);
-               if (returnLightGraph)
-               {
-                   result.model = MappingModelCoverageAnalysisLightGraphBuilder.buildLightGraph(analysisResult, pureModel, pureModelContextData, input.clientVersion);
-               }
+                MappingModelCoverageAnalysisResult result = MappingModelCoverageAnalysis.analyze(mapping, pureModel, pureModelContextData, input.clientVersion, this.objectMapper, returnMappedEntityInfo, returnMappedPropertyInfo, returnLightGraph);
                 return ManageConstantResult.manageResult(identity.getName(), result);
             }
             catch (Exception e)
