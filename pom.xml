@@ -1958,6 +1958,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-mapping-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>

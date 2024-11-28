@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-xt-analytics-mapping-http-api</module>
+        <module>legend-engine-xt-analytics-mapping-integration</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
     </modules>
