@@ -14,13 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.eclipse.collections.api.factory.Lists;
@@ -38,6 +42,7 @@ public class ClassInstance extends One
     private static Map<String, java.lang.Class> classMap = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings();
 
     public String type;
+    @JsonSerialize(using = ClassInstance.ValueSerializer.class, contentUsing = ClassInstance.ValueSerializer.class)
     public Object value = Lists.mutable.empty();
 
     public ClassInstance()
@@ -78,6 +83,23 @@ public class ClassInstance extends One
             }
             result.value = oc.treeToValue(node.get("value"), _class);
             return result;
+        }
+    }
+
+    public static class ValueSerializer extends JsonSerializer<Object>
+    {
+        @Override
+        public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException
+        {
+            if (value != null)
+            {
+                // force to serialize for the actual type as the default Object serializer is not including "_type" property
+                gen.writeObject(value);
+            }
+            else
+            {
+                gen.writeNull();
+            }
         }
     }
 }
