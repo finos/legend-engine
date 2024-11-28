@@ -69,6 +69,12 @@ public class OracleTestConnectionIntegration implements TestConnectionIntegratio
             // Start the container is the function is called from within the IDE
             this.setup();
         }
+        if (!Vault.INSTANCE.hasValue("oracle.user"))
+        {
+            // If calling directly in the IDE, need to make sure the username and pwd is in the vault
+            this.registerVault();
+        }
+
         StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
         staticDatasourceSpecification.host = this.oracleContainer.getHost();
         staticDatasourceSpecification.port = this.oracleContainer.getOraclePort();
