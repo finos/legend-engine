@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
 import java.util.Map;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.protocol.pure.v1.ProcessHelper;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -40,7 +41,7 @@ public class ClassInstance extends One
     private static final Map<String, java.lang.Class<?>> classMap = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings();
 
     public String type;
-    @JsonSerialize(using = ClassInstance.ValueSerializer.class, contentUsing = ClassInstance.ValueSerializer.class)
+    @JsonSerialize(using = ClassInstance.ValueSerializer.class)
     public Object value = Lists.mutable.empty();
 
     public ClassInstance()
@@ -80,10 +81,13 @@ public class ClassInstance extends One
                 ((ObjectNode) node.get("value")).set("_type", new TextNode(result.type));   // For backward compatibility
             }
             result.value = oc.treeToValue(node.get("value"), _class);
+            result.sourceInformation = ProcessHelper.processOne(node, "sourceInformation", SourceInformation.class, oc);
             return result;
         }
     }
 
+    // Jackson prefer static typing, and value is of type Object, preventing Jackson from figuring out the proper serializer
+    // Hence, his forces to serialize for the actual type in a dynamic manner and ensure "_type" property is uncluded
     public static class ValueSerializer extends JsonSerializer<Object>
     {
         @Override
@@ -91,8 +95,19 @@ public class ClassInstance extends One
         {
             if (value != null)
             {
-                // force to serialize for the actual type as the default Object serializer is not including "_type" property
-                gen.writeObject(value);
+                if (value instanceof Iterable)
+                {
+                    gen.writeStartArray();
+                    for (Object v : (Iterable<?>) value)
+                    {
+                        gen.writeObject(v);
+                    }
+                    gen.writeEndArray();
+                }
+                else
+                {
+                    gen.writeObject(value);
+                }
             }
             else
             {
