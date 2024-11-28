@@ -23,7 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
      getDynaFunctionToSqlForOracle()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = true,
+      isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -158,7 +158,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
-      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
@@ -168,11 +167,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::getDynaFunctionToSqlForOracle(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
+  let selectOutsideWhen = selectOutsideWhenGenerationState();
+  let notSelectOutsideWhen = notSelectOutsideWhenGenerationStates();
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
-    dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, true)})),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, false)})),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='power(%s,1/3)')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
@@ -197,6 +198,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='instr(%s, %s)')),
+    dynaFnToSql('isEmpty',                $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then 1 else 0 end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isEmpty',                $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then 1 else 0 end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotEmpty',             $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then 1 else 0 end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotNull',              $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then 1 else 0 end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNull',                 $notSelectOutsideWhen, ^ToSql(format='%s is null')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
@@ -290,13 +299,35 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  processSelectColumnsOracle($s.columns, $dbConfig, $format->indent(), ^Config(), ',', false, $extensions) +
   if($s.data == [],|' ' + $format.separator + 'from dual',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForOracle_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+//TODO port this logic to the defaults, it should be part of the defaults
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processSelectColumnsOracle(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+
+                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then 1 else 0 end as ' + $a.name,
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                                                           );,
+                                                      z:RelationalOperationElement[1]   | 
+                                                          let shouldWrapWithCase = ($z->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+                                                          $shouldWrapWithCase->if(|'case when (' + $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then 1 else 0 end',
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                                                           );
+                                                      ])
+
+                                      )->joinStrings($separator + $format.separator);
+
+       );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processSliceOrDropForOracle(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
