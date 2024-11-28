@@ -1452,7 +1452,6 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   );
 
   let result = execute($query, $mapping, $runtime, meta::pure::extension::defaultExtensions());
-  println($result.values);
   assert(meta::json::jsonEquivalent('{"c":{"d":"2020-01-01"}}'->meta::json::parseJSON(), $result.values->toOne()->meta::json::parseJSON()));
 }
 
