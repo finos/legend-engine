@@ -164,7 +164,9 @@ public class JdbcHelper implements RelationalExecutionHelper
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
             ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[] {Clause.TABLE.get()});
-            return result.isBeforeFirst(); // This method returns true if ResultSet is not empty
+            boolean tableExists = result.isBeforeFirst(); // This method returns true if ResultSet is not empty
+            result.close();
+            return tableExists;
         }
         catch (SQLException e)
         {
