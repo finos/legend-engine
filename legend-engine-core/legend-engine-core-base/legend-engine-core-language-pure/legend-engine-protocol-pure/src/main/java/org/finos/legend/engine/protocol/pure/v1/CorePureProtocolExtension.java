@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1;
 
-import com.fasterxml.jackson.databind.util.StdConverter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -203,11 +202,9 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     public List<ProtocolConverter<?>> getProtocolConverters()
     {
         return Lists.fixedSize.with(
-                new ProtocolConverter<>(new ResultVariableWithMissingTypeConverter()),
-                new ProtocolConverter<>(
-                        Lists.mutable.with(
-                                new BasicColumnSpecificationToColFunctionConverter(),
-                                new TdsOlapRankToColFunctionConverter()))
+                ProtocolConverter.converter(Variable.class, CorePureProtocolExtension::fixVariableOfResultTypeWithMissingTypeAndMultiplicityArgument),
+                ProtocolConverter.converter(AppliedFunction.class, CorePureProtocolExtension::convertNewBasicColumnSpecificationToColFunctionCall),
+                ProtocolConverter.converter(AppliedFunction.class, CorePureProtocolExtension::convertNewTdsOlapRankToFuncFunctionCall)
         );
     }
 
@@ -215,151 +212,139 @@ public class CorePureProtocolExtension implements PureProtocolExtension
      * Converts/fix variables of type Result to ensure they have the type and multiplicity
      * Result[1] -> Result&lt;Any|*&gt;[1]
      */
-    private static class ResultVariableWithMissingTypeConverter extends StdConverter<Variable, Variable>
+    private static Variable fixVariableOfResultTypeWithMissingTypeAndMultiplicityArgument(Variable variable)
     {
-        @Override
-        public Variable convert(Variable variable)
+        if (variable.genericType != null && variable.genericType.rawType instanceof PackageableType)
         {
-            if (variable.genericType != null && variable.genericType.rawType instanceof PackageableType)
+            String _class = ((PackageableType) variable.genericType.rawType).fullPath;
+            if (("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class)) && variable.genericType.typeArguments.size() == 0)
             {
-                String _class = ((PackageableType) variable.genericType.rawType).fullPath;
-                if (("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class)) && variable.genericType.typeArguments.size() == 0)
-                {
-                    variable.genericType.typeArguments = Lists.mutable.of(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
-                    variable.genericType.multiplicityArguments = Lists.mutable.of(Multiplicity.PURE_MANY);
-                }
+                variable.genericType.typeArguments = Lists.mutable.of(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
+                variable.genericType.multiplicityArguments = Lists.mutable.of(Multiplicity.PURE_MANY);
             }
-            return variable;
         }
+        return variable;
     }
 
     /**
      * Convert the usage of BasicColumnSpecification to the equivalent function
      * ^BasicColumnSpecification(...) == col(...)
      */
-    private static class BasicColumnSpecificationToColFunctionConverter extends StdConverter<AppliedFunction, AppliedFunction>
+    private static AppliedFunction convertNewBasicColumnSpecificationToColFunctionCall(AppliedFunction appliedFunction)
     {
-        @Override
-        public AppliedFunction convert(AppliedFunction appliedFunction)
+        if (appliedFunction.function.equals("new"))
         {
-            if (appliedFunction.function.equals("new"))
-            {
-                PackageableElementPtr type;
+            PackageableElementPtr type;
 
-                if (appliedFunction.parameters.get(0) instanceof GenericTypeInstance)
+            if (appliedFunction.parameters.get(0) instanceof GenericTypeInstance)
+            {
+                GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
+                if (typeInstance.genericType.typeArguments.size() >= 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
                 {
-                    GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
-                    if (typeInstance.genericType.typeArguments.size() >= 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
-                    {
-                        type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
-                    }
-                    else
-                    {
-                        return appliedFunction;
-                    }
-                }
-                else if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
-                {
-                    type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+                    type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
                 }
                 else
                 {
                     return appliedFunction;
                 }
+            }
+            else if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
+            {
+                type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+            }
+            else
+            {
+                return appliedFunction;
+            }
 
-                Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                        "meta::pure::tds::BasicColumnSpecification",
-                        "BasicColumnSpecification"
-                );
+            Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
+                    "meta::pure::tds::BasicColumnSpecification",
+                    "BasicColumnSpecification"
+            );
 
-                if (classesThatNeedTypeFixing.contains(type.fullPath))
+            if (classesThatNeedTypeFixing.contains(type.fullPath))
+            {
+                Collection collection = (Collection) appliedFunction.parameters.get(2);
+                Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                        .map(KeyExpression.class::cast)
+                        .map(x -> x.expression)
+                        .filter(Lambda.class::isInstance)
+                        .map(Lambda.class::cast);
+
+                Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
+                        .map(KeyExpression.class::cast)
+                        .map(x -> x.expression)
+                        .filter(CString.class::isInstance)
+                        .map(CString.class::cast);
+
+                Optional<CString> doc = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("documentation"))
+                        .map(KeyExpression.class::cast)
+                        .map(x -> x.expression)
+                        .filter(CString.class::isInstance)
+                        .map(CString.class::cast);
+
+                appliedFunction.function = "meta::pure::tds::col";
+                appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_";
+                appliedFunction.parameters = Stream.of(func, name, doc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+                if (appliedFunction.parameters.size() == 3)
                 {
-                    Collection collection = (Collection) appliedFunction.parameters.get(2);
-                    Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                            .map(KeyExpression.class::cast)
-                            .map(x -> x.expression)
-                            .filter(Lambda.class::isInstance)
-                            .map(Lambda.class::cast);
-
-                    Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
-                            .map(KeyExpression.class::cast)
-                            .map(x -> x.expression)
-                            .filter(CString.class::isInstance)
-                            .map(CString.class::cast);
-
-                    Optional<CString> doc = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("documentation"))
-                            .map(KeyExpression.class::cast)
-                            .map(x -> x.expression)
-                            .filter(CString.class::isInstance)
-                            .map(CString.class::cast);
-
-                    appliedFunction.function = "meta::pure::tds::col";
-                    appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_";
-                    appliedFunction.parameters = Stream.of(func, name, doc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-                    if (appliedFunction.parameters.size() == 3)
-                    {
-                        appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
-                    }
+                    appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
                 }
             }
-            return appliedFunction;
         }
+        return appliedFunction;
     }
 
     /**
      * Convert the usage of TdsOlapRank to the equivalent function
      * ^TdsOlapRank(...) == func(...)
      */
-    private static class TdsOlapRankToColFunctionConverter extends StdConverter<AppliedFunction, AppliedFunction>
+    private static AppliedFunction convertNewTdsOlapRankToFuncFunctionCall(AppliedFunction appliedFunction)
     {
-        @Override
-        public AppliedFunction convert(AppliedFunction appliedFunction)
+        if (appliedFunction.function.equals("new"))
         {
-            if (appliedFunction.function.equals("new"))
-            {
-                PackageableElementPtr type;
+            PackageableElementPtr type;
 
-                if (appliedFunction.parameters.get(0) instanceof GenericTypeInstance)
+            if (appliedFunction.parameters.get(0) instanceof GenericTypeInstance)
+            {
+                GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
+                if (typeInstance.genericType.typeArguments.size() >= 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
                 {
-                    GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
-                    if (typeInstance.genericType.typeArguments.size() >= 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
-                    {
-                        type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
-                    }
-                    else
-                    {
-                        return appliedFunction;
-                    }
-                }
-                else if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
-                {
-                    type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+                    type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
                 }
                 else
                 {
                     return appliedFunction;
                 }
-
-                Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                        "meta::pure::tds::TdsOlapRank",
-                        "TdsOlapRank"
-                );
-
-                if (classesThatNeedTypeFixing.contains(type.fullPath))
-                {
-                    Collection collection = (Collection) appliedFunction.parameters.get(2);
-                    Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                            .map(KeyExpression.class::cast)
-                            .map(x -> x.expression)
-                            .filter(Lambda.class::isInstance)
-                            .map(Lambda.class::cast);
-
-                    appliedFunction.function = "meta::pure::tds::func";
-                    appliedFunction.fControl = "meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_";
-                    appliedFunction.parameters = Stream.of(func).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-                }
             }
-            return appliedFunction;
+            else if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
+            {
+                type = (PackageableElementPtr) appliedFunction.parameters.get(0);
+            }
+            else
+            {
+                return appliedFunction;
+            }
+
+            Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
+                    "meta::pure::tds::TdsOlapRank",
+                    "TdsOlapRank"
+            );
+
+            if (classesThatNeedTypeFixing.contains(type.fullPath))
+            {
+                Collection collection = (Collection) appliedFunction.parameters.get(2);
+                Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                        .map(KeyExpression.class::cast)
+                        .map(x -> x.expression)
+                        .filter(Lambda.class::isInstance)
+                        .map(Lambda.class::cast);
+
+                appliedFunction.function = "meta::pure::tds::func";
+                appliedFunction.fControl = "meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_";
+                appliedFunction.parameters = Stream.of(func).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+            }
         }
+        return appliedFunction;
     }
 }
