@@ -31,7 +31,9 @@ import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -147,12 +149,24 @@ public class REPLServerHelpers
                 fn.parameters.set(0, currentExpression);
                 currentExpression = fn;
             }
+            Connection connection = null;
+            if (runtime != null)
+            {
+                String _runtime = runtime;
+                PackageableRuntime rt = (PackageableRuntime) ListIterate.select(pureModelContextData.getElements(), e -> e.getPath().equals(_runtime)).getFirst();
+                if (rt != null && rt.runtimeValue.connections.size() == 1 && rt.runtimeValue.connections.get(0).storeConnections.size() == 1)
+                {
+                    connection = rt.runtimeValue.connections.get(0).storeConnections.get(0).connection;
+                }
+            }
             Map<String, Object> source = Maps.mutable.empty();
             source.put("_type", "repl");
             source.put("timestamp", this.startTime);
             source.put("query", currentExpression.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()));
             source.put("runtime", runtime);
             source.put("mapping", mapping);
+            source.put("columns", columns);
+            source.put("connection", connection);
             this.source = source;
 
             // -------------------- QUERY --------------------

@@ -136,7 +136,7 @@ public class DataCubeWalkthrough implements Command
 
     public static class DataCubeWalkthrough1 extends DocumentationHelper.Walkthrough
     {
-        public static final MutableList<String> SELECT_ALL = Lists.mutable.with("select()");
+        public static final MutableList<String> SELECT_ALL = Lists.mutable.empty();
         public static final MutableList<String> FILTER = Lists.mutable.with("filter(x|$x.Year == 2010)");
         public static final MutableList<String> EXTEND = Lists.mutable.withAll(FILTER).with("extend(~Total: x|$x.Gold + $x.Silver + $x.Bronze)");
         public static final MutableList<String> GROUP_BY = Lists.mutable.withAll(EXTEND).with("groupBy(~Country, ~Total: x|$x.Total: x|$x->sum())");
@@ -212,9 +212,7 @@ public class DataCubeWalkthrough implements Command
                         this.printCommand(this.query(SELECT_ALL, 0), true);
                         this.println("  ^ specifies which database and table to access");
                         this.printCommand(this.query(SELECT_ALL, 1), true);
-                        this.println("                                        ^ shows ALL columns");
-                        this.printCommand(this.query(SELECT_ALL, 2), true);
-                        this.println("                                                  ^ specifies the execution context");
+                        this.println("                                              ^ specifies the execution context");
                         this.printFooter();
                         return null;
                     },

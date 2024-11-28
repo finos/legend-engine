@@ -90,7 +90,7 @@ public class DataCubeLoadCSV implements Command
                 this.client.println("Loaded into table: '" + tableName + "'");
             }
 
-            String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->select()->from(" + DataCube.getLocalRuntimePath() + ")";
+            String functionBodyCode = "#>{" + DataCube.getLocalDatabasePath() + "." + tableName + "}#->from(" + DataCube.getLocalRuntimePath() + ")";
             String functionCode = "###Pure\n" +
                     "function " + REPL_RUN_FUNCTION_SIGNATURE + "\n{\n" + functionBodyCode + ";\n}";
             PureModelContextData pureModelContextData = client.getModelState().parseWithTransient(functionCode);
