@@ -19,20 +19,20 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.Converter;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 
 public class ProtocolConverter<T> implements Converter<T, T>
 {
-    private final List<? extends Converter<T, T>> converters;
+    private final List<Converter<T, T>> converters;
 
     public ProtocolConverter(Converter<T, T> converters)
     {
         this(Lists.fixedSize.of(converters));
     }
 
-    public ProtocolConverter(List<? extends Converter<T, T>> converters)
+    public ProtocolConverter(List<Converter<T, T>> converters)
     {
         this.converters = converters;
     }
@@ -55,9 +55,9 @@ public class ProtocolConverter<T> implements Converter<T, T>
         return ListIterate.injectInto(value, this.converters, (t, c) -> c.convert(t));
     }
 
-    public static <T> ProtocolConverter<T> merge(List<ProtocolConverter<T>> converters)
+    public static <T> ProtocolConverter<T> merge(ProtocolConverter<T> one, ProtocolConverter<T> two)
     {
-        List<? extends Converter<T, T>> allConverters = converters.stream().flatMap(x -> x.converters.stream()).collect(Collectors.toList());
+        MutableList<Converter<T, T>> allConverters = Lists.mutable.withAll(one.converters).withAll(two.converters);
         return new ProtocolConverter<>(allConverters);
     }
 }

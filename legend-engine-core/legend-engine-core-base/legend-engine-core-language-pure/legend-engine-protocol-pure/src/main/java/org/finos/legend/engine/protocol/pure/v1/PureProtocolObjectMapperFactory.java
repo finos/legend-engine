@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import java.util.Collection;
 import java.util.List;
@@ -40,14 +39,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.multimap.list.FastListMultimap;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolConverter;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -101,9 +99,9 @@ public class PureProtocolObjectMapperFactory
         return withPureProtocolExtensions(objectMapper, ObjectMapper::registerModule, ObjectMapper::registerSubtypes, excludeSubType);
     }
 
-    public static Map<String, Class> getClassInstanceTypeMappings()
+    public static Map<String, Class<?>> getClassInstanceTypeMappings()
     {
-        Map<String, Class> result = Maps.mutable.empty();
+        Map<String, Class<?>> result = Maps.mutable.empty();
         result.put("path", Path.class);
         result.put("rootGraphFetchTree", RootGraphFetchTree.class);
         result.put(">", RelationStoreAccessor.class);
@@ -123,7 +121,7 @@ public class PureProtocolObjectMapperFactory
         result.put("runtimeInstance", RuntimeInstance.class);
         result.put("executionContextInstance", ExecutionContextInstance.class);
         result.put("alloySerializationConfig", SerializationConfig.class);
-        PureProtocolExtensionLoader.extensions().forEach(extension -> extension.getExtraClassInstanceTypeMappings().entrySet().forEach(e -> result.put(e.getKey(), e.getValue())));
+        PureProtocolExtensionLoader.extensions().forEach(extension -> extension.getExtraClassInstanceTypeMappings().forEach(result::put));
         return result;
     }
 
@@ -189,7 +187,13 @@ public class PureProtocolObjectMapperFactory
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
-        FastListMultimap<JavaType, ProtocolConverter<?>> converterByType = ListIterate.groupBy(protocolConverters, x -> x.getInputType(TypeFactory.defaultInstance()));
+        Map<JavaType, ProtocolConverter<?>> converterByType = protocolConverters
+                .stream()
+                .collect(Collectors.toMap(
+                        x -> x.getInputType(objectMapper.getTypeFactory()),
+                        Function.identity(),
+                        (a, b) -> ProtocolConverter.merge((ProtocolConverter<Object>) a, (ProtocolConverter<Object>) b))
+                );
 
         DeserializationConfig deserializationConfig = objectMapper
                 .getDeserializationConfig()
@@ -203,9 +207,9 @@ public class PureProtocolObjectMapperFactory
 
     private static class ConverterHandlerInstantiator extends HandlerInstantiator
     {
-        private final FastListMultimap<JavaType, ProtocolConverter<?>> converterByType;
+        private final Map<JavaType, ProtocolConverter<?>> converterByType;
 
-        public ConverterHandlerInstantiator(FastListMultimap<JavaType, ProtocolConverter<?>> converterByType)
+        public ConverterHandlerInstantiator(Map<JavaType, ProtocolConverter<?>> converterByType)
         {
             this.converterByType = converterByType;
         }
@@ -213,11 +217,11 @@ public class PureProtocolObjectMapperFactory
         @Override
         public JsonDeserializer<?> deserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> deserClass)
         {
-            MutableList<ProtocolConverter<?>> converters = this.converterByType.get(annotated.getType());
-            if (!converters.isEmpty())
+            ProtocolConverter<?> converter = this.converterByType.get(annotated.getType());
+            if (converter != null)
             {
-                JsonDeserializer<?> deser = (JsonDeserializer<?>) ClassUtil.createInstance(deserClass, config.canOverrideAccessModifiers());
-                return new StdDelegatingDeserializer<>(ProtocolConverter.merge((List) converters), annotated.getType(), deser);
+                JsonDeserializer<?> deserializer = (JsonDeserializer<?>) ClassUtil.createInstance(deserClass, config.canOverrideAccessModifiers());
+                return new StdDelegatingDeserializer(converter, annotated.getType(), deserializer);
             }
             return null;
         }
@@ -249,9 +253,9 @@ public class PureProtocolObjectMapperFactory
 
     private static class ConverterBeanDeserializerModifier extends BeanDeserializerModifier
     {
-        private final FastListMultimap<JavaType, ProtocolConverter<?>> converterByType;
+        private final Map<JavaType, ProtocolConverter<?>> converterByType;
 
-        public ConverterBeanDeserializerModifier(FastListMultimap<JavaType, ProtocolConverter<?>> converterByType)
+        public ConverterBeanDeserializerModifier(Map<JavaType, ProtocolConverter<?>> converterByType)
         {
             this.converterByType = converterByType;
         }
@@ -259,10 +263,10 @@ public class PureProtocolObjectMapperFactory
         @Override
         public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer)
         {
-            MutableList<ProtocolConverter<?>> converters = this.converterByType.get(beanDesc.getType());
-            if (!converters.isEmpty())
+            ProtocolConverter<?> converter = this.converterByType.get(beanDesc.getType());
+            if (converter != null)
             {
-                return new StdDelegatingDeserializer<Object>(ProtocolConverter.merge((List) converters), beanDesc.getType(), deserializer);
+                return new StdDelegatingDeserializer(converter, beanDesc.getType(), deserializer);
             }
             return deserializer;
         }

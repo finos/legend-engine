@@ -21,25 +21,23 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.io.IOException;
+import java.util.Map;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.io.IOException;
-import java.util.Map;
-
 @JsonDeserialize(using = ClassInstance.InstanceValueDeserializer.class)
 public class ClassInstance extends One
 {
-    private static Map<String, java.lang.Class> classMap = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings();
+    private static final Map<String, java.lang.Class<?>> classMap = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings();
 
     public String type;
     @JsonSerialize(using = ClassInstance.ValueSerializer.class, contentUsing = ClassInstance.ValueSerializer.class)
@@ -72,7 +70,7 @@ public class ClassInstance extends One
             JsonNode node = oc.readTree(jsonParser);
             ClassInstance result = new ClassInstance();
             result.type = node.get("type").textValue();
-            java.lang.Class _class = classMap.get(result.type);
+            Class<?> _class = classMap.get(result.type);
             if (_class == null)
             {
                 throw new RuntimeException("Can't parse the ClassInstance value for type '" + result.type + "'");
