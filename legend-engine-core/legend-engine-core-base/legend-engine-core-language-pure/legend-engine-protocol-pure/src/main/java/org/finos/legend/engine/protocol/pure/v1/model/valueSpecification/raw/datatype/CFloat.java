@@ -48,7 +48,7 @@ public class CFloat extends PrimitiveValueSpecification
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CFloat(Double.parseDouble((x.asText()))));
+            return customParsePrimitive(jsonParser, x -> new CFloat(Double.parseDouble((x.asText()))));
         }
     }
 }

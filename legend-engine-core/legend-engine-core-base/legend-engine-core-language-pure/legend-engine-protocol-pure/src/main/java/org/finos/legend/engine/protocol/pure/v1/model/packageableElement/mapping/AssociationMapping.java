@@ -16,13 +16,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
-
-import java.util.Collections;
-import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -31,7 +29,6 @@ import java.util.List;
 public abstract class AssociationMapping
 {
     public String id;
-    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
     public PackageableElementPointer association;
     public List<String> stores = Collections.emptyList();
     public SourceInformation sourceInformation;

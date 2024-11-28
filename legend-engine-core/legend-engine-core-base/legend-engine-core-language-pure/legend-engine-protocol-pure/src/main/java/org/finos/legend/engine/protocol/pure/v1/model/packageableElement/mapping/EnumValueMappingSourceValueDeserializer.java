@@ -18,24 +18,21 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
 public class EnumValueMappingSourceValueDeserializer extends JsonDeserializer<Object>
 {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException
     {
         try
         {
-            return objectMapper.readValue(jsonParser, EnumValueMappingSourceValue.class);
+            return deserializationContext.readValue(jsonParser, EnumValueMappingSourceValue.class);
         }
         catch (JsonProcessingException e)
         {
-            return objectMapper.readValue(jsonParser, Object.class);
+            return deserializationContext.readValue(jsonParser, Object.class);
         }
     }
 }

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,8 +34,6 @@ import java.io.IOException;
 @JsonDeserialize(using = GenericTypeInstance.GenericTypeInstanceDeserializer.class)
 public class GenericTypeInstance extends One
 {
-    protected static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
     public GenericType genericType;
 
     public GenericTypeInstance()
@@ -62,7 +61,8 @@ public class GenericTypeInstance extends One
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
             JsonNode values = node.get("fullPath");
             ValueSpecification result;
             if (values != null)
@@ -71,12 +71,12 @@ public class GenericTypeInstance extends One
             }
             else
             {
-                result = new GenericTypeInstance(om.treeToValue(node.get("genericType"), GenericType.class));
+                result = new GenericTypeInstance(codec.treeToValue(node.get("genericType"), GenericType.class));
             }
             JsonNode sourceInformation = node.get("sourceInformation");
             if (sourceInformation != null)
             {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+                result.sourceInformation = codec.treeToValue(sourceInformation, SourceInformation.class);
             }
             return result;
         }

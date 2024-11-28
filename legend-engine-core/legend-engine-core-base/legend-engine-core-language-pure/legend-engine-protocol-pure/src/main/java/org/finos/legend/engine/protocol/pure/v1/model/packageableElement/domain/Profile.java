@@ -14,18 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
-import java.util.Collections;
-import java.util.List;
-
 public class Profile extends PackageableElement
 {
-    @JsonSerialize(contentConverter = ProfileStereotype.ToPathSerializerConverter.class)
     public List<ProfileStereotype> stereotypes = Collections.emptyList();
-    @JsonSerialize(contentConverter = ProfileTag.ToPathSerializerConverter.class)
     public List<ProfileTag> tags = Collections.emptyList();
 
     @Override

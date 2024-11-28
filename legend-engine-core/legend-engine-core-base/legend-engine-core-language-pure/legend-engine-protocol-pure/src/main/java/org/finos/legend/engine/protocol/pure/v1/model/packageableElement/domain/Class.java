@@ -14,17 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
-import java.util.Collections;
-import java.util.List;
-
 public class Class extends PackageableElement
 {
-    @JsonSerialize(contentConverter = PackageableElementPointer.ToPathSerializerConverter.class)
     public List<PackageableElementPointer> superTypes = Collections.emptyList();
     public List<Property> originalMilestonedProperties = Collections.emptyList();
     public List<Property> properties = Collections.emptyList();

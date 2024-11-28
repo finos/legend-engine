@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Lists;
@@ -37,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -52,6 +54,7 @@ public class PureGrammarParser
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;
     private final PureGrammarParserExtensions extensions;
+    private ObjectMapper converterMapper;
 
     private PureGrammarParser(PureGrammarParserExtensions extensions)
     {
@@ -63,6 +66,7 @@ public class PureGrammarParser
                 connectionParser,
                 RuntimeParser.newInstance(connectionParser)
         ));
+        this.converterMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     }
 
     public static PureGrammarParser newInstance(PureGrammarParserExtensions extensions)
@@ -127,7 +131,9 @@ public class PureGrammarParser
         sectionIndex.name = "SectionIndex";
         sectionIndex._package = "__internal__";
         sectionIndex.sections = ListIterate.collect(parser.definition().section(), sectionCtx -> this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo));
-        return builder.withElement(sectionIndex).build();
+        // tactically run parsed values thru converters to fix old/legacy code
+        PureModelContextData pmcd = builder.withElement(sectionIndex).build();
+        return this.converterMapper.convertValue(pmcd, PureModelContextData.class);
     }
 
     private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer, boolean returnSourceInfo)

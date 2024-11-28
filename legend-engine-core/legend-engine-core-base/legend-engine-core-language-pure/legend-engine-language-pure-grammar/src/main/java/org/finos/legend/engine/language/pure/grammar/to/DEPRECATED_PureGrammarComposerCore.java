@@ -782,7 +782,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("cast".equals(function))
         {
-            return parameters.get(0).accept(this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
+            return possiblyAddParenthesis(parameters.get(0), this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
         }
         else if ("subType".equals(function))
         {
@@ -791,7 +791,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         else if ("new".equals(function))
         {
             ValueSpecification param = parameters.get(parameters.size() - 1);
-            List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Arrays.asList(param);
+            List<ValueSpecification> values = param instanceof Collection ? ((Collection) param).values : Collections.singletonList(param);
             String type;
             if (parameters.get(0) instanceof GenericTypeInstance)
             {
@@ -842,7 +842,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                     + (toCreateNewLine ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")
                     + possiblyAddParenthesis(function, parameters.get(1), this);
         }
-        else if (function != null && CORE_FUNCTIONS_WITH_PREFIX_RENDERING.contains(function))
+        else if (CORE_FUNCTIONS_WITH_PREFIX_RENDERING.contains(function))
         {
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
                     (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
@@ -877,12 +877,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Collection collection)
     {
-
-        return HelperValueSpecificationGrammarComposer.renderCollection(collection.values, v ->
-        {
-            String value = ((ValueSpecification) v).accept(this);
-            return v instanceof AppliedFunction && isInfix((AppliedFunction) v) ? "(" + value + ")" : value;
-        }, this);
+        return HelperValueSpecificationGrammarComposer.renderCollection(collection.values, v -> possiblyAddParenthesis((ValueSpecification) v, this), this);
     }
 
     @Override

@@ -49,7 +49,7 @@ public class CDecimal extends PrimitiveValueSpecification
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CDecimal(new BigDecimal((x.asText()))));
+            return customParsePrimitive(jsonParser, x -> new CDecimal(new BigDecimal((x.asText()))));
         }
     }
 }

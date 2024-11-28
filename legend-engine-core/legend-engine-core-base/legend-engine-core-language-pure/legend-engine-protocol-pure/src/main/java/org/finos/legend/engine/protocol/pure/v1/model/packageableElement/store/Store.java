@@ -14,15 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
-import java.util.Collections;
-import java.util.List;
-
 public abstract class Store extends PackageableElement
 {
-    @JsonSerialize(contentConverter = PackageableElementPointer.ToPathSerializerConverter.class)
     public List<PackageableElementPointer> includedStores = Collections.emptyList();
 }

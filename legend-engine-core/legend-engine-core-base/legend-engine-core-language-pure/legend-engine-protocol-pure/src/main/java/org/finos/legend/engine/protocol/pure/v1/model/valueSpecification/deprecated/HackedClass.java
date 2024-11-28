@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,13 +48,14 @@ public class HackedClass extends PackageableElementPtr
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
             JsonNode name = node.get("fullPath");
             ValueSpecification result = new GenericTypeInstance(name.asText());
             JsonNode sourceInformation = node.get("sourceInformation");
             if (sourceInformation != null)
             {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+                result.sourceInformation = codec.treeToValue(sourceInformation, SourceInformation.class);
             }
             return result;
         }
