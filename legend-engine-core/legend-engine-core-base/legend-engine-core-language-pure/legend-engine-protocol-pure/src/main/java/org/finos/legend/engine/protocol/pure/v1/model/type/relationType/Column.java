@@ -14,21 +14,58 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.type.relationType;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 
+import java.io.IOException;
+
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
+
+@JsonDeserialize(using = Column.ColumnDeserializer.class)
 public class Column
 {
     public SourceInformation sourceInformation;
     public String name;
-    public String type;
+    public GenericType genericType;
 
     public Column()
     {
     }
 
-    public Column(String name, String type)
+    public Column(String name, GenericType genericType)
     {
         this.name = name;
-        this.type = type;
+        this.genericType = genericType;
+    }
+
+    public static class ColumnDeserializer extends JsonDeserializer<Column>
+    {
+        @Override
+        public Column deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            Column result = new Column();
+
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
+
+            result.name = processOne(node, "name", String.class, codec);
+            result.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+            result.genericType = processOne(node, "genericType", GenericType.class, codec);
+            // Backward compatibility --------------
+            if (node.get("type") != null)
+            {
+                String fullPath = node.get("type").asText();
+                result.genericType = new GenericType(new PackageableType(fullPath));
+            }
+            // Backward compatibility --------------
+            return result;
+        }
     }
 }

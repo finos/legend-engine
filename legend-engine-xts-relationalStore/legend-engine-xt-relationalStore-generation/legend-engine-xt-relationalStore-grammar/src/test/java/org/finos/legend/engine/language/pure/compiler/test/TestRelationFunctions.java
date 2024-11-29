@@ -564,7 +564,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id2)\n" +
                         "}",
-                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor[1],ColSpec[1])"
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Integer)>[1],ColSpec<(id2:NULL)>[1])"
         );
     }
 
@@ -580,7 +580,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id->desc())\n" +
                         "}",
-                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec[1])'"
+                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec<(id:Integer)>[1])'"
         );
     }
 

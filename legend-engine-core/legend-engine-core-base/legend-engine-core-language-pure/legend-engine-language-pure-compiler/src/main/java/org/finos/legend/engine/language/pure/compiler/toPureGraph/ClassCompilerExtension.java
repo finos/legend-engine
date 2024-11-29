@@ -170,7 +170,7 @@ public class ClassCompilerExtension implements CompilerExtension
             }
             ctx.flushVariable("this");
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> prop = targetClass._qualifiedProperties().detect(o -> HelperModelBuilder.isCompatibleDerivedProperty(o, property));
-            HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), prop._genericType()._rawType(), prop._multiplicity(), "Error in derived property '" + srcClass.name + "." + property.name + "'", property.body.get(property.body.size() - 1).sourceInformation);
+            HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType(), body.getLast()._multiplicity(), prop._genericType(), prop._multiplicity(), "Error in derived property '" + srcClass.name + "." + property.name + "'", property.body.get(property.body.size() - 1).sourceInformation);
             ctx.pop();
             return prop._expressionSequence(body);
         });

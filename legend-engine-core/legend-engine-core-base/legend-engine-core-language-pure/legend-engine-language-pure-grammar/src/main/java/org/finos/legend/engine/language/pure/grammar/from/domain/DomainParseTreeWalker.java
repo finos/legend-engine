@@ -821,7 +821,7 @@ public class DomainParseTreeWalker
     {
         if (ctx.instanceLiteral() != null)
         {
-            return this.instanceLiteral(ctx.instanceLiteral(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            return this.instanceLiteral(ctx.instanceLiteral(), wrapFlag);
         }
         else if (ctx.toBytesLiteral() != null)
         {
@@ -852,7 +852,7 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    private ValueSpecification instanceLiteral(DomainParserGrammar.InstanceLiteralContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private ValueSpecification instanceLiteral(DomainParserGrammar.InstanceLiteralContext ctx, boolean wrapFlag)
     {
         ValueSpecification result;
         if (ctx.instanceLiteralToken() != null)
@@ -907,6 +907,7 @@ public class DomainParseTreeWalker
                         Lists.mutable.of(
                                 new GenericType(
                                         new PackageableType(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())),
+                                        processTypeVariableValues(ctx.typeVariableValues()),
                                         ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType),
                                         ListIterate.collect(ctx.multiplicityArguments() == null ? Lists.mutable.empty() : ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity)
                                 )
@@ -916,6 +917,11 @@ public class DomainParseTreeWalker
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
         Collection valueAssignments = new Collection(keyExpressions);
         return this.createAppliedFunction(Lists.mutable.with(generic, new CString(""), valueAssignments), "new");
+    }
+
+    public List<ValueSpecification> processTypeVariableValues(DomainParserGrammar.TypeVariableValuesContext ctx)
+    {
+        return ctx == null ? Lists.mutable.empty() : ListIterate.collect(ctx.instanceLiteral(), x -> instanceLiteral(x, true));
     }
 
     // necessary for proper compilation of new function
@@ -1537,7 +1543,12 @@ public class DomainParseTreeWalker
     {
         String fullPath = ctx.getText();
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.genericType = new GenericType(new PackageableType(fullPath));
+        genericTypeInstance.genericType = new GenericType(
+                new PackageableType(fullPath),
+                processTypeVariableValues(ctx.typeVariableValues()),
+                ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType),
+                ListIterate.collect(ctx.multiplicityArguments() == null ? Lists.mutable.empty() : ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity)
+        );
         genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
@@ -1546,7 +1557,12 @@ public class DomainParseTreeWalker
     {
         String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
         GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.genericType = new GenericType(new PackageableType(fullPath));
+        genericTypeInstance.genericType = new GenericType(
+                new PackageableType(fullPath),
+                processTypeVariableValues(ctx.typeVariableValues()),
+                ListIterate.collect(ctx.typeArguments() == null ? Lists.mutable.empty() : ctx.typeArguments().type(), this::processGenericType),
+                ListIterate.collect(ctx.multiplicityArguments() == null ? Lists.mutable.empty() : ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity)
+        );
         genericTypeInstance.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return genericTypeInstance;
     }
@@ -1566,7 +1582,7 @@ public class DomainParseTreeWalker
             {
                 Column column = new Column(
                         PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
-                        PureGrammarParserUtility.fromIdentifier(x.columnType().identifier())
+                        processGenericType(PureGrammarParserUtility.fromIdentifier(x.columnType().identifier()))
                 );
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;
@@ -1587,6 +1603,7 @@ public class DomainParseTreeWalker
         {
             result.multiplicityArguments = ListIterate.collect(ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity);
         }
+        result.typeVariableValues = processTypeVariableValues(ctx.typeVariableValues());
         return result;
     }
 
