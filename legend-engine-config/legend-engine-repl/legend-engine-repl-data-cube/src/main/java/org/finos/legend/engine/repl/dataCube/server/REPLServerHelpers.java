@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -47,6 +48,7 @@ import org.finos.legend.engine.repl.dataCube.server.model.DataCubeQueryColumn;
 import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -199,7 +201,7 @@ public class REPLServerHelpers
             {
                 throw new RuntimeException("Can't launch DataCube: expected to get a relation type");
             }
-            this.initialize(pureModelContextData, ListIterate.collect(RelationTypeHelper.convert(relationType).columns, col -> new DataCubeQueryColumn(col.name, col.type)));
+            this.initialize(pureModelContextData, ListIterate.collect(RelationTypeHelper.convert(relationType).columns, col -> new DataCubeQueryColumn(col.name, HelperValueSpecificationGrammarComposer.printGenericType(col.genericType, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build()))));
         }
 
         public void initializeWithREPLExecutedQuery(ExecutionHelper.ExecuteResultSummary executeResultSummary)

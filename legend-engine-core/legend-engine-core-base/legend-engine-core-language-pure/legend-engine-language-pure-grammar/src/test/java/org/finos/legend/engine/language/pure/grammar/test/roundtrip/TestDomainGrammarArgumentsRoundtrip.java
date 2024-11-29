@@ -19,12 +19,6 @@ import org.junit.Test;
 
 public class TestDomainGrammarArgumentsRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    // TO FIX ------
-    // We don't want to authorize typeParameters but typeArguments for system's parameterized types should be allowed
-    // Unfortunately the parser is considering Result<String> as a type and not a GenericType with rawType=Result and typeArguments = GenericType(rawType=String)
-    // Which means the compiler can't work... We need to parse the GenericType and 'slot' it in the Protocol.
-    // -------------
-
     @Test
     public void testFunctionWithTypeArguments()
     {

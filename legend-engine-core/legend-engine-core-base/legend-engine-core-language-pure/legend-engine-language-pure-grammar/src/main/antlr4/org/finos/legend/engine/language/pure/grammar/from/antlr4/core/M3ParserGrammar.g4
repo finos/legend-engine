@@ -143,6 +143,7 @@ buildMilestoningVariableExpression:             LATEST_DATE | DATE | variable
 ;
 expressionInstance:                             NEW_SYMBOL (variable | qualifiedName)
                                                 (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)? (identifier)?
+                                                (typeVariableValues)?
                                                 PAREN_OPEN
                                                     expressionInstanceParserPropertyAssignment? (COMMA expressionInstanceParserPropertyAssignment)*
                                                 PAREN_CLOSE
@@ -200,7 +201,7 @@ dslExtension:                                   ISLAND_OPEN (dslExtensionContent
 ;
 dslExtensionContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-type:                                           (qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)?)
+type:                                           (qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)?) typeVariableValues?
                                                 |
                                                 (
                                                     BRACE_OPEN
@@ -218,13 +219,13 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                 unitName
 ;
 
-columnInfo:                                     columnName COLON columnType
+columnInfo:                                     columnName COLON type
 ;
 
 columnName: identifier
 ;
 
-columnType: identifier
+typeVariableValues: PAREN_OPEN (instanceLiteral (COMMA instanceLiteral)*)? PAREN_CLOSE
 ;
 
 functionTypePureType:                           type multiplicity

@@ -834,6 +834,17 @@ public class PureModel implements IPureModel
                     // metadata may throw if the instance is not found
                 }
             }
+            if (type == null)
+            {
+                try
+                {
+                    type = metadataAccessor.getPrimitiveType(metadataId);
+                }
+                catch (Exception ignore)
+                {
+                    // metadata may throw if the instance is not found
+                }
+            }
         }
         if (type != null)
         {

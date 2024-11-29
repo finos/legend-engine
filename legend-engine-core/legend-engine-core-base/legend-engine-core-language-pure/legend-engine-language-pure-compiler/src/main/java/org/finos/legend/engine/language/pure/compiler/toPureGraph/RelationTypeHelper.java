@@ -14,17 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
-import org.finos.legend.pure.m3.navigation.relation._RelationType;
-import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 public class RelationTypeHelper
 {
@@ -35,14 +27,9 @@ public class RelationTypeHelper
         {
             Column col = new Column();
             col.name = c._name();
-            col.type = _Column.getColumnType(c)._rawType().getName();
+            col.genericType = CompileContext.convertGenericType(_Column.getColumnType(c));
             return col;
         }).toList();
         return res;
-    }
-
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> convert(RelationType src, ProcessorSupport processorSupport, SourceInformation sourceInformation)
-    {
-        return _RelationType.build(ListIterate.collect(src.columns, c -> (CoreInstance) _Column.getColumnInstance(c.name, false, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(c.type, processorSupport)), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
     }
 }

@@ -1,0 +1,7 @@
+{
+  "name": "core_precise_primitives",
+  "pattern": "(meta::external::catalog::precisePrimitives)(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}
