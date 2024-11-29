@@ -32,8 +32,6 @@ import java.io.IOException;
 @JsonDeserialize(using = PrimitiveType.PrimitiveTypeDeserializer.class)
 public class PrimitiveType extends PackageableElementPtr
 {
-    private static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
     private PrimitiveType()
     {
 
@@ -64,7 +62,7 @@ public class PrimitiveType extends PackageableElementPtr
             JsonNode sourceInformation = node.get("sourceInformation");
             if (sourceInformation != null)
             {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+                result.sourceInformation = jsonParser.getCodec().treeToValue(sourceInformation, SourceInformation.class);
             }
             return result;
         }

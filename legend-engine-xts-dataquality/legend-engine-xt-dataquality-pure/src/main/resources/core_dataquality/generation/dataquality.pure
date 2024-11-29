@@ -514,6 +514,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 function meta::external::dataquality::buildRelationFilterExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1]):FunctionExpression[1]
 {
   let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
+  let assertion = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne().assertion; 
               
    ^SimpleFunctionExpression
    (
@@ -526,9 +527,10 @@ function meta::external::dataquality::buildRelationFilterExpression(dqRelationVa
          ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name='assertion')]),
-                                                          $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne().assertion.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression())
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+                                                          $assertion.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression())
          )
      ]
    )->evaluateAndDeactivate();
 }
+

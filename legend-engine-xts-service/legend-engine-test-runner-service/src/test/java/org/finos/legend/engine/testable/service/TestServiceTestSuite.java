@@ -1204,8 +1204,8 @@ public class TestServiceTestSuite
                         "                                                           | gerParam=1&floatParam=1.123&booleanParam=false\n" +
                         "                                                           |\n" +
                         "Query: booleanParam = false                                | booleanParam: false\n" +
-                        "Query: stringParam = dummy                                 | stringParam: dummy\n" +
                         "Query: floatParam = 1.123                                  | floatParam: 1.123\n" +
+                        "Query: stringParam = dummy                                 | stringParam: dummy\n" +
                         "                                                           |\n" +
                         "                                                           |\n" +
                         "-----------------------------------------------------------------------------------------------------------------------\n")));

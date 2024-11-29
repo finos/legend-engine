@@ -14,22 +14,20 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 
 public class Persistence extends PackageableElement
 {
     public String documentation;
     public Trigger trigger;
-    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
     public PackageableElementPointer service;
     public List<ServiceOutputTarget> serviceOutputTargets;
     public Persister persister;

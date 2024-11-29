@@ -75,7 +75,7 @@ function meta::relational::functions::sqlQueryToString::tests::getLoadFromResult
   if($dbTypeEnum->isNotEmpty(),
   |let dbType = $dbTypeEnum->at(0)->toOne();
   let temporaryTable = meta::relational::functions::sqlQueryToString::tests::createTable([],$dbType);
-  meta::relational::graphFetch::executionPlan::sqlsForInsertIntoTableUsingResultSet($dbType,$temporaryTable);,|[]);
+  meta::relational::graphFetch::executionPlan::sqlsForInsertIntoTableUsingResultSet($temporaryTable, $dbType->createDbConfig());,|[]);
 }
 
 function meta::relational::functions::sqlQueryToString::tests::getDropTempTableSqlStatements(databaseType: String[1]): String[*]

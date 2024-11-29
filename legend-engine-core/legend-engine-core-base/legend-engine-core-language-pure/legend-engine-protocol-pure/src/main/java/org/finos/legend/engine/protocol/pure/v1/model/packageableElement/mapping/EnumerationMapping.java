@@ -15,16 +15,13 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-
-import java.util.List;
 
 public class EnumerationMapping
 {
     public String id;
-    @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
     public PackageableElementPointer enumeration;
     public List<EnumValueMapping> enumValueMappings;
     @Deprecated

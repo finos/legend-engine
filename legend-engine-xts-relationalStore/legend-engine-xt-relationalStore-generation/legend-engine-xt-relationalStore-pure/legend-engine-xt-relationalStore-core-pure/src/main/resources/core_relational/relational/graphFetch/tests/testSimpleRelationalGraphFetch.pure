@@ -12,15 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::runtime::*;
+import meta::relational::functions::database::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::*;
-import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::simple::setup(): Boolean[1]
 {
    meta::relational::tests::createTablesAndFillDb();
+
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(meta::relational::tests::db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   executeInDb('Drop table if exists \"personTable\";', $connection);
+   executeInDb('Create Table \"personTable\"(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',22, 4,1,null);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
+   executeInDb('insert into \"personTable\" (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
+
+   executeInDb('Drop table if exists \"firmTable\";', $connection);
+   executeInDb('Create Table \"firmTable\"(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
+   executeInDb('insert into \"firmTable\" (id, legalName, addressId, ceoId) values (1, \'Firm X\', 8, 1);', $connection);
+   executeInDb('insert into \"firmTable\" (id, legalName, addressId, ceoId) values (2, \'Firm A\', 9, 5);', $connection);
+   executeInDb('insert into \"firmTable\" (id, legalName, addressId, ceoId) values (3, \'Firm B\', 10, 3);', $connection);
+   executeInDb('insert into \"firmTable\" (id, legalName, addressId, ceoId) values (4, \'Firm C\', 11, 7);', $connection);
+
+   true;
 }
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::qualifier::setup(): Boolean[1]
@@ -1348,4 +1371,29 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual('{"students":40,"desks":25}',$result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchWithQuoteIdentifiers():Boolean[1]
+{
+  let tree = #{
+    Person {
+      firstName,
+      lastName,
+      firm {
+        legalName
+      }
+    }
+  }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let result = execute($query, meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual(
+    '[{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}},' +
+    '{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}},' +
+    '{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}},' +
+    '{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}]',
+    $result.values
+  );
 }

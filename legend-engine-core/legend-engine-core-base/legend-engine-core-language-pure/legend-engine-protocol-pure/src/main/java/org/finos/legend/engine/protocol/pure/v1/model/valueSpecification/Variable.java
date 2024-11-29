@@ -15,25 +15,20 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import java.io.IOException;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 
-import java.io.IOException;
-
 @JsonDeserialize(using = Variable.VariableDeserializer.class)
 public class Variable extends ValueSpecification
 {
-    private static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
     public String name;
     public GenericType genericType;
     public Multiplicity multiplicity;
@@ -69,39 +64,34 @@ public class Variable extends ValueSpecification
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
             Variable variable = new Variable();
             variable.name = node.get("name").asText();
 
-            // Backward compatibility -------------------------------------------------------------------
+            // Backward compatibility - old protocol -------------------------------------------------------------------
             if (node.get("class") != null)
             {
                 String _class = node.get("class").asText();
-                GenericType genericType = new GenericType(new PackageableType(_class));
-                if ("meta::pure::mapping::Result".equals(_class) || "Result".equals(_class))
-                {
-                    genericType.typeArguments = Lists.mutable.of(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
-                    genericType.multiplicityArguments = Lists.mutable.of(Multiplicity.PURE_MANY);
-                }
-                variable.genericType = genericType;
+                variable.genericType = new GenericType(new PackageableType(_class));
             }
-            // Backward compatibility -------------------------------------------------------------------
+            // Backward compatibility - old protocol -------------------------------------------------------------------
 
             else if (node.get("genericType") != null)
             {
-                variable.genericType = om.treeToValue(node.get("genericType"), GenericType.class);
+                variable.genericType = codec.treeToValue(node.get("genericType"), GenericType.class);
             }
             if (node.get("multiplicity") != null)
             {
-                variable.multiplicity = om.treeToValue(node.get("multiplicity"), Multiplicity.class);
+                variable.multiplicity = codec.treeToValue(node.get("multiplicity"), Multiplicity.class);
             }
             if (node.get("sourceInformation") != null)
             {
-                variable.sourceInformation = om.treeToValue(node.get("sourceInformation"), SourceInformation.class);
+                variable.sourceInformation = codec.treeToValue(node.get("sourceInformation"), SourceInformation.class);
             }
             if (node.get("supportsStream") != null)
             {
-                variable.supportsStream = om.treeToValue(node.get("supportsStream"), Boolean.class);
+                variable.supportsStream = codec.treeToValue(node.get("supportsStream"), Boolean.class);
             }
             return variable;
         }

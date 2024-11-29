@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
-import com.fasterxml.jackson.databind.util.StdConverter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class ProfileTag
@@ -22,24 +23,17 @@ public class ProfileTag
     public String value;
     public SourceInformation sourceInformation;
 
-    public ProfileTag(String value, SourceInformation sourceInformation)
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public ProfileTag(@JsonProperty("value") String value, @JsonProperty("sourceInformation") SourceInformation sourceInformation)
     {
         this.value = value;
         this.sourceInformation = sourceInformation;
     }
 
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ProfileTag(String value)
     {
         this.value = value;
         this.sourceInformation = null;
-    }
-
-    public static class ToPathSerializerConverter extends StdConverter<ProfileTag, String>
-    {
-        @Override
-        public String convert(ProfileTag tag)
-        {
-            return tag.value;
-        }
     }
 }

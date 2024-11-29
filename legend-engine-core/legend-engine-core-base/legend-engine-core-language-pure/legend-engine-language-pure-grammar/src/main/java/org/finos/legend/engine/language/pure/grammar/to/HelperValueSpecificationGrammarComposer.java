@@ -179,10 +179,16 @@ public class HelperValueSpecificationGrammarComposer
     {
         if ("and".equals(function) || "or".equals(function) || "plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function) || "not".equals(function))
         {
-            if (param instanceof AppliedFunction && isInfix((AppliedFunction) param))
-            {
-                return "(" + param.accept(transformer) + ")";
-            }
+            return possiblyAddParenthesis(param, transformer);
+        }
+        return param.accept(transformer);
+    }
+
+    public static String possiblyAddParenthesis(ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        if (param instanceof AppliedFunction && isInfix((AppliedFunction) param))
+        {
+            return "(" + param.accept(transformer) + ")";
         }
         return param.accept(transformer);
     }

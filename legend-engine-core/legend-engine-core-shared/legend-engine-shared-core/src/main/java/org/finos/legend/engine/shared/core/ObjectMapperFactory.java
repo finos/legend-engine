@@ -19,9 +19,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-
 import java.util.TimeZone;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 
 public class ObjectMapperFactory
 {
@@ -44,6 +43,11 @@ public class ObjectMapperFactory
 
     public static ObjectMapper getNewStandardObjectMapperWithPureProtocolExtensionSupports()
     {
-        return withStandardConfigurations(PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper()));
+        return withStandardConfigurations(
+                // Tactically we will run converters as part of the standard flow
+                PureProtocolObjectMapperFactory.withPureProtocolConverter(
+                        PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper())
+                )
+        );
     }
 }

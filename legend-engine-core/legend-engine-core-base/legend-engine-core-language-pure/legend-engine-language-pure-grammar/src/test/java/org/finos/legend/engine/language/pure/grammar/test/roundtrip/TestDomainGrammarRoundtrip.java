@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
@@ -495,6 +496,229 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "{\n" +
                 "  %1970-01-01\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testInFixFunctionAsParameter()
+    {
+        testFormat("function test::inFix(): Any[1]\n" +
+                        "{\n" +
+                        "  %1970-01-01T00:00:00.000+0000->adjust((123 / 1000000)->cast(@Integer), DurationUnit.SECONDS)\n" +
+                        "}\n",
+                "function test::inFix(): Any[1]\n" +
+                "{\n" +
+                "  %1970-01-01T00:00:00.000+0000->adjust(cast(123 / 1000000, @Integer), DurationUnit.SECONDS)\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testTypeArgumentsAreBackwardCompatibleForOldProtocolMissingIt() throws JsonProcessingException
+    {
+        testComposedGrammar("{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"function\",\n" +
+                "      \"body\": [\n" +
+                "        {\n" +
+                "          \"_type\": \"func\",\n" +
+                "          \"function\": \"new\",\n" +
+                "          \"parameters\": [\n" +
+                "            {\n" +
+                // ---------- type to construct, no type arguments
+                "              \"_type\": \"packageableElementPtr\",\n" +
+                "              \"fullPath\": \"TdsOlapRank\"\n" +
+                // ---------- type to construct, no type arguments
+                "            },\n" +
+                "            {\n" +
+                "              \"_type\": \"string\",\n" +
+                "              \"value\": \"\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "              \"_type\": \"collection\",\n" +
+                "              \"multiplicity\": {\n" +
+                "                \"lowerBound\": 1,\n" +
+                "                \"upperBound\": 1\n" +
+                "              },\n" +
+                "              \"values\": [\n" +
+                "                {\n" +
+                "                  \"_type\": \"keyExpression\",\n" +
+                "                  \"add\": false,\n" +
+                "                  \"expression\": {\n" +
+                "                    \"_type\": \"lambda\",\n" +
+                "                    \"body\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"integer\",\n" +
+                "                        \"value\": 1\n" +
+                "                      }\n" +
+                "                    ],\n" +
+                "                    \"parameters\": [\n" +
+                "                      {\n" +
+                "                        \"_type\": \"var\",\n" +
+                "                        \"genericType\": {\n" +
+                "                          \"multiplicityArguments\": [],\n" +
+                "                          \"rawType\": {\n" +
+                "                            \"_type\": \"packageableType\",\n" +
+                "                            \"fullPath\": \"TDSRow\"\n" +
+                "                          },\n" +
+                "                          \"typeArguments\": [],\n" +
+                "                          \"typeVariableValues\": []\n" +
+                "                        },\n" +
+                "                        \"multiplicity\": {\n" +
+                "                          \"lowerBound\": 1,\n" +
+                "                          \"upperBound\": 1\n" +
+                "                        },\n" +
+                "                        \"name\": \"r\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  },\n" +
+                "                  \"key\": {\n" +
+                "                    \"_type\": \"string\",\n" +
+                "                    \"value\": \"func\"\n" +
+                "                  }\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"name\": \"new__Any_1_\",\n" +
+                "      \"package\": \"test\",\n" +
+                "      \"parameters\": [],\n" +
+                "      \"postConstraints\": [],\n" +
+                "      \"preConstraints\": [],\n" +
+                "      \"returnGenericType\": {\n" +
+                "        \"multiplicityArguments\": [],\n" +
+                "        \"rawType\": {\n" +
+                "          \"_type\": \"packageableType\",\n" +
+                "          \"fullPath\": \"Any\"\n" +
+                "        },\n" +
+                "        \"typeArguments\": [],\n" +
+                "        \"typeVariableValues\": []\n" +
+                "      },\n" +
+                "      \"returnMultiplicity\": {\n" +
+                "        \"lowerBound\": 1,\n" +
+                "        \"upperBound\": 1\n" +
+                "      },\n" +
+                "      \"stereotypes\": [],\n" +
+                "      \"taggedValues\": [],\n" +
+                "      \"tests\": []\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                        "}\n");
+
+        testComposedGrammar("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"integer\",\n" +
+                        "          \"value\": 1\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"new_Result_1__Any_1_\",\n" +
+                        "      \"package\": \"test\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        // ---------- old variable type inside class property
+                        "          \"class\": \"Result\",\n" +
+                        // ---------- old variable type inside class property
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"name\": \"res\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnGenericType\": {\n" +
+                        "        \"multiplicityArguments\": [],\n" +
+                        "        \"rawType\": {\n" +
+                        "          \"_type\": \"packageableType\",\n" +
+                        "          \"fullPath\": \"Any\"\n" +
+                        "        },\n" +
+                        "        \"typeArguments\": [],\n" +
+                        "        \"typeVariableValues\": []\n" +
+                        "      },\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 1,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": [],\n" +
+                        "      \"tests\": []\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+                        "{\n" +
+                        "  1\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testConvertBasicColumnSpecification()
+    {
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello')\n" +
+                    "}\n",
+                "function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  ^BasicColumnSpecification(func=r: TDSRow[1]|1, name='hello')\n" +
+                    "}\n");
+
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::col(r: TDSRow[1]|1, 'hello', 'documentation here')\n" +
+                    "}\n",
+                "function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  ^meta::pure::tds::BasicColumnSpecification(documentation='documentation here', func=r: TDSRow[1]|1, name='hello')\n" +
+                    "}\n");
+    }
+
+    @Test
+    public void testConvertTdsOlapRank()
+    {
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                    "}\n",
+                "function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  ^meta::pure::tds::TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                    "}\n");
+
+        testFormat("function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  meta::pure::tds::func(r: TDSRow[1]|1)\n" +
+                    "}\n",
+                "function test::new(): Any[1]\n" +
+                    "{\n" +
+                    "  ^TdsOlapRank(func=r: TDSRow[1]|1)\n" +
+                    "}\n");
+    }
+
+    @Test
+    public void testConvertResult()
+    {
+        testFormat("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
+                    "{\n" +
+                    "  1\n" +
+                    "}\n",
+                "function test::new(res: Result[1]): Any[1]\n" +
+                    "{\n" +
+                    "  1\n" +
+                    "}\n");
     }
 
     @Test

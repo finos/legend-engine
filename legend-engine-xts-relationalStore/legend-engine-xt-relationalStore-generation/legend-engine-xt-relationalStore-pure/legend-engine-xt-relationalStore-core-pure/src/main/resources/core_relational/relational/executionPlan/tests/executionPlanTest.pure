@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::graphFetch::executionPlan::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
@@ -2627,3 +2628,46 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
 
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTableStrategy():Boolean[1]
+{
+  let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  let rootNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName = $rootNode.processedTempTableName;
+  assertEquals('temp_table_node_0', $processedTempTableName);
+  let tempTableStrategy = $rootNode.tempTableStrategy;
+  assertEquals('CREATE LOCAL TEMPORARY TABLE temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('INSERT INTO temp_table_node_0 SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('Drop table if exists temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTableStrategyWithQuoteIdentifiers():Boolean[1]
+{
+  let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
+  let rootNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName = $rootNode.processedTempTableName;
+  assertEquals('"temp_table_node_0"', $processedTempTableName);
+  let tempTableStrategy = $rootNode.tempTableStrategy;
+  assertEquals('CREATE LOCAL TEMPORARY TABLE "temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('INSERT INTO "temp_table_node_0" SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('Drop table if exists "temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
