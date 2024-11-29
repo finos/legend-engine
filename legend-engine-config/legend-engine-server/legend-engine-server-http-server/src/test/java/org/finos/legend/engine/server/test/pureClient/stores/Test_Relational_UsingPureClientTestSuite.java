@@ -18,7 +18,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
-import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -36,7 +35,7 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                 () ->
                 {
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
-                    Predicate<? super CoreInstance> filter  = ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport()) && !isFCTTest(ci, executionSupport.getProcessorSupport());
+                    Predicate<? super CoreInstance> filter  = ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport()) && !isFCTTest(ci, executionSupport.getProcessorSupport());
                     TestSuite suite = new TestSuite();
                     //        suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::constraints", executionSupport.getProcessorSupport(), filter), executionSupport));
                     //        suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::testDataGeneration::tests::alloy", executionSupport.getProcessorSupport(), filter), executionSupport));
