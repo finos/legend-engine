@@ -58,6 +58,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.measure.Measure;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -185,17 +186,18 @@ public class HelperModelBuilder
         };
     }
 
-    public static void checkCompatibility(CompileContext context, Type actualReturnType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, Type signatureType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    public static void checkCompatibility(CompileContext context, GenericType actualReturnType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, GenericType signatureType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
     {
         checkTypeCompatibility(context, actualReturnType, signatureType, errorStub, errorSourceInformation);
         checkMultiplicityCompatibility(actualMultiplicity, signatureMultiplicity, errorStub, errorSourceInformation);
     }
 
-    public static void checkTypeCompatibility(CompileContext context, Type actualReturnType, Type signatureType, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    public static void checkTypeCompatibility(CompileContext context, GenericType actualReturnType, GenericType signatureType, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
     {
-        if (signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()))
+        ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
+        if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(actualReturnType, signatureType, ps))//signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
-            throw new EngineException(errorStub + " - Type error: '" + getTypeFullPath(actualReturnType, context.pureModel.getExecutionSupport()) + "' is not a subtype of '" + getTypeFullPath(signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(errorStub + " - Type error: '" + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(actualReturnType, true, ps) + "' is not a subtype of '" + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(signatureType, true, ps) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
         }
     }
 

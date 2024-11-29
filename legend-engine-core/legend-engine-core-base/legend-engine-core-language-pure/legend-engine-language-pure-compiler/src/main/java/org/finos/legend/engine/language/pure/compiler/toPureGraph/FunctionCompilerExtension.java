@@ -101,7 +101,7 @@ public class FunctionCompilerExtension implements CompilerExtension
                         {
                             for (int i = 0; i < size; i++)
                             {
-                                HelperModelBuilder.checkCompatibility(context, ps.get(i)._genericType()._rawType(), ps.get(i)._multiplicity(), vs.get(i)._genericType()._rawType(), vs.get(i)._multiplicity(), "Error in function '" + functionFullName + "'", function.body.get(function.body.size() - 1).sourceInformation);
+                                HelperModelBuilder.checkCompatibility(context, ps.get(i)._genericType(), ps.get(i)._multiplicity(), vs.get(i)._genericType(), vs.get(i)._multiplicity(), "Error in function '" + functionFullName + "'", function.body.get(function.body.size() - 1).sourceInformation);
                             }
                         }
                         catch (Exception e)
@@ -132,7 +132,7 @@ public class FunctionCompilerExtension implements CompilerExtension
             throw e;
         }
         FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
-        HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
+        HelperModelBuilder.checkCompatibility(context, body.getLast()._genericType(), body.getLast()._multiplicity(), fType._returnType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
         ctx.pop();
         targetFunc._expressionSequence(body);
         HelperFunctionBuilder.processFunctionSuites(function, targetFunc, context, ctx);

@@ -50,4 +50,12 @@ public class GenericType
         this.typeArguments = typeArguments;
         this.multiplicityArguments = multiplicityArguments;
     }
+
+    public GenericType(Type rawType, List<ValueSpecification> typeVariableValues, List<GenericType> typeArguments, List<Multiplicity> multiplicityArguments)
+    {
+        this.rawType = rawType;
+        this.typeVariableValues = typeVariableValues;
+        this.typeArguments = typeArguments;
+        this.multiplicityArguments = multiplicityArguments;
+    }
 }

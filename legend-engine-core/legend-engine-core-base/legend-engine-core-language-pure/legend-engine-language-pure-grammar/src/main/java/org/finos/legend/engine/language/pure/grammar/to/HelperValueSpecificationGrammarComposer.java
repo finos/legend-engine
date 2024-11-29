@@ -374,7 +374,8 @@ public class HelperValueSpecificationGrammarComposer
                                 ListIterate.collect(genericType.typeArguments, x -> printGenericType(x, transformer)).makeString(", ") +
                                 (genericType.multiplicityArguments.isEmpty() ? "" : "|" + ListIterate.collect(genericType.multiplicityArguments, HelperDomainGrammarComposer::renderMultiplicity).makeString(",")) +
                                 ">"
-                );
+                ) +
+                ((genericType.typeVariableValues.isEmpty()) ? "" : "(" + ListIterate.collect(genericType.typeVariableValues, x -> x.accept(transformer)).makeString(",") + ")");
     }
 
     public static String printType(Type type, DEPRECATED_PureGrammarComposerCore transformer)
@@ -385,7 +386,7 @@ public class HelperValueSpecificationGrammarComposer
         }
         else if (type instanceof RelationType)
         {
-            return "(" + ListIterate.collect(((RelationType) type).columns, x -> x.name + ":" + x.type).makeString(", ") + ")";
+            return "(" + ListIterate.collect(((RelationType) type).columns, x -> x.name + ":" + printGenericType(x.genericType, transformer)).makeString(", ") + ")";
         }
         throw new RuntimeException(type.getClass().getSimpleName() + ": Not supported");
     }

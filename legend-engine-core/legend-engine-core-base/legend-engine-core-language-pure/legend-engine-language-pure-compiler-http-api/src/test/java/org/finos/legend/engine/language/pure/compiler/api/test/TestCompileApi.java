@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -115,7 +116,7 @@ public class TestCompileApi
         Assert.assertEquals(1, relationType.columns.size());
         Column column = relationType.columns.get(0);
         Assert.assertEquals("Person Name", column.name);
-        Assert.assertEquals("String", column.type);
+        Assert.assertEquals("String", ((PackageableType) column.genericType.rawType).fullPath);
     }
 
 }

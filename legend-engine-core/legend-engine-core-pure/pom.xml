@@ -33,6 +33,7 @@
         <module>legend-engine-pure-code-functions-relation</module>
         <module>legend-engine-pure-code-functions-unclassified</module>
         <module>legend-engine-pure-code-core-extension</module>
+        <module>legend-engine-pure-code-precisePrimitives-pure</module>
         <module>legend-engine-pure-platform-modular-generation</module>
     </modules>
 </project>

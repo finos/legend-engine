@@ -17,41 +17,32 @@ package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-public class TestDomainGrammarArgumentsRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestDomainTypeVariablesRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void testFunctionWithTypeArguments()
+    public void testFunctionWithTypeHavingTypeVariableValues()
     {
-        test("function withPath::f(s: Result<String>[1]): Result<String>[0..1]\n" +
+        test("function withPath::f(s: Result(1)[1]): Result(1,'a')[0..1]\n" +
                 "{\n" +
                 "  []\n" +
                 "}\n");
     }
 
     @Test
-    public void testClassPropertiesWithTypeArguments()
+    public void testFunctionWithTypeHavingTypeVariableValuesAndGenerics()
     {
-        test("Class my::Class\n" +
-                "{\n" +
-                "  prop1: Result<String>[1];\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testCast()
-    {
-        test("function withPath::f(s: a::Result<x::String>[1]): Relation<(a:Integer)>[0..1]\n" +
-                "{\n" +
-                "  []->cast(@Relation<(a:Integer)>)\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testFunc()
-    {
-        test("function withPath::f(s: a::Type[1]): String[0..1]\n" +
+        test("function withPath::f(s: Result<String>(1)[1]): Result<Integer>(1,'a')[0..1]\n" +
                 "{\n" +
                 "  []\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testClassWithPropertyHavingTypeVariableValues()
+    {
+        test("Class A\n" +
+                "{\n" +
+                "  name: VARCHAR(200)[1];\n" +
                 "}\n");
     }
 }
