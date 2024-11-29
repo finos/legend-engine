@@ -15,10 +15,10 @@
 package org.finos.legend.engine.protocol;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,6 +39,7 @@ import java.util.stream.StreamSupport;
 
 public class AnyDeserializer extends JsonDeserializer<Object>
 {
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final List<Class<?>> classes;
 
     public AnyDeserializer(List<Class<?>> classes)
@@ -48,9 +50,9 @@ public class AnyDeserializer extends JsonDeserializer<Object>
     @Override
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
     {
-        JsonNode node = jsonParser.readValueAsTree();
+        JsonNode node = OBJECT_MAPPER.readTree(jsonParser);
 
-        Object value = deserialize(jsonParser.getCodec(), node);
+        Object value = deserialize(node);
 
         if (value == null && !(node instanceof NullNode))
         {
@@ -60,16 +62,16 @@ public class AnyDeserializer extends JsonDeserializer<Object>
         return value;
     }
 
-    private List<Object> deserialize(ObjectCodec codec, ArrayNode node)
+    private List<Object> deserialize(ArrayNode node)
     {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), Spliterator.ORDERED), false).map(node1 -> deserialize(codec, node1)).collect(Collectors.toList());
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(node.elements(), Spliterator.ORDERED), false).map(this::deserialize).collect(Collectors.toList());
     }
 
-    private Object deserialize(ObjectCodec codec, JsonNode node)
+    private Object deserialize(JsonNode node)
     {
         if (node instanceof ArrayNode)
         {
-            return deserialize(codec, (ArrayNode) node);
+            return deserialize((ArrayNode) node);
         }
 
         if (node instanceof NullNode)
@@ -77,9 +79,9 @@ public class AnyDeserializer extends JsonDeserializer<Object>
             return null;
         }
 
-        for (Class<?> clazz : this.classes)
+        for (Class clazz : this.classes)
         {
-            Object value = tryDeserialize(codec, node, clazz);
+            Object value = tryDeserialize(node, clazz);
             if (value != null)
             {
                 return value;
@@ -89,7 +91,7 @@ public class AnyDeserializer extends JsonDeserializer<Object>
         throw new RuntimeException(String.format("Failed to deserialize '%s' to types [%s]", node, this.classes));
     }
 
-    private Object tryDeserialize(ObjectCodec codec, JsonNode node, Class<?> clazz)
+    private Object tryDeserialize(JsonNode node, Class clazz)
     {
         try
         {
@@ -113,7 +115,7 @@ public class AnyDeserializer extends JsonDeserializer<Object>
             {
                 return null;
             }
-            return codec.treeToValue(node, clazz);
+            return OBJECT_MAPPER.treeToValue(node, clazz);
 
         }
         catch (Exception e)
