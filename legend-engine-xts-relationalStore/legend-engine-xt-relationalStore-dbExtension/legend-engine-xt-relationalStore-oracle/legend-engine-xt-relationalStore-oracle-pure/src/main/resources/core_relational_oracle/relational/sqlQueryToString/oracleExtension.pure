@@ -31,6 +31,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
       selectSQLQueryProcessor = processSelectSQLQueryForOracle_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForOracle_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      tableAliasProcessor = processTableAliasOracle_String_1__String_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForOracle()
    );
@@ -233,7 +234,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
-    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)'))
@@ -342,35 +343,41 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
                 dropSchema =  translateDropSchemaStatementForOracle_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
                 createTable =  translateCreateTableStatementForOracle_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementForOracle_DropTableSQL_1__DbConfig_1__String_1_,
-                loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+                loadTable =  loadValuesToDbTableOracle_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::translateCreateSchemaStatementForOracle(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
 {
-    // Oracle doesn't really have schema's
-    'BEGIN\n' +
-    '   NULL;\n' +
-    'END;'
+    // Oracle doesn't really have schema's it has users instead
+    if ($createSchemaSQL.schema.name == 'default',
+        |  [], 
+        |
+    'declare\n' +
+    'userexist integer;\n' +
+    'begin\n' +
+    '  select count(*) into userexist from dba_users where username=\'' + $createSchemaSQL.schema.name->toUpper() + '\';\n' +
+    '  if (userexist = 0) then\n' +
+    '    execute immediate \'create user ' + $createSchemaSQL.schema.name + ' identified by ' + $createSchemaSQL.schema.name + '\';\n' +
+    '    execute immediate \'alter user ' + $createSchemaSQL.schema.name + ' quota 100m on USERS\';\n' +
+    '  end if;\n' +
+    'end;')
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::translateDropSchemaStatementForOracle(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
 {
      // Oracle doesn't really have schema's
      // Could use this to drop a user but doesn't seem like the right equivalence
-     //  if ($dropSchemaSQL.schema.name == 'default',
-     //    |  [],
-     //    | 'BEGIN\n' +
-     //      '    EXECUTE IMMEDIATE \'DROP USER ' + $dropSchemaSQL.schema.name + ' CASCADE\';\n' +
-     //      'EXCEPTION\n' +
-     //      '   WHEN OTHERS THEN\n' +
-     //      '         IF SQLCODE != -1918 THEN\n' +
-     //      '            RAISE;\n' +
-     //      '         END IF;\n' +
-     //      'END;')
-     'BEGIN\n' +
-     '   NULL;\n' +
-     'END;'
+      if ($dropSchemaSQL.schema.name == 'default',
+        |  [],
+        | 'BEGIN\n' +
+          '    EXECUTE IMMEDIATE \'DROP USER ' + $dropSchemaSQL.schema.name + ' CASCADE\';\n' +
+          'EXCEPTION\n' +
+          '   WHEN OTHERS THEN\n' +
+          '         IF SQLCODE != -1918 THEN\n' +
+          '            RAISE;\n' +
+          '         END IF;\n' +
+          'END;')
 }
 
 
@@ -396,18 +403,40 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   );
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processTableAliasOracle(input: String[1], alias: String[1]): String[1]
+{
+   //oracle does not support AS in table alias
+   $input + ' ' + $alias
+}
+
 function meta::relational::functions::sqlQueryToString::oracle::translateCreateTableStatementForOracle(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+  let tableName = if($t.schema.name == 'default',|'',|$t.schema.name->toUpper()+'.')+$t.name;
+  'BEGIN\n' +
+  '    EXECUTE IMMEDIATE \'' + 'Create Table '+ $tableName +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextDefault($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' ))
                     + if ($t.primaryKey->isEmpty() || $applyConstraints == false || !$c->in($t.primaryKey), | '', | ' PRIMARY KEY')
          )
         ->joinStrings(',')
-      +');';
+      +')\';\n' +
+  '    EXECUTE IMMEDIATE \'GRANT SELECT,INSERT,UPDATE,DELETE ON ' + $tableName + ' TO PUBLIC\';\n' +
+  'END;';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::loadValuesToDbTableOracle(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+    //Oracle doesn't like having a semicolon on the end of the statement
+    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ')';
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::regexpMatchOracle(query: String[1]): String[1]
