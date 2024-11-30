@@ -46,9 +46,9 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
 
             // Contains
-            one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.CO_Firm (_pureId,legalName) values (10,'f1');"),
-            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: operator does not exist: integer = text\n  Hint: No operator matches the given name and argument type(s). You might need to add explicit type casts.\n  Position: 10"),
-            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Error while executing: insert into leSchema.ClassWithoutEquality (_pureId,name) values (10,'f1');"),
+            one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.CO_Firm (\"_pureId\",legalName) values (10,'f1')"),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00932: inconsistent datatypes: expected NUMBER got DATE\n\nhttps://docs.oracle.com/error-help/db/ora-00932/"),
+            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Error while executing: insert into leSchema.ClassWithoutEquality (\"_pureId\",name) values (10,'f1')"),
 
             // Drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
@@ -76,12 +76,12 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::add(?)'"),
             one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (_pureId,firstName,lastName,otherNames) values (10,'John','Roe',null);"),
+            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (\"_pureId\",firstName,lastName,otherNames) values (10,'John','Roe',null)"),
             one("meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (_pureId,firstName,lastName,otherNames) values (10,'John','Roe',null);"),
+            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (\"_pureId\",firstName,lastName,otherNames) values (10,'John','Roe',null)"),
             one("meta::pure::functions::collection::tests::fold::testFoldWithEmptyAccumulator_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::add(?)'"),
             one("meta::pure::functions::collection::tests::fold::testFoldWithSingleValue_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::add(?)'"),
-            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (_pureId,firstName,lastName,otherNames) values (10,null,'init:',null);"),
+            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Error while executing: insert into leSchema.FO_Person (\"_pureId\",firstName,lastName,otherNames) values (10,null,'init:',null)"),
             one("meta::pure::functions::collection::tests::fold::testIntegerSum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::collection::tests::fold::testStringSum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'fold_T_MANY__Function_1__V_m__V_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
@@ -218,7 +218,7 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
 
             // Is
             one("meta::pure::functions::boolean::tests::testIsEnum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
+            one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (\"_pureId\",stringId,intId) values (10,'firstSide',1)"),
             one("meta::pure::functions::boolean::tests::testIsPrimitive_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             // At
@@ -235,11 +235,11 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             //Date
-            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: interval out of range"),
-            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: interval out of range"),
+            one("meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: ORA-30088: datetime/interval precision is out of range\n\nhttps://docs.oracle.com/error-help/db/ora-30088/"),
+            one("meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: ORA-30088: datetime/interval precision is out of range\n\nhttps://docs.oracle.com/error-help/db/ora-30088/"),
             one("meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_", "\"\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000\""),
-            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: timestamp out of range"),
-            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: interval out of range"),
+            one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: ORA-30088: datetime/interval precision is out of range\n\nhttps://docs.oracle.com/error-help/db/ora-30088/"),
+            one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: ORA-30088: datetime/interval precision is out of range\n\nhttps://docs.oracle.com/error-help/db/ora-30088/"),
             one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(?)'"),
             one("meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__StrictDate_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
@@ -309,8 +309,13 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "\"\nexpected: %2014-02-27T10:01:35.231+0000\nactual:   %2014-02-27T10:01:35+0000\""),
 
             // ParseDecimal
-            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: invalid input syntax for type numeric: \"3.14159d\""),
-            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.000D\nactual:   0.0D\"")
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-01722: invalid number\n\nhttps://docs.oracle.com/error-help/db/ora-01722/"),
+            one("meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_", "\"\nexpected: 0.0D\nactual:   0D\""),
+
+            //Trig
+            one("meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"COT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"),
+            one("meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"COT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/")
+
     );
 
     public static Test suite()
