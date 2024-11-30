@@ -42,13 +42,13 @@ public class Test_Relational_Oracle_GrammarFunctions_PCT extends PCTReportConfig
             // Eq
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_", "\"Assert failed\""),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (\"_pureId\",stringId,intId) values (10,'firstSide',1)"),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::eq(SideClass[*],Nil[1])'"),
 
             // Equal
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_", "\"Assert failed\""),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (\"_pureId\",stringId,intId) values (10,'firstSide',1)"),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""),
@@ -92,19 +92,20 @@ public class Test_Relational_Oracle_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             // Minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: bigint out of range"),
+            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\""),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "For input string: \"-9223372036854775850\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
-            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: The column index is out of range: 1, number of columns: 0."),
+            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
 
             // Plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: bigint out of range"),
+            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\""),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "For input string: \"9223372036854775826\""),
+            one("meta::pure::functions::math::tests::plus::testPlusNumber_Function_1__Boolean_1_", "\"\nexpected: 32.0\nactual:   32\""),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
 
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: bigint out of range"),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "For input string: \"18446744073709551614\""),
 
             // Plus (String)
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
