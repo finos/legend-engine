@@ -179,7 +179,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' || ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForOracle($p)})),
-    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='extract(day from %s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='extract(dow from %s)')),
