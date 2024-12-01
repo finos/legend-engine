@@ -1,0 +1,151 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::postgresSql::parser::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::postgres::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::external::store::relational::sqlPlanning::utils::*;
+import meta::pure::extension::*;
+
+Class meta::external::store::relational::sqlPlanning::ruleBasedTransformation::TransformedQuery
+{
+  hasChanged: Boolean[1];
+  query: Query[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::RuleBasedSqlTransformer
+{
+  name             : String[1];
+  enabledByDefault : Boolean[1];
+  databaseSupport  : DatabaseSupport[1];
+
+  transformSqlQuery(query: Query[1], config: SqlPlanningConfig[1], debug: DebugContext[1], extensions: Extension[*])
+  {
+    fail('Needs to be implemented in sub classes'); ^TransformedQuery(hasChanged = false, query = $query);
+  }: TransformedQuery[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::DatabaseSupport
+{
+  isDatabaseTypeSupported(dbType: String[1]) { fail('Needs to be implemented in sub classes'); false; }: Boolean[1];
+}
+
+Class meta::external::store::relational::sqlPlanning::ruleBasedTransformation::AllDatabaseSupport extends DatabaseSupport
+{
+  isDatabaseTypeSupported(dbType: String[1]) { true }: Boolean[1];
+}
+
+Class meta::external::store::relational::sqlPlanning::ruleBasedTransformation::LimitedDatabaseSupport extends DatabaseSupport
+{
+  supportedDatabaseTypes: String[*];
+  isDatabaseTypeSupported(dbType: String[1]) { $dbType->in($this.supportedDatabaseTypes) }: Boolean[1];
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::executeRuleBasedTransformersOnQuery(query: Query[1], config: SqlPlanningConfig[1], debug: DebugContext[1], extensions: Extension[*]): Query[1]
+{
+  let ruleBasedTransformers = $config->fetchInScopeRuleBasedTransformers($extensions);
+  $query->executeRuleBasedTransformersOnQuery($config, $ruleBasedTransformers, $debug, $extensions);
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::executeRuleBasedTransformersOnQuery(query: Query[1], config: SqlPlanningConfig[1], rules: RuleBasedSqlTransformer[*], debug: DebugContext[1], extensions: Extension[*]): Query[1]
+{
+  $query->executeRuleBasedTransformersOnQueryTillFixedPointOrMaxIterations($config, $rules, 1, 10, $debug, $extensions).query
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::executeRuleBasedTransformersOnQueryTillFixedPointOrMaxIterations(query: Query[1], config: SqlPlanningConfig[1], rules: RuleBasedSqlTransformer[*], currentIteration: Integer[1], maxIterations: Integer[1], debug: DebugContext[1], extensions: Extension[*]): TransformedQuery[1]
+{
+  if ($currentIteration > $maxIterations,
+      | ^TransformedQuery(hasChanged = false, query = $query),
+      | 
+        let debugPrefix = '[RuleBasedTransformation] Iteration (' + $currentIteration->toString() + '/' + $maxIterations->toString() + ')';
+        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.SSS})', now()) + range(40)->map(x | '-')->joinStrings() + '\n'));
+        print(if(!$debug.debug, |'', | $debug.space + 'Rules: ' + $rules.name->joinStrings('[', ', ', ']') + '\n'));
+        print(if(!$debug.debug, |'', | $debug.space + 'Starting Query: ' + $query->printDebugQuery($config, $extensions) + '\n'));
+
+        let transformed = $rules->fold({t, agg |
+          print(if(!$debug.debug, |'', | $debug->indent().space + range(50)->map(x | '-')->joinStrings() + '\n'));
+          print(if(!$debug.debug, |'', | $debug->indent().space + 'Running rule: ' + $t.name + '\n'));
+          let res = $t->executeSubTypeQualifierAndCast('transformSqlQuery', [list($agg.query), list($config), list($debug->indent()), list($extensions)], @TransformedQuery);
+          if ($res.hasChanged,
+              | print(if(!$debug.debug, |'', | $debug->indent().space + 'Rule Result: Query Changed\n'));
+                print(if(!$debug.debug, |'', | $debug->indent().space + 'Updated Query: ' + $res.query->printDebugQuery($config, $extensions) + '\n'));,
+              | print(if(!$debug.debug, |'', | $debug->indent().space + 'Rule Result: Query Unchanged\n'));
+          );
+          ^TransformedQuery(hasChanged = $res.hasChanged || $agg.hasChanged, query = $res.query);
+        }, ^TransformedQuery(hasChanged = false, query = $query));
+
+        print(if(!$debug.debug, |'', | $debug->indent().space + range(50)->map(x | '-')->joinStrings() + '\n'));
+        if ($transformed.hasChanged,
+            | print(if(!$debug.debug, |'', | $debug.space + 'Iteration Result: Query Changed\n'));
+              print(if(!$debug.debug, |'', | $debug.space + 'Updated Query: ' + $transformed.query->printDebugQuery($config, $extensions) + '\n'));,
+            | print(if(!$debug.debug, |'', | $debug.space + 'Iteration Result: Query Unchanged\n'));
+        );
+        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.SSS})', now()) + range(40)->map(x | '-')->joinStrings() + '\n\n'));
+
+        if ($transformed.hasChanged,
+            | $transformed.query->executeRuleBasedTransformersOnQueryTillFixedPointOrMaxIterations($config, $rules, $currentIteration + 1, $maxIterations, $debug, $extensions),
+            | $transformed
+        );
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::fetchInScopeRuleBasedTransformers(config: SqlPlanningConfig[1], extensions: Extension[*]): RuleBasedSqlTransformer[*]
+{
+  let defaultTransformers = meta::external::store::relational::sqlPlanning::ruleBasedTransformation::defaultRuleBasedSqlTransformers();
+  let extensionTransformers = $extensions->map(e | $e.moduleExtension('SqlPlanning')->cast(@SqlPlanningModuleExtension).sqlPlanning_ruleBasedTransformation_extraRuleBasedSqlTransformers);
+
+  let allTransformers = $defaultTransformers->concatenate($extensionTransformers);
+
+  let filteredTransformers = $allTransformers->filter({t |
+    if ($t.databaseSupport->meta::external::store::relational::sqlPlanning::utils::executeSubTypeQualifierAndCast('isDatabaseTypeSupported', list($config.dbType), @Boolean) == true,
+        | // Transformer supported for database type
+          if ($t.enabledByDefault,
+              | // TODO: Check if excluded in connection
+                true,
+              | // TODO: Check if included in connection
+                false
+          ),
+        | false
+    ) 
+  });
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::defaultRuleBasedSqlTransformers(): RuleBasedSqlTransformer[*]
+{
+  [
+    // meta::external::store::relational::sqlPlanning::ruleBasedTransformation::filterPushDown::filterPushDownSqlTransformer()
+  ]
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::runSqlRuleBasedTransformationTest(originalQuery: String[1], expectedQuery: String[1], rules: RuleBasedSqlTransformer[*]): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest($originalQuery, $expectedQuery, $rules, ^SqlPlanningConfig(dbType = 'Postgres'), postgresSqlDialectExtension())
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::runSqlRuleBasedTransformationTest(originalQuery: String[1], expectedQuery: String[1], rules: RuleBasedSqlTransformer[*], config: SqlPlanningConfig[1], extensions: Extension[*]): Boolean[1]
+{
+  let debug = noDebug();
+
+  let parsedQuery = parseSqlStatement($originalQuery)->cast(@Query);
+  print(if(!$debug.debug, |'', | $debug.space + '>[RuleBasedTransformationTest] Original Query: \n' + $parsedQuery->printDebugQuery($config, true, $extensions) + '\n'));
+
+  let transformedQuery = $parsedQuery->executeRuleBasedTransformersOnQuery($config, $rules, $debug, $extensions);
+  let resultSqlString = $transformedQuery->printDebugQuery($config, true, $extensions);
+  print(if(!$debug.debug, |'', | $debug.space + '>[RuleBasedTransformationTest] Transformed Query: \n' + $resultSqlString + '\n'));
+
+  assertEquals($expectedQuery, $resultSqlString);
+}

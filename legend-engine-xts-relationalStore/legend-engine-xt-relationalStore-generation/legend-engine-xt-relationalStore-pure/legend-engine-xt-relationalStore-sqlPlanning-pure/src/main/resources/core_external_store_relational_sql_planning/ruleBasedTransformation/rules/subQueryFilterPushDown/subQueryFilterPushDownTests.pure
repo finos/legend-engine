@@ -1,0 +1,717 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::*;
+import meta::pure::extension::*;
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testSimplePushDown(): Boolean[1]
+{
+  // Simple filter push down
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      root.AGE = 22\n' + // Filter pushed into subquery
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithDifferentColumnNameInSubQuery(): Boolean[1]
+{
+  // Different column names in subquery
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.first_name AS FIRSTNAME,\n' +
+    '      root.last_name AS LASTNAME,\n' +
+    '      root.age_int AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.first_name AS FIRSTNAME,\n' +
+    '      root.last_name AS LASTNAME,\n' +
+    '      root.age_int AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      root.age_int = 22\n' + // Filter pushed into subquery with changed column name
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithExistingFilterInSubQuery(): Boolean[1]
+{
+  // Filter push down with existing filter
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      root.FIRSTNAME = \'Peter\'\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      root.FIRSTNAME = \'Peter\' AND root.AGE = 22\n' + // Filter pushed into subquery with AND operation
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWildcardInSubQuery(): Boolean[1]
+{
+  // No filter pushdown with * columns in subquery
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      *\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      *\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithJoin(): Boolean[1]
+{
+  // Additional joins
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.first_name AS FIRSTNAME,\n' +
+    '      root.last_name AS LASTNAME,\n' +
+    '      root.age_int AS AGE,\n' +
+    '      root.firm_id AS FIRMID\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmTable AS firm\n' +
+    '    ON (root.FIRMID = firm.ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    addressTable AS address\n' +
+    '    ON (firm.ADDRESSID = address.ID)\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.first_name AS FIRSTNAME,\n' +
+    '      root.last_name AS LASTNAME,\n' +
+    '      root.age_int AS AGE,\n' +
+    '      root.firm_id AS FIRMID\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      root.age_int = 22\n' + // Filter pushed into subquery
+    '  ) AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmTable AS firm\n' +
+    '    ON (root.FIRMID = firm.ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    addressTable AS address\n' +
+    '    ON (firm.ADDRESSID = address.ID)\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfComplexOperations(): Boolean[1]
+{
+  // Filter push down of complex operations
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)\n' + // Complex Filter pushed into subquery
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfOperationsOnMultipleColumns(): Boolean[1]
+{
+  // Filter push down of operations on multiple columns
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    WHERE\n' +
+    '      (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0\n' + // Filters on multiple columns pushed into subquery
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  (len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10)) AND root.AGE = 22 AND len(root.FIRSTNAME) >= 0',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushdownForOrClauses(): Boolean[1]
+{
+  // No push down for OR clauses
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10) OR root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  len(root.FIRSTNAME) = 0 OR (root.FIRSTNAME ~~ \'J%\' AND len(root.FIRSTNAME) < 10) OR root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownIntoJoinedSubQuery(): Boolean[1]
+{
+  // Filter push down into joined subquery (left join)
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '      WHERE\n' +
+    '        root.AGE = 22\n' + // Filter push into joined subquery
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    subQueryFilterPushDownRule()
+  );
+
+  // Filter push down into joined subquery (inner join)
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  INNER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  INNER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '      WHERE\n' +
+    '        root.AGE = 22\n' + // Filter push into joined subquery
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownIntoJoinedSubQueryForRightFullJoins(): Boolean[1]
+{
+  // No push down into joined subquery (right join)
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  RIGHT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  RIGHT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    subQueryFilterPushDownRule()
+  );
+
+  // No push down into joined subquery (full outer join)
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  FULL OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    'SELECT\n' +
+    '  *\n' +
+    'FROM\n' +
+    '  firmTable AS firm\n' +
+    '  FULL OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.FIRSTNAME AS FIRSTNAME,\n' +
+    '        root.LASTNAME AS LASTNAME,\n' +
+    '        root.AGE AS AGE,\n' +
+    '        root.FIRMID AS FIRMID\n' +
+    '      FROM\n' +
+    '        personTable AS root\n' +
+    '    ) AS person\n' +
+    '    ON (firm.ID = person.FIRMID AND person.AGE = 22)',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOnRootAndJoinedSubQueries(): Boolean[1]
+{
+  // Filter push down on both root and joined subqueries
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.ProductName AS ProductName\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.TradeDate AS TradeDate,\n' +
+    '      tradetable_3.ProductName AS ProductName\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          root.tradeDate AS TradeDate\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.ID AS TradeID,\n' +
+    '            producttable_0.NAME AS ProductName\n' +
+    '          FROM\n' +
+    '            tradeTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.productTable AS producttable_0\n' +
+    '              ON (root.prodId = producttable_0.ID)\n' +
+    '        ) AS tradetable_3\n' +
+    '        ON (tradetable_1.TradeID = tradetable_3.TradeID AND tradetable_3.TradeID = 1)\n' +
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.ProductName AS ProductName\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.TradeDate AS TradeDate,\n' +
+    '      tradetable_3.ProductName AS ProductName\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          root.tradeDate AS TradeDate\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '        WHERE\n' +
+    '          root.ID = 1\n' + // Added filter
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.ID AS TradeID,\n' +
+    '            producttable_0.NAME AS ProductName\n' +
+    '          FROM\n' +
+    '            tradeTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.productTable AS producttable_0\n' +
+    '              ON (root.prodId = producttable_0.ID)\n' +
+    '          WHERE\n' +
+    '            root.ID = 1\n' + // Added filter
+    '        ) AS tradetable_3\n' +
+    '        ON (tradetable_1.TradeID = tradetable_3.TradeID AND tradetable_3.TradeID = 1)\n' +
+    '    WHERE\n' +
+    '      tradetable_1.TradeID = 1\n' + // Added filter
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownPartialRootAndJoinedSubQueries(): Boolean[1]
+{
+  // Filter push down partial with root and joined subqueries
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.ProductName AS ProductName,\n' +
+    '  tradetable_0.CUSIP AS CUSIP\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.ProductName AS ProductName,\n' +
+    '      producttable_1.CUSIP AS CUSIP\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          producttable_0.NAME AS ProductName\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '          LEFT OUTER JOIN\n' +
+    '            productSchema.productTable AS producttable_0\n' +
+    '            ON (root.prodId = producttable_0.ID)\n' +
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.NAME AS ProductName,\n' +
+    '            synonymtable_0.NAME AS CUSIP\n' +
+    '          FROM\n' +
+    '            productSchema.productTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.synonymTable AS synonymtable_0\n' +
+    '              ON (synonymtable_0.PRODID = root.ID AND synonymtable_0.TYPE = \'CUSIP\')\n' +
+    '        ) AS producttable_1\n' +
+    '        ON (tradetable_1.ProductName = producttable_1.ProductName)\n' +
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.ProductName AS ProductName,\n' +
+    '  tradetable_0.CUSIP AS CUSIP\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.ProductName AS ProductName,\n' +
+    '      producttable_1.CUSIP AS CUSIP\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          producttable_0.NAME AS ProductName\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '          LEFT OUTER JOIN\n' +
+    '            productSchema.productTable AS producttable_0\n' +
+    '            ON (root.prodId = producttable_0.ID)\n' +
+    '        WHERE\n' +
+    '          root.ID = 1\n' + // Added filter
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.NAME AS ProductName,\n' +
+    '            synonymtable_0.NAME AS CUSIP\n' +
+    '          FROM\n' +
+    '            productSchema.productTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.synonymTable AS synonymtable_0\n' +
+    '              ON (synonymtable_0.PRODID = root.ID AND synonymtable_0.TYPE = \'CUSIP\')\n' +
+    '        ) AS producttable_1\n' +
+    '        ON (tradetable_1.ProductName = producttable_1.ProductName)\n' +
+    '    WHERE\n' +
+    '      tradetable_1.TradeID = 1\n' + // Added filter
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithGroupBy(): Boolean[1]
+{
+  // Filter push down with group by (filters to where clause)
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.Product AS Product,\n' +
+    '  tradetable_0.TradeCount AS TradeCount,\n' +
+    '  tradetable_0.QtySum AS QtySum\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT DISTINCT\n' +
+    '      root.tradeDate AS TradeDate,\n' +
+    '      producttable_0.NAME AS Product,\n' +
+    '      count(root.ID) AS TradeCount,\n' +
+    '      sum(root.quantity) AS QtySum\n' +
+    '    FROM\n' +
+    '      tradeTable AS root\n' +
+    '      LEFT OUTER JOIN\n' +
+    '        productSchema.productTable AS producttable_0\n' +
+    '        ON (root.prodId = producttable_0.ID)\n' +
+    '    GROUP BY\n' +
+    '      TradeDate,\n' +
+    '      Product\n' +
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeDate IS NOT NULL AND tradetable_0.Product = \'Product A\' AND tradetable_0.TradeCount > 2 AND tradetable_0.QtySum > 20',
+
+    'SELECT\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.Product AS Product,\n' +
+    '  tradetable_0.TradeCount AS TradeCount,\n' +
+    '  tradetable_0.QtySum AS QtySum\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT DISTINCT\n' +
+    '      root.tradeDate AS TradeDate,\n' +
+    '      producttable_0.NAME AS Product,\n' +
+    '      count(root.ID) AS TradeCount,\n' +
+    '      sum(root.quantity) AS QtySum\n' +
+    '    FROM\n' +
+    '      tradeTable AS root\n' +
+    '      LEFT OUTER JOIN\n' +
+    '        productSchema.productTable AS producttable_0\n' +
+    '        ON (root.prodId = producttable_0.ID)\n' +
+    '    WHERE\n' +
+    '      root.tradeDate IS NOT NULL AND producttable_0.NAME = \'Product A\'\n' + // Filters on group by columns added
+    '    GROUP BY\n' +
+    '      TradeDate,\n' +
+    '      Product\n' + // having clause not added as there is a check to see column expression is only a reference (which is not the case with aggregations)
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeDate IS NOT NULL AND tradetable_0.Product = \'Product A\' AND tradetable_0.TradeCount > 2 AND tradetable_0.QtySum > 20',
+
+    subQueryFilterPushDownRule()
+  );
+}

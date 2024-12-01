@@ -1,0 +1,167 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::utils::*;
+import meta::pure::extension::*;
+
+function meta::external::store::relational::sqlPlanning::utils::executeSubTypeQualifierAndCast<T>(instance: Any[1], qualifierName: String[1], params: List<Any>[*], castTo: T[1]): T[1]
+{
+  let instanceType = $instance->genericType().rawType->toOne()->cast(@Class<Any>);
+  let subTypeQualifierFunctions = $instanceType.qualifiedProperties->filter(q | $q.name == $qualifierName);
+
+  assert($subTypeQualifierFunctions->size() > 0, | 'Found no qualifier with name "' + $qualifierName + '" in the class "' + $instanceType->elementToPath() + '"');
+  assert($subTypeQualifierFunctions->size() == 1, | 'Found multiple qualifiers with name "' + $qualifierName + '" in the class "' + $instanceType->elementToPath() + '"');
+
+  $subTypeQualifierFunctions->toOne()->evaluate(list($instance)->concatenate($params))->toOne('Executing qualifiers returning multiple objects not supported')->cast(@T);
+}
+
+Class meta::external::store::relational::sqlPlanning::utils::NodeTransformationWithChangeTracking
+{
+  hasChanged: Boolean[1];
+  result: Node[1];
+}
+
+function meta::external::store::relational::sqlPlanning::utils::changed(result: Node[1]): NodeTransformationWithChangeTracking[1]
+{
+  ^NodeTransformationWithChangeTracking(hasChanged = true, result = $result)
+}
+
+function meta::external::store::relational::sqlPlanning::utils::unchanged(result: Node[1]): NodeTransformationWithChangeTracking[1]
+{
+  ^NodeTransformationWithChangeTracking(hasChanged = false, result = $result)
+}
+
+function meta::external::store::relational::sqlPlanning::utils::transformNodeRecursivelyWithChangeTracking(node: Node[1], transformFunction: Function<{Node[1]->NodeTransformationWithChangeTracking[1]}>[1]): NodeTransformationWithChangeTracking[1]
+{
+  let transformedNodeWithChangeTracking = $transformFunction->eval($node);
+  let transformedNode = $transformedNodeWithChangeTracking.result;
+  let nodeType = $transformedNode->type()->cast(@Class<Any>);
+  let allProperties = $nodeType->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+
+  let transformedKeyValuesWithChangeTracking = $allProperties->map({p |
+    let propValues = $p->eval($transformedNode);
+    let propReturnType = $p->functionReturnType().rawType->toOne();
+    let transformedValues = if ($propReturnType->_subTypeOf(Node),
+      | $propValues->cast(@Node)->map({v |
+          $v->transformNodeRecursivelyWithChangeTracking($transformFunction)->map({x |
+            assert(
+              $x.result->type()->_subTypeOf($propReturnType),
+              | 'Transform function sets incompatible value of type "' + $x->type()->elementToPath() + '" to property "' + $p.name->toOne() + 
+                '" in the class "' + $nodeType->elementToPath() + '". Expected type is "' + $propReturnType->elementToPath() + '"'
+            );
+            pair($x.hasChanged, $x.result);
+          })
+        }),
+      | $propValues->map(v | pair(false, $v))
+    );
+    pair($transformedValues.first->isNotEmpty() && $transformedValues.first->or(), ^KeyValue(key = $p.name->toOne(), value = $transformedValues.second));
+  });
+  
+  if ($transformedNodeWithChangeTracking.hasChanged->concatenate($transformedKeyValuesWithChangeTracking.first)->or(),
+      | changed($nodeType->dynamicNew($transformedKeyValuesWithChangeTracking.second)->cast(@Node)),
+      | unchanged($node)
+  );
+}
+
+function meta::external::store::relational::sqlPlanning::utils::fetchAllNodes(node: Node[1]): Node[*]
+{
+  $node->fetchAllNodesRecursively()->get($node)->toOne().values;
+}
+
+function meta::external::store::relational::sqlPlanning::utils::fetchAllNodesRecursively(node: Node[1]): Map<Node, List<Node>>[1]
+{
+  let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  let subResults = $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllNodesRecursively()->keyValues());
+  newMap($subResults)->put($node, list($node->concatenate($subResults.second.values)));
+}
+
+function meta::external::store::relational::sqlPlanning::utils::fetchAllNodesRecursivelyExcludeSubQueries(node: Node[1]): Map<Node, List<Node>>[1]
+{
+  let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  let subResults = if ($node->instanceOf(TableSubquery),
+                       | $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllNodesRecursivelyExcludeSubQueries()->keyValues()),
+                       | []);
+  newMap($subResults)->put($node, list($node->concatenate($subResults.second.values)));
+}
+
+function meta::external::store::relational::sqlPlanning::utils::isAndExpression(expr: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $expr->match([l: LogicalBinaryExpression[1] | $l.type == LogicalBinaryType.AND, a: Any[*] | false])
+}
+
+function meta::external::store::relational::sqlPlanning::utils::isOrExpression(expr: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $expr->match([l: LogicalBinaryExpression[1] | $l.type == LogicalBinaryType.OR, a: Any[*] | false])
+}
+
+function meta::external::store::relational::sqlPlanning::utils::isEqualsExpression(expr: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $expr->match([c: ComparisonExpression[1] | $c.operator == ComparisonOperator.EQUAL, a: Any[*] | false])
+}
+
+function meta::external::store::relational::sqlPlanning::utils::identifySingleColumnFilterGroups(expr: meta::external::query::sql::metamodel::Expression[1]): Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>[*]
+{
+  let subNodeMap = $expr->fetchAllNodesRecursively();
+  $expr->identifySingleColumnFilterGroups_internal($subNodeMap);
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::utils::identifySingleColumnFilterGroups_internal(expr: meta::external::query::sql::metamodel::Expression[1], subNodeMap: Map<Node, List<Node>>[1]): Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>[*]
+{
+  let exprSubNodes = $subNodeMap->get($expr).values;
+  let columns = $exprSubNodes->filter(n | $n->instanceOf(QualifiedNameReference))->removeDuplicates();
+
+  let isSubNodeValidForColumnGrouping = {e: meta::external::query::sql::metamodel::Expression[1] |
+    $e->match([
+      s: SubqueryExpression[1] | false,
+      a: Any[*] |  true
+    ])
+  };
+
+  if ($columns->size() == 1,
+      | if($exprSubNodes->forAll(e | $isSubNodeValidForColumnGrouping->eval($e)), | pair($columns->toOne()->cast(@QualifiedNameReference), $expr), | []),
+      | if ($expr->isAndExpression(),
+            | $expr->cast(@LogicalBinaryExpression)->map(b | [$b.left, $b.right])->map(e | $e->identifySingleColumnFilterGroups_internal($subNodeMap)),
+            | []
+        )
+  );
+}
+
+function meta::external::store::relational::sqlPlanning::utils::isQueryPlainQuerySpecification(query: Query[1]): Boolean[1]
+{
+  $query.limit->isEmpty() && $query.orderBy->isEmpty() && $query.offset->isEmpty() && $query.queryBody->instanceOf(QuerySpecification)
+}
+
+function meta::external::store::relational::sqlPlanning::utils::addClauseIfNotExisting(expr: meta::external::query::sql::metamodel::Expression[1], toAdd: meta::external::query::sql::metamodel::Expression[1]): NodeTransformationWithChangeTracking[1]
+{
+  let toAddType = $toAdd->type()->elementToPath();
+  let notExisting = $expr->fetchAllNodes()->filter(x | $x->type()->elementToPath() == $toAddType)->filter(x | $x == $toAdd)->isEmpty();
+  if ($notExisting,
+      | changed(^LogicalBinaryExpression(left = $expr, right = $toAdd, type = LogicalBinaryType.AND)),
+      | unchanged($expr)
+  );
+}
+
+function meta::external::store::relational::sqlPlanning::utils::printDebugQuery(query: Query[1], config: SqlPlanningConfig[1], extensions: Extension[*]): String[1]
+{
+  $query->printDebugQuery($config, false, $extensions)
+}
+
+function meta::external::store::relational::sqlPlanning::utils::printDebugQuery(query: Query[1], config: SqlPlanningConfig[1], pretty: Boolean[1], extensions: Extension[*]): String[1]
+{
+  let sqlDialectTranslationConfig = ^SqlDialectTranslationConfig(dbConfig = ^DbConfig(dbType = $config.dbType), formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true));
+  $query->generateSqlDialectForStatement($sqlDialectTranslationConfig, $extensions);
+}
