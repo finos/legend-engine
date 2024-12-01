@@ -242,10 +242,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::transformSubstring(params:String[*]):String[1]
 {
-  let index1 = plus([$params->at(1)->toOne()->parseInteger(),1]);
-  '(' + $params->at(0) + ',' + $index1->toString() + if($params->size() > 2, 
-                                                        | let index2 = $params->at(2)->toOne()->parseInteger();
-                                                           ',' + $index2->toString() + ')';, 
+  '(' + $params->at(0) + ',' + plus([$params->at(1)->toOne()->parseInteger(),1])->toString() + 
+                                  if($params->size() > 2, 
+                                                        | let length = $params->at(2)->parseInteger() - $params->at(1)->parseInteger();
+                                                          ',' + $length->toString() + ')';, 
                                                         | ')');
 }
 
@@ -260,35 +260,31 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
      { | format('(%s)', [
         'months_between(%s, %s) /12'
      ])},
-     {| format('(%s * 12 + (%s))', [
-        generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.YEARS->toString()]),
-        'DATE_PART(\'month\', %s) - DATE_PART(\'month\', %s)'
+     {| format('(%s)', [
+        'floor(months_between(%s, %s))'
      ])},
      {| format('(%s)', [
-        'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
+        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) ) / 7'
      ])},
      {| format('(%s)', [
-        'TO_DATE(%s, \'YYYY-MM-DD\') -  TO_DATE(%s, \'YYYY-MM-DD\')'
+        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) )'
      ])},
-     {| format('(%s * 24 + (%s))', [
-        generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
-        'DATE_PART(\'hour\', %s - %s)'
+     {| format('(%s)', [
+        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) ) * 24'
      ])},
-     {| format('(%s * 60 + (%s))', [
-        generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.HOURS->toString()]),
-        'DATE_PART(\'minute\', %s - %s)'
+     {| format('(%s)', [
+        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) ) * 1440'
      ])},
-     {| format('(%s * 60 + (%s))', [
-        generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.MINUTES->toString()]),
-        'DATE_PART(\'second\', %s - %s)'
+     {| format('(%s)', [
+        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) ) * 86400'
      ])},
      {| format('(%s * 1000 + (%s))', [
         generateDateDiffExpressionForOracle([$params->at(0), $params->at(1), DurationUnit.SECONDS->toString()]),
-        'DATE_PART(\'milliseconds\', %s - %s)'
+        '(%s - %s)'
      ])}
   ];
 
-  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(1), $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processJoinStringsOperationForOracle(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
