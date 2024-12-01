@@ -16,6 +16,14 @@ import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlPlanning::*;
 import meta::pure::extension::*;
 
+Class meta::external::store::relational::sqlPlanning::SqlPlanningModuleExtension extends ModuleExtension
+[
+  $this.module == 'SqlPlanning'
+]
+{
+  sqlPlanning_ruleBasedTransformation_extraRuleBasedSqlTransformers : meta::external::store::relational::sqlPlanning::ruleBasedTransformation::RuleBasedSqlTransformer[*];
+}
+
 Class meta::external::store::relational::sqlPlanning::SqlPlanningConfig
 {
   dbType : String[1];

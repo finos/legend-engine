@@ -1,0 +1,205 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::*;
+import meta::pure::extension::*;
+
+Class meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::SubQueryFilterPushDownRule extends RuleBasedSqlTransformer
+[
+  $this.name == 'SubQueryFilterPushDown'
+]
+{
+  transformSqlQuery(query: Query[1], config: SqlPlanningConfig[1], debug: DebugContext[1], extensions: Extension[*])
+  {
+    $query->pushFiltersIntoSubQueries()
+  }: TransformedQuery[1];
+}
+
+function meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::subQueryFilterPushDownRule(): SubQueryFilterPushDownRule[1]
+{
+  ^SubQueryFilterPushDownRule
+  (
+    name = 'SubQueryFilterPushDown',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport()
+  )
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------
+
+###Pure 
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::*;
+import meta::external::store::relational::sqlPlanning::utils::*;
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::pushFiltersIntoSubQueries(query: Query[1]): TransformedQuery[1]
+{
+  let transformed = $query->transformNodeRecursivelyWithChangeTracking(pushFiltersIntoSubQueriesTransformFunction());
+  ^TransformedQuery
+  (
+    hasChanged = $transformed.hasChanged,
+    query = $transformed.result->cast(@Query)
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::pushFiltersIntoSubQueriesTransformFunction(): Function<{Node[1]->NodeTransformationWithChangeTracking[1]}>[1]
+{
+  {node: Node[1] |
+    $node->match([
+      {qs: QuerySpecification[1] |
+        // Try pushing filters into root subquery
+        if ($qs.where->isNotEmpty() && ($qs.from->size() == 1),
+            | let rootRelationWithAlias = $qs.from->toOne()->findRootRelationWithAlias();
+              $rootRelationWithAlias.relation->match([
+                {s: TableSubquery[1] |
+                  let res = $s->pushFiltersIntoTableSubquery($rootRelationWithAlias.alias, $qs.where->toOne());
+                  if ($res.first,
+                      | changed(^$qs(from = $qs.from->toOne()->replaceRootTableSubquery($res.second))),
+                      | unchanged($qs)
+                  );
+                },
+                r: Relation[1] | unchanged($qs)
+              ]);,
+            | unchanged($qs)
+        )
+      },
+      {join: Join[1] |
+        // Try pushing filters into joined subquery
+        if ($join.criteria->isNotEmpty() && $join.criteria->toOne()->instanceOf(JoinOn) && $join.type->in([JoinType.INNER, JoinType.LEFT]),
+            | let rightRelationWithAlias = $join.right->match([
+                a: AliasedRelation[1] | ^RelationWithAlias(relation = $a.relation, alias = $a.alias),
+                r: Relation[1] | ^RelationWithAlias(relation = $r, alias = [])
+              ]);
+              $rightRelationWithAlias.relation->match([
+                {s: TableSubquery[1] |
+                  let res = $s->pushFiltersIntoTableSubquery($rightRelationWithAlias.alias, $join.criteria->toOne()->cast(@JoinOn).expression);
+                  if ($res.first,
+                      | let rightTransformed = $join.right->match([
+                          a: AliasedRelation[1] | ^$a(relation = $res.second),
+                          r: Relation[1] | $res.second
+                        ]);
+                        changed(^$join(right = $rightTransformed));,
+                      | unchanged($join)
+                  );
+                },
+                r: Relation[1] | unchanged($join)
+              ]);,
+            | unchanged($join)
+        )
+      },
+      {n: Node[1] | unchanged($n)}
+    ])
+  }
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::pushFiltersIntoTableSubquery(t: TableSubquery[1], alias: String[0..1], filterClause: meta::external::query::sql::metamodel::Expression[1]): Pair<Boolean, TableSubquery>[1]
+{
+  if ($alias->isNotEmpty(),
+      | let singleColumnFilterGroups = $filterClause->identifySingleColumnFilterGroups();
+        let filterGroupsForAlias = $singleColumnFilterGroups->filter(fg | ($fg.first.name.parts->size() == 2) && ($fg.first.name.parts->at(0) == $alias->toOne()));
+        if ($filterGroupsForAlias->isNotEmpty(),
+            | if ($t.query->isQueryPlainQuerySpecification(),
+                  | let subQuery = $t.query;
+                    let subQuerySpec = $subQuery.queryBody->cast(@QuerySpecification);
+                    let subQuerySpecHasLimitOrOffset = $subQuerySpec.limit->isNotEmpty() || $subQuerySpec.offset->isNotEmpty();
+                    let subQuerySpecHasWindowColumns = $subQuerySpec->fetchAllNodesRecursivelyExcludeSubQueries()->get($subQuerySpec)->exists(n | $n->instanceOf(meta::external::query::sql::metamodel::Window));
+                    let cannotPushFiltersIntoSubQuery = $subQuerySpecHasLimitOrOffset || $subQuerySpecHasWindowColumns;
+                    if ($cannotPushFiltersIntoSubQuery,
+                        | pair(false, $t),
+                        | let newSubQuerySpec = $filterGroupsForAlias->fold({fg, agg | let res = $agg.second->pushSingleFilter($fg); pair($agg.first || $res.first, $res.second);}, pair(false, $subQuerySpec));
+                          if ($newSubQuerySpec.first,
+                              | pair(true, ^$t(query = ^$subQuery(queryBody = $newSubQuerySpec.second))),
+                              | pair(false, $t)
+                          );
+                    );,
+                  | pair(false, $t)
+              ),
+            | pair(false, $t)
+        );,
+      | pair(false, $t)
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::pushSingleFilter(qs: QuerySpecification[1], filterGroup: Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>[1]): Pair<Boolean, QuerySpecification>[1]
+{
+  let filterColumnName = $filterGroup.first.name.parts->at(1);
+
+  let groupByExists = $qs.groupBy->isNotEmpty();
+
+  let selectCol = $qs.select.selectItems->filter(x | $x->match([
+    a:SingleColumn[1] | ($a.alias == $filterColumnName) && $a.expression->instanceOf(QualifiedNameReference), // Can relax the check for expression just being a reference?
+    a:Any[*]   | false
+  ]));
+
+  let groupByNames = $qs.groupBy
+    ->filter(column | $column->instanceOf(QualifiedNameReference) && ($column->cast(@QualifiedNameReference).name.parts->size() == 1))
+    ->map(column | $column->cast(@QualifiedNameReference).name.parts->at(0));
+
+  let isGroupingColumn = or(
+    $groupByNames->contains($filterColumnName),
+    ($selectCol->size() == 1) && $qs.groupBy->exists(x | $x == $selectCol->toOne()->cast(@SingleColumn).expression)
+  );
+
+  let opToUpdate = if ($groupByExists && (!$isGroupingColumn), | $qs.having, | $qs.where);
+
+  let newFilter = if ($selectCol->size() == 1,
+                       | let toReplaceWith = $selectCol->toOne()->cast(@SingleColumn).expression;
+                         let transformFunc = {n: Node[1] | if($n == $filterGroup.first, | changed($toReplaceWith), | unchanged($n))};
+                         $filterGroup.second->transformNodeRecursivelyWithChangeTracking($transformFunc).result->cast(@meta::external::query::sql::metamodel::Expression);,
+                       | []
+                   );
+
+   if ($newFilter->isEmpty(),
+       | pair(false, $qs),
+       | let updatedOp = if($opToUpdate->size() == 1, | $opToUpdate->toOne()->addClauseIfNotExisting($newFilter->toOne()), | changed($newFilter->toOne()));
+         if ($updatedOp.hasChanged,
+             | if ($groupByExists && (!$isGroupingColumn), 
+                   | pair(true, ^$qs(having = $updatedOp.result->cast(@meta::external::query::sql::metamodel::Expression))),
+                   | pair(true, ^$qs(where = $updatedOp.result->cast(@meta::external::query::sql::metamodel::Expression)))
+               ),
+             | pair(false, $qs)
+         );
+   );
+}
+
+Class <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::RelationWithAlias
+{
+  relation: Relation[1];
+  alias: String[0..1];
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::findRootRelationWithAlias(rel: Relation[1]): RelationWithAlias[1]
+{
+  // Needs to be in sync with below function
+  $rel->match([
+    a: AliasedRelation[1] | ^RelationWithAlias(relation = $a.relation, alias = $a.alias),
+    j: Join[1] | $j.left->findRootRelationWithAlias(),
+    r: Relation[1] | ^RelationWithAlias(relation = $r)
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::replaceRootTableSubquery(rel: Relation[1], replacement: TableSubquery[1]): Relation[1]
+{
+  // Needs to be in sync with above function
+  $rel->match([
+    a: AliasedRelation[1] | ^$a(relation = $replacement),
+    j: Join[1] | ^$j(left = $j.left->replaceRootTableSubquery($replacement)),
+    r: TableSubquery[1] | $replacement
+  ])
+}
