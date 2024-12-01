@@ -509,13 +509,13 @@ public class BaseTest
         duckDBSink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataWithVersionWithoutDigest(String path) throws Exception
+    protected void loadStagingDataWithVersionWithoutDigest(String path)
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, version) " +
-            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), CONVERT( \"version\",INT)" +
-            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, version', NULL )";
+            "COPY \"TEST\".\"staging\"" +
+            "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\")" +
+            " FROM '" + path + "' CSV";
         duckDBSink.executeStatement(loadSql);
     }
 

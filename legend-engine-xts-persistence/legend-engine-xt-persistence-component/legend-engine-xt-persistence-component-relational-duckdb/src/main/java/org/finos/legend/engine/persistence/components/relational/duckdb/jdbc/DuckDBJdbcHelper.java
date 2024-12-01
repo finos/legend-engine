@@ -58,8 +58,10 @@ public class DuckDBJdbcHelper extends JdbcHelper
             String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
-            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, null);
-            return result.next(); // This method returns true if ResultSet is not empty
+            try (ResultSet result = this.connection.getMetaData().getTables(database, schema, name, null))
+            {
+                return result.next(); // This method returns true if ResultSet is not empty
+            }
         }
         catch (SQLException e)
         {

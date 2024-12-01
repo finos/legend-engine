@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.ansi.sql.visit
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ConcatFunction;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -57,7 +58,7 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
 
     protected Value mergeColumnsFunction(List<Value> columns)
     {
-        FunctionImpl concatFunction = FunctionImpl.builder().functionName(FunctionName.CONCAT).addAllValue(columns).build();
+        ConcatFunction concatFunction = ConcatFunction.builder().addAllValues(columns).build();
         return concatFunction;
     }
 
