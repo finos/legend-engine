@@ -767,7 +767,8 @@
         "data" : {
           "_type" : "reference",
           "dataElement" : {
-            "path" : "test::other"
+            "path" : "test::other",
+            "type":"DATA"
           }
         }
       } ]
