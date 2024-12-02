@@ -94,10 +94,9 @@ public class HelperValueSpecificationGrammarComposer
         );
     }
 
-
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return PureGrammarComposerUtility.convertIdentifier(col.name) + (col.type != null ? ":" + PureGrammarComposerUtility.convertIdentifier(col.type) : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
@@ -391,7 +390,7 @@ public class HelperValueSpecificationGrammarComposer
         }
         else if (type instanceof RelationType)
         {
-            return "(" + ListIterate.collect(((RelationType) type).columns, x -> x.name + ":" + x.type).makeString(", ") + ")";
+            return "(" + ListIterate.collect(((RelationType) type).columns, x -> PureGrammarComposerUtility.convertIdentifier(x.name) + ":" + PureGrammarComposerUtility.convertIdentifier(x.type)).makeString(", ") + ")";
         }
         throw new RuntimeException(type.getClass().getSimpleName() + ": Not supported");
     }

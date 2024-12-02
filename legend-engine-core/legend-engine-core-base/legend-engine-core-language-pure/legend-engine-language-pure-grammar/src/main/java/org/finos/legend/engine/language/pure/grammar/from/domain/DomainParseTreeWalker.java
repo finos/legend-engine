@@ -1564,7 +1564,10 @@ public class DomainParseTreeWalker
         {
             type = new RelationType(ListIterate.collect(ctx.columnInfo(), x ->
             {
-                Column column = new Column(x.columnName().getText(), x.columnType().getText());
+                Column column = new Column(
+                        PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
+                        PureGrammarParserUtility.fromIdentifier(x.columnType().identifier())
+                );
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;
             }));
