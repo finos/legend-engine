@@ -15,49 +15,92 @@
 
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
 import java.util.List;
-import org.eclipse.collections.api.list.MutableList;
+import java.util.Objects;
+import java.util.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 
-public class ProtocolConverter<T> implements Converter<T, T>
+public abstract class ProtocolConverter<T>
 {
-    private final List<Converter<T, T>> converters;
-
-    public ProtocolConverter(Converter<T, T> converters)
+    private ProtocolConverter()
     {
-        this(Lists.fixedSize.of(converters));
+
     }
 
-    public ProtocolConverter(List<Converter<T, T>> converters)
-    {
-        this.converters = converters;
-    }
+    public abstract T convert(T value);
 
-    @Override
-    public JavaType getInputType(TypeFactory typeFactory)
-    {
-        return this.converters.get(0).getInputType(typeFactory);
-    }
+    public abstract Class<T> getType();
 
-    @Override
-    public JavaType getOutputType(TypeFactory typeFactory)
+    public static <T> ProtocolConverter<T> converter(Class<T> type, Function<T, T> func)
     {
-        return this.converters.get(0).getOutputType(typeFactory);
-    }
-
-    @Override
-    public T convert(T value)
-    {
-        return ListIterate.injectInto(value, this.converters, (t, c) -> c.convert(t));
+        return new DefaultProtocolConverter<>(type, func);
     }
 
     public static <T> ProtocolConverter<T> merge(ProtocolConverter<T> one, ProtocolConverter<T> two)
     {
-        MutableList<Converter<T, T>> allConverters = Lists.mutable.withAll(one.converters).withAll(two.converters);
-        return new ProtocolConverter<>(allConverters);
+        return new MergedProtocolConverter<>(Objects.requireNonNull(one), Objects.requireNonNull(two));
+    }
+
+    private static class MergedProtocolConverter<T> extends ProtocolConverter<T>
+    {
+        private final List<DefaultProtocolConverter<T>> converters = Lists.mutable.empty();
+
+        public MergedProtocolConverter(ProtocolConverter<T> one, ProtocolConverter<T> two)
+        {
+            if (one instanceof MergedProtocolConverter)
+            {
+                this.converters.addAll(((MergedProtocolConverter<T>) one).converters);
+            }
+            else
+            {
+                this.converters.add((DefaultProtocolConverter<T>) one);
+            }
+
+            if (two instanceof MergedProtocolConverter)
+            {
+                this.converters.addAll(((MergedProtocolConverter<T>) two).converters);
+            }
+            else
+            {
+                this.converters.add((DefaultProtocolConverter<T>) two);
+            }
+        }
+
+        @Override
+        public T convert(T value)
+        {
+            return ListIterate.injectInto(value, this.converters, (v, c) -> c.convert(v));
+        }
+
+        @Override
+        public Class<T> getType()
+        {
+            return this.converters.get(0).type;
+        }
+    }
+
+    private static class DefaultProtocolConverter<T> extends ProtocolConverter<T>
+    {
+        private final Class<T> type;
+        private final Function<T, T> converter;
+
+        public DefaultProtocolConverter(Class<T> type, Function<T, T> converter)
+        {
+            this.type = type;
+            this.converter = converter;
+        }
+
+        @Override
+        public T convert(T value)
+        {
+            return this.converter.apply(value);
+        }
+
+        @Override
+        public Class<T> getType()
+        {
+            return this.type;
+        }
     }
 }
