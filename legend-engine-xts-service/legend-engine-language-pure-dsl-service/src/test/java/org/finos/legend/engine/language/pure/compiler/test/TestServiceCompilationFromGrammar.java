@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.api.factory.Lists;
 import org.junit.Test;
 
 public class TestServiceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -930,6 +931,139 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testServiceWithSingleExecutionTestEmptyAsserts()
+    {
+        partialCompilationTest("Class meta::mySimpleClass\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n\n" +
+                "Class meta::mySimpleClass2\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping meta::mySimpleMapping\n" +
+                "(\n" +
+                ")\n\n\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::myConnection\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'dummy';\n" +
+                "}\n\n\n" +
+                "###Runtime\n" +
+                "Runtime meta::mySimpleRuntime\n" +
+                "{\n" +
+                "  mappings: [meta::mySimpleMapping];\n" +
+                "}\n\n\n" +
+                "###Service\n" +
+                "import meta::*;\n" +
+                // Service with embedded runtime
+                "Service meta::pure::myServiceSingleWithEmbeddedRuntime\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: mySimpleClass[1]|$src.name;\n" +
+                "    mapping: mySimpleMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections:\n" +
+                "      [\n" +
+                "        ModelStore:\n" +
+                "        [\n" +
+                // embedded connection pointer
+                "          id1: myConnection,\n" +
+                "          id3: #{\n" +
+                "            JsonModelConnection\n" +
+                "            {\n" +
+                // embedded connection value
+                "              class: mySimpleClass2;\n" +
+                "              url: 'my_url';\n" +
+                "            }\n" +
+                "          }#\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [62:9-68:3]: Single execution test has empty asserts"));
+    }
+
+    @Test
+    public void testServiceWithMultiExecutionTestEmptyAsserts()
+    {
+        partialCompilationTest("Class meta::mySimpleClass\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n\n" +
+                "Class meta::mySimpleClass2\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping meta::mySimpleMapping\n" +
+                "(\n" +
+                ")\n\n\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::myConnection\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'dummy';\n" +
+                "}\n\n\n" +
+                "###Runtime\n" +
+                "Runtime meta::mySimpleRuntime\n" +
+                "{\n" +
+                "  mappings: [meta::mySimpleMapping];\n" +
+                "}\n\n\n" +
+                "###Service\n" +
+                "import meta::*;\n" +
+                // Service with embedded runtime
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:[];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                // Pure multi execution query
+                "    query: src: mySimpleClass[1]|$src.name;\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                // Pure multi execution mapping
+                "      mapping: mySimpleMapping;\n" +
+                // Pure multi execution runtime
+                "      runtime: mySimpleRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "    [\n" +
+                // multi service test assertion
+                "    ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n", null, Lists.fixedSize.with("COMPILATION error at [53:5-59:5]: Multi execution with test id: QAtest has empty asserts"));
+    }
+
+    @Test
     public void testServiceWithImport()
     {
         test("Class meta::mySimpleClass\n" +
@@ -1054,7 +1188,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n");
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [113:9-119:3]: Single execution test has empty asserts"));
     }
 
     @Test
