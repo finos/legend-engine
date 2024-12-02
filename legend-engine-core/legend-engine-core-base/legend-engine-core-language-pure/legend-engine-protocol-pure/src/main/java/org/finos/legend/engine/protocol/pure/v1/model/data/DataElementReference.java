@@ -14,9 +14,21 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 
 public class DataElementReference extends EmbeddedData
 {
     public PackageableElementPointer dataElement;
+
+    @JsonSetter("dataElement")
+    public void setDataElement(PackageableElementPointer dataElement)
+    {
+        this.dataElement = dataElement;
+        if (this.dataElement.type == null)
+        {
+            this.dataElement.type = PackageableElementType.DATA;
+        }
+    }
 }
