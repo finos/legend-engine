@@ -222,7 +222,7 @@ public class HelperServiceBuilder
             }
             SingleExecutionTest singleExecutionTest = (SingleExecutionTest) serviceTest;
 
-            if (singleExecutionTest.asserts != null && singleExecutionTest.asserts.isEmpty())
+            if (singleExecutionTest.asserts == null || singleExecutionTest.asserts.isEmpty())
             {
                 context.pureModel.addWarnings(Lists.mutable.with(new Warning(singleExecutionTest.sourceInformation, "Single execution test has empty asserts")));
             }
@@ -271,7 +271,7 @@ public class HelperServiceBuilder
             throw new EngineException("Service test with key '" + keyedSingleExecutionTest.key + "' already existed", keyedSingleExecutionTest.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        if (keyedSingleExecutionTest.asserts != null && keyedSingleExecutionTest.key != null && keyedSingleExecutionTest.asserts.isEmpty())
+        if (keyedSingleExecutionTest.key != null && (keyedSingleExecutionTest.asserts == null || keyedSingleExecutionTest.asserts.isEmpty()))
         {
             context.pureModel.addWarnings(Lists.mutable.with(new Warning(keyedSingleExecutionTest.sourceInformation, "Multi execution" + " with test id: " + keyedSingleExecutionTest.key + "test has empty asserts")));
         }
