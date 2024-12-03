@@ -119,7 +119,7 @@ public class Cache implements Command
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile(), relationalResultColumns));
                                     this.client.println("Cached into table: '" + tableName + "'");
-                                    this.client.println(printExecutionTime(startTime));
+                                    this.client.printDebug(printExecutionTime(startTime));
                                 }
                             }
                             catch (SQLException e)
