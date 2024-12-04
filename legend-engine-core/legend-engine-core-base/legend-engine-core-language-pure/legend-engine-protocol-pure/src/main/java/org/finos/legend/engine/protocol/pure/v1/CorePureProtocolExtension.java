@@ -17,13 +17,11 @@ package org.finos.legend.engine.protocol.pure.v1;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolConverter;
@@ -83,6 +81,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionP
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
@@ -203,8 +202,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     {
         return Lists.fixedSize.with(
                 ProtocolConverter.converter(Variable.class, CorePureProtocolExtension::fixVariableOfResultTypeWithMissingTypeAndMultiplicityArgument),
-                ProtocolConverter.converter(AppliedFunction.class, CorePureProtocolExtension::convertNewBasicColumnSpecificationToColFunctionCall),
-                ProtocolConverter.converter(AppliedFunction.class, CorePureProtocolExtension::convertNewTdsOlapRankToFuncFunctionCall)
+                ProtocolConverter.converter(AppliedFunction.class, CorePureProtocolExtension::convertNewToFunctionCall)
         );
     }
 
@@ -226,11 +224,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
         return variable;
     }
 
-    /**
-     * Convert the usage of BasicColumnSpecification to the equivalent function
-     * ^BasicColumnSpecification(...) == col(...)
-     */
-    private static AppliedFunction convertNewBasicColumnSpecificationToColFunctionCall(AppliedFunction appliedFunction)
+    private static AppliedFunction convertNewToFunctionCall(AppliedFunction appliedFunction)
     {
         if (appliedFunction.function.equals("new"))
         {
@@ -257,41 +251,61 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 return appliedFunction;
             }
 
-            Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                    "meta::pure::tds::BasicColumnSpecification",
-                    "BasicColumnSpecification"
-            );
-
-            if (classesThatNeedTypeFixing.contains(type.fullPath))
+            switch (type.fullPath)
             {
-                Collection collection = (Collection) appliedFunction.parameters.get(2);
-                Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                        .map(KeyExpression.class::cast)
-                        .map(x -> x.expression)
-                        .filter(Lambda.class::isInstance)
-                        .map(Lambda.class::cast);
+                case "meta::pure::tds::BasicColumnSpecification":
+                case "BasicColumnSpecification":
+                    return convertNewBasicColumnSpecificationToColFunctionCall(appliedFunction);
 
-                Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
-                        .map(KeyExpression.class::cast)
-                        .map(x -> x.expression)
-                        .filter(CString.class::isInstance)
-                        .map(CString.class::cast);
+                case "meta::pure::tds::TdsOlapRank":
+                case "TdsOlapRank":
+                    return convertNewTdsOlapRankToFuncFunctionCall(appliedFunction);
 
-                Optional<CString> doc = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("documentation"))
-                        .map(KeyExpression.class::cast)
-                        .map(x -> x.expression)
-                        .filter(CString.class::isInstance)
-                        .map(CString.class::cast);
+                case "meta::pure::functions::collection::Pair":
+                case "Pair":
+                    return convertNewPairToPairFunctionCall(appliedFunction);
 
-                appliedFunction.function = "meta::pure::tds::col";
-                appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_";
-                appliedFunction.parameters = Stream.of(func, name, doc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-                if (appliedFunction.parameters.size() == 3)
-                {
-                    appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
-                }
+                default:
+                    return appliedFunction;
             }
+
         }
+        return appliedFunction;
+    }
+
+    /**
+     * Convert the usage of BasicColumnSpecification to the equivalent function
+     * ^BasicColumnSpecification(...) == col(...)
+     */
+    private static AppliedFunction convertNewBasicColumnSpecificationToColFunctionCall(AppliedFunction appliedFunction)
+    {
+        Collection collection = (Collection) appliedFunction.parameters.get(2);
+        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(Lambda.class::isInstance)
+                .map(Lambda.class::cast);
+
+        Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(CString.class::isInstance)
+                .map(CString.class::cast);
+
+        Optional<CString> doc = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("documentation"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(CString.class::isInstance)
+                .map(CString.class::cast);
+
+        appliedFunction.function = "meta::pure::tds::col";
+        appliedFunction.fControl = "col_Function_1__String_1__BasicColumnSpecification_1_";
+        appliedFunction.parameters = Stream.of(func, name, doc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+        if (appliedFunction.parameters.size() == 3)
+        {
+            appliedFunction.fControl = "col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
+        }
+
         return appliedFunction;
     }
 
@@ -301,50 +315,39 @@ public class CorePureProtocolExtension implements PureProtocolExtension
      */
     private static AppliedFunction convertNewTdsOlapRankToFuncFunctionCall(AppliedFunction appliedFunction)
     {
-        if (appliedFunction.function.equals("new"))
-        {
-            PackageableElementPtr type;
+        Collection collection = (Collection) appliedFunction.parameters.get(2);
+        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .filter(Lambda.class::isInstance)
+                .map(Lambda.class::cast);
 
-            if (appliedFunction.parameters.get(0) instanceof GenericTypeInstance)
-            {
-                GenericTypeInstance typeInstance = (GenericTypeInstance) appliedFunction.parameters.get(0);
-                if (typeInstance.genericType.typeArguments.size() >= 1 && typeInstance.genericType.typeArguments.get(0).rawType instanceof PackageableType)
-                {
-                    type = (PackageableType) typeInstance.genericType.typeArguments.get(0).rawType;
-                }
-                else
-                {
-                    return appliedFunction;
-                }
-            }
-            else if (appliedFunction.parameters.get(0) instanceof PackageableElementPtr)
-            {
-                type = (PackageableElementPtr) appliedFunction.parameters.get(0);
-            }
-            else
-            {
-                return appliedFunction;
-            }
+        appliedFunction.function = "meta::pure::tds::func";
+        appliedFunction.fControl = "func_FunctionDefinition_1__TdsOlapRank_1_";
+        appliedFunction.parameters = Stream.of(func).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+        return appliedFunction;
+    }
 
-            Set<String> classesThatNeedTypeFixing = Sets.fixedSize.of(
-                    "meta::pure::tds::TdsOlapRank",
-                    "TdsOlapRank"
-            );
+    /**
+     * Convert the usage of BasicColumnSpecification to the equivalent function
+     * ^BasicColumnSpecification(...) == col(...)
+     */
+    private static AppliedFunction convertNewPairToPairFunctionCall(AppliedFunction appliedFunction)
+    {
+        Collection collection = (Collection) appliedFunction.parameters.get(2);
+        ValueSpecification first = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("first"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .orElseGet(Collection::new);
 
-            if (classesThatNeedTypeFixing.contains(type.fullPath))
-            {
-                Collection collection = (Collection) appliedFunction.parameters.get(2);
-                Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
-                        .map(KeyExpression.class::cast)
-                        .map(x -> x.expression)
-                        .filter(Lambda.class::isInstance)
-                        .map(Lambda.class::cast);
+        ValueSpecification second = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("second"))
+                .map(KeyExpression.class::cast)
+                .map(x -> x.expression)
+                .orElseGet(Collection::new);
 
-                appliedFunction.function = "meta::pure::tds::func";
-                appliedFunction.fControl = "meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_";
-                appliedFunction.parameters = Stream.of(func).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
-            }
-        }
+        appliedFunction.function = "meta::pure::functions::collection::pair";
+        appliedFunction.fControl = "pair_U_1__V_1__Pair_1_";
+        appliedFunction.parameters = Lists.fixedSize.with(first, second);
         return appliedFunction;
     }
 }

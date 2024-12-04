@@ -782,7 +782,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("cast".equals(function))
         {
-            return possiblyAddParenthesis(parameters.get(0), this) + "->" + _function + "(@" + parameters.get(1).accept(this) + ")";
+            String castType = parameters.get(1).accept(this);
+            if (parameters.get(1) instanceof GenericTypeInstance)
+            {
+                castType = "@" + castType;
+            }
+            return possiblyAddParenthesis(parameters.get(0), this) + "->" + _function + "(" + castType + ")";
         }
         else if ("subType".equals(function))
         {
