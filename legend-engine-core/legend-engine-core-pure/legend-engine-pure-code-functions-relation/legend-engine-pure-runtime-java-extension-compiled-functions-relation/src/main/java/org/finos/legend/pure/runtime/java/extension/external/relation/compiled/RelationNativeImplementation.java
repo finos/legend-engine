@@ -56,6 +56,10 @@ public class RelationNativeImplementation
 
     public static TestTDSCompiled getTDS(Object value)
     {
+        if (value instanceof TDSRelationAccessor)
+        {
+            return getTDS(((TDSRelationAccessor<?>) value)._sourceElement());
+        }
         return value instanceof TDSContainer ?
                 ((TDSContainer) value).tds :
                 new TestTDSCompiled(readCsv((((CoreInstance) value).getValueForMetaPropertyToOne("csv")).getName()), ((CoreInstance) value).getValueForMetaPropertyToOne(M3Properties.classifierGenericType));
@@ -549,6 +553,20 @@ public class RelationNativeImplementation
         TestTDSCompiled result = (TestTDSCompiled) temp.applyPivot(groupByColumns.reject(pivotCols::contains), pivotCols, aggColSpecTransAll.collect(col -> col.newColName));
 
         return new TDSContainer(result, ps);
+    }
+
+    public static <T> Long write(Relation<? extends T> rel, RelationElementAccessor<? extends T> relationElementAccessor, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        TestTDSCompiled sourceTds = RelationNativeImplementation.getTDS(rel);
+        if (!(relationElementAccessor instanceof TDSRelationAccessor))
+        {
+            throw new RuntimeException("Only source element of type meta::pure::metamodel::relation::TDSRelationAccessor is supported");
+        }
+        TestTDSCompiled targetTds = RelationNativeImplementation.getTDS(relationElementAccessor);
+        TestTDSCompiled resultTds = (TestTDSCompiled) targetTds.concatenate(sourceTds);
+        relationElementAccessor._sourceElement(new TDSContainer(resultTds, ps));
+        return sourceTds.getRowCount();
     }
 
     private static MutableList<ColumnValue> aggregateTDS(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes, MutableList<? extends AggColSpecTrans> aggColSpecTransAll, boolean compress, ExecutionSupport es)
