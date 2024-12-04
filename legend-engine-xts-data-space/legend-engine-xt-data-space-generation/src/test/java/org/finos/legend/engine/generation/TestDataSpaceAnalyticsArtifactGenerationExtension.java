@@ -178,6 +178,25 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
     }
 
     @Test
+    public void testEmptyEnum() throws Exception
+    {
+
+        MutableMap<String, String> mappingAnalysisMap = Maps.mutable.with(
+                "mapping::CovidDataMapping", "{\"_type\":\"MappingAnalysisCoveragePartition\",\"analysisResult\":{\"mappedEntities\":[{\"info\":{\"classPath\":\"domain::COVIDData\",\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"domain::COVIDData\",\"properties\":[{\"_type\":\"MappedProperty\",\"name\":\"caseType\"},{\"_type\":\"MappedProperty\",\"name\":\"cases\"},{\"_type\":\"MappedProperty\",\"name\":\"date\"},{\"_type\":\"enum\",\"enumPath\":\"model::EmptyEnum\",\"name\":\"empty\"},{\"_type\":\"MappedProperty\",\"name\":\"fips\"},{\"_type\":\"MappedProperty\",\"name\":\"id\"},{\"_type\":\"MappedProperty\",\"name\":\"lastReportedFlag\"}]}]},\"mapping\":\"mapping::CovidDataMapping\"}"
+        );
+        MutableMap<String, String> mappingModelMap = Maps.mutable.with(
+                "mapping::CovidDataMapping", "{\"_type\":\"MappingModelCoveragePartition\",\"mapping\":\"mapping::CovidDataMapping\",\"model\":{\"_type\":\"data\",\"elements\":[{\"_type\":\"class\",\"constraints\":[],\"name\":\"COVIDData\",\"originalMilestonedProperties\":[],\"package\":\"domain\",\"properties\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"id\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"fips\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"StrictDate\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"date\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"caseType\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Float\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"cases\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Boolean\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"lastReportedFlag\",\"stereotypes\":[],\"taggedValues\":[]},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"model::EmptyEnum\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"empty\",\"stereotypes\":[],\"taggedValues\":[]}],\"qualifiedProperties\":[],\"stereotypes\":[],\"superTypes\":[{\"path\":\"meta::pure::metamodel::type::Any\"}],\"taggedValues\":[]},{\"_type\":\"Enumeration\",\"name\":\"EmptyEnum\",\"package\":\"model\",\"stereotypes\":[],\"taggedValues\":[]}]}}"
+        );
+        testDataSpaceAnalyticsArtifactGenerationExtension(
+                "models/dataSpace-emptyEnum.pure",
+                "domain::COVIDDataspace",
+                "{\"defaultExecutionContext\":\"dummyContext\",\"description\":\"\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"runtime::H2Runtime\"],\"datasets\":[{\"_type\":\"relationalDatabaseTable\",\"database\":\"CovidDataStore\",\"name\":\"default.COVID_DATA\",\"schema\":\"default\",\"table\":\"COVID_DATA\",\"type\":\"H2\"}],\"defaultRuntime\":\"runtime::H2Runtime\",\"mapping\":\"mapping::CovidDataMapping\",\"name\":\"dummyContext\",\"runtimeMetadata\":{\"connectionPath\":\"runtime::connection::H2Connection\",\"connectionType\":\"H2\",\"storePath\":\"store::CovidDataStore\"}}],\"mappingToMappingCoverageResult\":{},\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"COVIDDataspace\",\"package\":\"domain\",\"path\":\"domain::COVIDDataspace\",\"stereotypes\":[],\"taggedValues\":[],\"title\":\"COVID Sample Data\"}",
+                mappingAnalysisMap,
+                mappingModelMap,
+                true);
+    }
+
+    @Test
     public void testAnalyticsForDataSpaceWithSubstantialMapping() throws Exception
     {
         MutableMap<String, String> mappingAnalysisMap = Maps.mutable.with(
