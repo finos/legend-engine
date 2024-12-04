@@ -50,13 +50,17 @@ function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: 
   // NOTE: following, we prune the tagged values and stereotypes from the enumerations, associations, and classes
   // so we don't have to return them, if in the future, we need to return these (as this analytics require to do so)
   // we should reconsider these optimization
-  let prunedEnumerations = $enumerations->map(e|^$e(
+    let prunedEnumerations = $enumerations->map(e|^$e(
     stereotypes = [],
     taggedValues = [],
-    values = meta::pure::functions::meta::enumValues($e)->map(v|^$v(
-      stereotypes = [],
-      taggedValues = []
-    ))->toOneMany() // this is a hack to work around a problem with validation on size of enumeration values
+    values = if(meta::pure::functions::meta::enumValues($e)->isEmpty(),
+              |$e.values,
+              |meta::pure::functions::meta::enumValues($e)->map(v|^$v(
+                stereotypes = [],
+                taggedValues = []
+              ))->toOneMany()
+    )
+// this is a hack to work around a problem with validation on size of enumeration values
   ));
 
   let prunedClasses = $classes->map(c|^$c(
