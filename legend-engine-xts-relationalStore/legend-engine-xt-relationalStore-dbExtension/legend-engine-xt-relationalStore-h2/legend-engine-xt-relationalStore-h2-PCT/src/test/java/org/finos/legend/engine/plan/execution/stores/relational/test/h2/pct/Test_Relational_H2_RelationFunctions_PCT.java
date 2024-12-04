@@ -49,9 +49,10 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             // BUG: Column name with special characters is not properly escaped
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
 
-            // Write test contains multiple expressions
             one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "\"AsOfJoins are not supported by H2!\""),
             one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"AsOfJoins are not supported by H2!\""),
+
+            // Write test contains multiple expressions
             one("meta::pure::functions::relation::testWrite_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\"")
         );
 
