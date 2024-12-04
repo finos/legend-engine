@@ -299,11 +299,11 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .map(CString.class::cast);
 
         appliedFunction.function = "meta::pure::tds::col";
-        appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_";
+        appliedFunction.fControl = "col_Function_1__String_1__BasicColumnSpecification_1_";
         appliedFunction.parameters = Stream.of(func, name, doc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
         if (appliedFunction.parameters.size() == 3)
         {
-            appliedFunction.fControl = "meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
+            appliedFunction.fControl = "col_Function_1__String_1__String_1__BasicColumnSpecification_1_";
         }
 
         return appliedFunction;
@@ -323,7 +323,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .map(Lambda.class::cast);
 
         appliedFunction.function = "meta::pure::tds::func";
-        appliedFunction.fControl = "meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_";
+        appliedFunction.fControl = "func_FunctionDefinition_1__TdsOlapRank_1_";
         appliedFunction.parameters = Stream.of(func).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
         return appliedFunction;
     }
@@ -346,7 +346,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .orElseGet(Collection::new);
 
         appliedFunction.function = "meta::pure::functions::collection::pair";
-        appliedFunction.fControl = "meta::pure::functions::collection::pair_U_1__V_1__Pair_1_";
+        appliedFunction.fControl = "pair_U_1__V_1__Pair_1_";
         appliedFunction.parameters = Lists.fixedSize.with(first, second);
         return appliedFunction;
     }
