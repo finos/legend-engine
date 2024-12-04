@@ -709,6 +709,28 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testConvertPair()
+    {
+        testFormat("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::functions::collection::pair(r: TDSRow[1]|1, 'hello')\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^Pair(first={r: TDSRow[1]|1}, second= 'hello')\n" +
+                        "}\n");
+
+        testFormat("function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  meta::pure::functions::collection::pair(r: TDSRow[1]|1, 'hello')\n" +
+                        "}\n",
+                "function test::new(): Any[1]\n" +
+                        "{\n" +
+                        "  ^meta::pure::functions::collection::Pair(first={r: TDSRow[1]|1}, second= 'hello')\n" +
+                        "}\n");
+    }
+
+    @Test
     public void testConvertResult()
     {
         testFormat("function test::new(res: Result<meta::pure::metamodel::type::Any|1..*>[1]): Any[1]\n" +
@@ -1341,4 +1363,20 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         test(code);
     }
 
+    @Test
+    public void testCast()
+    {
+        test("function abc::cast(): Any[1]\n" +
+                "{\n" +
+                "  1->cast(@Float)\n" +
+                "}\n");
+        test("function abc::cast(): Any[1]\n" +
+                "{\n" +
+                "  1->cast(1.0)\n" +
+                "}\n");
+        test("function abc::cast(): Any[1]\n" +
+                "{\n" +
+                "  1->cast('String')\n" +
+                "}\n");
+    }
 }
