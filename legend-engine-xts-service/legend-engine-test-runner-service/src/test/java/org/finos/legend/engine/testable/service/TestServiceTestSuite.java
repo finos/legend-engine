@@ -196,7 +196,7 @@ public class TestServiceTestSuite
         // Service Store Service With Reference Data
         String serviceStoreServiceWithReferenceData =
                 "###Service\n" +
-                        "Service testServiceStoreTestSuites::TestService\n" +
+                        "Service testServiceStoreTestSuites::TestServiceWithFrom\n" +
                         "{\n" +
                         "  pattern: '/testServiceStoreTestSuites/testService';\n" +
                         "  owners:\n" +
@@ -208,9 +208,7 @@ public class TestServiceTestSuite
                         "  documentation: 'Service to test Service testSuite';\n" +
                         "  execution: Single\n" +
                         "  {\n" +
-                        "    query: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
-                        "    mapping: testServiceStoreTestSuites::ServiceStoreMapping;\n" +
-                        "    runtime: testServiceStoreTestSuites::ServiceStoreRuntime;\n" +
+                        "    query: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig())->from(testServiceStoreTestSuites::ServiceStoreMapping, testServiceStoreTestSuites::ServiceStoreRuntime);\n" +
                         "  }\n" +
                         "  testSuites:\n" +
                         "  [\n" +
@@ -254,13 +252,13 @@ public class TestServiceTestSuite
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(serviceStoreServiceWithReferenceData + grammar);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
 
-        Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::TestService");
+        Root_meta_legend_service_metamodel_Service serviceWithReferenceData = (Root_meta_legend_service_metamodel_Service) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::TestServiceWithFrom");
         List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithReferenceData, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, serviceStoreTestResults.size());
         Assert.assertTrue(serviceStoreTestResults.get(0) instanceof TestExecuted);
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) serviceStoreTestResults.get(0)).testExecutionStatus);
-        Assert.assertEquals("testServiceStoreTestSuites::TestService", serviceStoreTestResults.get(0).testable);
+        Assert.assertEquals("testServiceStoreTestSuites::TestServiceWithFrom", serviceStoreTestResults.get(0).testable);
         Assert.assertEquals("testSuite1", serviceStoreTestResults.get(0).testSuiteId);
         Assert.assertEquals("test1", serviceStoreTestResults.get(0).atomicTestId);
 
