@@ -1,0 +1,52 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::store::*;
+import meta::pure::test::pct::*;
+
+native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::functions::relation::write<T>(rel:Relation<T>[1], relationElementAccessor:RelationElementAccessor<T>[1]):Integer[1];
+
+function <<PCT.test>> meta::pure::functions::relation::testWrite<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               |
+                 let targetTDS = meta::pure::metamodel::relation::newTDSRelationAccessor(#TDS
+                   val,str,other
+                   1,aaa,a
+                 #);
+                 let rowsAdded = #TDS
+                      val,str,other
+                      1,a,a
+                      3,ewe,b
+                      4,qw,c
+                      5,wwe,d
+                      6,weq,e
+                  #->write($targetTDS);
+                  $targetTDS->select();
+              };
+    
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,other\n'+
+                  '   1,aaa,a\n'+
+                  '   1,a,a\n'+
+                  '   3,ewe,b\n'+
+                  '   4,qw,c\n'+
+                  '   5,wwe,d\n'+
+                  '   6,weq,e\n'+
+                  '#', $res->toString());
+}

@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 import org.finos.legend.pure.m4.ModelRepository;
@@ -50,6 +51,10 @@ public abstract class Shared extends NativeFunction
 
     public TestTDS getTDS(CoreInstance value, ProcessorSupport processorSupport)
     {
+        if (Instance.instanceOf(value, "meta::pure::metamodel::relation::TDSRelationAccessor", processorSupport))
+        {
+            return getTDS(value.getValueForMetaPropertyToOne("sourceElement"), processorSupport);
+        }
         return value instanceof TDSCoreInstance ?
                 ((TDSCoreInstance) value).getTDS() :
                 new TestTDSInterpreted(readCsv((value.getValueForMetaPropertyToOne("csv")).getName()), repository, processorSupport);
