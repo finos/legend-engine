@@ -39,44 +39,60 @@ import java.util.Objects;
 
 public class DataQualityLambdaGenerator
 {
-    public static final int DEFAULT_QUERY_LIMIT = 100;
 
-    public static LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName)
+    public static LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName, Boolean runQuery, Integer resultLimit)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        return generateLambda(pureModel, packageableElement, validationName);
+        return generateLambda(pureModel, packageableElement, validationName, runQuery, resultLimit);
     }
 
-    public static LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName)
+    public static LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
     {
         if (packageableElement instanceof  Root_meta_external_dataquality_DataQuality)
         {
-            return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
+            return generateModelConstraintLambda(pureModel, null, (Root_meta_external_dataquality_DataQuality) packageableElement);
         }
         else if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
         {
-            return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__LambdaFunction_1_((Root_meta_external_dataquality_DataQualityRelationValidation)packageableElement, validationName, pureModel.getExecutionSupport());
+            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, resultLimit);
         }
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
     }
 
-    public static LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName)
+    public static LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName, Boolean runQuery)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
         if (packageableElement instanceof  Root_meta_external_dataquality_DataQuality)
         {
-            int trialQueryLimit = DEFAULT_QUERY_LIMIT;
-            if (Objects.nonNull(queryLimit))
-            {
-                trialQueryLimit = queryLimit;
-            }
-            return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_((Root_meta_external_dataquality_DataQuality)packageableElement, Lists.immutable.of((long)trialQueryLimit), pureModel.getExecutionSupport());
+            return generateModelConstraintLambda(pureModel, queryLimit, (Root_meta_external_dataquality_DataQuality) packageableElement);
         }
         else if (packageableElement instanceof  Root_meta_external_dataquality_DataQualityRelationValidation)
         {
-            return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__LambdaFunction_1_((Root_meta_external_dataquality_DataQualityRelationValidation)packageableElement, validationName, pureModel.getExecutionSupport());
+            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, queryLimit);
         }
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
+    }
+
+    private static LambdaFunction generateModelConstraintLambda(PureModel pureModel, Integer queryLimit, Root_meta_external_dataquality_DataQuality packageableElement)
+    {
+        if (Objects.isNull(queryLimit))
+        {
+            return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_(packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
+        }
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_(packageableElement, Lists.immutable.of((long)queryLimit), pureModel.getExecutionSupport());
+    }
+
+    private static LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
+    {
+        if (Boolean.TRUE.equals(runQuery))
+        {
+            return (LambdaFunction<Object>) packageableElement._query();
+        }
+        if (Objects.isNull(resultLimit))
+        {
+            return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_MANY__LambdaFunction_1_(packageableElement, validationName, Lists.immutable.empty(), pureModel.getExecutionSupport());
+        }
+        return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_MANY__LambdaFunction_1_(packageableElement, validationName, Lists.immutable.of((long)resultLimit), pureModel.getExecutionSupport());
     }
 
     public static Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)

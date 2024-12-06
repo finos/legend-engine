@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.dataquality.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -35,4 +36,5 @@ public class DataqualityRelationValidation extends PackageableElement
 
     public Lambda query;
     public List<RelationValidation> validations = Collections.emptyList();
+    public PackageableElementPointer runtime;
 }
