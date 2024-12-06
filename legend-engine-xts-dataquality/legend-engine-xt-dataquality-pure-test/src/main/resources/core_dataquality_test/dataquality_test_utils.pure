@@ -94,7 +94,6 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
                                   ]
                             )
             );
-            println($actual->printFunctionDefinition($config, ''));
   assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
 }
 
