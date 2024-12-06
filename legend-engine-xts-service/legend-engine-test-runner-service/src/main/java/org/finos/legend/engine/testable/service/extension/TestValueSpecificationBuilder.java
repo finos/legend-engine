@@ -249,7 +249,7 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
     @Override
     public ValueSpecification visit(GenericTypeInstance genericTypeInstance)
     {
-        return null;
+        return genericTypeInstance;
     }
 
     @Override
