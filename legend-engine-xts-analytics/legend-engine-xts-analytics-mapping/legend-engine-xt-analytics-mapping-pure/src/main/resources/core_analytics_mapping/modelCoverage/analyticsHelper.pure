@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::doc::*;
 import meta::pure::mapping::*;
 import meta::analytics::mapping::modelCoverage::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
@@ -21,10 +24,15 @@ Class <<access.private>> meta::analytics::mapping::modelCoverage::PropertyInfo
 {
    name: String[1];
    multiplicity: Multiplicity[1];
+   qualifiers: MappedPropertyQualifier[*];
+   taggedValues: TaggedValueInfo[*];
+   stereotypes : StereotypeInfo[*];
 }
 
 Class <<access.private>> meta::analytics::mapping::modelCoverage::ClassInfo
 {
+  taggedValues: TaggedValueInfo[*];
+  stereotypes : StereotypeInfo[*];
   qualifiedProperties: QualifiedProperty<Any>[*];
 }
 
@@ -41,9 +49,26 @@ function meta::analytics::mapping::modelCoverage::getRealProperty(property:Abstr
       | $property);
 }
 
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildTaggedValueInfo(taggedValue:TaggedValue[1]):TaggedValueInfo[1]
+{
+  ^TaggedValueInfo(tagOwner = $taggedValue.tag.profile->elementToPath(), tagValue = $taggedValue.tag.value, value = $taggedValue.value);
+}
+
+function <<access.private>> meta::analytics::mapping::modelCoverage::buildStereotypeInfo(stereotype: Stereotype[1]):StereotypeInfo[1]
+{
+  ^StereotypeInfo(profilePath = $stereotype.profile->elementToPath(), value = $stereotype.value);
+}
+
 function <<access.private>> meta::analytics::mapping::modelCoverage::buildPropertyInfo(p:AbstractProperty<Any>[1]):PropertyInfo[1]
 {
-   ^PropertyInfo(name = $p->originalPropertyNameForEdgePointProperty()->toOne(), multiplicity = $p.multiplicity);
+   let name = $p->originalPropertyNameForEdgePointProperty()->toOne();
+   ^PropertyInfo(
+      taggedValues = $p.taggedValues->map(val | buildTaggedValueInfo($val)),
+      qualifiers = $p->buildQualifiers(),
+      stereotypes = $p.stereotypes->map(val | buildStereotypeInfo($val)),
+      name = $name,
+      multiplicity = $p.multiplicity
+   );
 }
 
 function <<access.private>> meta::analytics::mapping::modelCoverage::getPropertyInfo(property:AbstractProperty<Any>[1], map:Map<AbstractProperty<Any>, PropertyInfo>[1]):PropertyInfo[1]
@@ -79,7 +104,10 @@ function meta::analytics::mapping::modelCoverage::getAllPropertyInfo(classMappin
 
 function <<access.private>> meta::analytics::mapping::modelCoverage::buildClassInfo(class:Class<Any>[1]):ClassInfo[1]
 {
-   ^ClassInfo(qualifiedProperties = $class->qualifiedProperties())
+   ^ClassInfo(      
+    taggedValues = $class.taggedValues->map(val | buildTaggedValueInfo($val)),
+    stereotypes = $class.stereotypes->map(val | buildStereotypeInfo($val)),
+    qualifiedProperties = $class->qualifiedProperties())
 }
 
 function <<access.private>> meta::analytics::mapping::modelCoverage::getClassInfo(class:Class<Any>[1], map:Map<Class<Any>, ClassInfo>[1]):ClassInfo[1]
