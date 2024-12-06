@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-runtime-planExecution</artifactId>
-        <version>4.67.5</version>
+        <version>4.67.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
