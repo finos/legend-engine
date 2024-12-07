@@ -161,9 +161,24 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    newMap([
       pair(Float,        ^LiteralProcessor(format = '%sD',     transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringOracle($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringOracle($dbTimeZone)}))
    ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::convertDateToSqlStringOracle(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+   let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+   if($date->hasSubsecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}\'', $date),
+      | if ($date->hasSecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}\'', $date),
+          | if ($date->hasMinute(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}\', \'YYYY-MM-DD HH24:MI\')', $date),
+            | if ($date->hasHour(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH}\', \'YYYY-MM-DD HH24\')', $date),
+              | if ($date->hasMonth() || $date->hasDay(),
+                | format('DATE\'%t{[' + $timeZone + ']yyyy-MM-dd}\'', $date),
+                | fail('Ensure the target system understands Year or Year-month semantic.'); '';
+      ))))
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::getDynaFunctionToSqlForOracle(): DynaFunctionToSql[*]
