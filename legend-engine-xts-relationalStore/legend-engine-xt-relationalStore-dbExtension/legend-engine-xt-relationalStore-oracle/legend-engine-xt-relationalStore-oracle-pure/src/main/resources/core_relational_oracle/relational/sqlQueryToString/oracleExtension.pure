@@ -337,7 +337,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForOracle_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+  + processLimit($s, $dbConfig, $format, $extensions, processTakeOracle_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForOracle_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
 //TODO port this logic to the defaults, it should be part of the defaults
@@ -364,7 +364,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processSliceOrDropForOracle(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
-   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' limit %s'->format($size));
+   '%s offset %s rows'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' fetch first %s rows only'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processTakeOracle(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions: Extension[*]):String[1]
+{
+   '%s fetch first %s rows only'->format([$format.separator, $s.toRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::getDDLCommandsTranslatorForOracle(): RelationalDDLCommandsTranslator[1]
