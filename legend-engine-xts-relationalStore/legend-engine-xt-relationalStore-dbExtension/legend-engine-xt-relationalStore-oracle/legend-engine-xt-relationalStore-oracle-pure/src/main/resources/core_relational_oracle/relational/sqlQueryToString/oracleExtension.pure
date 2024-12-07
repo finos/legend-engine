@@ -307,13 +307,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processJoinStringsOperationForOracle(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
     let strings = $js.strings->map(s | $s->processOperation($sgc));
-    let isGroupByCat = $js.strings->size() == 1;
+    let isGroupByCat = $js.strings->size() == 1 && $js.strings->toOne()->type() != Literal;
 
     let sep = if($js.separator->isEmpty(), |'', |$js.separator->toOne()->processOperation($sgc));
     let prefix = if($js.prefix->isEmpty(), |'', |$js.prefix->toOne()->processOperation($sgc));
     let suffix = if($js.suffix->isEmpty(), |'', |$js.suffix->toOne()->processOperation($sgc));
     if ($isGroupByCat,
-        |'listagg(' + $strings->at(0) + if($js.separator->isEmpty() || '\'\'' == $sep, |'', |', ' + $sep) + ')',
+        | if('\'\'' == $prefix, | '', | $prefix + '||') + 
+         'listagg(' + $strings->at(0) + if($js.separator->isEmpty() || '\'\'' == $sep, |'', |', ' + $sep) + ')' +
+         if('\'\'' == $suffix, | '', | '||' + $suffix),
         |$strings->joinStrings(if('\'\'' == $prefix, | '', | $prefix + '||'), if($js.separator->isEmpty() || '\'\'' == $sep, |' || ', |' || ' + $sep + ' || ') , if('\'\'' == $suffix, | '', | '||' + $suffix)););
 }
 
