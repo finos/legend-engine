@@ -223,7 +223,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('isNotNull',              $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
     dynaFnToSql('isNull',                 $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
     dynaFnToSql('isNull',                 $notSelectOutsideWhen, ^ToSql(format='%s is null')),
-    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='case when (%s is null) then 0 else length(%s) end', transform={p:String[1]|[$p,$p]}, parametersWithinWhenClause=true)),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10,%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchOracle('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
