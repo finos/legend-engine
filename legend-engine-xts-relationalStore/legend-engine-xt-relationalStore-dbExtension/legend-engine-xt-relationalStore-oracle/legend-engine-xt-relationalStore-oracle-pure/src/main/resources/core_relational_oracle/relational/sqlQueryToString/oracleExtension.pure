@@ -247,7 +247,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as number)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
@@ -280,7 +280,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
         'floor(months_between(%s, %s))'
      ])},
      {| format('(%s)', [
-        '( CAST( %s AS DATE ) - CAST( %s AS DATE ) ) / 7'
+        //TODO - fix this, still not right
+        '(next_day(CAST( %s AS DATE ), \'SUNDAY\')-next_day(CAST( %s AS DATE ), \'SUNDAY\'))/7'
      ])},
      {| format('(%s)', [
         '( CAST( %s AS DATE ) - CAST( %s AS DATE ) )'
