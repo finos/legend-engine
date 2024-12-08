@@ -45,17 +45,26 @@ public class Test_Relational_Oracle_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_", "\"pivot is not supported\""),
 
             // BUG: unsupported compositions
-            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
-            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: missing FROM-clause entry for table \"restrict__d#2\""),
-            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
+            one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"tb_8886574_1733619047175_1\".\"str\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"restrict__d#2\".\"newCol\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"),
+            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"tb_8994851_1733619055923_1\".\"STR\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"),
 
             // BUG: Column name with special characters is not properly escaped
-            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema."),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: BEGIN\\n    EXECUTE IMMEDIATE 'Create Table LESCHEMA.tb_1132184_1733612266195(val INT,str VARCHAR(200),other kind VARCHAR(200))';\\n    EXECUTE IMMEDIATE 'GRANT SELECT,INSERT,UPDATE,DELETE ON LESCHEMA.tb_1132184_1733612266195 TO PUBLIC';\\nEND;"),
 
-            // Postgres doesn't support asOf Join (May want to compensate with an OLAP equivalent if required
+            // Needs support for asOf Join
             one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "\"AsOfJoins are not supported in the generic generator!\""),
-            one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"AsOfJoins are not supported in the generic generator!\"")
+            one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"AsOfJoins are not supported in the generic generator!\""),
 
+            one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleMultiple_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupByMultipleSingle_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleMultiple_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBySingleSingle_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\""),
+
+            one("meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_", "\"[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet\"")
             );
 
     public static Test suite()
