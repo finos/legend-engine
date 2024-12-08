@@ -20,7 +20,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.postDeployment.PostDeploymentActionLoader;
+import org.finos.legend.engine.functionActivator.generation.FunctionActivatorGenerator;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
@@ -80,7 +80,7 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), PostDeploymentActionLoader.generateActions(activator), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
             LOGGER.info("Generated artifacts for " + element.getName());
 
         }

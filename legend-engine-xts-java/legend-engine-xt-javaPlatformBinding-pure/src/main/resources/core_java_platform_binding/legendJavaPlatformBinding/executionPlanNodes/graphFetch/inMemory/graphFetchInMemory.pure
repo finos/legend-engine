@@ -325,7 +325,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    let targetSetTransformers = $propertyMappings->map({pm |
       let targetSet = $graphFetchTree.sets->filter(x | $x.id == $pm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
-      let input     = j_parameter($conventions->className($targetSet->sourceClass($extensions)), 'input');
+      let setSrc = $targetSet->sourceClass($extensions);
+      let input = j_parameter($conventions->typeName($targetSet->sourceClass($extensions)), 'input');
       j_lambda($input, $input->setTransformerCodes($path,$targetSet, $graphFetchTree, $currentGraphImpl, false, false, $context, $extensions, $debug)->j_block());
    });
 
@@ -344,7 +345,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
          let pm        = $idxPm.second;
          let tst       = $targetSetTransformers->at($idx);
          let targetSet = $graphFetchTree.sets->filter(x | $x.id == $pm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
-         let targetSrc = $conventions->className($targetSet->sourceClass($extensions));
+         let targetSrc = $conventions->typeName($targetSet->sourceClass($extensions));
          javaField(
             ['private', 'static', 'final'], javaFunction($targetSrc, if($targetSet->hasExplodeProperty(),|$currentGraphImpl->javaStream(),|$currentGraphImpl)), 'targetSetTransformer_' + $idx->toString(),
             $tst
@@ -360,7 +361,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
       let tsTransformer = $executeClassWithFields->j_field('targetSetTransformer_' + $pmIndex->toString());
       let pmtType       = $propMappingTransformers->at($pmIndex).type->cast(@meta::external::language::java::metamodel::FunctionType);
       let targetSet     = $graphFetchTree.sets->filter(x | $x.id == $pm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
-      let targetSrc     = j_parameter($conventions->className($targetSet->sourceClass($extensions)), 'targetSrc');
+      let targetSrc     = j_parameter($conventions->typeName($targetSet->sourceClass($extensions)), 'targetSrc');
       let propertyConcreteType = $pmtType.returnType->at(0)->match([p:ParameterizedType[1]|$p.typeArguments->at(0),
                                                                     t:meta::external::language::java::metamodel::Type[1]|$t   ]);
       let propertyType     = j_parameter($propertyConcreteType, 'propertyType');
@@ -428,17 +429,19 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 {
-  //if source is a mappingclass skip the filter
+  //if source is a mappingclass or a primitive type skip the filter (TODO: should we handle filters on primtive sources?)
   let sourceClass = $targetSet->sourceClass($extensions);
-  let sourceClassMappings = $targetSet.parent->_classMappingByClass($sourceClass)->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
-  let targetSrcJType = $context.conventions->className($sourceClass);
+  if($sourceClass->instanceOf(meta::pure::metamodel::type::Class), 
+    | let sourceClassMappings = $targetSet.parent->_classMappingByClass($sourceClass->cast(@meta::pure::metamodel::type::Class<Any>))->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
+      let targetSrcJType = $context.conventions->className($sourceClass);
 
-  if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
-     |let interParam  = j_parameter(javaClassType(), 'interParam');
-      $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType()))
-          ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
-     |$input
-     );
+      if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
+        |let interParam  = j_parameter(javaClassType(), 'interParam');
+          $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType()))
+              ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
+        |$input
+        );,
+    | $input);
 
 }
 
@@ -594,7 +597,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let setHasExplosion   = $set->hasExplodeProperty();
    let result            = j_variable($graphImplClass, 'result');
    let srcClass          = $set->sourceClass($extensions);
-   let srcJavaClass      = $conventions->className($srcClass);
+   let srcJavaClass      = $conventions->typeName($srcClass);
    let src               = j_variable($srcJavaClass, 'src');
    let isMerged = $set->isPartOfMerge();
    let transform = if ($setHasExplosion,

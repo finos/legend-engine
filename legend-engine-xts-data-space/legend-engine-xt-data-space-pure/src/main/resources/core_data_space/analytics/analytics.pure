@@ -33,19 +33,21 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResu
 
 function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceAnalysisResult[1]
 {
+  let mappingCoverage = $dataSpace.executionContexts.mapping->removeDuplicates()->map(mapping | pair($mapping, meta::analytics::mapping::modelCoverage::analyze($mapping, $returnLightGraph, false, $returnLightGraph)))->newMap();
   ^DataSpaceAnalysisResult
   (
     diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
-    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph),
+    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph, $mappingCoverage),
     elementDocs = getModelsDoc($dataSpace)
   );
 }
 
 function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceCoverageAnalysisResult[1]
 {
+  let mappingCoverage = $dataSpace.executionContexts.mapping->removeDuplicates()->map(mapping| pair($mapping, meta::analytics::mapping::modelCoverage::analyze($mapping, $returnLightGraph, false, $returnLightGraph)))->newMap();
   ^DataSpaceCoverageAnalysisResult
   (
-    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph)
+    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph, $mappingCoverage)
   );
 }
 
@@ -59,13 +61,17 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnal
   mappingCoverage: meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult[1];
 }
 
-function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceExecutionContextAnalysisResult[*]
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1], mappingCoverageMap: Map<Mapping,meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult>[1]): DataSpaceExecutionContextAnalysisResult[*]
 {
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
     name = $context.name,
     compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
-    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, $returnLightGraph, false, $returnLightGraph)
-  ));
+    mappingCoverage = if($mappingCoverageMap->get($context.mapping)->isEmpty()
+                ,|meta::analytics::mapping::modelCoverage::analyze($context.mapping, $returnLightGraph, false, $returnLightGraph)
+                ,|$mappingCoverageMap->get($context.mapping)->toOne()
+                )
+    )
+  );
 }
 
 // NOTE: this compatibility check is fairly simple and only do static analysis on the runtimes

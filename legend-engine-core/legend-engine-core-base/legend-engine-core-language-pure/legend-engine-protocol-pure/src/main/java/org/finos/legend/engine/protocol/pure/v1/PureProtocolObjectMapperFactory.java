@@ -14,13 +14,40 @@
 
 package org.finos.legend.engine.protocol.pure.v1;
 
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.deser.std.StdDelegatingDeserializer;
+import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.databind.util.Converter;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolConverter;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
@@ -40,12 +67,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 public class PureProtocolObjectMapperFactory
 {
@@ -79,9 +100,9 @@ public class PureProtocolObjectMapperFactory
         return withPureProtocolExtensions(objectMapper, ObjectMapper::registerModule, ObjectMapper::registerSubtypes, excludeSubType);
     }
 
-    public static Map<String, Class> getClassInstanceTypeMappings()
+    public static Map<String, Class<?>> getClassInstanceTypeMappings()
     {
-        Map<String, Class> result = Maps.mutable.empty();
+        Map<String, Class<?>> result = Maps.mutable.empty();
         result.put("path", Path.class);
         result.put("rootGraphFetchTree", RootGraphFetchTree.class);
         result.put(">", RelationStoreAccessor.class);
@@ -101,7 +122,7 @@ public class PureProtocolObjectMapperFactory
         result.put("runtimeInstance", RuntimeInstance.class);
         result.put("executionContextInstance", ExecutionContextInstance.class);
         result.put("alloySerializationConfig", SerializationConfig.class);
-        PureProtocolExtensionLoader.extensions().forEach(extension -> extension.getExtraClassInstanceTypeMappings().entrySet().forEach(e -> result.put(e.getKey(), e.getValue())));
+        PureProtocolExtensionLoader.extensions().forEach(extension -> extension.getExtraClassInstanceTypeMappings().forEach(result::put));
         return result;
     }
 
@@ -157,5 +178,126 @@ public class PureProtocolObjectMapperFactory
     public static ObjectMapper getNewObjectMapper(Set<String> excludedSubTypes)
     {
         return withPureProtocolExtensions(new ObjectMapper(), excludedSubTypes);
+    }
+
+    public static ObjectMapper withPureProtocolConverter(ObjectMapper objectMapper)
+    {
+        List<ProtocolConverter<?>> protocolConverters = PureProtocolExtensionLoader.extensions().stream()
+                .map(PureProtocolExtension::getProtocolConverters)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        Map<Class<?>, ProtocolConverter<?>> converterByType = protocolConverters
+                .stream()
+                .collect(Collectors.toMap(
+                        ProtocolConverter::getType,
+                        Function.identity(),
+                        (a, b) -> ProtocolConverter.merge((ProtocolConverter<Object>) a, (ProtocolConverter<Object>) b))
+                );
+
+        DeserializationConfig deserializationConfig = objectMapper
+                .getDeserializationConfig()
+                .with(new ConverterHandlerInstantiator(converterByType));
+
+        SimpleModule module = new SimpleModule("protocol converters");
+        module.setDeserializerModifier(new ConverterBeanDeserializerModifier(converterByType));
+
+        return objectMapper.setConfig(deserializationConfig).registerModule(module);
+    }
+
+    private static class ConverterHandlerInstantiator extends HandlerInstantiator
+    {
+        private final Map<Class<?>, ProtocolConverter<?>> converterByType;
+
+        public ConverterHandlerInstantiator(Map<Class<?>, ProtocolConverter<?>> converterByType)
+        {
+            this.converterByType = converterByType;
+        }
+
+        @Override
+        public JsonDeserializer<?> deserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> deserClass)
+        {
+            ProtocolConverter<?> converter = this.converterByType.get(annotated.getRawType());
+            if (converter != null)
+            {
+                JsonDeserializer<?> deserializer = (JsonDeserializer<?>) ClassUtil.createInstance(deserClass, config.canOverrideAccessModifiers());
+                return new StdDelegatingDeserializer(new JacksonProtocolConverter<>(converter), annotated.getType(), deserializer);
+            }
+            return null;
+        }
+
+        @Override
+        public KeyDeserializer keyDeserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> keyDeserClass)
+        {
+            return null;
+        }
+
+        @Override
+        public JsonSerializer<?> serializerInstance(com.fasterxml.jackson.databind.SerializationConfig config, Annotated annotated, Class<?> serClass)
+        {
+            return null;
+        }
+
+        @Override
+        public TypeResolverBuilder<?> typeResolverBuilderInstance(MapperConfig<?> config, Annotated annotated, Class<?> builderClass)
+        {
+            return null;
+        }
+
+        @Override
+        public TypeIdResolver typeIdResolverInstance(MapperConfig<?> config, Annotated annotated, Class<?> resolverClass)
+        {
+            return null;
+        }
+    }
+
+    private static class ConverterBeanDeserializerModifier extends BeanDeserializerModifier
+    {
+        private final Map<Class<?>, ProtocolConverter<?>> converterByType;
+
+        public ConverterBeanDeserializerModifier(Map<Class<?>, ProtocolConverter<?>> converterByType)
+        {
+            this.converterByType = converterByType;
+        }
+
+        @Override
+        public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer)
+        {
+            ProtocolConverter<?> converter = this.converterByType.get(beanDesc.getBeanClass());
+            if (converter != null)
+            {
+                return new StdDelegatingDeserializer(new JacksonProtocolConverter<>(converter), beanDesc.getType(), deserializer);
+            }
+            return deserializer;
+        }
+    }
+
+    private static class JacksonProtocolConverter<T> implements Converter<T, T>
+    {
+        private final ProtocolConverter<T> converter;
+
+        private JacksonProtocolConverter(ProtocolConverter<T> converter)
+        {
+            this.converter = converter;
+        }
+
+        @Override
+        public T convert(T value)
+        {
+            return this.converter.convert(value);
+        }
+
+        @Override
+        public JavaType getInputType(TypeFactory typeFactory)
+        {
+            return typeFactory.constructType(this.converter.getType());
+        }
+
+        @Override
+        public JavaType getOutputType(TypeFactory typeFactory)
+        {
+            return typeFactory.constructType(this.converter.getType());
+        }
     }
 }

@@ -48,7 +48,7 @@ public class CStrictDate extends CDate
         @Override
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CStrictDate(x.asText()));
+            return customParsePrimitive(jsonParser, x -> new CStrictDate(x.asText()));
         }
     }
 }

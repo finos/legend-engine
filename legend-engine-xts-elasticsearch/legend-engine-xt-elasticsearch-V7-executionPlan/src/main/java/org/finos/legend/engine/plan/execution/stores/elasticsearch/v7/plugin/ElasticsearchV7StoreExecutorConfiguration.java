@@ -25,7 +25,7 @@ public class ElasticsearchV7StoreExecutorConfiguration implements StoreExecutorC
     @Override
     public StoreType getStoreType()
     {
-        return StoreType.NonRelational_MongoDB;
+        return StoreType.ESv7;
     }
 
     public CredentialProviderProvider getCredentialProviderProvider()

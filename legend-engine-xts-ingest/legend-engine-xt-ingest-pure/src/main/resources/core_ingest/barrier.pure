@@ -1,0 +1,30 @@
+import meta::external::ingest::barrier::*;
+import meta::external::ingest::metamodel::*;
+
+function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
+{
+  let prevHighBatchId = getBatchId($ingestConfig.datasetName, $prevPublishedWatermark);
+  let currentBatchId = getBatchId($ingestConfig.datasetName, $currentStateWatermark);   
+  ($currentBatchId > $prevHighBatchId) ;                
+}
+
+function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1],filterFunc:Function<{T[1]->Boolean[1]}>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
+{
+  let prevHighBatchId = getBatchId($ingestConfig.datasetName, $prevPublishedWatermark);
+  let currentBatchId = getBatchId($ingestConfig.datasetName, $currentStateWatermark); 
+
+//TODO : Change to T , likely need to uplift getAll to handle T properly
+  meta::pure::functions::collection::getAll(BatchMetadata)
+                  ->filter(x | $x.datasetName == $ingestConfig.datasetName)
+                  ->filter(y | ($y.batchId > $prevHighBatchId) && ($y.batchId <= $currentBatchId))
+                  ->cast(@T)
+                  ->filter($filterFunc)
+                  ->isNotEmpty();
+}
+
+
+function <<access.private>> meta::external::ingest::barrier::getBatchId(datasetName: String[1], watermark: Watermark[1]):Integer[1]
+{
+  $watermark.datasetMarks->filter(w | $w.datasetName == $datasetName)->toOne().batchId;
+}
+

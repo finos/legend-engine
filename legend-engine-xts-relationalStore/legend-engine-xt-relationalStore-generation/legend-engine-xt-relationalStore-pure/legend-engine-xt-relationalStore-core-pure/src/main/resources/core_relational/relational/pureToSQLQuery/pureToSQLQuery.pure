@@ -158,14 +158,14 @@ Class meta::relational::functions::pureToSqlQuery::ColumnGroup
     columns : RelationalOperationElement[*];
 }
 
-function meta::relational::functions::pureToSqlQuery::toSQLQuery(functionExpression:FunctionExpression[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], execCtx: RelationalExecutionContext[0..1], debug:DebugContext[1], extensions:Extension[*]):SQLQuery[1]
+function meta::relational::functions::pureToSqlQuery::toSQLQuery(vs:ValueSpecification[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], execCtx: RelationalExecutionContext[0..1], debug:DebugContext[1], extensions:Extension[*]):SQLQuery[1]
 {
-   toSQLQuery($functionExpression, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars, $execCtx, $extensions)), $extensions);
+   toSQLQuery($vs, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars, $execCtx, $extensions)), $extensions);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::processQuery(functionExpression:FunctionExpression[1], state:State[1], debug:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processQuery(vs:ValueSpecification[1], state:State[1], debug:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   processValueSpecification( $functionExpression,
+   processValueSpecification( $vs,
                               [],
                               ^SelectWithCursor(select=^SelectSQLQuery()),
                               newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
@@ -186,12 +186,12 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::applyPo
    ]);
 }
 
-function meta::relational::functions::pureToSqlQuery::toSQLQuery(functionExpression:FunctionExpression[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], state:State[1], extensions:Extension[*]):SQLQuery[1]
+function meta::relational::functions::pureToSqlQuery::toSQLQuery(vs:ValueSpecification[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], state:State[1], extensions:Extension[*]):SQLQuery[1]
 {
-   $functionExpression
+   $vs
       ->processQuery($state, $debug, $extensions)
       ->applyPostProcessingForTempTableAsDriver($state, $debug, $extensions)
-      ->manageDeepMapClassColumns($functionExpression, $debug, $state, $extensions)
+      ->manageDeepMapClassColumns($vs, $debug, $state, $extensions)
       .select
       ->pushSavedFilteringOperation($extensions)
       ->pushExtraFilteringOperation($extensions)
@@ -218,25 +218,29 @@ function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functio
    );
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::manageDeepMapClassColumns(sql:SelectWithCursor[1], functionExpression:FunctionExpression[1], context:DebugContext[1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::manageDeepMapClassColumns(sql:SelectWithCursor[1], vs:ValueSpecification[1], context:DebugContext[1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   let isMap = $functionExpression.func == map_T_MANY__Function_1__V_MANY_;
-   let isFilter = $functionExpression.func == filter_T_MANY__Function_1__T_MANY_;
-   if ($sql.select.columns->isEmpty() && ($isMap || $isFilter),
-       |
+  $vs->match([
+    functionExpression: FunctionExpression[1] |
+      let isMap = $functionExpression.func == map_T_MANY__Function_1__V_MANY_;
+      let isFilter = $functionExpression.func == filter_T_MANY__Function_1__T_MANY_;
+      if ($sql.select.columns->isEmpty() && ($isMap || $isFilter),
+          |
 
-        let setImplementation = $functionExpression.parametersValues->at(if($isMap,|1,|0))->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->match([r:RootRelationalInstanceSetImplementation[1]|$r, c:CrossSetImplementation[1]|$c->convertCrossSetImplToRelationalSetImpl()]);
-        let getAllSelectWithCursor = processGetAll($setImplementation, $setImplementation.class, '', true, -1, true, [], $state, $context, $extensions)->toOne();
-        let columns = $getAllSelectWithCursor.select.columns->cast(@Alias);
-        assertEquals(1, $columns.relationalElement->cast(@TableAliasColumn).alias->removeDuplicates()->size(), 'Types mapped with joins are not supported yet!');
-        let topNode =$ sql.currentTreeNode->toOne();
-        let newColumns = $columns->map(c|let t = $c.relationalElement->cast(@TableAliasColumn);
-                                         ^$c(relationalElement=^$t(alias=$topNode.alias));
-                                   );
-        let realSql = $sql.select;
-        ^$sql(select = ^$realSql(columns=$newColumns));,
-       |$sql
-   );
+            let setImplementation = $functionExpression.parametersValues->at(if($isMap,|1,|0))->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->match([r:RootRelationalInstanceSetImplementation[1]|$r, c:CrossSetImplementation[1]|$c->convertCrossSetImplToRelationalSetImpl()]);
+            let getAllSelectWithCursor = processGetAll($setImplementation, $setImplementation.class, '', true, -1, true, [], $state, $context, $extensions)->toOne();
+            let columns = $getAllSelectWithCursor.select.columns->cast(@Alias);
+            assertEquals(1, $columns.relationalElement->cast(@TableAliasColumn).alias->removeDuplicates()->size(), 'Types mapped with joins are not supported yet!');
+            let topNode =$ sql.currentTreeNode->toOne();
+            let newColumns = $columns->map(c|let t = $c.relationalElement->cast(@TableAliasColumn);
+                                            ^$c(relationalElement=^$t(alias=$topNode.alias));
+                                      );
+            let realSql = $sql.select;
+            ^$sql(select = ^$realSql(columns=$newColumns));,
+          |$sql
+      );,
+    any: ValueSpecification[1] | $sql
+  ]);
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::printDebugQuery(select:SelectSQLQuery[1], space:String[1], extensions:Extension[*]):String[1]

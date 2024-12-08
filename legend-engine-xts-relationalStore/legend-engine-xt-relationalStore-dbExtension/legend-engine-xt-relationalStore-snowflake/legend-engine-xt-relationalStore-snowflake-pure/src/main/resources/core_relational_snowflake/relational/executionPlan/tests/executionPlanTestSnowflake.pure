@@ -159,7 +159,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testInExecut
   assertEquals('tempVarForIn_8', $varName);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableDbAndSchemaSpecified():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableStrategyDbAndSchemaSpecified():Boolean[1]
 {
   let tree = #{
       Person {
@@ -191,11 +191,40 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let rootNode2 = $generatedPlan2.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
   let processedTempTableName2 = $rootNode2.processedTempTableName;
   assertEquals('temp_db1.temp_schema1.temp_table_node_0', $processedTempTableName2);
-
-  
+  let tempTableStrategy = $rootNode2.tempTableStrategy;
+  assertEquals('CREATE TEMPORARY TABLE temp_db1.temp_schema1.temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('INSERT INTO temp_db1.temp_schema1.temp_table_node_0 VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('Drop table if exists temp_db1.temp_schema1.temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableDbAndSchemaWithQuoteIdentifiers():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableStrategyWithQuoteIdentifiers():Boolean[1]
+{
+  let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+  let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+  let conn = ^RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName',databaseName='databaseName',accountName = 'accountName'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake, quoteIdentifiers = true
+              );
+  let generatedPlan = executionPlan($query, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
+  let rootNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
+  let processedTempTableName = $rootNode.processedTempTableName;
+  assertEquals('"LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"', $processedTempTableName);
+  let tempTableStrategy = $rootNode.tempTableStrategy;
+  assertEquals('CREATE TEMPORARY TABLE "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('INSERT INTO "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('Drop table if exists "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFetchSnowflakeTempTableStrategyWithDbSchemaAndQuoteIdentifiers():Boolean[1]
 {
   let tree = #{
       Person {
@@ -215,9 +244,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let generatedPlan = executionPlan($query, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
   let rootNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalRootQueryTempTableGraphFetchExecutionNode);
   let processedTempTableName = $rootNode.processedTempTableName;
-  assertEquals('"temp_db1"."temp_schema1".temp_table_node_0', $processedTempTableName);
+  assertEquals('"temp_db1"."temp_schema1"."temp_table_node_0"', $processedTempTableName);
+  let tempTableStrategy = $rootNode.tempTableStrategy;
+  assertEquals('CREATE TEMPORARY TABLE "temp_db1"."temp_schema1"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('INSERT INTO "temp_db1"."temp_schema1"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('Drop table if exists "temp_db1"."temp_schema1"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
-function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeTempTableDbAndSchemaSpecified():Boolean[1]
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeTempTableStrategyDbAndSchemaSpecified():Boolean[1]
 {
    let tree = #{
       meta::relational::graphFetch::tests::crossDatabase::Firm {

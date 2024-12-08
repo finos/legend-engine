@@ -21,6 +21,7 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
+import org.finos.legend.engine.postgres.handler.txn.TxnIsolationSessionHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,6 +41,12 @@ public class ExecutionDispatcherTest
     public void testSelectInformationSchema()
     {
         assertMetadataSessionHandler("SELECT * FROM information_schema.TABLES");
+    }
+
+    @Test
+    public void testSelectPgType()
+    {
+        assertMetadataSessionHandler("SELECT oid, typbasetype FROM pg_type");
     }
 
     @Test
@@ -79,7 +86,8 @@ public class ExecutionDispatcherTest
     @Test
     public void testShowTxnLevel()
     {
-        assertMetadataSessionHandler("SHOW TRANSACTION ISOLATION LEVEL");
+        assertTxnIsoSessionHandler("SHOW TRANSACTION ISOLATION LEVEL");
+        assertTxnIsoSessionHandler("SHOW transaction_isolation");
     }
 
     private static void assertEmptySessionHandler(String query)
@@ -92,6 +100,12 @@ public class ExecutionDispatcherTest
     {
         SessionHandler sessionHandler = getSessionHandler(query);
         Assert.assertSame(metadataSessionHandler, sessionHandler);
+    }
+
+    private static void assertTxnIsoSessionHandler(String query)
+    {
+        SessionHandler sessionHandler = getSessionHandler(query);
+        Assert.assertTrue(sessionHandler instanceof TxnIsolationSessionHandler);
     }
 
     private static void assertDataSessionHandler(String query)

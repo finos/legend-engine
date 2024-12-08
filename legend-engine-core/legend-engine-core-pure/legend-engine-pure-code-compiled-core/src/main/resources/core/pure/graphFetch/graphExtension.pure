@@ -430,9 +430,9 @@ function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTr
 
 function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*], visitedFunctions:Map<String,ScanPropertiesState>[1]): Pair<GraphFetchTree, Map<String, ScanPropertiesState>>[1]
 {
-   let owner = $srcNode->match([
+   let srcNodeOwner = $srcNode->match([
       r:RootGraphFetchTree<Any>[1] | $r.class,
-      p:PropertyGraphFetchTree[1]  | if ($p.subType->isNotEmpty(), |$p.subType->toOne(), | $p.property->functionReturnType().rawType->cast(@Class<Any>)->toOne())
+      p:PropertyGraphFetchTree[1]  | if ($p.subType->isNotEmpty(), |$p.subType->toOne(), | $p.property->functionReturnType().rawType->toOne());
    ]);
 
    let isPropertyTemporalMilestoned = $tgtPgft.property->hasGeneratedMilestoningPropertyStereotype();
@@ -440,8 +440,9 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    let requiredProperty = if($isPropertyTemporalMilestoned, |$setImplementation.class->propertyByName($tgtPgft.property->edgePointPropertyName()->toOne()), |$tgtPgft.property);
    let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty)->cast(@PurePropertyMapping);
 
-   if($propertyMappings->isNotEmpty() || ($requiredProperty->isNotEmpty() && ($requiredProperty->toOne()->isPropertyAutoMapped($setImplementation) || $setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge())),
+   if($srcNodeOwner->instanceOf(Class) && ($propertyMappings->isNotEmpty() || ($requiredProperty->isNotEmpty() && ($requiredProperty->toOne()->isPropertyAutoMapped($setImplementation) || $setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge()))),
       {|
+         let owner = $srcNodeOwner->cast(@Class<Any>);
          let returnType   = $tgtPgft.property->functionReturnType().rawType->toOne();
 
          let childSetImpls = $returnType->match([
@@ -616,11 +617,11 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
                                               pair($srcNode, ^Map<String,ScanPropertiesState>())
                                             ).first;
 
-   let srcClass = $setImplementation.srcClass->toOne()->cast(@Class<Any>);
+   let srcClass = $setImplementation.srcClass->toOne();
    let srcNodeOwner = $srcNode->typeFromGraphFetchTree();
 
-   if($setImplementation.filter->isNotEmpty() && $srcClass == $srcNodeOwner,
-      | $subTrees->enrichSourceTreeNodeForExpression($srcClass, $setImplementation.filter.expressionSequence->at(0)),
+   if($srcClass->instanceOf(Class) && $setImplementation.filter->isNotEmpty() && $srcClass == $srcNodeOwner,
+      | $subTrees->enrichSourceTreeNodeForExpression($srcClass->cast(@Class<Any>), $setImplementation.filter.expressionSequence->at(0)),
       | $subTrees
    );
 }

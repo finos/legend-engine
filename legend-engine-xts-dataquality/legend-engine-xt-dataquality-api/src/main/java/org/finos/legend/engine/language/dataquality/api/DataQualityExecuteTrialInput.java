@@ -29,4 +29,5 @@ public class DataQualityExecuteTrialInput
     public String packagePath;
     public Integer queryLimit;
     public List<ParameterValue> lambdaParameterValues;
+    public String validationName;
 }

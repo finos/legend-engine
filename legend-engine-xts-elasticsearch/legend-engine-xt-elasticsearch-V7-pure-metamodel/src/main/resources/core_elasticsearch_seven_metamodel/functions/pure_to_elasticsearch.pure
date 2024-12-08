@@ -712,7 +712,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQue
     supportedForPainlessScriptFunctions = supportedForPainlessScriptFunctions()
   );
 
-  let processedReq = $sq.fe->process($req);
+  let processedReq = $sq.vs->process($req);
   let search = $processedReq.search;
   ^$processedReq(search = if($search.size->isEmpty(), | ^$search(size = defaultSize()->literal()), | $search));
 }

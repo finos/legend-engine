@@ -29,7 +29,9 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
@@ -61,6 +63,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         {
             return renderDataQuality((DataQuality) element, context);
         }
+        if (element instanceof DataqualityRelationValidation)
+        {
+            return renderDataQualityRelationValidation((DataqualityRelationValidation) element, context);
+        }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
@@ -73,6 +79,16 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   context: " + getContextFunc(dataQuality) + ";\n" +
                 "   validationTree: " + processGraphFetchTree(dataQuality.dataQualityRootGraphFetchTree, grammarTransformer) + ";\n" +
                     renderLambda(dataQuality, context) +
+                "}";
+    }
+
+    private static String renderDataQualityRelationValidation(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
+    {
+        String packageName = dataqualityRelationValidation._package == null || dataqualityRelationValidation._package.isEmpty() ? dataqualityRelationValidation.name : dataqualityRelationValidation._package + "::" + dataqualityRelationValidation.name;
+        return "DataQualityRelationValidation " + renderAnnotations(dataqualityRelationValidation.stereotypes, dataqualityRelationValidation.taggedValues) + packageName + "\n" +
+                "{\n" +
+                "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
+                "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
                 "}";
     }
 
@@ -222,6 +238,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 {
                     return renderDataQuality((DataQuality) element, context);
                 }
+                if (element instanceof DataqualityRelationValidation)
+                {
+                    return renderDataQualityRelationValidation((DataqualityRelationValidation) element, context);
+                }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
         });
@@ -232,10 +252,38 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
     {
         return Collections.singletonList((elements, context, composedSections) -> // TODO: use context for render style etc - dont hardcode
         {
-            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof DataQuality), Lists.mutable.empty());
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof DataQuality || e instanceof  DataqualityRelationValidation), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(element -> renderElement(element, context)).makeString("###" + DataQualityGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
+    }
+
+    private static String renderRelationQuery(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
+    {
+        return dataqualityRelationValidation.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + ";\n";
+    }
+
+    private static String renderValidations(List<RelationValidation> relationValidations, PureGrammarComposerContext context)
+    {
+        return "[\n" +
+                   relationValidations.stream().map(val -> renderValidation(val, context)).collect(Collectors.joining(",\n", "", "\n")) +
+                "   ];\n";
+    }
+
+    private static String renderValidation(RelationValidation relationValidation, PureGrammarComposerContext context)
+    {
+        return
+                "   {\n" +
+                "     name: '" + relationValidation.name + "';\n" +
+                        (Objects.nonNull(relationValidation.description) ?
+                "     description: '" + relationValidation.description + "';\n" : "") +
+                "     assertion: " + renderAssertion(relationValidation, context) + ";\n" +
+                "    }";
+    }
+
+    private static String renderAssertion(RelationValidation relationValidation, PureGrammarComposerContext context)
+    {
+        return relationValidation.assertion.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
     }
 }

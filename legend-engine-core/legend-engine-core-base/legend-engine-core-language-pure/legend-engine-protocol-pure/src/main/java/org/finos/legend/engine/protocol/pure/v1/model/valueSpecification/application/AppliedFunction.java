@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
-
 import java.util.Collections;
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 public class AppliedFunction extends AbstractAppliedFunction
 {

@@ -49,3 +49,16 @@ Class meta::external::dataquality::DataQualityRule
   constraintGrammar: String[1];
   propertyPath: String[1];
 }
+
+Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement
+{
+  query: LambdaFunction<Any>[1]; // should return a relation - enforced in compiler
+  validations: meta::external::dataquality::RelationValidation[*];
+}
+
+Class meta::external::dataquality::RelationValidation
+{
+  name: String[1];
+  description: String[0..1];
+  assertion: LambdaFunction<{Nil[1]->Boolean[1]}>[1];
+}

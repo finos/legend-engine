@@ -91,7 +91,7 @@ public class DataCube__DEV__runDuckDBSelectSQL implements Command
                     }
                     this.client.println("Executed SELECT SQL: '" + expression + "'");
                     this.client.println(prettyGridPrint(result, columnNames, columnNames, 40, 60));
-                    this.client.println(printExecutionTime(startTime));
+                    this.client.printDebug(printExecutionTime(startTime));
                 }
             }
 

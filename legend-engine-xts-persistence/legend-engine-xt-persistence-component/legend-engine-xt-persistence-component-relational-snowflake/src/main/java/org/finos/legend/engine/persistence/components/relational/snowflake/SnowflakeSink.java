@@ -32,7 +32,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FunctionalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
@@ -42,6 +41,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ConcatFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
@@ -73,6 +73,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ConcatFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
@@ -83,12 +84,9 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
@@ -197,6 +195,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
         logicalPlanVisitorByClass.put(FunctionalDataset.class, new FunctionalDatasetVisitor());
+        logicalPlanVisitorByClass.put(ConcatFunction.class, new ConcatFunctionVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
@@ -620,10 +619,26 @@ public class SnowflakeSink extends AnsiSqlSink
                     switch ((String) queryStats.get(QueryStatsLogicalPlanUtils.OPERATOR_TYPE_ALIAS))
                     {
                         case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
-                            stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS));
+                            Object externalScan = queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS);
+                            if (externalScan != null)
+                            {
+                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, externalScan);
+                            }
+                            else
+                            {
+                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, 0);
+                            }
                             break;
                         case QueryStatsLogicalPlanUtils.INSERT_STAGE:
-                            stats.put(StatisticName.INCOMING_RECORD_COUNT, queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS));
+                            Object insert = queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS);
+                            if (insert != null)
+                            {
+                                stats.put(StatisticName.INCOMING_RECORD_COUNT, insert);
+                            }
+                            else
+                            {
+                                stats.put(StatisticName.INCOMING_RECORD_COUNT, 0);
+                            }
                             break;
                     }
                 });

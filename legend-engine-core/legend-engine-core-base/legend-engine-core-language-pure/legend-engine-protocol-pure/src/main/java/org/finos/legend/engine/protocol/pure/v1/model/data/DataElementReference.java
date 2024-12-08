@@ -14,62 +14,21 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 
-import java.io.IOException;
-import java.util.Objects;
-
-@JsonDeserialize(using = DataElementReference.DataElementReferenceDeserializer.class)
 public class DataElementReference extends EmbeddedData
 {
     public PackageableElementPointer dataElement;
 
-    public static class DataElementReferenceDeserializer extends JsonDeserializer<DataElementReference>
+    @JsonSetter("dataElement")
+    public void setDataElement(PackageableElementPointer dataElement)
     {
-
-        private static ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
-        @Override
-        public DataElementReference deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        this.dataElement = dataElement;
+        if (this.dataElement.type == null)
         {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-            JsonNode dataElementNode = node.get("dataElement");
-            DataElementReference dataElementReference = new DataElementReference();
-            if (dataElementNode != null)
-            {
-                if (dataElementNode.isTextual())
-                {
-                    dataElementReference.dataElement = new PackageableElementPointer(
-                            PackageableElementType.DATA,
-                            dataElementNode.textValue(),
-                            Objects.isNull(node.get("sourceInformation")) ? null : objectMapper.treeToValue(node.get("sourceInformation"), SourceInformation.class)
-                    );
-                }
-                else if (dataElementNode.isObject())
-                {
-                    dataElementReference.dataElement = objectMapper.treeToValue(dataElementNode, PackageableElementPointer.class);
-                }
-                else
-                {
-                    throw new IOException("DataElementReference expects property 'dataElement' to be a PackageableElementPointer");
-                }
-            }
-            // for backward compatability
-            else
-            {
-                throw new IOException("DataElementReference requires attribute dataElement.");
-            }
-            return dataElementReference;
+            this.dataElement.type = PackageableElementType.DATA;
         }
     }
-
 }

@@ -171,3 +171,37 @@ function <<test.Test>> meta::external::dataquality::tests::testMetadata():Boolea
     //TODO assert on structure.
     assert($metadata->isNotEmpty());
 }
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation():Boolean[1]
+{
+  doRelationTest('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
+    '          }' +
+    '         ];' +
+    '      }','validFirstName', {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings())->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())
+    })
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_parameterized_relationValidation():Boolean[1]
+{
+  doRelationTest('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: name:String[1] | #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter(n|$n == $name)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()]);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not exceed 100 chars\';' +
+    '             assertion: row2|$row2.FIRSTNAME->size() <= 100;' +
+    '          }' +
+    '         ];' +
+    '      }','validFirstName', {name:String[1]|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter({n|($n == $name)})->groupBy(~[FIRSTNAME], ~[count:{x|$x.FIRSTNAME}:{y|$y->meta::pure::functions::collection::count()}])->filter(row2|meta::pure::functions::boolean::not(($row2.FIRSTNAME->meta::pure::functions::collection::size() <= 100)))
+    })
+}

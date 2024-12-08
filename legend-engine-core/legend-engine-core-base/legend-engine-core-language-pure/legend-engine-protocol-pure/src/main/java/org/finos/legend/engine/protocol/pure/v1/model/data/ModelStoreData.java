@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,13 +40,11 @@ public class ModelStoreData extends EmbeddedData
 
     public static class ModelStoreDeserializer extends JsonDeserializer<ModelStoreData>
     {
-
-        private static ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
         @Override
         public ModelStoreData deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
             JsonNode instances = node.get("instances");
             JsonNode modelDataJsonNode = node.get("modelData");
             ModelStoreData result = new ModelStoreData();
@@ -58,7 +57,7 @@ public class ModelStoreData extends EmbeddedData
                     Iterator<JsonNode> elements = modelDataNode.elements();
                     while (elements.hasNext())
                     {
-                        result.modelData.add(objectMapper.treeToValue(elements.next(), ModelTestData.class));
+                        result.modelData.add(codec.treeToValue(elements.next(), ModelTestData.class));
                     }
                 }
                 else
@@ -78,7 +77,7 @@ public class ModelStoreData extends EmbeddedData
                         Map.Entry<String, JsonNode> instance = itr.next();
                         String model = instance.getKey();
                         JsonNode instanceVal = instance.getValue();
-                        ValueSpecification val = objectMapper.treeToValue(instanceVal, ValueSpecification.class);
+                        ValueSpecification val = codec.treeToValue(instanceVal, ValueSpecification.class);
                         ModelInstanceTestData modelInstanceTestData = new ModelInstanceTestData();
                         modelInstanceTestData.model = model;
                         modelInstanceTestData.instances = val;

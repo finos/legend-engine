@@ -16,16 +16,14 @@ package org.finos.legend.engine.protocol.test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Objects;
+import java.util.Scanner;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Objects;
-import java.util.Scanner;
 
 public class TestCompatibilityAndMigration
 {
@@ -1853,26 +1851,10 @@ public class TestCompatibilityAndMigration
         Assert.assertEquals(expectedPointerFromObjectConstructor, pointerFromStringConstructor);
     }
 
-    @Test
-    public void testPackageableElementPointerToPathSerializerConverter() throws Exception
-    {
-        String expected = "{\"pointer\":\"abc::myPath::MyName\"}";
-        SampleElementWithPackageableElementPointer sampleUsingPtr = objectMapper.readValue(expected, SampleElementWithPackageableElementPointer.class);
-        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sampleUsingPtr);
-        JsonAssert.assertJsonEquals(expected, json);
-        Assert.assertEquals("abc::myPath::MyName", sampleUsingPtr.pointer.path);
-    }
-
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
         JsonAssert.assertJsonEquals(output, json);
-    }
-
-    public static class SampleElementWithPackageableElementPointer
-    {
-        @JsonSerialize(converter = PackageableElementPointer.ToPathSerializerConverter.class)
-        public PackageableElementPointer pointer;
     }
 }

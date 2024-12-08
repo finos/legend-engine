@@ -214,6 +214,11 @@ function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:D
    createDbConfig($dbType, $dbTimeZone, []);
 }
 
+function meta::relational::functions::sqlQueryToString::createDbConfig(dc:DatabaseConnection[1]):DbConfig[1]
+{
+   createDbConfig($dc.type, $dc.timeZone, $dc.quoteIdentifiers);
+}
+
 function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1]):DbConfig[1]
 {
    ^DbConfig(
@@ -459,9 +464,13 @@ function meta::relational::functions::sqlQueryToString::processTableAlias(tableA
 
 function meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
 {
-   let schemaName = $dbConfig.schemaNameToIdentifier($table.schema.name);
-   let tableName = $dbConfig.tableNameToIdentifier($table.name);
-   if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.schemaIdentifierToString($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
+  // temp tables have already gone through db-specific processTempTable
+  if($table->isTemporaryTable(),
+    | $table.name,
+    | let schemaName = $dbConfig.schemaNameToIdentifier($table.schema.name);
+      let tableName = $dbConfig.tableNameToIdentifier($table.name);
+      if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.schemaIdentifierToString($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
+  )
 }
 
 function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Format[1]

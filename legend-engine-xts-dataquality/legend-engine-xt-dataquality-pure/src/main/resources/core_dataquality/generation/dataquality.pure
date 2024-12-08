@@ -1,3 +1,4 @@
+import meta::pure::metamodel::relation::*;
 import meta::pure::dataQuality::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::lineage::scanProperties::*;
@@ -503,3 +504,33 @@ function <<access.private>> meta::external::dataquality::constraintToDqRule(cons
 {
   ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->replaceVariableWithVariable('this', 'x')->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions('')->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
 }
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1]): LambdaFunction<Any>[1]
+{
+  let lambda = $dqRelationValidation.query;
+  ^$lambda(expressionSequence = [$dqRelationValidation->buildRelationFilterExpression($validationName)]);
+}
+
+function meta::external::dataquality::buildRelationFilterExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1]):FunctionExpression[1]
+{
+  let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
+  let assertion = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne().assertion; 
+              
+   ^SimpleFunctionExpression
+   (
+      func = filter_Relation_1__Function_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)),
+      importGroup  = system::imports::coreImport,
+      parametersValues =
+      [  $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne(),
+         ^InstanceValue (
+            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+            multiplicity = PureOne,
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+                                                          $assertion.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression())
+         )
+     ]
+   )->evaluateAndDeactivate();
+}
+

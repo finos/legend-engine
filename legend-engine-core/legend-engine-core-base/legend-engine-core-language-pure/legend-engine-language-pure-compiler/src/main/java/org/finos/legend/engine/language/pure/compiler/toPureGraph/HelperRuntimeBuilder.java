@@ -290,7 +290,12 @@ public class HelperRuntimeBuilder
 
     public static boolean isRuntimeCompatibleWithMapping(Root_meta_pure_runtime_PackageableRuntime runtime, Mapping mappingToCheck)
     {
-        return ListIterate.collect(runtime._runtimeValue()._mappings().toList(), mapping ->
+        return isRuntimeCompatibleWithMapping(runtime._runtimeValue(), mappingToCheck);
+    }
+
+    public static boolean isRuntimeCompatibleWithMapping(Root_meta_core_runtime_EngineRuntime runtime, Mapping mappingToCheck)
+    {
+        return ListIterate.collect(runtime._mappings().toList(), mapping ->
         {
             Set<Mapping> mappings = new HashSet<>();
             mappings.add(mapping);

@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-analytics</artifactId>
-        <version>4.66.1-SNAPSHOT</version>
+        <version>4.67.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-xt-analytics-mapping-http-api</module>
+        <module>legend-engine-xt-analytics-mapping-integration</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
     </modules>

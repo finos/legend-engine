@@ -39,6 +39,7 @@ import java.util.stream.StreamSupport;
 
 public class AnyDeserializer extends JsonDeserializer<Object>
 {
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final List<Class<?>> classes;
 
     public AnyDeserializer(List<Class<?>> classes)
@@ -49,7 +50,7 @@ public class AnyDeserializer extends JsonDeserializer<Object>
     @Override
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
     {
-        JsonNode node = new ObjectMapper().readTree(jsonParser);
+        JsonNode node = OBJECT_MAPPER.readTree(jsonParser);
 
         Object value = deserialize(node);
 
@@ -114,7 +115,7 @@ public class AnyDeserializer extends JsonDeserializer<Object>
             {
                 return null;
             }
-            return new ObjectMapper().treeToValue(node, clazz);
+            return OBJECT_MAPPER.treeToValue(node, clazz);
 
         }
         catch (Exception e)

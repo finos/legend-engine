@@ -17,6 +17,12 @@ identifier:                             VALID_STRING | STRING
                                         | FROM_MAPPING_AND_RUNTIME
                                         | DQCONTEXT
                                         | FILTER
+                                        | DATAQUALITYRELATIONVALIDATION
+                                        | RELATION_FUNCTION
+                                        | VALIDATIONS
+                                        | VALIDATION_NAME
+                                        | VALIDATION_DESCRIPTION
+                                        | VALIDATION_ASSERTION
 ;
 
 
@@ -25,7 +31,11 @@ identifier:                             VALID_STRING | STRING
 definition:                           (validationDefinition)*
                                       EOF
 ;
-validationDefinition:                  DATAQUALITYVALIDATION stereotypes? taggedValues? qualifiedName
+validationDefinition:                  classValidationDefinition
+                                       | relationValidationDefinition
+;
+
+classValidationDefinition:              DATAQUALITYVALIDATION stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                              (
                                                  dqContext
@@ -97,4 +107,33 @@ constraintList:                     LESS_THAN
                                     GREATER_THAN
 ;
 dqConstraintName:                   identifier
+;
+
+// --------------------------- Relation Definition ----------------------------------------------------------
+relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotypes? taggedValues? qualifiedName
+                                        BRACE_OPEN
+                                             (
+                                                 relationFunc
+                                                 | validations
+                                             )*
+                                        BRACE_CLOSE
+;
+
+relationFunc:                          RELATION_FUNCTION COLON combinedExpression SEMI_COLON
+;
+validations:                           VALIDATIONS COLON BRACKET_OPEN validation(COMMA validation)* BRACKET_CLOSE SEMI_COLON
+;
+validation:                            BRACE_OPEN
+                                             (
+                                                validationName
+                                                | validationDesc
+                                                | validationAssertion
+                                             )*
+                                       BRACE_CLOSE
+;
+validationName:                        VALIDATION_NAME COLON STRING SEMI_COLON
+;
+validationDesc:                        VALIDATION_DESCRIPTION COLON STRING SEMI_COLON
+;
+validationAssertion:                   VALIDATION_ASSERTION COLON combinedExpression SEMI_COLON
 ;

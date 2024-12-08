@@ -168,48 +168,34 @@ function meta::relational::graphFetch::executionPlan::createTable(tempTableName:
         );
 }
 
-function meta::relational::graphFetch::executionPlan::sqlsForTempTableCreation(dbType: DatabaseType[1], temporaryTable: Table[1]): String[*]
+function meta::relational::graphFetch::executionPlan::sqlsForTempTableCreation(temporaryTable: Table[1], dbConfig:DbConfig[1]): String[*]
 {
   let create = ^CreateTableSQL(table = $temporaryTable, isTempTable=true);
-  let dbConfig  = $dbType->createDbConfig([]);
   $create->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
 }
 
-function meta::relational::graphFetch::executionPlan::sqlsForTempTableDeletion(dbType: DatabaseType[1], temporaryTable: Table[1]): String[*]
+function meta::relational::graphFetch::executionPlan::sqlsForTempTableDeletion(temporaryTable: Table[1], dbConfig:DbConfig[1]): String[*]
 {
-  let dbConfig  = $dbType->createDbConfig([]);
   ^DropTableSQL(table = $temporaryTable)->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
 }
 
-function meta::relational::graphFetch::executionPlan::sqlsForTempTableLoadFromTempFile(dbType: DatabaseType[1], temporaryTable: Table[1]): String[*]
+function meta::relational::graphFetch::executionPlan::sqlsForTempTableLoadFromTempFile(temporaryTable: Table[1], dbConfig:DbConfig[1]): String[*]
 {
     let VarPlaceHolder = 'csv_file_location';
     let load = ^LoadTableSQL(table = $temporaryTable, absolutePathToFile=^VarPlaceHolder(name= $VarPlaceHolder, type = $VarPlaceHolder->type()), columnsToLoad=$temporaryTable.columns->cast(@Column));
-    let dbConfig  = $dbType->createDbConfig([]);
     $load->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
 }
 
-function meta::relational::graphFetch::executionPlan::sqlsForTempTableLoadFromSubQuery(dbType: DatabaseType[1], temporaryTable: Table[1], selectSqlStatement: String[1]): String[*]
+function meta::relational::graphFetch::executionPlan::sqlsForTempTableLoadFromSubQuery(temporaryTable: Table[1], dbConfig:DbConfig[1], selectSqlStatement: String[1]): String[*]
 {
-  let tempTableName = getTableName($dbType, $temporaryTable);
+  let tempTableName = $temporaryTable->tableToString($dbConfig);
   let columns = $temporaryTable.columns->map(x|$x->cast(@Column).name);
   [['INSERT INTO ', $tempTableName, '(', $columns->joinStrings(',') ,') SELECT DISTINCT "', $columns->joinStrings('","'),'" FROM ( ',$selectSqlStatement,' );']->joinStrings('')];
 }
 
-function meta::relational::graphFetch::executionPlan::getTableName(dbType: DatabaseType[1], temporaryTable: Table[1]):String[1]
+function meta::relational::graphFetch::executionPlan::sqlsForInsertIntoTableUsingResultSet(temporaryTable: Table[1], dbConfig:DbConfig[1]):String[1]
 {
-      let dbConfig  = $dbType->createDbConfig([]);
-      let schemaName = $dbConfig.schemaNameToIdentifier($temporaryTable.schema.name);
-      let tableName = $dbConfig.tableNameToIdentifier($temporaryTable.name);
-      if($schemaName == 'default', | $dbConfig.identifierProcessor($tableName), | $dbConfig.identifierProcessor($schemaName) + '.' + $dbConfig.identifierProcessor($tableName));
-}
-
-function meta::relational::graphFetch::executionPlan::sqlsForInsertIntoTableUsingResultSet(dbType: DatabaseType[1], temporaryTable: Table[1]):String[1]
-{
-
-  let tempTableName = getTableName($dbType, $temporaryTable);
-  'INSERT INTO '+ $tempTableName + ' VALUES ' +
-  stringToPlaceHolder('temp_table_rows_from_result_set');
+  'INSERT INTO '+ $temporaryTable->tableToString($dbConfig) + ' VALUES ' + stringToPlaceHolder('temp_table_rows_from_result_set');
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::tempTableName(index: Integer[1]):String[1]
@@ -241,9 +227,9 @@ function meta::relational::graphFetch::executionPlan::getTempTableStrategyForNon
   );
 }
 
-function meta::relational::graphFetch::executionPlan::getCreateTempTableNode(dbType:DatabaseType[1], table:Table[1], dbConnection:DatabaseConnection[1], extensions: Extension[*]): SequenceExecutionNode[1]
+function meta::relational::graphFetch::executionPlan::getCreateTempTableNode(table:Table[1], dbConnection:DatabaseConnection[1], extensions: Extension[*]): SequenceExecutionNode[1]
 {
-  let createTempTableSqlExecNodes = sqlsForTempTableCreation($dbType,$table)->map(sql | ^SQLExecutionNode(
+  let createTempTableSqlExecNodes = sqlsForTempTableCreation($table,createDbConfig($dbConnection))->map(sql | ^SQLExecutionNode(
         sqlQuery         = $sql,
         resultType       = ^VoidResultType(type = Any),
         connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
@@ -255,15 +241,16 @@ function meta::relational::graphFetch::executionPlan::getCreateTempTableNode(dbT
 
 function meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot(dbType:DatabaseType[1], table:Table[1], dbConnection:DatabaseConnection[1], extensions: Extension[*]): SequenceExecutionNode[1]
 {
+  let dbConfig = createDbConfig($dbConnection);
   let insertIntoTempTableSqlExecNodes = if(($dbType->getTempTableStrategyForRootNode() == TempTableStrategyType.LoadFromTempFileTempTableStrategy),
-    | sqlsForTempTableLoadFromTempFile($dbType,$table)->map(sql | ^SQLExecutionNode(
+    | sqlsForTempTableLoadFromTempFile($table, $dbConfig)->map(sql | ^SQLExecutionNode(
         sqlQuery         = $sql,
         resultType       = ^VoidResultType(type = Any),
         connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
         supportFunctions = relationalPlanSupportFunctions($dbConnection)
         )
       ),
-    | sqlsForInsertIntoTableUsingResultSet($dbType,$table)->map(sql | ^SQLExecutionNode(
+    | sqlsForInsertIntoTableUsingResultSet($table,$dbConfig)->map(sql | ^SQLExecutionNode(
         sqlQuery         = $sql,
         resultType       = ^VoidResultType(type = Any),
         connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
@@ -276,8 +263,9 @@ function meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoo
 
 function meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForNonPrimitiveChild(dbType:DatabaseType[1], table:Table[1], dbConnection:DatabaseConnection[1], extensions: Extension[*], selectSqlStatement: String[1]): SequenceExecutionNode[1]
 {
+  let dbConfig = createDbConfig($dbConnection);
   let insertIntoTempTableSqlExecNodes = if(($dbType->getTempTableStrategyForNonPrimitiveChildNode() == TempTableStrategyType.LoadFromResultSetAsValueTuplesTempTableStrategy),
-    | sqlsForInsertIntoTableUsingResultSet($dbType,$table)->map(sql | ^SQLExecutionNode(
+    | sqlsForInsertIntoTableUsingResultSet($table,$dbConfig)->map(sql | ^SQLExecutionNode(
           sqlQuery         = $sql,
           resultType       = ^VoidResultType(type = Any),
           connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
@@ -285,14 +273,14 @@ function meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForNon
         )
       ),
     | if(($dbType->getTempTableStrategyForNonPrimitiveChildNode() == TempTableStrategyType.LoadFromSubQueryTempTableStrategy),
-      | sqlsForTempTableLoadFromSubQuery($dbType,$table,$selectSqlStatement)->map(sql | ^SQLExecutionNode(
+      | sqlsForTempTableLoadFromSubQuery($table,$dbConfig,$selectSqlStatement)->map(sql | ^SQLExecutionNode(
           sqlQuery         = $sql,
           resultType       = ^VoidResultType(type = Any),
           connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
           supportFunctions = relationalPlanSupportFunctions($dbConnection)
         )
         ),
-      | sqlsForTempTableLoadFromTempFile($dbType,$table)->map(sql | ^SQLExecutionNode(
+      | sqlsForTempTableLoadFromTempFile($table,$dbConfig)->map(sql | ^SQLExecutionNode(
           sqlQuery         = $sql,
           resultType       = ^VoidResultType(type = Any),
           connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
@@ -306,7 +294,7 @@ function meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForNon
 
 function meta::relational::graphFetch::executionPlan::getDropTempTableNode(dbType:DatabaseType[1], table: Table[1], dbConnection:DatabaseConnection[1], extensions: Extension[*]): SequenceExecutionNode[1]
 {
-  let dropTempTableSqlExecNodes = sqlsForTempTableDeletion($dbType,$table)->map(sql | ^SQLExecutionNode(
+  let dropTempTableSqlExecNodes = sqlsForTempTableDeletion($table,createDbConfig($dbConnection))->map(sql | ^SQLExecutionNode(
                 sqlQuery         = $sql,
                 resultType       = ^VoidResultType(type = Any),
                 connection       = $dbConnection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
@@ -364,7 +352,7 @@ function meta::relational::graphFetch::executionPlan::getTempTableStrategyForNon
 function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
 {
    print(if($debug.debug,|$debug.space+'>Relational root graphFetch plan generation:\n',|''));
-   let fe           = $sq.fe->evaluateAndDeactivate();
+   let fe           = $sq.vs->evaluateAndDeactivate()->cast(@FunctionExpression);
    let lhsFe        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
    let rootTree     = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
    let setImpls     = $rootTree.sets->cast(@RootRelationalInstanceSetImplementation);
@@ -403,7 +391,7 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    let tempTableName = tempTableName(0);
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
                             | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
-                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
+                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnection,$extensions);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
                               getTempTableStrategyForRootNode($dbType, $createTempTableNode, $loadTempTableNode, $dropTempTableNode);,
@@ -530,7 +518,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
 
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
                             | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
-                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
+                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForNonPrimitiveChild($dbType,$table,$dbConnection,$extensions,$sqlNode.sqlQuery);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
                               getTempTableStrategyForNonPrimitiveChildNode($dbType, $createTempTableNode, $loadTempTableNode, $dropTempTableNode);,
@@ -635,7 +623,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
 
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
                             | let table = createTable($tempTableName,$dbConnection,$columns,[],$dbConfig);
-                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
+                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($table,$dbConnection,$extensions);
                               let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnection,$extensions);
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
                               getTempTableStrategyForRootNode($dbType, $createTempTableNode, $loadTempTableNode, $dropTempTableNode);,
@@ -643,7 +631,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
 
    let parentTempTableColumns = $srcProperties->map(x | ^SQLResultColumn(label = $x.name->toOne(), dataType = $x->crossKeyRelationalType()));
    let parentTable = createTable($parentTempTableName,$dbConnection,$parentTempTableColumns,[],$dbConfig);
-   let parentCreateTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
+   let parentCreateTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($parentTable,$dbConnection,$extensions);
    let parentLoadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$parentTable,$dbConnection,$extensions);
    let parentDropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
 

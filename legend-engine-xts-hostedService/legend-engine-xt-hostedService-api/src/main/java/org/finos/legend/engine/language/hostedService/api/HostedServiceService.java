@@ -93,7 +93,11 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         {
            errors.add(new HostedServiceError("HostedService can't be registered.", e));
         }
-        this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.addAll(v.validate(identity, activator)));
+        this.extraValidators.select(v -> v.supports(activator)).forEach(v ->
+        {
+            errors.addAll(v.validate(identity, activator));
+            errors.addAll(v.validate(activator, pureModel));
+        });
         return errors;
 
     }

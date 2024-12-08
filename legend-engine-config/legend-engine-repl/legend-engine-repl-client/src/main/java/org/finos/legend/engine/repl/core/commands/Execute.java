@@ -54,7 +54,7 @@ public class Execute implements Command
     {
         long startTime = System.currentTimeMillis();
         this.client.println(execute(line));
-        this.client.println(printExecutionTime(startTime));
+        this.client.printDebug(printExecutionTime(startTime));
         return true;
     }
 
