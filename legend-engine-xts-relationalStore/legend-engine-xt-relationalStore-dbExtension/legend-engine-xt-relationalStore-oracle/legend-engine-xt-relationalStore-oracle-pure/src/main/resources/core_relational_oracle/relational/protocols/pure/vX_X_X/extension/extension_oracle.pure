@@ -23,7 +23,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::oracle
                       _type = 'oracle',
                       host = $d.host,
                       port = $d.port,
-                      databaseName = $d.databaseName
+                      serviceName = $d.serviceName
                  )
     ],
     reverse_transfers_typeLookups = [
@@ -35,7 +35,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::oracle
                       // _type = 'oracle',
                       host = $d.host,
                       port = $d.port,
-                      databaseName = $d.databaseName
+                      serviceName = $d.serviceName
                  )
     ]
   )

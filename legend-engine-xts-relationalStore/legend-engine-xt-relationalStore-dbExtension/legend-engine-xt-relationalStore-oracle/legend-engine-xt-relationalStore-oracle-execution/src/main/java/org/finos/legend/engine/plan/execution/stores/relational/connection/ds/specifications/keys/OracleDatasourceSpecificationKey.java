@@ -23,7 +23,7 @@ public class OracleDatasourceSpecificationKey
 {
     public String host;
     public int port;
-    public String databaseName;
+    public String serviceName;
 
     @Override
     public String shortId()
@@ -31,7 +31,7 @@ public class OracleDatasourceSpecificationKey
         return "Oracle_" +
                 "host:" + host + "_" +
                 "port:" + port + "_" +
-                "databaseName:" + databaseName + "_";
+                "serviceName:" + serviceName + "_";
     }
 
     @Override
@@ -40,7 +40,7 @@ public class OracleDatasourceSpecificationKey
         return "OracleDatasourceSpecificationKey{" +
                 "host='" + host + '\'' +
                 ", port=" + port +
-                ", databaseName='" + databaseName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
                 '}';
     }
 
@@ -56,20 +56,20 @@ public class OracleDatasourceSpecificationKey
             return false;
         }
         OracleDatasourceSpecificationKey that = (OracleDatasourceSpecificationKey) o;
-        return port == that.port && Objects.equals(host, that.host) && Objects.equals(databaseName, that.databaseName);
+        return port == that.port && Objects.equals(host, that.host) && Objects.equals(serviceName, that.serviceName);
     }
 
-    public OracleDatasourceSpecificationKey(String host, int port, String databaseName)
+    public OracleDatasourceSpecificationKey(String host, int port, String serviceName)
     {
         this.host = host;
         this.port = port;
-        this.databaseName = databaseName;
+        this.serviceName = serviceName;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(host, port, databaseName);
+        return Objects.hash(host, port, serviceName);
     }
 
     public String getHost()
@@ -82,8 +82,8 @@ public class OracleDatasourceSpecificationKey
         return port;
     }
 
-    public String getDatabaseName()
+    public String getServiceName()
     {
-        return databaseName;
+        return serviceName;
     }
 }

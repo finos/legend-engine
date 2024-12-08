@@ -29,14 +29,14 @@ function <<test.Test>> meta::relational::tests::connEquality::testConnectionEqua
   let c1 = ^RelationalDatabaseConnection(
 
     type = DatabaseType.Oracle,
-    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification(host='localhost',port=1512,databaseName='mydb'),
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification(host='localhost',port=1512,serviceName='mydb'),
     authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
   );
 
   let c2 = ^RelationalDatabaseConnection(
 
     type = DatabaseType.Oracle,
-        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification(host='localhost',port=1512,databaseName='mydb'),
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification(host='localhost',port=1512,serviceName='mydb'),
         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
   );
 

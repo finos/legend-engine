@@ -28,7 +28,7 @@ public class OracleDataSourceSpecification extends DataSourceSpecification
 {
     public static String ORACLE_HOST = "host";
     public static String ORACLE_PORT = "port";
-    public static String ORACLE_DATABASE_NAME = "databaseName";
+    public static String ORACLE_SERVICE_NAME = "serviceName";
 
     private final OracleDatasourceSpecificationKey key;
 
@@ -50,7 +50,7 @@ public class OracleDataSourceSpecification extends DataSourceSpecification
     {
         Properties properties = new Properties();
 
-        ofNullable(key.getDatabaseName()).ifPresent(x -> properties.setProperty(ORACLE_DATABASE_NAME, x));
+        ofNullable(key.getServiceName()).ifPresent(x -> properties.setProperty(ORACLE_SERVICE_NAME, x));
 
         return properties;
     }
@@ -71,7 +71,7 @@ public class OracleDataSourceSpecification extends DataSourceSpecification
         return super.getJdbcUrl(
                 ((OracleDatasourceSpecificationKey) this.datasourceKey).getHost(),
                 ((OracleDatasourceSpecificationKey) this.datasourceKey).getPort(),
-                ((OracleDatasourceSpecificationKey) this.datasourceKey).getDatabaseName(),
+                ((OracleDatasourceSpecificationKey) this.datasourceKey).getServiceName(),
                 properties);
     }
 }

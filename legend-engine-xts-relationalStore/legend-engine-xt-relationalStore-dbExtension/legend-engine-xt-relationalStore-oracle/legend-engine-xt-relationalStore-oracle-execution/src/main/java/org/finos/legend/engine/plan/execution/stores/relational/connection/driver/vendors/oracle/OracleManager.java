@@ -33,7 +33,7 @@ public class OracleManager extends DatabaseManager
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
+    public String buildURL(String host, int port, String serviceName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
         String additionalProperties = "";
         if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
@@ -41,7 +41,7 @@ public class OracleManager extends DatabaseManager
             additionalProperties = "?user=" + SubjectTools.getCurrentPrincipal().getName();
         }
 
-        return "jdbc:oracle:thin:@" + host + ":" + port + "/" + databaseName + additionalProperties;
+        return "jdbc:oracle:thin:@" + host + ":" + port + "/" + serviceName + additionalProperties;
     }
 
     @Override
