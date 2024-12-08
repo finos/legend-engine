@@ -97,7 +97,7 @@ public class OracleConnectionExtension implements RelationalConnectionExtension,
                 return new OracleDatasourceSpecificationKey(
                         oracleDatasourceSpecification.host,
                         oracleDatasourceSpecification.port,
-                        oracleDatasourceSpecification.databaseName
+                        oracleDatasourceSpecification.serviceName
                 );
             }
             return null;

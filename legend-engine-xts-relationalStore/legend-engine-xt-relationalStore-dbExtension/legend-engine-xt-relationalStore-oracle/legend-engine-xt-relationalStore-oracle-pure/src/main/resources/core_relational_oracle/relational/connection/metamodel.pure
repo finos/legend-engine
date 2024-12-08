@@ -14,7 +14,7 @@
 
 Class meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-    <<equality.Key>> host:String[0..1];
-    <<equality.Key>> port:Integer[0..1];
-    <<equality.Key>> databaseName:String[0..1];
+    <<equality.Key>> host:String[1];
+    <<equality.Key>> port:Integer[1];
+    <<equality.Key>> serviceName:String[1];
 }

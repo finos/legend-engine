@@ -14,7 +14,7 @@
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::OracleDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
-    host:String[0..1];
-    port:Integer[0..1];
-    databaseName:String[0..1];
+    host:String[1];
+    port:Integer[1];
+    serviceName:String[1];
 }
