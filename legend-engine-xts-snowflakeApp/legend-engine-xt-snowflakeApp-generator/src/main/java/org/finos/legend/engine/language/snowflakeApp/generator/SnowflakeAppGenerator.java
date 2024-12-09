@@ -18,9 +18,11 @@ package org.finos.legend.engine.language.snowflakeApp.generator;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.functionActivator.generation.FunctionActivatorGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -37,6 +39,8 @@ import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
+
+import java.util.List;
 
 public class SnowflakeAppGenerator
 {
@@ -55,6 +59,7 @@ public class SnowflakeAppGenerator
             }
         }
         SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), fullArtifact._createQuery(), fullArtifact._grantStatement(),  activator._permissionScheme().toString(), activator._description(), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), Lists.mutable.withAll(fullArtifact._tables()));
+        List<ActionContent> actionContents = FunctionActivatorGenerator.generateActions(activator, pureModel);
         if (activator._activationConfiguration() != null)
         {
             //identify connection
@@ -65,9 +70,9 @@ public class SnowflakeAppGenerator
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
             SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
             String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
-            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, sdlc);
+            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, actionContents, sdlc);
         }
-        return new SnowflakeAppArtifact(content, sdlc);
+        return new SnowflakeAppArtifact(content, actionContents, sdlc);
     }
 
     public static String generateFunctionLineage(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
