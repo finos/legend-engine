@@ -62,6 +62,11 @@ public class PureGrammarParserExtensions
         return this.extensions.castToList();
     }
 
+    public <T extends PureGrammarParserExtension> List<T> getExtensionsOfType(Class<T> ofType)
+    {
+        return this.extensions.selectInstancesOf(ofType).castToList();
+    }
+
     public SectionParser getExtraSectionParser(String type)
     {
         return this.sectionParsers.get(type);

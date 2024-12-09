@@ -43,9 +43,9 @@ import java.util.function.Function;
 
 public interface IRelationalGrammarParserExtension extends PureGrammarParserExtension
 {
-    static List<IRelationalGrammarParserExtension> getExtensions()
+    static List<IRelationalGrammarParserExtension> getExtensions(PureGrammarParserContext context)
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IRelationalGrammarParserExtension.class));
+        return context.getPureGrammarParserExtensions().getExtensionsOfType(IRelationalGrammarParserExtension.class);
     }
 
     static DatasourceSpecification process(DataSourceSpecificationSourceCode code, List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> processors)
