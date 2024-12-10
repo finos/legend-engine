@@ -60,10 +60,21 @@ function meta::external::dataquality::tests::doRelationTest(dq:String[1], valida
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName);
-  
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
+
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
 }
+
+function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $resultLimit, false);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>));
+}
+
+
 
 function meta::external::dataquality::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:LambdaFunction<Any>[1]): Boolean[1]
 {

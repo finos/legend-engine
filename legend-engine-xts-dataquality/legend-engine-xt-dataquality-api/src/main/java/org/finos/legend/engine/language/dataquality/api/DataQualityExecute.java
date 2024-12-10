@@ -118,7 +118,7 @@ public class DataQualityExecute
             // 1. load pure model from PureModelContext
             PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
             // 2. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.validationName);
+            LambdaFunction<Object> dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery, dataQualityExecuteInput.queryLimit);
             // 3. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);// since lambda has from function we dont need mapping, runtime and context
             LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_GENERATE_PLAN_END, System.currentTimeMillis() - start).toString());
@@ -146,7 +146,7 @@ public class DataQualityExecute
             // 1. load pure model from PureModelContext
             PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
             // 2. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName);
+            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
             // 3. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);// since lambda has from function we dont need mapping, runtime and context
             // 4. execute plan
@@ -176,7 +176,7 @@ public class DataQualityExecute
         // 1. load pure model from PureModelContext
         PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
         // 2. call DQ PURE func to generate lambda
-        LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName);
+        LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
         Lambda lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
         return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }
@@ -198,7 +198,7 @@ public class DataQualityExecute
             // 1. fetch plan from artifacts
             SingleExecutionPlan singleExecutionPlan = this.dataQualityPlanLoader.fetchPlanFromSDLC(identity, dataQualityParameterValue);
 
-             // 2. execute plan
+            // 2. execute plan
             Map<String, Object> lambdaParameterMap = dataQualityParameterValue.lambdaParameterValues != null ? dataQualityParameterValue.lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
             Response response = executePlan(request, identity, start, singleExecutionPlan, lambdaParameterMap);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))

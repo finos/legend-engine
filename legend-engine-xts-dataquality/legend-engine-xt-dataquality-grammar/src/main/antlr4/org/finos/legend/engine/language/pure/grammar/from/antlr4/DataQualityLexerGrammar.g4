@@ -25,3 +25,4 @@ VALIDATIONS:                             'validations';
 VALIDATION_NAME:                         'name';
 VALIDATION_DESCRIPTION:                  'description';
 VALIDATION_ASSERTION:                    'assertion';
+RELATION_RUNTIME:                        'runtime';

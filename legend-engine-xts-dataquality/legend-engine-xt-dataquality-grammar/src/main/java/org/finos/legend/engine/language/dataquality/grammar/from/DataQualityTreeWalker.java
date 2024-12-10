@@ -319,6 +319,14 @@ public class DataQualityTreeWalker
                 dataqualityRelationValidation.sourceInformation);
         dataqualityRelationValidation.validations = visitValidations(validationsContext, dataqualityRelationValidation.sourceInformation);
 
+        // runtime
+        DataQualityParserGrammar.RelationRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(relationValidationDefinitionContext.relationRuntime(),
+                "runtime",
+                dataqualityRelationValidation.sourceInformation);
+        if (Objects.nonNull(runtimeContext))
+        {
+            dataqualityRelationValidation.runtime = visitRuntime(runtimeContext);
+        }
         return dataqualityRelationValidation;
     }
 
@@ -355,5 +363,14 @@ public class DataQualityTreeWalker
         relationValidation.assertion = this.visitLambda(validationAssertionContext.combinedExpression());
 
         return relationValidation;
+    }
+
+    private PackageableElementPointer visitRuntime(DataQualityParserGrammar.RelationRuntimeContext runtimeContext)
+    {
+        PackageableElementPointer runtimePointer = new PackageableElementPointer();
+        runtimePointer.type = PackageableElementType.RUNTIME;
+        runtimePointer.path = visitQualifiedName(runtimeContext.runtime().qualifiedName());
+        runtimePointer.sourceInformation = walkerSourceInformation.getSourceInformation(runtimeContext.runtime());
+        return runtimePointer;
     }
 }

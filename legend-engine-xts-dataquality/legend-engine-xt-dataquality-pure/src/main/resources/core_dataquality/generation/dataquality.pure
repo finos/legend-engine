@@ -94,12 +94,7 @@ function meta::external::dataquality::generateDataQualityQuery(dataquality:meta:
    let dqRootConstraints = $dataquality.validationTree.constraints;
    let constraintQueryExpr = $dataquality.validationTree.class->meta::external::dataquality::generateConstraintsNegatedORQuery($getExpr, ^List<Constraint>(values=$dqRootConstraints));
    let limitQueryExpr = if ($limit->isNotEmpty(), 
-                             | ^SimpleFunctionExpression(func=take_T_MANY__Integer_1__T_MANY_,
-                                                    parametersValues=[$constraintQueryExpr, ^InstanceValue(values=$limit->toOne(), genericType=^GenericType(rawType=Integer), multiplicity=PureOne)],
-                                                    functionName=take_T_MANY__Integer_1__T_MANY_.name, // todo: function ref+name
-                                                    genericType=^GenericType(rawType=$dataquality.validationTree.class),
-                                                    multiplicity = ZeroMany,
-                                                    importGroup=system::imports::coreImport),
+                             | $constraintQueryExpr->buildLimitFilterExpression($limit->toOne(), ^GenericType(rawType=$dataquality.validationTree.class)),
                              | $constraintQueryExpr);
    let graphFetchChecked = ^SimpleFunctionExpression(func=graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_  ,
                                                     parametersValues=[$limitQueryExpr, ^InstanceValue(values=$enrichedTree, genericType=^GenericType(rawType=RootGraphFetchTree), multiplicity=PureOne)],
@@ -505,15 +500,31 @@ function <<access.private>> meta::external::dataquality::constraintToDqRule(cons
   ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->replaceVariableWithVariable('this', 'x')->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions('')->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1]): LambdaFunction<Any>[1]
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[*]): LambdaFunction<Any>[1]
 {
-  let lambda = $dqRelationValidation.query;
-  ^$lambda(expressionSequence = [$dqRelationValidation->buildRelationFilterExpression($validationName)]);
+  $dqRelationValidation->generateDataqualityRelationValidationLambda($validationName, $resultLimit);
 }
 
-function meta::external::dataquality::buildRelationFilterExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1]):FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[*], useFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
+  let lambda = $dqRelationValidation.query;
   let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
+
+  let withValidationFilterExpression = $dqRelationValidation->buildRelationFilterExpression($validationName, $relationType);
+  let withLimitExpression = if($resultLimit->isEmpty(),
+                                | $withValidationFilterExpression,
+                                | $withValidationFilterExpression->buildLimitFilterExpression($resultLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)))
+                            );
+  let withFromRuntimeExpression = if(!$useFrom || $dqRelationValidation.runtime->isEmpty(),
+                                    | $withLimitExpression,
+                                    | $withLimitExpression->buildFromRuntimeExpression($dqRelationValidation.runtime->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)))
+                                  );
+  ^$lambda(expressionSequence=$withFromRuntimeExpression);
+}
+
+function meta::external::dataquality::buildRelationFilterExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], relationType:Type[1]):FunctionExpression[1]
+{
   let assertion = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne().assertion; 
               
    ^SimpleFunctionExpression
@@ -534,3 +545,28 @@ function meta::external::dataquality::buildRelationFilterExpression(dqRelationVa
    )->evaluateAndDeactivate();
 }
 
+function meta::external::dataquality::buildLimitFilterExpression(f: FunctionExpression[1], limit: Integer[1], returnType:GenericType[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression(func=take_T_MANY__Integer_1__T_MANY_,
+                            parametersValues=[$f, ^InstanceValue(values=$limit->toOne(), genericType=^GenericType(rawType=Integer), multiplicity=PureOne)],
+                            functionName=take_T_MANY__Integer_1__T_MANY_.name,
+                            genericType=$returnType,
+                            multiplicity = ZeroMany,
+                            importGroup=system::imports::coreImport)->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildFromRuntimeExpression(f: FunctionExpression[1], runtime: Runtime[1], returnType:GenericType[1]):FunctionExpression[1]
+{
+  ^SimpleFunctionExpression(func=from_T_m__Runtime_1__T_m_,
+                            functionName=from_T_m__Runtime_1__T_m_.name,
+                            importGroup=system::imports::coreImport,
+                            genericType=$returnType,
+                            multiplicity=ZeroMany,
+                            parametersValues=[$f, ^InstanceValue(values=$runtime->evaluateAndDeactivate(), genericType=^GenericType(rawType=NonExecutableValueSpecification), multiplicity=PureOne)]->evaluateAndDeactivate());
+}
+
+function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::pure::mapping::from_T_m__Runtime_1__T_m_]);
+  !$getExprList->isEmpty();
+}

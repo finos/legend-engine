@@ -80,7 +80,7 @@ public class DataQualityValidationArtifactGenerationExtension implements Artifac
 
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             // 1. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, packageableElement, null);
+            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, packageableElement, null, false, null);
             // 2. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null,
                     routerExtensions.apply(pureModel), LegendPlanTransformers.transformers);// since lambda has from function we dont need mapping, runtime and context

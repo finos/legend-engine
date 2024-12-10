@@ -178,6 +178,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
     '      {' +
     '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
     '        validations: [' +
     '          {' +
     '             name: \'validFirstName\';' +
@@ -195,6 +196,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
     '      {' +
     '        query: name:String[1] | #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter(n|$n == $name)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()]);' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
     '        validations: [' +
     '          {' +
     '             name: \'validFirstName\';' +
@@ -204,4 +206,25 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '         ];' +
     '      }','validFirstName', {name:String[1]|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~FIRSTNAME)->filter({n|($n == $name)})->groupBy(~[FIRSTNAME], ~[count:{x|$x.FIRSTNAME}:{y|$y->meta::pure::functions::collection::count()}])->filter(row2|meta::pure::functions::boolean::not(($row2.FIRSTNAME->meta::pure::functions::collection::size() <= 100)))
     })
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_withLimit():Boolean[1]
+{
+  doRelationTestWithLimit('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'validFirstName\';' +
+    '             description: \'first name should not be empty\';' +
+    '             assertion: row2|$row2.FIRSTNAME->isNotEmpty();' +
+    '          }' +
+    '         ];' +
+    '      }',
+          'validFirstName',
+          {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings())->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())->take(100)},
+          100
+    )
 }

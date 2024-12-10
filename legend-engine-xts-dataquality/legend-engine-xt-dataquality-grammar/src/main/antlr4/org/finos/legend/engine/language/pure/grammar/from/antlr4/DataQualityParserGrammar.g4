@@ -23,6 +23,7 @@ identifier:                             VALID_STRING | STRING
                                         | VALIDATION_NAME
                                         | VALIDATION_DESCRIPTION
                                         | VALIDATION_ASSERTION
+                                        | RELATION_RUNTIME
 ;
 
 
@@ -115,6 +116,7 @@ relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotype
                                              (
                                                  relationFunc
                                                  | validations
+                                                 | relationRuntime
                                              )*
                                         BRACE_CLOSE
 ;
@@ -136,4 +138,6 @@ validationName:                        VALIDATION_NAME COLON STRING SEMI_COLON
 validationDesc:                        VALIDATION_DESCRIPTION COLON STRING SEMI_COLON
 ;
 validationAssertion:                   VALIDATION_ASSERTION COLON combinedExpression SEMI_COLON
+;
+relationRuntime:                       RELATION_RUNTIME COLON runtime SEMI_COLON
 ;
