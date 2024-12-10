@@ -1,0 +1,17 @@
+import meta::relational::functions::asserts::*;
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+
+
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::oracle::testConcat():Boolean[1]
+{
+   let result = toSQLString(
+    |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
+    meta::relational::tests::simpleRelationalMapping,
+    DatabaseType.Oracle,
+    meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "root".FIRSTNAME || \' \' || "root".LASTNAME "name","union_d#5_d_m2"."addressTableNAME" "address" from personTable "root" left outer join (select "addressTable_d#6".ID ID,null ADDRESSID,"addressTable_d#6".NAME "addressTableNAME" from addressTable "addressTable_d#6" UNION ALL select "firmTable_d#8".ID ID,"firmTable_d#8".ADDRESSID ADDRESSID,"addressTable_d#6_f_d".NAME "addressTableNAME" from firmTable "firmTable_d#8" left outer join addressTable "addressTable_d#6_f_d" on ("addressTable_d#6_f_d".ID = "firmTable_d#8".ADDRESSID)) "union_d#5_d_m2" on ("union_d#5_d_m2".ID = "root".FIRMID or "union_d#5_d_m2".ID = "root".ADDRESSID)', $result);
+
+}
