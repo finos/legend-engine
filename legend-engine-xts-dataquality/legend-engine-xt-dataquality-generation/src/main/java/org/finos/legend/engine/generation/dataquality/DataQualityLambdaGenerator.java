@@ -88,11 +88,7 @@ public class DataQualityLambdaGenerator
         {
             return (LambdaFunction<Object>) packageableElement._query();
         }
-        if (Objects.isNull(resultLimit))
-        {
-            return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_MANY__LambdaFunction_1_(packageableElement, validationName, Lists.immutable.empty(), pureModel.getExecutionSupport());
-        }
-        return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_MANY__LambdaFunction_1_(packageableElement, validationName, Lists.immutable.of((long)resultLimit), pureModel.getExecutionSupport());
+        return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, validationName, Objects.isNull(resultLimit) ? null : resultLimit.longValue(), pureModel.getExecutionSupport());
     }
 
     public static Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)

@@ -65,9 +65,11 @@ import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -135,7 +137,7 @@ public class DataQualityExecute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     //@Prometheus(name = "generate plan")
-    public Response execute(@Context HttpServletRequest request, DataQualityExecuteTrialInput dataQualityExecuteInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response execute(@Context HttpServletRequest request, DataQualityExecuteTrialInput dataQualityExecuteInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -151,7 +153,7 @@ public class DataQualityExecute
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);// since lambda has from function we dont need mapping, runtime and context
             // 4. execute plan
             Map<String, Object> lambdaParameterMap = dataQualityExecuteInput.lambdaParameterValues != null ? dataQualityExecuteInput.lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
-            Response response = executePlan(request, identity, start, singleExecutionPlan, lambdaParameterMap);
+            Response response = executePlan(request, identity, format, start, singleExecutionPlan, lambdaParameterMap);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
             {
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
@@ -187,7 +189,7 @@ public class DataQualityExecute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     //@Prometheus(name = "generate plan")
-    public Response execute(@Context HttpServletRequest request, DataQualityExecuteInput dataQualityParameterValue, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response execute(@Context HttpServletRequest request, DataQualityExecuteInput dataQualityParameterValue, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -200,7 +202,7 @@ public class DataQualityExecute
 
             // 2. execute plan
             Map<String, Object> lambdaParameterMap = dataQualityParameterValue.lambdaParameterValues != null ? dataQualityParameterValue.lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
-            Response response = executePlan(request, identity, start, singleExecutionPlan, lambdaParameterMap);
+            Response response = executePlan(request, identity, format, start, singleExecutionPlan, lambdaParameterMap);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
             {
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
@@ -214,12 +216,12 @@ public class DataQualityExecute
         }
     }
 
-    private Response executePlan(HttpServletRequest request, Identity identity, long start, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
+    private Response executePlan(HttpServletRequest request, Identity identity, SerializationFormat format, long start, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
     {
         MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
         ExecuteNodeParameterTransformationHelper.buildParameterToConstantResult(singleExecutionPlan, lambdaParameterMap, parametersToConstantResult);
         Result result = planExecutor.execute(singleExecutionPlan, parametersToConstantResult, request.getRemoteUser(), identity, null, RequestContextHelper.RequestContext(request));
-        return this.wrapInResponse(identity, SerializationFormat.DEFAULT, start, result);
+        return this.wrapInResponse(identity, format, start, result);
     }
 
 

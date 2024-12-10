@@ -501,12 +501,12 @@ function <<access.private>> meta::external::dataquality::constraintToDqRule(cons
 }
 
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[*]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[0..1]): LambdaFunction<Any>[1]
 {
-  $dqRelationValidation->generateDataqualityRelationValidationLambda($validationName, $resultLimit);
+  $dqRelationValidation->generateDataqualityRelationValidationLambda($validationName, $resultLimit, true);
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[*], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
   let lambda = $dqRelationValidation.query;
   let relationType = $dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType().typeArguments.rawType->toOne();
