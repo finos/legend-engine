@@ -120,11 +120,11 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
               ->fold({fp, agg2 |
                 let transformFunc = {n: Node[1] | if($n == $p.first, | changed($p.second), | unchanged($n))};
                 let newExpr = $fp.second->transformNodeRecursivelyWithChangeTracking($transformFunc).result->cast(@meta::external::query::sql::metamodel::Expression);
-                let joinAlreadyHasExpr = $fullJoinExpr->addClauseIfNotExisting($newExpr).hasChanged;
-                if ($joinAlreadyHasExpr,
+                let joinDoesNotHaveExpr = $fullJoinExpr->addClauseIfNotExisting($newExpr).hasChanged;
+                if ($joinDoesNotHaveExpr,
                     | let updatedExpr = ^LogicalBinaryExpression(left = $agg2.first, right = $newExpr, type = LogicalBinaryType.AND);
                       pair($updatedExpr, $agg2.second.values->concatenate(pair($p.second->cast(@QualifiedNameReference), $newExpr))->list());,
-                    | pair($expr, list([]->cast(@Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>)))
+                    | $agg2
                 );
               }, $agg1)
           }, pair($expr, list([]->cast(@Pair<QualifiedNameReference, meta::external::query::sql::metamodel::Expression>))));,

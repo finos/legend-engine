@@ -93,8 +93,8 @@ function meta::external::store::relational::sqlPlanning::utils::fetchAllNodesRec
 {
   let allProperties = $node->type()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
   let subResults = if ($node->instanceOf(TableSubquery),
-                       | $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllNodesRecursivelyExcludeSubQueries()->keyValues()),
-                       | []);
+                       | [],
+                       | $allProperties->filter(p | $p->functionReturnType().rawType->toOne()->_subTypeOf(Node))->map(p | $p->eval($node)->cast(@Node))->map(n | $n->fetchAllNodesRecursivelyExcludeSubQueries()->keyValues()));
   newMap($subResults)->put($node, list($node->concatenate($subResults.second.values)));
 }
 

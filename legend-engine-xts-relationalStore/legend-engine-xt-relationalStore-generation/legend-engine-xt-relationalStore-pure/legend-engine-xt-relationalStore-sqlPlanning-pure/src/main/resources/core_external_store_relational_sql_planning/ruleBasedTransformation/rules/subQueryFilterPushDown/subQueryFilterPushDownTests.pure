@@ -715,3 +715,215 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
     subQueryFilterPushDownRule()
   );
 }
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithLimitOffset(): Boolean[1]
+{
+  // No push down with limit
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    LIMIT 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    LIMIT 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+
+  // No push down with offset
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    OFFSET 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    OFFSET 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+
+  // No push down with limit and offset
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    LIMIT 10\n' +
+    '    OFFSET 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '    LIMIT 10\n' +
+    '    OFFSET 10\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWindowColumn(): Boolean[1]
+{
+  // No push down with window column
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE,\n' +
+    '      RANK() OVER (PARTITION BY root.FIRSTNAME ORDER BY root.AGE ASC) AS RANK \n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE,\n' +
+    '      RANK() OVER (\n' +
+    '      PARTITION BY\n' +
+    '        root.FIRSTNAME\n' +
+    '      ORDER BY\n' +
+    '        root.AGE ASC\n' +
+    '    ) AS RANK\n' +
+    '    FROM\n' +
+    '      personTable AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithNestedWindowColumn(): Boolean[1]
+{
+  // Push down with nested window column
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.FIRSTNAME AS FIRSTNAME,\n' +
+    '          root.LASTNAME AS LASTNAME,\n' +
+    '          root.AGE AS AGE,\n' +
+    '          RANK() OVER (PARTITION BY root.FIRSTNAME ORDER BY root.AGE ASC) AS RANK \n' +
+    '        FROM\n' +
+    '          personTable AS root\n' +
+    '      ) AS root\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      root.FIRSTNAME AS FIRSTNAME,\n' +
+    '      root.LASTNAME AS LASTNAME,\n' +
+    '      root.AGE AS AGE\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.FIRSTNAME AS FIRSTNAME,\n' +
+    '          root.LASTNAME AS LASTNAME,\n' +
+    '          root.AGE AS AGE,\n' +
+    '          RANK() OVER (\n' +
+    '          PARTITION BY\n' +
+    '            root.FIRSTNAME\n' +
+    '          ORDER BY\n' +
+    '            root.AGE ASC\n' +
+    '        ) AS RANK\n' +
+    '        FROM\n' +
+    '          personTable AS root\n' +
+    '      ) AS root\n' +
+    '    WHERE\n' +
+    '      root.AGE = 22\n' +
+    '  ) AS root\n' +
+    'WHERE\n' +
+    '  root.AGE = 22',
+
+    subQueryFilterPushDownRule()
+  );
+}
