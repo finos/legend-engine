@@ -5,7 +5,7 @@ import meta::relational::tests::model::simple::*;
 
 
 
-function <<test.Test>> meta::relational::tests::sqlQueryToString::oracle::testConcat():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlQueryToString::oracle::tests::testConcat():Boolean[1]
 {
    let result = toSQLString(
     |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
