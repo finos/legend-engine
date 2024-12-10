@@ -25,7 +25,7 @@ public class Test_Pure_Relational_DbSpecific_Oracle
     public static TestSuite suite()
     {
         // All tests related to Oracle that are not defined as parameterized DB specific tests should be here
-        String testPackage = "meta::relational::oracle::tests";
+        String testPackage = "meta::relational::functions::sqlQueryToString::oracle::tests";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         return PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }
