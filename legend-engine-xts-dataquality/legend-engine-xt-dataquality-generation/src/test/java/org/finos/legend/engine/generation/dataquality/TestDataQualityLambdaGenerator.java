@@ -32,6 +32,7 @@ import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 //NOTE: conversion tests can be found in the pure-test module. Tests here are to ensure the java->pure flow e2e.
