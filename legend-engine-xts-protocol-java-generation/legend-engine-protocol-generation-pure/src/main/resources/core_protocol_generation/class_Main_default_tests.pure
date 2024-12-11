@@ -53,9 +53,10 @@ function <<test.Test>> meta::protocols::generation::java::tests::default::testDe
 
   let sources = meta::protocols::generation::java::generateProtocolProject($config, [])
         ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()
-        ->sortBy(c | $c.simpleName)
-        ->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
-        true;
+                    ->sortBy(c | $c.simpleName)
+                    ->map(cl | meta::external::language::java::serialization::newStringifier($p)
+                               ->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports()))
+             );
 
   assertEquals(4, $sources->size());
 

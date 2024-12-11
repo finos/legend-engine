@@ -1,0 +1,6 @@
+{
+  "purePackage": "meta::pure::metamodel",
+  "pureFiles": ["/platform/pure/grammar/m3.pure"],
+  "javaPackage": "org.finos.legend.engine.protocol.m3",
+  "multipleInheritance": true
+}

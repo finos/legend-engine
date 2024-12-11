@@ -11,6 +11,7 @@
     "core_relational",
     "core_external_language_java",
     "core_java_platform_binding",
-    "core_java_platform_binding_external_format"
+    "core_java_platform_binding_external_format",
+    "core_external_language_java_conventions_essential"
   ]
 }

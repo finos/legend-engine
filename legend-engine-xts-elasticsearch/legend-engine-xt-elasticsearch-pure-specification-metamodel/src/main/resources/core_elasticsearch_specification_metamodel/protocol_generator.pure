@@ -35,7 +35,7 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   let defaultConventions = conventions($config.purePackage, $config.javaPackage, $basePackageStr);
   let profile = '%s::ESProfile'->format($config.purePackage)->pathToElement()->cast(@Profile);
   let conventions = ^$defaultConventions(defaultClassPurpose = ^ElasticsearchPurpose(profile = $profile));
-  let taxonomies = $pack->findTaxonomies();
+  let taxonomies = $pack->findTaxonomies($config);
   let package = javaPackage($config.javaPackage);
 
   let visitorByTaxonomy = newMap($taxonomies->map(t|pair($t, $t->generateVisitor($package, $conventions))));
@@ -146,7 +146,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
   let withExtend = if ($superType.rawType == Any, |$cls, |$cls->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne)));
   let base = if ($c->hasStereotype('abstract', typemodifiers) || $isTopClass, |$withExtend->addModifiers('abstract'), |$withExtend);
 
-  let children = $c->findChildren()->sortBy(x | $x.name->toOne());
+  let children = $c->findChildren([])->sortBy(x | $x.name->toOne());
 
   let withJackson = if ($isTopClass,
     | $base->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(

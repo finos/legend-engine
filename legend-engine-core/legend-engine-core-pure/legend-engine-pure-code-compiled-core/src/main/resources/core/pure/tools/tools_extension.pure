@@ -17,20 +17,6 @@ import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::metamodel::*;
 
-function meta::pure::tools::debug():DebugContext[1]
-{
-   ^DebugContext(debug=true, space='');
-}
-
-function meta::pure::tools::noDebug():DebugContext[1]
-{
-   ^DebugContext(debug=false, space='');
-}
-
-function meta::pure::tools::indent(d:DebugContext[1]):DebugContext[1]
-{
-   ^$d(space = $d.space+'   ');
-}
 
 function meta::pure::router::printer::space(size:Integer[1]):String[1]
 {

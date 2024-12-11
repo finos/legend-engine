@@ -1,0 +1,35 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::generation::essential::*;
+
+function meta::external::language::java::generation::essential::engineConventions(): Conventions[1]
+{
+   newConventions([], [])
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::Library, javaLibrary())
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::PureDate, javaDate())
+      ->addProvidedType(meta::pure::functions::date::DurationUnit, javaDurationUnit())
+      ->addProvidedType(meta::pure::functions::date::DayOfWeek, javaDayOfWeek())
+      ->meta::external::language::java::generation::essential::boolean::registerBooleanLibrary()
+      ->meta::external::language::java::generation::essential::collection::registerCollectionsLibrary(true)
+      ->meta::external::language::java::generation::essential::pureDate::registerPureDateLibrary()
+      ->meta::external::language::java::generation::essential::lang::registerLangLibrary()
+      ->meta::external::language::java::generation::essential::assert::registerAssertLibrary()
+      ->meta::external::language::java::generation::essential::math::registerMathsLibrary(true)
+      ->meta::external::language::java::generation::essential::meta::registerMetaLibrary()
+      ->meta::external::language::java::generation::essential::multiplicity::registerMultiplicityLibrary()
+      ->meta::external::language::java::generation::essential::string::registerStringLibrary();
+}

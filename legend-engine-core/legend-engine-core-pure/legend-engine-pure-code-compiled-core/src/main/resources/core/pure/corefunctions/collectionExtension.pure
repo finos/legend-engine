@@ -266,11 +266,7 @@ function meta::pure::functions::collection::containsAll(collection:Any[*], value
     $values->forAll(v | $collection->contains($v))
 }
 
-// Return the head element of the collection, or no elements if the collection is empty
-function meta::pure::functions::collection::head<T>(set:T[*]):T[0..1]
-{
-    $set->first();
-}
+
 
 function meta::pure::functions::collection::limit<T>(set:T[*], count:Integer[1]):T[*]
 {

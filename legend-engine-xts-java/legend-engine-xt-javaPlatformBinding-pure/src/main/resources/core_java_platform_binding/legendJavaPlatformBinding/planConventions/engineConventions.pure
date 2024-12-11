@@ -39,15 +39,30 @@ function meta::pure::executionPlan::platformBinding::legendJava::engineConventio
 
    newConventions($extensions, $extraProhibitedFunctions)
       ->applyJavaEngineDependencies($extensions)
-      ->meta::pure::executionPlan::platformBinding::legendJava::library::boolean::registerBooleanLibrary()
+      ->meta::external::language::java::generation::essential::boolean::registerBooleanLibrary()
+
+      ->meta::external::language::java::generation::essential::assert::registerAssertLibrary()
+
+      ->meta::external::language::java::generation::essential::multiplicity::registerMultiplicityLibrary()
+
+      ->meta::external::language::java::generation::essential::collection::registerCollectionsLibrary($boxPrimitives)
       ->meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary($boxPrimitives)
-      ->meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::registerPureDateLibrary()
-      ->meta::pure::executionPlan::platformBinding::legendJava::library::lang::registerLangLibrary()
-      ->meta::pure::executionPlan::platformBinding::legendJava::library::assert::registerAssertLibrary()
+
+      ->meta::external::language::java::generation::essential::math::registerMathsLibrary($boxPrimitives)
       ->meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary($boxPrimitives)
+
+      ->meta::external::language::java::generation::essential::pureDate::registerPureDateLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::registerPureDateLibrary()
+
+      ->meta::external::language::java::generation::essential::lang::registerLangLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::lang::registerLangLibrary()
+
+      ->meta::external::language::java::generation::essential::meta::registerMetaLibrary()
       ->meta::pure::executionPlan::platformBinding::legendJava::library::meta::registerMetaLibrary()
-      ->meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::registerMultiplicityLibrary()
+
+      ->meta::external::language::java::generation::essential::string::registerStringLibrary()
       ->meta::pure::executionPlan::platformBinding::legendJava::library::string::registerStringLibrary()
+
       ->meta::pure::executionPlan::platformBinding::legendJava::library::unit::registerUnitLibrary()
       ->meta::pure::executionPlan::platformBinding::legendJava::library::runtime::registerRuntimeLibrary();
 }
