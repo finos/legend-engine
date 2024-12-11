@@ -129,19 +129,56 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     @Test
     public void testRelationValidation()
     {
-        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(RELATION_COMPILATION_PREREQUISITE_CODE +
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
                 "###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
                 "{\n" +
-                "    query: #>{my::Store.myTable}#->select(~name);\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
                 "    validations: [\n" +
                 "      {\n" +
-                "         name: 'testValidation';\n" +
-                "         description: 'test validation';\n" +
-                "         assertion: row|$row.name != 'error';\n" +
+                "         name: 'validFirstName';\n" +
+                "         description: 'First name cannot be empty';\n" +
+                "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
+    }
+
+    @Test
+    public void testRelationValidation_separateRuntime()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::Validation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME);\n" +
+                "    runtime: meta::dataquality::DataQualityRuntime;\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'validFirstName';\n" +
+                "         description: 'First name cannot be empty';\n" +
+                "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+    }
+
+    @Test
+    public void testRelationValidation_noRuntime()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::Validation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'validFirstName';\n" +
+                "         description: 'First name cannot be empty';\n" +
+                "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}", " at [104:1-114:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-114c1), \"Constraint :[mustHaveOneRuntime] violated in the Class DataQualityRelationValidation\"");
     }
 
 

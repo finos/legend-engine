@@ -32,6 +32,7 @@ import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 //NOTE: conversion tests can be found in the pure-test module. Tests here are to ensure the java->pure flow e2e.
@@ -76,6 +77,26 @@ public class TestDataQualityLambdaGenerator
         assertLambda(validation, expected);
     }
 
+    @Test
+    public void testLambdaGeneration_relationValidation()
+    {
+        String validation = "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::dataquality::Validation\n" +
+                "{\n" +
+                "    query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());\n" +
+                "    runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;\n" +
+                "    validations: [\n" +
+                "       {" +
+                "        name: 'validFirstName';" +
+                "        description: 'first name should NOT be empty';" +
+                "        assertion: row| $row.FIRSTNAME->isNotEmpty();" +
+                "       }\n" +
+                "    ];\n" +
+                "}";
+
+        assertNotNull(generateLambdaFunction(validation)); // TODO: assert against expected lambda protocol as json instead of just checking for lambda func generation. currently protocol gen fails with err Execution error at (resource:/platform/pure/essential/meta/graph/elementToPath.pure line:36 column:15), "Match failure: RelationTypeObject instanceOf RelationType"
+    }
+
     private void assertLambda(String modelString, String expected)
     {
         String lambdaJson = generateLambda(modelString);
@@ -92,8 +113,15 @@ public class TestDataQualityLambdaGenerator
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null);
+        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null, false, null);
         return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
+    }
+
+    private LambdaFunction<?> generateLambdaFunction(String modelString)
+    {
+        PureModelContextData modelData = loadWithModel(modelString);
+        PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
+        return DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", "validFirstName", false, null);
     }
 
     private static PureModelContextData loadWithModel(String code)

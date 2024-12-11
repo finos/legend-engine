@@ -30,4 +30,5 @@ public class DataQualityExecuteTrialInput
     public Integer queryLimit;
     public List<ParameterValue> lambdaParameterValues;
     public String validationName;
+    public Boolean runQuery;
 }

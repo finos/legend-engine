@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelatio
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -41,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
@@ -165,6 +167,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     LambdaFunction<?> relationValidationQuery = buildDataqualityRelationValidationQuery(dataqualityRelationValidation, compileContext);
                     metamodel._query(relationValidationQuery);
                     metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
+                    metamodel._runtime(buildRelationValidationRuntime(dataqualityRelationValidation.runtime, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
                 }
         );
@@ -343,4 +346,13 @@ public class DataQualityCompilerExtension implements CompilerExtension
         return propertyGraphFetchTree.alias != null ? propertyGraphFetchTree.alias : propertyGraphFetchTree.property;
     }
 
+
+    private RichIterable<? extends Root_meta_core_runtime_Runtime> buildRelationValidationRuntime(PackageableElementPointer runtime, LambdaFunction<?> relationValidationQuery, SourceInformation toM3SourceInformation, CompileContext compileContext)
+    {
+        if (Objects.isNull(runtime))
+        {
+            return Lists.immutable.empty();
+        }
+        return Lists.immutable.of(compileContext.resolveRuntime(runtime.path, runtime.sourceInformation));
+    }
 }
