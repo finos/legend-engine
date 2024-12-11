@@ -46,7 +46,8 @@ public class Query
 
     public List<QueryParameterValue> defaultParameterValues;
 
-    // We make it clear that we only allow a single owner
+    // TODO: this is a very simple ownership mechanism
+    // where we only allow a single owner
     public String owner;
 
     public Map<String, ?> gridConfig;
