@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.repl.relational.commands;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -30,23 +35,17 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.printExecutionTime;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.printExecutionTime;
 
 public class Cache implements Command
 {
@@ -88,7 +87,7 @@ public class Cache implements Command
                 this.client.printError("Failed to retrieve the last command");
                 return true;
             }
-            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), connectionPath);
+            RelationalDatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), connectionPath);
 
             try
             {
@@ -112,9 +111,11 @@ public class Cache implements Command
                                 throw new RuntimeException(e);
                             }
 
+                            List<Table> tables = ConnectionHelper.getTables(databaseConnection, client.getPlanExecutor()).collect(Collectors.toList());
+
                             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
                             {
-                                String tableName = specifiedTableName != null ? specifiedTableName : "test" + (getTables(connection).size() + 1);
+                                String tableName = specifiedTableName != null ? specifiedTableName : "test" + (tables.size() + 1);
                                 try (Statement statement = connection.createStatement())
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile(), relationalResultColumns));

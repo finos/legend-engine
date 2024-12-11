@@ -14,16 +14,6 @@
 
 package org.finos.legend.engine.repl.dataCube.shared;
 
-import org.apache.commons.io.IOUtils;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.repl.client.Client;
-import org.finos.legend.engine.repl.dataCube.commands.DataCube;
-import org.finos.legend.engine.repl.relational.schema.Table;
-import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
-
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -32,8 +22,16 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.repl.client.Client;
+import org.finos.legend.engine.repl.dataCube.commands.DataCube;
+import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 
 public class DataCubeSampleData
 {
@@ -55,13 +53,13 @@ public class DataCubeSampleData
 
     public void load(Client client)
     {
-        DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(client.getModelState().parse(), DataCube.getLocalConnectionPath());
+        RelationalDatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(client.getModelState().parse(), DataCube.getLocalConnectionPath());
+        MutableList<Table> tables = ConnectionHelper.getTables(databaseConnection, client.getPlanExecutor()).collect(Collectors.toCollection(Lists.mutable::empty));
         try (
                 InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(this.csvFilePath);
                 Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor());
                 Statement statement = connection.createStatement())
         {
-            MutableList<Table> tables = getTables(connection);
             if (tables.anySatisfy(t -> t.name.equals(this.tableName)))
             {
                 statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().dropTable(tableName));
@@ -71,18 +69,18 @@ public class DataCubeSampleData
             IOUtils.copy(Objects.requireNonNull(inputStream, "Can't extract sample data '" + this.name + "' from " + this.csvFilePath), outputStream);
             outputStream.close(); // explicitly close output stream to let database access this file, else this would throw `java.sql.SQLException: IO Error: File is already open in` error on Windows
             statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.toString()));
-
-            // post check
-            tables = getTables(connection);
-            Table table = tables.detect(t -> t.name.equals(this.tableName));
-            if (!Arrays.equals(table.columns.collect(column -> column.name).toArray(), this.expectedColumns.toArray()))
-            {
-                throw new RuntimeException("Sample data '" + this.name + "' does not have the expected columns " + this.expectedColumns.makeString("(", ",", ")") + " (got: " + table.columns.collect(column -> column.name).makeString(",") + ")");
-            }
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+
+        // post check
+        tables = ConnectionHelper.getTables(databaseConnection, client.getPlanExecutor()).collect(Collectors.toCollection(Lists.mutable::empty));;
+        Table table = tables.detect(t -> t.name.equals(this.tableName));
+        if (!Arrays.equals(table.columns.stream().map(column -> column.name).toArray(), this.expectedColumns.toArray()))
+        {
+            throw new RuntimeException("Sample data '" + this.name + "' does not have the expected columns " + this.expectedColumns.makeString("(", ",", ")") + " (got: " + table.columns.stream().map(column -> column.name).collect(Collectors.joining(",")) + ")");
         }
     }
 }

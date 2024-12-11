@@ -19,9 +19,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.SchemaExportation;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
@@ -46,13 +47,17 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Path("pure/v1/utilities/database")
 public class SchemaExplorationApi
 {
-    private final ModelManager modelManager;
     private final ConnectionManagerSelector connectionManager;
 
 
+    @Deprecated
     public SchemaExplorationApi(ModelManager modelManager, RelationalStoreExecutor relationalStoreExecutor)
     {
-        this.modelManager = modelManager;
+        this(relationalStoreExecutor);
+    }
+
+    public SchemaExplorationApi(RelationalStoreExecutor relationalStoreExecutor)
+    {
         this.connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
     }
 
@@ -67,8 +72,8 @@ public class SchemaExplorationApi
         Identity identity = Identity.makeIdentity(profiles);
         try
         {
-            SchemaExportation databaseBuilder = SchemaExportation.newBuilder(databaseBuilderInput);
-            Database database = databaseBuilder.build(this.connectionManager, identity);
+            SchemaExportation databaseBuilder = SchemaExportation.newBuilder(this.connectionManager);
+            Database database = databaseBuilder.build(databaseBuilderInput, identity);
             PureModelContextData graph = PureModelContextData.newBuilder().withElement(database).build();
             return Response.ok(graph, MediaType.APPLICATION_JSON_TYPE).build();
         }

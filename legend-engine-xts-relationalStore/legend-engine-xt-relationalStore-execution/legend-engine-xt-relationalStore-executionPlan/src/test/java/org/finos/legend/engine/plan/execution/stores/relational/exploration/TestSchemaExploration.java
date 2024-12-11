@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,9 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
+package org.finos.legend.engine.plan.execution.stores.relational.exploration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +22,9 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabasePattern;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderInput;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabasePattern;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -45,7 +46,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -201,8 +201,8 @@ public class TestSchemaExploration
 
     private void test(DatabaseBuilderInput input, Database expected) throws Exception
     {
-        SchemaExportation builder = SchemaExportation.newBuilder(input);
-        Database store = builder.build(this.connectionManager, Identity.getAnonymousIdentity());
+        SchemaExportation builder = SchemaExportation.newBuilder(this.connectionManager);
+        Database store = builder.build(input, Identity.getAnonymousIdentity());
 
         // Ignore the INFORMATION_SCHEMA that is added by new H2 for testing
         store.schemas.removeIf(s -> s.name.equals("INFORMATION_SCHEMA"));

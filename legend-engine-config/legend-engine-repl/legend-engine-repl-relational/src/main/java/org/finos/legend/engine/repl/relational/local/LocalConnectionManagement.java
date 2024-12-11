@@ -16,16 +16,15 @@ package org.finos.legend.engine.repl.relational.local;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class LocalConnectionManagement
 {
@@ -66,21 +65,15 @@ public class LocalConnectionManagement
         return this.connectionsForDynamicDBs.flatCollect(conn ->
         {
             String connectionPath = "local::" + conn + "Connection";
-            DatabaseConnection db = ConnectionHelper.getDatabaseConnection(pureModelContextData, connectionPath);
+            RelationalDatabaseConnection db = ConnectionHelper.getDatabaseConnection(pureModelContextData, connectionPath);
             MutableList<String> res = Lists.mutable.empty();
 
-            try (Connection connection = ConnectionHelper.getConnection(db, client.getPlanExecutor()))
-            {
-                res.add("###Relational\n" +
-                        "Database local::" + conn + "Database" +
-                        "(" +
-                        getTables(connection).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> PureGrammarComposerUtility.convertIdentifier(c.name, true) + " " + c.type).makeString(",") + ")").makeString("\n") +
-                        ")\n");
-            }
-            catch (SQLException e)
-            {
-                throw new RuntimeException(e);
-            }
+            Database database = ConnectionHelper.getDatabase(db, "local", conn + "Database", this.client.getPlanExecutor());
+
+            String dbElement = "###Relational\n" + PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build())
+                    .render(database, RelationalGrammarParserExtension.NAME);
+
+            res.add(dbElement);
 
             res.add("###Runtime\n" +
                     "Runtime local::" + conn + "Runtime\n" +

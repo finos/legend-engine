@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,21 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-package org.finos.legend.engine.repl.relational.schema;
+package org.finos.legend.engine.plan.execution.stores.relational.exploration.model;
 
-import org.eclipse.collections.api.list.MutableList;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Table
+public class TargetDatabase
 {
-    public String schema;
-    public String name;
-    public MutableList<Column> columns;
 
-    public Table(String schema, String name, MutableList<Column> columns)
+    public String name;
+
+    @JsonProperty(value = "package")
+    public String _package;
+
+
+    public TargetDatabase()
     {
-        this.schema = schema;
+
+    }
+
+    public TargetDatabase(String _package, String name)
+    {
         this.name = name;
-        this.columns = columns;
+        this._package = _package;
     }
 }

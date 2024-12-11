@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.repl.relational.commands;
 
+import java.io.File;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -21,7 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtili
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.core.Command;
@@ -30,12 +36,6 @@ import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.io.File;
-import java.sql.Connection;
-import java.sql.Statement;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class Load implements Command
 {
@@ -70,11 +70,13 @@ public class Load implements Command
                 throw new RuntimeException("Command should be used as '" + this.documentation() + "'");
             }
 
-            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);
+            RelationalDatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), tokens[2]);
+
+            List<Table> tables = ConnectionHelper.getTables(databaseConnection, client.getPlanExecutor()).collect(Collectors.toList());
 
             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
             {
-                String tableName = tokens.length == 4 ? tokens[3] : ("test" + (getTables(connection).size() + 1));
+                String tableName = tokens.length == 4 ? tokens[3] : ("test" + (tables.size() + 1));
 
                 try (Statement statement = connection.createStatement())
                 {

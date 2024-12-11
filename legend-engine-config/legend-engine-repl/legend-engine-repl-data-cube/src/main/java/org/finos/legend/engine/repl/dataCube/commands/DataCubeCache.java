@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.repl.dataCube.commands;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -26,24 +31,18 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.executeCode;
 
 public class DataCubeCache implements Command
 {
@@ -94,7 +93,7 @@ public class DataCubeCache implements Command
                 this.client.printError("Failed to retrieve the last command");
                 return true;
             }
-            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
+            RelationalDatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
 
             try
             {
@@ -117,9 +116,11 @@ public class DataCubeCache implements Command
                                 throw new RuntimeException(e);
                             }
 
+                            List<Table> tables = ConnectionHelper.getTables(databaseConnection, client.getPlanExecutor()).collect(Collectors.toList());
+
                             try (Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor()))
                             {
-                                String tableName = specifiedTableName != null ? specifiedTableName : "test" + (getTables(connection).size() + 1);
+                                String tableName = specifiedTableName != null ? specifiedTableName : "test" + (tables.size() + 1);
                                 try (Statement statement = connection.createStatement())
                                 {
                                     statement.executeUpdate(DatabaseManager.fromString(databaseConnection.type.name()).relationalDatabaseSupport().load(tableName, tempFile.getTemporaryPathForFile(), relationalResultColumns));

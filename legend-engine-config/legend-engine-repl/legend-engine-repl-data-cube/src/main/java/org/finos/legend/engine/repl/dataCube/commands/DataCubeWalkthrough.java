@@ -14,26 +14,6 @@
 
 package org.finos.legend.engine.repl.dataCube.commands;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.repl.client.Client;
-import org.finos.legend.engine.repl.core.Command;
-import org.finos.legend.engine.repl.core.commands.Execute;
-import org.finos.legend.engine.repl.dataCube.server.REPLServer;
-import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
-import org.finos.legend.engine.repl.relational.RelationalReplExtension;
-import org.finos.legend.engine.repl.relational.schema.Table;
-import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
-import org.finos.legend.engine.repl.shared.DocumentationHelper;
-import org.jline.reader.Candidate;
-import org.jline.reader.LineReader;
-import org.jline.reader.ParsedLine;
-
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -41,9 +21,31 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Objects;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
-import static org.finos.legend.engine.repl.shared.REPLHelper.*;
+import java.util.stream.Collectors;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.repl.client.Client;
+import org.finos.legend.engine.repl.core.Command;
+import org.finos.legend.engine.repl.core.commands.Execute;
+import org.finos.legend.engine.repl.dataCube.server.REPLServer;
+import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
+import org.finos.legend.engine.repl.relational.RelationalReplExtension;
+import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
+import org.finos.legend.engine.repl.shared.DocumentationHelper;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiDim;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiGreen;
+import static org.finos.legend.engine.repl.shared.REPLHelper.ansiYellow;
+import static org.finos.legend.engine.repl.shared.REPLHelper.getLineWidth;
+import static org.finos.legend.engine.repl.shared.REPLHelper.wrap;
+import org.jline.reader.Candidate;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
 
 public class DataCubeWalkthrough implements Command
 {
@@ -155,13 +157,15 @@ public class DataCubeWalkthrough implements Command
         @Override
         public void beforeStep()
         {
-            DatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
+            RelationalDatabaseConnection databaseConnection = ConnectionHelper.getDatabaseConnection(this.client.getModelState().parse(), DataCube.getLocalConnectionPath());
+
+            MutableList<Table> tables = ConnectionHelper.getTables(databaseConnection, this.client.getPlanExecutor()).collect(Collectors.toCollection(Lists.mutable::empty));
+
             try (
                     InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("org/finos/legend/engine/repl/dataCube/walkthrough/sport-data.csv");
                     Connection connection = ConnectionHelper.getConnection(databaseConnection, client.getPlanExecutor());
                     Statement statement = connection.createStatement())
             {
-                MutableList<Table> tables = getTables(connection);
                 if (tables.anySatisfy(table -> table.name.equals(DataCubeSampleData.SPORT.tableName)))
                 {
                     this.tableName = DataCubeSampleData.SPORT.tableName;
