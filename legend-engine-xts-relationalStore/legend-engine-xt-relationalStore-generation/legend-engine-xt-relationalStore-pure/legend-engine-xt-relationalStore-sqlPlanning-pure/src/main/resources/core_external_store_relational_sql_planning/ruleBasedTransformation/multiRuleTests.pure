@@ -1,0 +1,104 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::pure::extension::*;
+
+
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::multiRuleTests::testJoinAndSubQueryFilterPushDown(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.ProductName AS ProductName\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.TradeDate AS TradeDate,\n' +
+    '      tradetable_3.ProductName AS ProductName\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          root.tradeDate AS TradeDate\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.ID AS TradeID,\n' +
+    '            producttable_0.NAME AS ProductName\n' +
+    '          FROM\n' +
+    '            tradeTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.productTable AS producttable_0\n' +
+    '              ON (root.prodId = producttable_0.ID)\n' +
+    '        ) AS tradetable_3\n' +
+    '        ON (tradetable_1.TradeID = tradetable_3.TradeID)\n' +
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    'SELECT\n' +
+    '  tradetable_0.TradeID AS TradeID,\n' +
+    '  tradetable_0.TradeDate AS TradeDate,\n' +
+    '  tradetable_0.ProductName AS ProductName\n' +
+    'FROM\n' +
+    '  (\n' +
+    '    SELECT\n' +
+    '      tradetable_1.TradeID AS TradeID,\n' +
+    '      tradetable_1.TradeDate AS TradeDate,\n' +
+    '      tradetable_3.ProductName AS ProductName\n' +
+    '    FROM\n' +
+    '      (\n' +
+    '        SELECT\n' +
+    '          root.ID AS TradeID,\n' +
+    '          root.tradeDate AS TradeDate\n' +
+    '        FROM\n' +
+    '          tradeTable AS root\n' +
+    '        WHERE\n' +
+    '          root.ID = 1\n' +
+    '      ) AS tradetable_1\n' +
+    '      INNER JOIN\n' +
+    '        (\n' +
+    '          SELECT\n' +
+    '            root.ID AS TradeID,\n' +
+    '            producttable_0.NAME AS ProductName\n' +
+    '          FROM\n' +
+    '            tradeTable AS root\n' +
+    '            LEFT OUTER JOIN\n' +
+    '              productSchema.productTable AS producttable_0\n' +
+    '              ON (root.prodId = producttable_0.ID)\n' +
+    '          WHERE\n' +
+    '            root.ID = 1\n' +
+    '        ) AS tradetable_3\n' +
+    '        ON (tradetable_1.TradeID = tradetable_3.TradeID AND tradetable_3.TradeID = 1)\n' +
+    '    WHERE\n' +
+    '      tradetable_1.TradeID = 1\n' +
+    '  ) AS tradetable_0\n' +
+    'WHERE\n' +
+    '  tradetable_0.TradeID = 1',
+
+    [
+      meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::subQueryFilterPushDownRule(),
+      meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::joinFilterPushDownRule()
+    ]
+  );
+}

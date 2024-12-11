@@ -1,0 +1,277 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlPlanning::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::*;
+import meta::pure::extension::*;
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testSimplePushDown(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  personTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    addressTable AS address\n' +
+    '    ON (root.ID = address.PERSON_ID)\n' +
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  personTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    addressTable AS address\n' +
+    '    ON (root.ID = address.PERSON_ID AND address.PERSON_ID = 2)\n' + // Filter pushed into join condition
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    joinFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testPushDownOfComplexOps(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id)\n' +
+    'WHERE\n' +
+    '  (root.ID > 100 + 2 OR root.ID < 50) AND root.QUANTITY > 22',
+
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id AND (v.trade_id > 100 + 2 OR v.trade_id < 50))\n' +  // Complex filters pushed into join condition
+    'WHERE\n' +
+    '  (root.ID > 100 + 2 OR root.ID < 50) AND root.QUANTITY > 22',
+
+    joinFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInFilter(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id)\n' +
+    'WHERE\n' +
+    '  (root.ID > 100 + 2 OR root.ID < 50) OR root.QUANTITY > 22',
+
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id)\n' +  // No push down
+    'WHERE\n' +
+    '  root.ID > 100 + 2 OR root.ID < 50 OR root.QUANTITY > 22',
+
+    joinFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithOrInJoin(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id OR root.ID = 2)\n' +
+    'WHERE\n' +
+    '  root.ID = 100',
+
+    'SELECT\n' +
+    '  root.ID AS TradeID,\n' +
+    '  root.quantity AS Quantity,\n' +
+    '  v.maxTradeEventDate AS LastEventDate\n' +
+    'FROM\n' +
+    '  tradeTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    (\n' +
+    '      SELECT\n' +
+    '        root.trade_id AS trade_id,\n' +
+    '        max(root.eventDate) AS maxTradeEventDate\n' +
+    '      FROM\n' +
+    '        tradeEventTable AS root\n' +
+    '      GROUP BY\n' +
+    '        root.trade_id\n' +
+    '    ) AS v\n' +
+    '    ON (root.ID = v.trade_id OR root.ID = 2)\n' +  // No push down
+    'WHERE\n' +
+    '  root.ID = 100',
+
+    joinFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testMultiJoinPushDown(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  firmTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    personTable AS person\n' +
+    '    ON (root.ID = person.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    personAddressTable AS personAddress\n' +
+    '    ON (person.ID = personAddress.PERSON_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressTable AS firmAddress\n' +
+    '    ON (root.ID = firmAddress.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressStreetTable AS firmAddressStreet\n' +
+    '    ON (firmAddress.FIRM_ID = firmAddressStreet.FIRM_ID)\n' +
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  firmTable AS root\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    personTable AS person\n' +
+    '    ON (root.ID = person.FIRM_ID AND person.FIRM_ID = 2)\n' + // Push down
+    '  LEFT OUTER JOIN\n' +
+    '    personAddressTable AS personAddress\n' +
+    '    ON (person.ID = personAddress.PERSON_ID)\n' + // No push down
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressTable AS firmAddress\n' +
+    '    ON (root.ID = firmAddress.FIRM_ID AND firmAddress.FIRM_ID = 2)\n' + // Push down
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressStreetTable AS firmAddressStreet\n' +
+    '    ON (firmAddress.FIRM_ID = firmAddressStreet.FIRM_ID AND firmAddressStreet.FIRM_ID = 2)\n' + // Push down
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    joinFilterPushDownRule()
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::joinFilterPushDown::tests::testNoPushDownWithRightOrFullJoin(): Boolean[1]
+{
+  runSqlRuleBasedTransformationTest(
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  firmTable AS root\n' +
+    '  RIGHT OUTER JOIN\n' +
+    '    personTable AS person\n' +
+    '    ON (root.ID = person.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    personAddressTable AS personAddress\n' +
+    '    ON (person.ID = personAddress.PERSON_ID)\n' +
+    '  FULL OUTER JOIN\n' +
+    '    firmAddressTable AS firmAddress\n' +
+    '    ON (root.ID = firmAddress.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressStreetTable AS firmAddressStreet\n' +
+    '    ON (firmAddress.FIRM_ID = firmAddressStreet.FIRM_ID)\n' +
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  firmTable AS root\n' +
+    '  RIGHT OUTER JOIN\n' +
+    '    personTable AS person\n' +
+    '    ON (root.ID = person.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    personAddressTable AS personAddress\n' +
+    '    ON (person.ID = personAddress.PERSON_ID)\n' +
+    '  FULL OUTER JOIN\n' +
+    '    firmAddressTable AS firmAddress\n' +
+    '    ON (root.ID = firmAddress.FIRM_ID)\n' +
+    '  LEFT OUTER JOIN\n' +
+    '    firmAddressStreetTable AS firmAddressStreet\n' +
+    '    ON (firmAddress.FIRM_ID = firmAddressStreet.FIRM_ID)\n' +
+    'WHERE\n' +
+    '  root.ID = 2',
+
+    joinFilterPushDownRule()
+  );
+}
