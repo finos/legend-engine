@@ -83,7 +83,8 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new CumulativeDistribution(),
                 new Nth(),
                 new DenseRank(),
-                new PercentRank()
+                new PercentRank(),
+                new Write()
         );
     }
 
