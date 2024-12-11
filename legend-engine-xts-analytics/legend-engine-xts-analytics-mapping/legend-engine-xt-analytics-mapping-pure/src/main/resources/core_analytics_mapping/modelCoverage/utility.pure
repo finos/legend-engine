@@ -12,27 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::milestoning::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
-
-function meta::analytics::mapping::modelCoverage::utility::isMilestoned(type:Type[1]):Boolean[1]
-{
-   $type->isBiTemporal() || $type->meta::analytics::mapping::modelCoverage::utility::isProcessingTemporal() || $type->meta::analytics::mapping::modelCoverage::utility::isBusinessTemporal();
-}
-
-function meta::analytics::mapping::modelCoverage::utility::isProcessingTemporal(type:Type[1]):Boolean[1]
-{
-   $type->generalizations()->exists(c | $c->hasStereotype('processingtemporal', temporal));
-}
-
-function meta::analytics::mapping::modelCoverage::utility::isBusinessTemporal(type:Type[1]):Boolean[1]
-{
-   $type->generalizations()->exists(c | $c->hasStereotype('businesstemporal', temporal));
-}
-
-function meta::analytics::mapping::modelCoverage::utility::isBiTemporal(type:Type[1]):Boolean[1]
-{
-   $type->generalizations()->exists(c | $c->hasStereotype('bitemporal', temporal));
-}
+import  meta::analytics::mapping::modelCoverage::*;
 
 function meta::analytics::mapping::modelCoverage::utility::getValue<X, Y>(pairs : meta::pure::functions::collection::Pair<X, Y>[*], key : X[1]) : Y[1]
 {
@@ -55,47 +37,46 @@ function meta::analytics::mapping::modelCoverage::utility::findValues<X, Y>(pair
    $pairs->filter(p|$p.first == $value)->map(p | $p.second)
 }
 
-function meta::analytics::mapping::modelCoverage::utility::getFunctionPath(f:Function<Any>[1]):String[1]
-{
-   $f->elementToPath()->replace($f.name->toOne(), $f.functionName->toOne());
-}
-
 function meta::analytics::mapping::modelCoverage::utility::qualifiedProperties(class:Class<Any>[1]):QualifiedProperty<Any>[*]
 {
    $class->generalizations()->init()->cast(@Class<Any>)->map(c |
       $c.qualifiedProperties->concatenate($c.qualifiedPropertiesFromAssociations));
 }
 
-function meta::analytics::mapping::modelCoverage::utility::properties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
+function meta::analytics::mapping::modelCoverage::utility::buildQualifiers(property : AbstractProperty<Any>[1]) : meta::analytics::mapping::modelCoverage::MappedPropertyQualifier[*]
 {
-   $class->generalizations()->init()->cast(@Class<Any>)->map(c |
-      $c.properties->concatenate($c.propertiesFromAssociations));
-}
-
-function meta::analytics::mapping::modelCoverage::utility::allPropertiesRecursive(class:Class<Any>[1]):AbstractProperty<Any>[*]
-{
-   $class->properties()->concatenate($class->qualifiedProperties());
-}
-
-function meta::analytics::mapping::modelCoverage::utility::getAutoMapFunctions():Function<Any>[*]
-{
-   [
-      map_T_m__Function_1__V_m_,
-      map_T_MANY__Function_1__V_MANY_,
-      map_T_$0_1$__Function_1__V_$0_1$_
-   ]
-}
-
-function meta::analytics::mapping::modelCoverage::utility::isAutoMap(func:Function<Any>[1]):Boolean[1]
-{
-   $func->in(getAutoMapFunctions());
-}
-
-function meta::analytics::mapping::modelCoverage::utility::convertToPure(str:String[1]):LambdaFunction<Any>[1]
-{
-   let compile = $str->compileValueSpecification();
-
-   assert($compile.succeeded, | $compile.failure.message->toOne());
-
-   $compile.result->toOne()->reactivate()->cast(@LambdaFunction<Any>)->toOne();
+   // no need to keep milestoning parameter information
+   let isAutoMilestonedProperty = $property->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype();
+   $property->match([
+      {qp:QualifiedProperty<Any>[1] |
+         let parameters = $qp->functionType().parameters->drop(1)->evaluateAndDeactivate()->filter(p | !$p.name->in(['businessDate', 'processingDate']));      
+         let parameterNameValues = list($parameters->map(p | pair($p.name, list([]))));
+         assert($parameters->size() == $parameterNameValues.values->size(), 'incorrect number of qualifier property arguments');
+         let qualifiers = $parameters->zip($parameterNameValues.values);
+         $qualifiers->map(q |
+            let p = $q.first;
+            let nameValues = $q.second;           
+            let name = $nameValues.first;                    
+            let paramType = $p.genericType.rawType->toOne();                                                        
+            let multiplicity = if ($isAutoMilestonedProperty, | ZeroOne, | $p.multiplicity);          
+            $paramType->match([
+				pt:PrimitiveType[1] |  
+					 let type = $paramType->mapType();
+					 ^MappedPropertyQualifier(
+						 name=$name,
+						 type=$type,
+						 multiplicity = $multiplicity
+					  );,
+				et:Enumeration<Any>[1] |  
+					 ^MappedPropertyEnumQualifier(
+              name=$name,
+              type= MappedPropertyType.Enumeration, 
+              multiplicity = $multiplicity,
+              enumName = $et->elementToPath()
+            );            
+          ]);
+         );
+      }, 
+      {ap:AbstractProperty<Any>[1]|[]}
+      ]);
 }
