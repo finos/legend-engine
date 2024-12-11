@@ -20,12 +20,7 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Field;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.collections.api.factory.SortedSets;
@@ -64,6 +59,7 @@ public class QueryStoreManager
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
     private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "originalVersionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt", "lastOpenAt");
     private static final int GET_QUERIES_LIMIT = 50;
+
     private final MongoClient mongoClient;
 
     public QueryStoreManager(MongoClient mongoClient)
@@ -207,13 +203,13 @@ public class QueryStoreManager
                 Bson filter = Filters.eq("name", querySearchTermSpecification.searchTerm);
                 if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
                 {
-                    filter = Filters.or(filter,Filters.eq("owner", querySearchTermSpecification.searchTerm));
+                    filter = Filters.or(filter, Filters.eq("owner", querySearchTermSpecification.searchTerm));
                 }
                 filters.add(filter);
             }
             else
             {
-                Bson idFilter  = Filters.eq("id", querySearchTermSpecification.searchTerm);
+                Bson idFilter = Filters.eq("id", querySearchTermSpecification.searchTerm);
                 Bson nameFilter = Filters.regex("name", Pattern.quote(querySearchTermSpecification.searchTerm), "i");
                 Bson filter = Filters.or(idFilter, nameFilter);
                 if (querySearchTermSpecification.includeOwner != null && querySearchTermSpecification.includeOwner)
@@ -259,7 +255,7 @@ public class QueryStoreManager
                     ? searchSpecification.taggedValues.stream()
                     .filter(taggedValue -> QUERY_PROFILE_PATH.equals(taggedValue.tag.profile) &&
                             QUERY_PROFILE_TAG_DATA_SPACE.equals(taggedValue.tag.value))
-                    .map(taggedValue ->  taggedValue.value)
+                    .map(taggedValue -> taggedValue.value)
                     .collect(Collectors.toList())
                     : Collections.emptyList();
 
@@ -322,7 +318,7 @@ public class QueryStoreManager
             }
             default:
             {
-                throw new EngineException("Fail to understand sort-by value", EngineErrorType.COMPILATION);
+                throw new EngineException("Unknown sort-by value", EngineErrorType.COMPILATION);
             }
         }
     }
@@ -349,25 +345,25 @@ public class QueryStoreManager
                 notFoundQueries.add(queryId);
             }
         });
-        if (duplicatedQueries.size() != 0)
+        if (!duplicatedQueries.isEmpty())
         {
             throw new IllegalStateException(duplicatedQueries.makeString("Found multiple queries with duplicated ID for the following ID(s):\\n", "\\n", ""));
         }
-        if (notFoundQueries.size() != 0)
+        if (!notFoundQueries.isEmpty())
         {
             throw new ApplicationQueryException(notFoundQueries.makeString("Can't find queries for the following ID(s):\\n", "\\n", ""), Response.Status.INTERNAL_SERVER_ERROR);
         }
         return matchingQueries;
     }
 
-    public Query getQuery(String queryId) throws JsonProcessingException
+    public Query getQuery(String queryId)
     {
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
-        else if (matchingQueries.size() == 0)
+        else if (matchingQueries.isEmpty())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
@@ -380,19 +376,6 @@ public class QueryStoreManager
         return query;
     }
 
-    public QueryStoreStats getQueryStoreStats() throws JsonProcessingException
-    {
-        Long count = this.getQueryCollection().countDocuments();
-        QueryStoreStats storeStats = new QueryStoreStats();
-        storeStats.setQueryCount(count);
-        List<Bson> filters = new ArrayList<>();
-        filters.add(Filters.and(Filters.eq("taggedValues.tag.profile", QUERY_PROFILE_PATH), Filters.eq("taggedValues.tag.value", QUERY_PROFILE_TAG_DATA_SPACE)));
-        storeStats.setQueryCreatedFromDataSpaceCount(this.getQueryCollection()
-                .countDocuments(Filters.and(filters)));
-        return storeStats;
-    }
-
-
     public Query createQuery(Query query, String currentUser) throws JsonProcessingException
     {
         validateQuery(query);
@@ -401,7 +384,7 @@ public class QueryStoreManager
         query.owner = currentUser;
 
         List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), this::documentToQuery).toList();
-        if (matchingQueries.size() >= 1)
+        if (!matchingQueries.isEmpty())
         {
             throw new ApplicationQueryException("Query with ID '" + query.id + "' already existed", Response.Status.BAD_REQUEST);
         }
@@ -428,7 +411,7 @@ public class QueryStoreManager
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
-        else if (matchingQueries.size() == 0)
+        else if (matchingQueries.isEmpty())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
@@ -496,7 +479,7 @@ public class QueryStoreManager
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
         }
-        else if (matchingQueries.size() == 0)
+        else if (matchingQueries.isEmpty())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
@@ -533,5 +516,17 @@ public class QueryStoreManager
         return LazyIterate.collect(this.getQueryEventCollection()
                 .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
                 .limit(Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit)), QueryStoreManager::documentToQueryEvent).toList();
+    }
+
+    public QueryStoreStats getQueryStoreStats()
+    {
+        Long count = this.getQueryCollection().countDocuments();
+        QueryStoreStats storeStats = new QueryStoreStats();
+        storeStats.setQueryCount(count);
+        List<Bson> filters = new ArrayList<>();
+        filters.add(Filters.and(Filters.eq("taggedValues.tag.profile", QUERY_PROFILE_PATH), Filters.eq("taggedValues.tag.value", QUERY_PROFILE_TAG_DATA_SPACE)));
+        storeStats.setQueryCreatedFromDataSpaceCount(this.getQueryCollection()
+                .countDocuments(Filters.and(filters)));
+        return storeStats;
     }
 }
