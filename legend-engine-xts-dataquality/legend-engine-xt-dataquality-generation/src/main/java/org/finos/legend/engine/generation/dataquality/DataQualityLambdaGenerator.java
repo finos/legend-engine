@@ -75,11 +75,7 @@ public class DataQualityLambdaGenerator
 
     private static LambdaFunction generateModelConstraintLambda(PureModel pureModel, Integer queryLimit, Root_meta_external_dataquality_DataQuality packageableElement)
     {
-        if (Objects.isNull(queryLimit))
-        {
-            return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_(packageableElement, Lists.immutable.empty(), pureModel.getExecutionSupport());
-        }
-        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_MANY__LambdaFunction_1_(packageableElement, Lists.immutable.of((long)queryLimit), pureModel.getExecutionSupport());
+        return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, Objects.isNull(queryLimit) ? null : queryLimit.longValue(), pureModel.getExecutionSupport());
     }
 
     private static LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
