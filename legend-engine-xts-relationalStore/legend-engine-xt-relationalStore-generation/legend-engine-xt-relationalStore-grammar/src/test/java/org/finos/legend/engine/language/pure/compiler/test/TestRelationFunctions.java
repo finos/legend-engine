@@ -14,6 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import net.javacrumbs.jsonunit.JsonAssert;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Test;
 
 public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -31,6 +40,22 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "   #>{a::A.tb}#->filter(i|$i.id == 'ok')\n" +
                         "}"
         );
+    }
+
+    @Test
+    public void lambdaRelationReturnType() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> pureModelPair = test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n"
+        );
+
+        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select()");
+        GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
+        String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
+        JsonAssert.assertJsonEquals(
+                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"name\":\"id\",\"type\":\"Integer\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
+                actualValue);
     }
 
     @Test
