@@ -31,7 +31,7 @@ Class meta::external::dataquality::MilestoningContext
   }:Boolean[1];  
 }
 
-function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[0..1]): LambdaFunction<Any>[1]
 {
   generateDataQualityQuery($dataquality, $limit, true);
 }
@@ -74,7 +74,7 @@ function meta::external::dataquality::addMilestoningParameters(tree:GraphFetchTr
   ])
 }
 
-function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[*], useFrom:Boolean[1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataQualityQuery(dataquality:meta::external::dataquality::DataQuality<Any>[1], limit: Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
 { 
    $dataquality.validationTree->validateTreeForNestedConstraints(true);
 
@@ -561,8 +561,8 @@ function meta::external::dataquality::buildFromRuntimeExpression(f: FunctionExpr
                             functionName=from_T_m__Runtime_1__T_m_.name,
                             importGroup=system::imports::coreImport,
                             genericType=$returnType,
-                            multiplicity=ZeroMany,
-                            parametersValues=[$f, ^InstanceValue(values=$runtime->evaluateAndDeactivate(), genericType=^GenericType(rawType=NonExecutableValueSpecification), multiplicity=PureOne)]->evaluateAndDeactivate());
+                            multiplicity=$f.multiplicity,
+                            parametersValues=[$f, ^InstanceValue(values=$runtime->evaluateAndDeactivate(), genericType=$runtime->genericType(), multiplicity=PureOne)]->evaluateAndDeactivate());
 }
 
 function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
