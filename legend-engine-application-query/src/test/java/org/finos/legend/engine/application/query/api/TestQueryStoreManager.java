@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.application.query.api;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.application.query.model.*;
@@ -26,12 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.time.Instant;
 import java.util.*;
@@ -298,11 +290,8 @@ public class TestQueryStoreManager
         return queryParameterValue;
     }
 
-    private static final ObjectMapper objectMapper = new ObjectMapper()
-            .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
-            .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
     private TestMongoClientProvider testMongoClientProvider = new TestMongoClientProvider();
-    private final QueryStoreManager queryStoreManager = new QueryStoreManager(testMongoClientProvider.mongoClient);
+    private final QueryStoreManager store = new QueryStoreManager(testMongoClientProvider.mongoClient);
     private static final TestVaultImplementation testVaultImplementation = new TestVaultImplementation();
 
     @BeforeClass
@@ -335,7 +324,8 @@ public class TestQueryStoreManager
     @Test
     public void testValidateQuery()
     {
-        Function0<Query> _createTestQuery = () -> TestQueryBuilder.create("1", "query1", "testUser").withLegacyExecutionContext().build();
+        String currentUser = "testUser";
+        Function0<Query> _createTestQuery = () -> TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
         Query goodQuery = _createTestQuery.get();
         QueryStoreManager.validateQuery(goodQuery);
 
@@ -431,8 +421,8 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().withGroupId("test.group").withArtifactId("test-artifact").build();
-        queryStoreManager.createQuery(newQuery, currentUser);
-        List<Query> queries = queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        store.createQuery(newQuery, currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
         Query lightQuery = queries.get(0);
         Assert.assertEquals("test-artifact", lightQuery.artifactId);
@@ -458,12 +448,12 @@ public class TestQueryStoreManager
         Query newQuery = TestQueryBuilder.create("1", "Test Query 1", currentUser).withLegacyExecutionContext().withGroupId("test.group").withArtifactId("test-artifact").build();
         Query newQueryTwo = TestQueryBuilder.create("2", "Test Query 12", currentUser).withLegacyExecutionContext().withGroupId("test.group").withArtifactId("test-artifact").build();
         Query newQueryThree = TestQueryBuilder.create("3", "Test Query 13", currentUser).withLegacyExecutionContext().withGroupId("test.group").withArtifactId("test-artifact").build();
-        queryStoreManager.createQuery(newQuery, currentUser);
-        queryStoreManager.createQuery(newQueryTwo, currentUser);
-        queryStoreManager.createQuery(newQueryThree, currentUser);
-        List<Query> queriesGeneralSearch = queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").build(), currentUser);
+        store.createQuery(newQuery, currentUser);
+        store.createQuery(newQueryTwo, currentUser);
+        store.createQuery(newQueryThree, currentUser);
+        List<Query> queriesGeneralSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").build(), currentUser);
         Assert.assertEquals(3, queriesGeneralSearch.size());
-        List<Query> queriesExactSearch = queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").withExactNameSearch(true).build(), currentUser);
+        List<Query> queriesExactSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").withExactNameSearch(true).build(), currentUser);
         Assert.assertEquals(1, queriesExactSearch.size());
     }
 
@@ -471,10 +461,10 @@ public class TestQueryStoreManager
     public void testGetQueryStats() throws Exception
     {
         String currentUser = "testUser";
-        Assert.assertEquals(Long.valueOf(0), this.queryStoreManager.getQueryStoreStats().getQueryCount());
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(Long.valueOf(2), this.queryStoreManager.getQueryStoreStats().getQueryCount());
+        Assert.assertEquals(Long.valueOf(0), this.store.getQueryStoreStats().getQueryCount());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(Long.valueOf(2), this.store.getQueryStoreStats().getQueryCount());
     }
 
     @Test
@@ -482,21 +472,21 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         TaggedValue taggedValue1 = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", "value1");
-        Assert.assertEquals(Long.valueOf(0), this.queryStoreManager.getQueryStoreStats().getQueryCount());
-        Query query = queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(Long.valueOf(1), this.queryStoreManager.getQueryStoreStats().getQueryCreatedFromDataSpaceCount());
+        Assert.assertEquals(Long.valueOf(0), this.store.getQueryStoreStats().getQueryCount());
+        Query query = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(Long.valueOf(1), this.store.getQueryStoreStats().getQueryCreatedFromDataSpaceCount());
     }
 
     @Test
     public void testGetQueriesWithLimit() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(1).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(0).build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(1).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(0).build(), currentUser).size());
     }
 
     @Test
@@ -507,28 +497,28 @@ public class TestQueryStoreManager
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withGroupId("test").withArtifactId("test").withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withGroupId("something").withArtifactId("something").withLegacyExecutionContext().build();
         Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withGroupId("something.another").withArtifactId("something-another").withVersionId("1.0.0").withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery4, currentUser);
 
         // When no projects specified, return all queries
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
 
         QueryProjectCoordinates coordinate1 = createTestQueryProjectCoordinate("notfound", "notfound", null);
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1)).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1)).build(), currentUser).size());
 
         QueryProjectCoordinates coordinate2 = createTestQueryProjectCoordinate("test", "test", null);
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate2)).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate2)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2)).build(), currentUser).size());
 
         QueryProjectCoordinates coordinate3 = createTestQueryProjectCoordinate("something", "something", null);
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate3)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3)).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate3)).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3)).build(), currentUser).size());
 
         QueryProjectCoordinates coordinate4 = createTestQueryProjectCoordinate("something.another", "something-another", "1.0.0");
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate4)).build(), currentUser).size());
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3, coordinate4)).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate4)).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3, coordinate4)).build(), currentUser).size());
     }
 
     @Test
@@ -541,22 +531,22 @@ public class TestQueryStoreManager
         Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withGroupId("something.another").withArtifactId("something-another").withVersionId("1.0.0").withLegacyExecutionContext().build();
 
         // create in order 1 -> 4 -> 2 -> 3
-        queryStoreManager.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery1, currentUser);
         Thread.sleep(100);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery4, currentUser);
         Thread.sleep(100);
-        queryStoreManager.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery2, currentUser);
         Thread.sleep(100);
-        queryStoreManager.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery3, currentUser);
 
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());
-        Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());
+        Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
 
-        queryStoreManager.updateQuery("2", TestQueryBuilder.create("2", "query2NewlyUpdated", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        store.updateQuery("2", TestQueryBuilder.create("2", "query2NewlyUpdated", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
 
-        queryStoreManager.getQuery("1");
-        Assert.assertEquals(Arrays.asList("1", "2", "3", "4"), queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_VIEW).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        store.getQuery("1");
+        Assert.assertEquals(Arrays.asList("1", "2", "3", "4"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_VIEW).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
     }
 
     @Test
@@ -570,18 +560,18 @@ public class TestQueryStoreManager
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withStereotypes(Lists.fixedSize.of(stereotype1)).withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withStereotypes(Lists.fixedSize.of(stereotype2)).withLegacyExecutionContext().build();
         Query testQuery4 = TestQueryBuilder.create("4", "query3", currentUser).withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery4, currentUser);
 
         // When no stereotype provided, return all queries
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype3)).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1)).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2, stereotype3)).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype3)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype2)).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2, stereotype3)).build(), currentUser).size());
     }
 
     @Test
@@ -595,24 +585,24 @@ public class TestQueryStoreManager
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withParameterValues(Lists.fixedSize.of(param1)).withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withParameterValues(Lists.fixedSize.of(param2)).withLegacyExecutionContext().build();
         Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withParameterValues(Lists.fixedSize.of(param1, param2, param3)).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery4, currentUser);
 
-        Query query1 = queryStoreManager.getQuery("1");
+        Query query1 = store.getQuery("1");
         Assert.assertEquals(0, query1.defaultParameterValues.size());
         Assert.assertNotNull(query1.lastOpenAt);
         Assert.assertNotEquals(query1.lastOpenAt, query1.createdAt);
 
-        Query query2 = queryStoreManager.getQuery("2");
+        Query query2 = store.getQuery("2");
         Assert.assertEquals(1, query2.defaultParameterValues.size());
         Assert.assertEquals("booleanParam1", query2.defaultParameterValues.get(0).name);
         Assert.assertEquals("true", query2.defaultParameterValues.get(0).content);
         Assert.assertNotNull(query2.lastOpenAt);
         Assert.assertNotEquals(query2.lastOpenAt, query2.createdAt);
 
-        Query query4 = queryStoreManager.getQuery("4");
+        Query query4 = store.getQuery("4");
         Assert.assertEquals(3, query4.defaultParameterValues.size());
         Assert.assertEquals("booleanParam1", query4.defaultParameterValues.get(0).name);
         Assert.assertEquals("stringParam2", query4.defaultParameterValues.get(1).name);
@@ -630,21 +620,21 @@ public class TestQueryStoreManager
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build();
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withDataSpaceExecution("my::dataSpace").build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withDataSpaceExecution("my::dataSpace", "myKey").build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
 
-        Query query1 = queryStoreManager.getQuery("1");
+        Query query1 = store.getQuery("1");
         Assert.assertTrue(query1.executionContext instanceof QueryExplicitExecutionContext);
         Assert.assertEquals(((QueryExplicitExecutionContext) query1.executionContext).runtime, "runtime");
         Assert.assertEquals(((QueryExplicitExecutionContext) query1.executionContext).mapping, "mapping");
 
-        Query query2 = queryStoreManager.getQuery("2");
+        Query query2 = store.getQuery("2");
         Assert.assertTrue(query2.executionContext instanceof QueryDataSpaceExecutionContext);
         Assert.assertEquals(((QueryDataSpaceExecutionContext) query2.executionContext).dataSpacePath, "my::dataSpace");
         Assert.assertNull(((QueryDataSpaceExecutionContext) query2.executionContext).executionKey);
 
-        Query query3 = queryStoreManager.getQuery("3");
+        Query query3 = store.getQuery("3");
         Assert.assertTrue(query3.executionContext instanceof QueryDataSpaceExecutionContext);
         Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).dataSpacePath, "my::dataSpace");
         Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).executionKey, "myKey");
@@ -662,18 +652,18 @@ public class TestQueryStoreManager
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue2)).withLegacyExecutionContext().build();
         Query testQuery4 = TestQueryBuilder.create("4", "query3", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery4, currentUser);
 
         // When no tagged value provided, return all queries
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
     }
 
     @Test
@@ -684,11 +674,11 @@ public class TestQueryStoreManager
         TaggedValue taggedValue = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", dataspacePath);
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution(dataspacePath).build();
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue)).withDataSpaceExecution(dataspacePath).build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
 
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).size());
     }
 
     @Test
@@ -705,8 +695,8 @@ public class TestQueryStoreManager
         inner.put("myCol", "val");
         gridConfig.put("config", inner);
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withGridConfigs(gridConfig).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        Query query = queryStoreManager.getQuery("1");
+        store.createQuery(testQuery1, currentUser);
+        Query query = store.getQuery("1");
         Map<String, ?> gridConfigs = query.gridConfig;
         Assert.assertNotNull(gridConfigs);
         Assert.assertEquals(gridConfigs.get("dummyValue"), "value");
@@ -720,13 +710,13 @@ public class TestQueryStoreManager
     public void testGetQueriesWithSearchText() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("3", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("3", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).size());
     }
 
 
@@ -735,31 +725,31 @@ public class TestQueryStoreManager
     {
         String currentUser = "user1";
         String user2 = "user2";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("3", "query3", user2).withLegacyExecutionContext().build(), user2);
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("3", "query3", user2).withLegacyExecutionContext().build(), user2);
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
     }
 
     @Test
     public void testGetQueriesForCurrentUser() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), "testUser1");
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).size());
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), "testUser1");
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).size());
     }
 
     @Test
     public void testGetNotFoundQuery()
     {
-        Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.getQuery("1")).getMessage());
+        Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1")).getMessage());
     }
 
     @Test
@@ -767,7 +757,7 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
-        Query createdQuery = queryStoreManager.createQuery(newQuery, currentUser);
+        Query createdQuery = store.createQuery(newQuery, currentUser);
         Assert.assertEquals("test-artifact", createdQuery.artifactId);
         Assert.assertEquals("test.group", createdQuery.groupId);
         Assert.assertEquals("1", createdQuery.id);
@@ -789,213 +779,123 @@ public class TestQueryStoreManager
     public void testCreateInvalidQuery()
     {
         String currentUser = "testUser";
-        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.createQuery(TestQueryBuilder.create("1", null, currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> store.createQuery(TestQueryBuilder.create("1", null, currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
     }
 
     @Test
     public void testCreateQueryWithSameId() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals("Query with ID '1' already existed", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals("Query with ID '1' already existed", Assert.assertThrows(ApplicationQueryException.class, () -> store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
     }
 
     @Test
     public void testForceCurrentUserToBeOwnerWhenCreatingQuery() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(currentUser, queryStoreManager.getQuery("1").owner);
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", "testUser2").withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(currentUser, queryStoreManager.getQuery("2").owner);
-        queryStoreManager.createQuery(TestQueryBuilder.create("3", "query1", "testUser2").withLegacyExecutionContext().build(), null);
-        Assert.assertNull(queryStoreManager.getQuery("3").owner);
+        store.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(currentUser, store.getQuery("1").owner);
+        store.createQuery(TestQueryBuilder.create("2", "query2", "testUser2").withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(currentUser, store.getQuery("2").owner);
+        store.createQuery(TestQueryBuilder.create("3", "query1", "testUser2").withLegacyExecutionContext().build(), null);
+        Assert.assertNull(store.getQuery("3").owner);
     }
 
     @Test
     public void testUpdateQuery() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals("query2", queryStoreManager.getQuery("1").name);
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals("query2", store.getQuery("1").name);
     }
 
     @Test
     public void testUpdateQueryVersion() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals("query2", queryStoreManager.getQuery("1").name);
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals("query2", store.getQuery("1").name);
         Query queryWithSelectedFields = new Query();
         queryWithSelectedFields.id = "1";
         queryWithSelectedFields.versionId = "1.0.0";
-        queryStoreManager.patchQuery("1", queryWithSelectedFields, currentUser);
-        Assert.assertEquals("1.0.0", queryStoreManager.getQuery("1").versionId);
-        Assert.assertEquals("0.0.0", queryStoreManager.getQuery("1").originalVersionId);
+        store.patchQuery("1", queryWithSelectedFields, currentUser);
+        Assert.assertEquals("1.0.0", store.getQuery("1").versionId);
+        Assert.assertEquals("0.0.0", store.getQuery("1").originalVersionId);
     }
 
     @Test
     public void testUpdateWithInvalidQuery()
     {
         String currentUser = "testUser";
-        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", null, currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
+        Assert.assertEquals("Query name is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> store.updateQuery("1", TestQueryBuilder.create("1", null, currentUser).withLegacyExecutionContext().build(), currentUser)).getMessage());
     }
 
     @Test
     public void testPreventUpdateQueryId() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
-        Assert.assertEquals("Updating query ID is not supported", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.updateQuery("1", TestQueryBuilder.create("2", "query1", "testUser2").withLegacyExecutionContext().build(), currentUser)).getMessage());
+        store.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
+        Assert.assertEquals("Updating query ID is not supported", Assert.assertThrows(ApplicationQueryException.class, () -> store.updateQuery("1", TestQueryBuilder.create("2", "query1", "testUser2").withLegacyExecutionContext().build(), currentUser)).getMessage());
     }
 
     @Test
     public void testUpdateNotFoundQuery()
     {
         String currentUser = "testUser";
-        Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser));
+        Assert.assertThrows(ApplicationQueryException.class, () -> store.updateQuery("1", TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser));
     }
 
     @Test
     public void testAllowUpdateQueryWithoutOwner() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
-        queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query2", null).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(currentUser, queryStoreManager.getQuery("1").owner);
+        store.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
+        store.updateQuery("1", TestQueryBuilder.create("1", "query2", null).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(currentUser, store.getQuery("1").owner);
     }
 
     @Test
     public void testForbidUpdateQueryOfAnotherUser() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals("Only owner can update the query", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query1", "testUser2").withLegacyExecutionContext().build(), "testUser2")).getMessage());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals("Only owner can update the query", Assert.assertThrows(ApplicationQueryException.class, () -> store.updateQuery("1", TestQueryBuilder.create("1", "query1", "testUser2").withLegacyExecutionContext().build(), "testUser2")).getMessage());
     }
 
     @Test
     public void testDeleteQuery() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.deleteQuery("1", currentUser);
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.deleteQuery("1", currentUser);
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
     }
 
     @Test
     public void testDeleteNotFoundQuery()
     {
         String currentUser = "testUser";
-        Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.deleteQuery("1", currentUser)).getMessage());
+        Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> store.deleteQuery("1", currentUser)).getMessage());
     }
 
     @Test
     public void testAllowDeleteQueryWithoutOwner() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
-        queryStoreManager.deleteQuery("1", currentUser);
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", null).withLegacyExecutionContext().build(), null);
+        store.deleteQuery("1", currentUser);
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
     }
 
     @Test
     public void testForbidDeleteQueryOfAnotherUser() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals("Only owner can delete the query", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.deleteQuery("1", "testUser2")).getMessage());
-    }
-
-    @Test
-    public void testCreateQueryEvent() throws Exception
-    {
-        String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
-        List<QueryEvent> events = queryStoreManager.getQueryEvents(null, null, null, null, null);
-        Assert.assertEquals(1, events.size());
-        QueryEvent event = events.get(0);
-        Assert.assertEquals("1", event.queryId);
-        Assert.assertEquals(QueryEvent.QueryEventType.CREATED, event.eventType);
-    }
-
-    @Test
-    public void testUpdateQueryEvent() throws Exception
-    {
-        String currentUser = "testUser";
-        Query query = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(query, currentUser);
-        queryStoreManager.updateQuery(query.id, query, currentUser);
-        List<QueryEvent> events = queryStoreManager.getQueryEvents(null, null, null, null, null);
-        Assert.assertEquals(2, events.size());
-        QueryEvent event = events.get(1);
-        Assert.assertEquals("1", event.queryId);
-        Assert.assertEquals(QueryEvent.QueryEventType.UPDATED, event.eventType);
-    }
-
-    @Test
-    public void testDeleteQueryEvent() throws Exception
-    {
-        String currentUser = "testUser";
-        Query query = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(query, currentUser);
-        queryStoreManager.deleteQuery(query.id, currentUser);
-        List<QueryEvent> events = queryStoreManager.getQueryEvents(null, null, null, null, null);
-        Assert.assertEquals(2, events.size());
-        QueryEvent event = events.get(1);
-        Assert.assertEquals("1", event.queryId);
-        Assert.assertEquals(QueryEvent.QueryEventType.DELETED, event.eventType);
-    }
-
-    @Test
-    public void testGetQueryEvents() throws Exception
-    {
-        String currentUser = "testUser";
-        Query query1 = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
-
-        // NOTE: for this test to work well, we need leave a tiny window of time (10 ms) between each operation
-        // so the test for filter using timestamp can be correct
-        queryStoreManager.createQuery(query1, currentUser);
-        Thread.sleep(10);
-        queryStoreManager.updateQuery(query1.id, query1, currentUser);
-        Thread.sleep(10);
-        queryStoreManager.deleteQuery(query1.id, currentUser);
-        Thread.sleep(10);
-        Query query2 = TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(query2, currentUser);
-        Thread.sleep(10);
-        queryStoreManager.updateQuery(query2.id, query2, currentUser);
-        Thread.sleep(10);
-        queryStoreManager.deleteQuery(query2.id, currentUser);
-        Thread.sleep(10);
-
-        Assert.assertEquals(6, queryStoreManager.getQueryEvents(null, null, null, null, null).size());
-
-        // Query ID
-        Assert.assertEquals(3, queryStoreManager.getQueryEvents("1", null, null, null, null).size());
-        Assert.assertEquals(3, queryStoreManager.getQueryEvents("2", null, null, null, null).size());
-
-        // Event Type
-        Assert.assertEquals(2, queryStoreManager.getQueryEvents(null, QueryEvent.QueryEventType.CREATED, null, null, null).size());
-        Assert.assertEquals(2, queryStoreManager.getQueryEvents(null, QueryEvent.QueryEventType.UPDATED, null, null, null).size());
-        Assert.assertEquals(2, queryStoreManager.getQueryEvents(null, QueryEvent.QueryEventType.DELETED, null, null, null).size());
-
-        // Limit
-        Assert.assertEquals(1, queryStoreManager.getQueryEvents(null, null, null, null, 1).size());
-        Assert.assertEquals(5, queryStoreManager.getQueryEvents(null, null, null, null, 5).size());
-
-        Long now = Instant.now().toEpochMilli();
-        Assert.assertEquals(0, queryStoreManager.getQueryEvents(null, null, now, null, null).size());
-        Assert.assertEquals(6, queryStoreManager.getQueryEvents(null, null, null, now, null).size());
-
-        QueryEvent event1 = queryStoreManager.getQueryEvents("1", QueryEvent.QueryEventType.DELETED, null, null, null).get(0);
-        Assert.assertEquals(4, queryStoreManager.getQueryEvents(null, null, event1.timestamp, null, null).size());
-        Assert.assertEquals(3, queryStoreManager.getQueryEvents(null, null, null, event1.timestamp, null).size());
-
-        QueryEvent event2 = queryStoreManager.getQueryEvents("2", QueryEvent.QueryEventType.CREATED, null, null, null).get(0);
-        Assert.assertEquals(3, queryStoreManager.getQueryEvents(null, null, event2.timestamp, null, null).size());
-        Assert.assertEquals(4, queryStoreManager.getQueryEvents(null, null, null, event2.timestamp, null).size());
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals("Only owner can delete the query", Assert.assertThrows(ApplicationQueryException.class, () -> store.deleteQuery("1", "testUser2")).getMessage());
     }
 
     @Test
@@ -1003,7 +903,7 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
-        Query createdQuery = queryStoreManager.createQuery(newQuery, currentUser);
+        Query createdQuery = store.createQuery(newQuery, currentUser);
         Assert.assertNotNull(createdQuery.lastUpdatedAt);
         Assert.assertNotNull(createdQuery.createdAt);
     }
@@ -1013,8 +913,8 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(newQuery, currentUser);
-        List<Query> queries = queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        store.createQuery(newQuery, currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
         Query lightQuery = queries.get(0);
         Assert.assertNotNull(lightQuery.lastUpdatedAt);
@@ -1025,21 +925,21 @@ public class TestQueryStoreManager
     public void testSearchQueriesWithSearchByQueryId() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("26929514-237c-11ed-861d-0242ac120002", "query_a", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("26929515-237c-11bd-851d-0243ac120002", "query_b", currentUser).withLegacyExecutionContext().build(), currentUser);
-        queryStoreManager.createQuery(TestQueryBuilder.create("23929515-235c-11ad-851d-0143ac120002", "query_c", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad-851d-0143ac120002").build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad").build(), currentUser).size());
+        store.createQuery(TestQueryBuilder.create("26929514-237c-11ed-861d-0242ac120002", "query_a", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("26929515-237c-11bd-851d-0243ac120002", "query_b", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("23929515-235c-11ad-851d-0143ac120002", "query_c", currentUser).withLegacyExecutionContext().build(), currentUser);
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad-851d-0143ac120002").build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad").build(), currentUser).size());
     }
 
     @Test
     public void testSearchQueriesSortedByCurrentUserFirst() throws Exception
     {
         String currentUser = "testUser";
-        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", "testUser1").withLegacyExecutionContext().build(), "testUser1");
-        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        List<Query> queries = queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("1", "query1", "testUser1").withLegacyExecutionContext().build(), "testUser1");
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(2, queries.size());
         Assert.assertEquals(currentUser, queries.get(0).owner);
     }
@@ -1055,18 +955,18 @@ public class TestQueryStoreManager
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue2)).withLegacyExecutionContext().build();
         Query testQuery4 = TestQueryBuilder.create("4", "query3", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
-        queryStoreManager.createQuery(testQuery4, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery4, currentUser);
 
         // When no tagged value provided, return all queries
-        Assert.assertEquals(4, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
     }
 
     @Test
@@ -1076,17 +976,107 @@ public class TestQueryStoreManager
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
         Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build();
         Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withLegacyExecutionContext().build();
-        queryStoreManager.createQuery(testQuery1, currentUser);
-        queryStoreManager.createQuery(testQuery2, currentUser);
-        queryStoreManager.createQuery(testQuery3, currentUser);
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+        store.createQuery(testQuery3, currentUser);
 
-        Assert.assertEquals(1, queryStoreManager.getQueries(Lists.fixedSize.of("2")).size());
-        Assert.assertEquals(1, queryStoreManager.getQueries(Lists.fixedSize.of("3")).size());
-        Assert.assertEquals(2, queryStoreManager.getQueries(Lists.fixedSize.of("2", "3")).size());
+        Assert.assertEquals(1, store.getQueries(Lists.fixedSize.of("2")).size());
+        Assert.assertEquals(1, store.getQueries(Lists.fixedSize.of("3")).size());
+        Assert.assertEquals(2, store.getQueries(Lists.fixedSize.of("2", "3")).size());
 
-        Assert.assertEquals("Can't find queries for the following ID(s):\\n4", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.getQueries(Lists.fixedSize.of("4"))).getMessage());
-        Assert.assertEquals("Can't find queries for the following ID(s):\\n4\\n6", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.getQueries(Lists.fixedSize.of("4", "3", "6"))).getMessage());
+        Assert.assertEquals("Can't find queries for the following ID(s):\\n4", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQueries(Lists.fixedSize.of("4"))).getMessage());
+        Assert.assertEquals("Can't find queries for the following ID(s):\\n4\\n6", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQueries(Lists.fixedSize.of("4", "3", "6"))).getMessage());
 
-        Assert.assertEquals("Can't fetch more than 50 queries", Assert.assertThrows(ApplicationQueryException.class, () -> queryStoreManager.getQueries(Lists.fixedSize.ofAll(Collections.nCopies(51, "5")))).getMessage());
+        Assert.assertEquals("Can't fetch more than 50 queries", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQueries(Lists.fixedSize.ofAll(Collections.nCopies(51, "5")))).getMessage());
+    }
+
+    @Test
+    public void testCreateQueryEvent() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        List<QueryEvent> events = store.getQueryEvents(null, null, null, null, null);
+        Assert.assertEquals(1, events.size());
+        QueryEvent event = events.get(0);
+        Assert.assertEquals("1", event.queryId);
+        Assert.assertEquals(QueryEvent.QueryEventType.CREATED, event.eventType);
+    }
+
+    @Test
+    public void testUpdateQueryEvent() throws Exception
+    {
+        String currentUser = "testUser";
+        Query query = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
+        store.createQuery(query, currentUser);
+        store.updateQuery(query.id, query, currentUser);
+        List<QueryEvent> events = store.getQueryEvents(null, null, null, null, null);
+        Assert.assertEquals(2, events.size());
+        QueryEvent event = events.get(1);
+        Assert.assertEquals("1", event.queryId);
+        Assert.assertEquals(QueryEvent.QueryEventType.UPDATED, event.eventType);
+    }
+
+    @Test
+    public void testDeleteQueryEvent() throws Exception
+    {
+        String currentUser = "testUser";
+        Query query = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
+        store.createQuery(query, currentUser);
+        store.deleteQuery(query.id, currentUser);
+        List<QueryEvent> events = store.getQueryEvents(null, null, null, null, null);
+        Assert.assertEquals(2, events.size());
+        QueryEvent event = events.get(1);
+        Assert.assertEquals("1", event.queryId);
+        Assert.assertEquals(QueryEvent.QueryEventType.DELETED, event.eventType);
+    }
+
+    @Test
+    public void testGetQueryEvents() throws Exception
+    {
+        String currentUser = "testUser";
+        Query query1 = TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build();
+
+        // NOTE: for this test to work well, we need leave a tiny window of time (10 ms) between each operation
+        // so the test for filter using timestamp can be correct
+        store.createQuery(query1, currentUser);
+        Thread.sleep(10);
+        store.updateQuery(query1.id, query1, currentUser);
+        Thread.sleep(10);
+        store.deleteQuery(query1.id, currentUser);
+        Thread.sleep(10);
+        Query query2 = TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build();
+        store.createQuery(query2, currentUser);
+        Thread.sleep(10);
+        store.updateQuery(query2.id, query2, currentUser);
+        Thread.sleep(10);
+        store.deleteQuery(query2.id, currentUser);
+        Thread.sleep(10);
+
+        Assert.assertEquals(6, store.getQueryEvents(null, null, null, null, null).size());
+
+        // Query ID
+        Assert.assertEquals(3, store.getQueryEvents("1", null, null, null, null).size());
+        Assert.assertEquals(3, store.getQueryEvents("2", null, null, null, null).size());
+
+        // Event Type
+        Assert.assertEquals(2, store.getQueryEvents(null, QueryEvent.QueryEventType.CREATED, null, null, null).size());
+        Assert.assertEquals(2, store.getQueryEvents(null, QueryEvent.QueryEventType.UPDATED, null, null, null).size());
+        Assert.assertEquals(2, store.getQueryEvents(null, QueryEvent.QueryEventType.DELETED, null, null, null).size());
+
+        // Limit
+        Assert.assertEquals(1, store.getQueryEvents(null, null, null, null, 1).size());
+        Assert.assertEquals(5, store.getQueryEvents(null, null, null, null, 5).size());
+
+        Long now = Instant.now().toEpochMilli();
+        Assert.assertEquals(0, store.getQueryEvents(null, null, now, null, null).size());
+        Assert.assertEquals(6, store.getQueryEvents(null, null, null, now, null).size());
+
+        QueryEvent event1 = store.getQueryEvents("1", QueryEvent.QueryEventType.DELETED, null, null, null).get(0);
+        Assert.assertEquals(4, store.getQueryEvents(null, null, event1.timestamp, null, null).size());
+        Assert.assertEquals(3, store.getQueryEvents(null, null, null, event1.timestamp, null).size());
+
+        QueryEvent event2 = store.getQueryEvents("2", QueryEvent.QueryEventType.CREATED, null, null, null).get(0);
+        Assert.assertEquals(3, store.getQueryEvents(null, null, event2.timestamp, null, null).size());
+        Assert.assertEquals(4, store.getQueryEvents(null, null, null, event2.timestamp, null).size());
     }
 }

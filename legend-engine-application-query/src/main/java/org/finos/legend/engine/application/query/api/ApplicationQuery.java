@@ -118,26 +118,6 @@ public class ApplicationQuery
         }
     }
 
-    @GET
-    @Path("/stats")
-    @ApiOperation(value = "Get Query Store Stats")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueryCount()
-    {
-        try
-        {
-            return Response.ok(this.queryStoreManager.getQueryStoreStats()).build();
-        }
-        catch (Exception e)
-        {
-            if (e instanceof ApplicationQueryException)
-            {
-                return ((ApplicationQueryException) e).toResponse();
-            }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_STATS_ERROR, null);
-        }
-    }
-
     @POST
     @ApiOperation(value = "Create a new query")
     @Consumes({MediaType.APPLICATION_JSON})
@@ -251,6 +231,27 @@ public class ApplicationQuery
         }
     }
 
+    @GET
+    @Path("/stats")
+    @ApiOperation(value = "Get query store statistics")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueryStoreStats()
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getQueryStoreStats()).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_STATS_ERROR, null);
+        }
+    }
+
+    // --------------------------------------------- DataCube Query ---------------------------------------------
 
     @POST
     @Path("dataCube/search")
@@ -376,6 +377,51 @@ public class ApplicationQuery
                 return ((ApplicationQueryException) e).toResponse();
             }
             return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, identity.getName());
+        }
+    }
+
+    @GET
+    @Path("dataCube/events")
+    @ApiOperation(value = "Get DataCube query events")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getDataCubeQueryEvents(@QueryParam("queryId") @ApiParam("The query ID the event is associated with") String queryId,
+                                           @QueryParam("eventType") @ApiParam("The type of event") QueryEvent.QueryEventType eventType,
+                                           @QueryParam("since") @ApiParam("Lower limit on the UNIX timestamp for the event creation time") Long since,
+                                           @QueryParam("until") @ApiParam("Upper limit on the UNIX timestamp for the event creation time") Long until,
+                                           @QueryParam("limit") @ApiParam("Limit the number of events returned") Integer limit,
+                                           @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try
+        {
+            return Response.ok().entity(this.dataCubeQueryStoreManager.getQueryEvents(queryId, eventType, since, until, limit)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_EVENTS_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("dataCube/stats")
+    @ApiOperation(value = "Get DataCube query store statistics")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getDataCubeQueryStoreStats()
+    {
+        try
+        {
+            return Response.ok(this.dataCubeQueryStoreManager.getQueryStoreStats()).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_STATS_ERROR, null);
         }
     }
 }
