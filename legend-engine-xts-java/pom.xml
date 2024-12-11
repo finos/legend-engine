@@ -26,12 +26,11 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Java</name>
 
-
-
     <modules>
         <module>legend-engine-external-language-java</module>
         <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
+        <module>legend-engine-xt-javaGeneration-conventions-essential-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-PCT</module>
         <module>legend-engine-xt-javaPlatformBinding-externalFormat-pure</module>

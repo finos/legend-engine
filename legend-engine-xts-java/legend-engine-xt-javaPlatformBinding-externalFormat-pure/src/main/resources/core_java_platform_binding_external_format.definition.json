@@ -8,6 +8,7 @@
         "core_functions_unclassified",
         "core",
         "core_external_language_java",
-        "core_java_platform_binding"
+        "core_java_platform_binding",
+        "core_external_language_java_conventions_essential"
     ]
 }
