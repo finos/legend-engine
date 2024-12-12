@@ -25,12 +25,13 @@ public class DataCubeQuery
     public String name;
     public String description;
 
-    public Map<String, ?> query;
-    public Map<String, ?> source;
+    public Map<String, ?> content;
 
     public Long lastUpdatedAt;
     public Long createdAt;
     public Long lastOpenAt;
 
-    // TODO: ownership
+    // TODO: this is a very simple ownership mechanism
+    // where we only allow a single owner
+    public String owner;
 }
