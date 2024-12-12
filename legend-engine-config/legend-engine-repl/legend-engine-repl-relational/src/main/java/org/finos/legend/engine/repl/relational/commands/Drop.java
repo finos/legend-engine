@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.repl.relational.commands;
 
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -22,17 +25,13 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.relational.shared.ConnectionHelper;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-
-import java.sql.Connection;
-import java.sql.Statement;
-
-import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getTables;
 
 public class Drop implements Command
 {
@@ -107,14 +106,7 @@ public class Drop implements Command
                         .select(c -> PureGrammarComposerUtility.convertPath(c.getPath()).equals(connectionPath));
                 if (!foundConnections.isEmpty() && foundConnections.getFirst().connectionValue instanceof DatabaseConnection)
                 {
-                    try (Connection connection = ConnectionHelper.getConnection((DatabaseConnection) foundConnections.getFirst().connectionValue, client.getPlanExecutor()))
-                    {
-                        return getTables(connection).select(c -> c.name.startsWith(start)).collect(c -> c.name).collect(Candidate::new);
-                    }
-                    catch (Exception e)
-                    {
-                        // do nothing
-                    }
+                    return ConnectionHelper.getTables((RelationalDatabaseConnection) foundConnections.getFirst().connectionValue, client.getPlanExecutor()).filter(c -> c.name.startsWith(start)).map(c -> c.name).map(Candidate::new).collect(Collectors.toCollection(Lists.mutable::empty));
                 }
                 return null;
             }

@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,17 +11,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-package org.finos.legend.engine.repl.relational.schema;
+package org.finos.legend.engine.plan.execution.stores.relational.exploration.model;
 
-public class Column
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+
+public class DatabaseBuilderInput
 {
-    public String name;
-    public String type;
+    public DatabaseBuilderConfig config;
 
-    public Column(String name, String type)
+    public RelationalDatabaseConnection connection;
+
+    public TargetDatabase targetDatabase;
+
+    public DatabaseBuilderInput()
     {
-        this.name = name;
-        this.type = type;
+        this.config = new DatabaseBuilderConfig();
+        this.targetDatabase = new TargetDatabase();
     }
 }

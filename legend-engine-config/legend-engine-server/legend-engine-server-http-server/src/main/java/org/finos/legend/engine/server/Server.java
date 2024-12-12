@@ -354,7 +354,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
         // Relational
-        environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
+        environment.jersey().register(new SchemaExplorationApi(relationalStoreExecutor));
         environment.jersey().register(new RelationalElementAPI(serverConfiguration.deployment.mode, relationalStoreExecutor));
 
         // Compilation

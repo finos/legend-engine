@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,35 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
+package org.finos.legend.engine.plan.execution.stores.relational.exploration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderConfig;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabasePattern;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.identity.Identity;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -49,10 +29,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderConfig;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderInput;
+import org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabasePattern;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class SchemaExportation
 {
-    private final DatabaseBuilderInput databaseBuilderInput;
+    private final ConnectionManagerSelector connectionManager;
     private static final String ESCAPE_CHARS = " :";
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -93,21 +93,21 @@ public class SchemaExportation
             Tuples.pair(Types.CHAR, size -> createDataType("Char", size,
                     org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char.class))
     );
-    private static final String[] TABLES_TYPES = new String[]{"TABLE", "VIEW"};
+    private static final String[] TABLES_TYPES = new String[] {"TABLE", "VIEW", "BASE TABLE"};
     private static final String DEFAULT_SCHEMA = "default";
 
-    SchemaExportation(DatabaseBuilderInput storeBuilderInput)
+    SchemaExportation(ConnectionManagerSelector connectionManager)
     {
-        this.databaseBuilderInput = storeBuilderInput;
+        this.connectionManager = connectionManager;
     }
 
 
-    public static SchemaExportation newBuilder(DatabaseBuilderInput storeBuilderInput)
+    public static SchemaExportation newBuilder(ConnectionManagerSelector connectionManager)
     {
-        return new SchemaExportation(storeBuilderInput);
+        return new SchemaExportation(connectionManager);
     }
 
-    public Database build(ConnectionManagerSelector connectionManager, Identity identity) throws SQLException
+    public Database build(DatabaseBuilderInput databaseBuilderInput, Identity identity) throws SQLException
     {
         List<Predicate<String>> tableNameFilters = FastList.newList();
 
@@ -118,20 +118,20 @@ public class SchemaExportation
         try (Connection connection = connectionManager.getDatabaseConnection(identity, databaseBuilderInput.connection))
         {
             DatabaseMetaData metadata = connection.getMetaData();
-            DatabaseBuilderConfig config = this.databaseBuilderInput.config;
+            DatabaseBuilderConfig config = databaseBuilderInput.config;
             Database database = new Database();
-            database._package = this.databaseBuilderInput.targetDatabase._package;
-            database.name = this.databaseBuilderInput.targetDatabase.name;
+            database._package = databaseBuilderInput.targetDatabase._package;
+            database.name = databaseBuilderInput.targetDatabase.name;
             if (config.patterns == null || config.patterns.isEmpty())
             {
                 return database;
             }
-            this.preProcessInput(this.databaseBuilderInput);
+            this.preProcessInput(databaseBuilderInput);
             database.schemas = FastList.newList();
 
             for (DatabasePattern pattern : config.patterns)
             {
-                buildDatabaseSchemas(database, metadata, pattern, tableNameFilters);
+                buildDatabaseSchemas(databaseBuilderInput, database, metadata, pattern, tableNameFilters);
             }
 
             schemaNameMappers.add(SchemaExportation::escapeString);
@@ -161,9 +161,9 @@ public class SchemaExportation
         return mappers.stream().reduce(Function::andThen).orElse(Function.identity()).apply(name);
     }
 
-    private void buildDatabaseSchemas(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException
+    private void buildDatabaseSchemas(DatabaseBuilderInput databaseBuilderInput, Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> tableNameFilters) throws SQLException
     {
-        DatabaseBuilderConfig config = this.databaseBuilderInput.config;
+        DatabaseBuilderConfig config = databaseBuilderInput.config;
         // build schemas
 
         Map<String, List<CatalogTable>> tablesBySchema = this.buildSchemasAndCollectTables(db, metadata, pattern, tableNameFilters);
@@ -185,7 +185,7 @@ public class SchemaExportation
                 Schema schema = getOrCreateAndAddSchema(db, catalogTablesSchema);
                 for (CatalogTable t : catalogTables)
                 {
-                    buildSchemaTable(t.getCatalog(), schema, t.getTable(), metadata);
+                    buildSchemaTable(databaseBuilderInput, t.getCatalog(), schema, t.getTable(), metadata);
                 }
             }
         }
@@ -228,7 +228,7 @@ public class SchemaExportation
 
     private String escapePattern(String pattern, boolean doEscape, String escapeStringCharacter)
     {
-        return pattern != null && doEscape
+        return pattern != null && doEscape && escapeStringCharacter != null
                 ? pattern.replace("_", escapeStringCharacter + "_")
                 .replace("%", escapeStringCharacter + "%")
                 : pattern;
@@ -252,24 +252,24 @@ public class SchemaExportation
         return pattern;
     }
 
-    private void buildSchemaTable(String catalog, Schema schema, String tableName, DatabaseMetaData metaData) throws SQLException
+    private void buildSchemaTable(DatabaseBuilderInput databaseBuilderInput, String catalog, Schema schema, String tableName, DatabaseMetaData metaData) throws SQLException
     {
         if (ListIterate.noneSatisfy(schema.tables, t -> t.name.equals(tableName)))
         {
             Table table = new Table();
             table.name = tableName;
-            DatabaseBuilderConfig config = this.databaseBuilderInput.config;
+            DatabaseBuilderConfig config = databaseBuilderInput.config;
             if (config.enrichColumns)
             {
-                buildTableColumns(catalog, schema, table, metaData);
+                buildTableColumns(databaseBuilderInput, catalog, schema, table, metaData);
             }
             schema.tables.add(table);
         }
     }
 
-    private void buildTableColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
+    private void buildTableColumns(DatabaseBuilderInput databaseBuilderInput, String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
     {
-        if (this.databaseBuilderInput.config.enrichPrimaryKeys)
+        if (databaseBuilderInput.config.enrichPrimaryKeys)
         {
             table.primaryKey = buildPrimaryKeys(catalog, schema, table, metaData);
         }
