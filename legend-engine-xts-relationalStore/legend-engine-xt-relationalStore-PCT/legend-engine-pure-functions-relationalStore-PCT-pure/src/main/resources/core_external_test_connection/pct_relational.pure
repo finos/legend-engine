@@ -96,47 +96,48 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     // ----
     
     let json = $x->meta::json::parseJSON();
-
-    if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='result').value->isEmpty(),
-      | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult)->toOne();
-        let x= meta::protocols::pure::vX_X_X::invocation::execution::execute::processRelationalClassResult($res, $repocessed.second.mapping->toOne(), $repocessed.second.runtime, [], $extensions);
-        $x.first.values;,
-      | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
-        // processResult
-        let resultType = $f->functionReturnType().rawType;
-        if ($resultType->toOne()->instanceOf(PrimitiveType),
-          | let preResultFinal = $res.result.rows->at(0).values->at(0);
-            let resultFinal = 
-              if ([
-                    pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
-                    pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
-                    pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
-                    pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
-                  ],
-                | $preResultFinal->toOne()
+    if ($json->instanceOf(JSONNumber),
+      | $json->cast(@JSONNumber).value->toString()->parseInteger(),
+      | if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='result').value->isEmpty(),
+            | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult)->toOne();
+              let x= meta::protocols::pure::vX_X_X::invocation::execution::execute::processRelationalClassResult($res, $repocessed.second.mapping->toOne(), $repocessed.second.runtime, [], $extensions);
+              $x.first.values;,
+            | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
+              // processResult
+              let resultType = $f->functionReturnType().rawType;
+              if ($resultType->toOne()->instanceOf(PrimitiveType),
+                | let preResultFinal = $res.result.rows->at(0).values->at(0);
+                  let resultFinal = 
+                    if ([
+                          pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
+                          pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
+                          pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
+                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
+                        ],
+                      | $preResultFinal->toOne()
+                    );
+                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
+                  $resultFinal;,
+                | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
+                                  $res.result.rows->map(x|
+                                      range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
+                                                                            | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
+                                                                              if ([
+                                                                                    pair(|$type == 'Integer', |-2147483648),
+                                                                                    pair(|$type == 'String', |'null'),
+                                                                                    pair(|$type == 'DateTime', |'')
+                                                                                  ],
+                                                                                  |fail();0;
+                                                                              );,
+                                                                            |$x.values->at($z)
+                                                                        )
+                                                                )->makeString(',')
+                                      )->joinStrings('\n');
+                    let resultFinal = $tdsString->stringToTDS();
+                    print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+                    $resultFinal;
               );
-            print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
-            $resultFinal;,
-          | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
-                            $res.result.rows->map(x|
-                                range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
-                                                                      | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
-                                                                        if ([
-                                                                              pair(|$type == 'Integer', |-2147483648),
-                                                                              pair(|$type == 'String', |'null'),
-                                                                              pair(|$type == 'DateTime', |'')
-                                                                            ],
-                                                                            |fail();0;
-                                                                        );,
-                                                                      |$x.values->at($z)
-                                                                  )
-                                                          )->makeString(',')
-                                )->joinStrings('\n');
-              let resultFinal = $tdsString->stringToTDS();
-              print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
-              $resultFinal;
-        );
-    )->cast(@X)->toMultiplicity(@[o]);
+    ))->cast(@X)->toMultiplicity(@[o]);
 }
 
 function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Date[1]
@@ -256,8 +257,6 @@ function meta::relational::tests::pct::process::printNew(a:Any[1]):String[1]
 
 function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,ProcessingState>[1]
 { 
-  let otherFuncs = $f->cast(@FunctionDefinition<Any>)->meta::relational::tests::pct::extractDependentFunctions();
-
   let ext = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
               fullPath = true,
@@ -308,8 +307,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                                                           functionName = 'from',
                                                           genericType = $returnGenericType,
                                                           multiplicity = $returnMultiplicity,                                                        
-                                                          parametersValues = 
-                                                                                $reprocessed.current->toOne()->cast(@ValueSpecification)
+                                                          parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
                                                                                 ->concatenate(if ($reprocessed.mapping->isEmpty(),
                                                                                               |[],
                                                                                               |^InstanceValue
@@ -356,7 +354,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
 
             meta::legend::executePlanAsJSON($planAsJson, []);
             // Update the database ------------
-
+            let otherFuncs = $reprocessed.current->cast(@FunctionExpression)->toOne()->meta::relational::tests::pct::extractDependentFunctions();
             let code =  '\n###Relational\n'+
                         $reprocessed.database->toOne()->printDatabase()+
                         if ($reprocessed.mapping->isEmpty(),
@@ -370,7 +368,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
                         '}'
                         ;
-
             //println($code);
 
             let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
@@ -448,7 +445,7 @@ import meta::core::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::metamodel::relation::*;
-import  meta::relational::tests::pct::process::*;
+import meta::relational::tests::pct::process::*;
 import meta::pure::store::*;
 
 function meta::relational::tests::pct::process::reprocess(a:Any[1], state:ProcessingState[1]):ProcessingState[1]
@@ -471,7 +468,12 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                     | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
                                       ^$state
                                       (
-                                          current = ^$z(parametersValues = $repro.current->cast(@ValueSpecification))->evaluateAndDeactivate(),
+                                          current = ^$z(parametersValues = if ($z->cast(@FunctionExpression).func == write_Relation_1__RelationElementAccessor_1__Integer_1_,
+                                                                              | let reproCurrent = $repro.current->cast(@ValueSpecification);
+                                                                                let tds = $reproCurrent->at(1)->cast(@FunctionExpression).parametersValues->at(0);
+                                                                                $reproCurrent->at(0)->concatenate($tds);,
+                                                                              | $repro.current->cast(@ValueSpecification))
+                                                       )->evaluateAndDeactivate(),
                                           mapping = $repro.mapping->first(),
                                           replaced = $repro.replaced,
                                           csvs = $repro.csvs

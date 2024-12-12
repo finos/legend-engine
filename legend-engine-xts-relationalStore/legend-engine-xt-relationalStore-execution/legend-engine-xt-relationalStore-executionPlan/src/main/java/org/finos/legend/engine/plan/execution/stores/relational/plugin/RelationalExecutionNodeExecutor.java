@@ -324,6 +324,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 {
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                 }
+
+                if (result instanceof SQLUpdateResult)
+                {
+                    return new ConstantResult(((SQLUpdateResult) result).getUpdateCount());
+                }
+
                 return result;
             }
         }

@@ -31,6 +31,7 @@ public class SQLExecutionNode extends ExecutionNode
     public DatabaseConnection connection;
     public List<SQLResultColumn> resultColumns = Collections.emptyList();
     public Boolean isResultColumnsDynamic;
+    public Boolean isMutationSQL;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
