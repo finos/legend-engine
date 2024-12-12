@@ -95,16 +95,16 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
     print(if($debug.debug,|'\nResult JSON:\n'+$x+'\n',|''));
     // ----
     
+    let resultType = $f->functionReturnType().rawType;
     let json = $x->meta::json::parseJSON();
-    if ($json->instanceOf(JSONNumber),
-      | $json->cast(@JSONNumber).value->toString()->parseInteger(),
+    if (!$json->instanceOf(JSONObject),
+      | $json->meta::json::fromJSON($resultType),
       | if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='result').value->isEmpty(),
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult)->toOne();
               let x= meta::protocols::pure::vX_X_X::invocation::execution::execute::processRelationalClassResult($res, $repocessed.second.mapping->toOne(), $repocessed.second.runtime, [], $extensions);
               $x.first.values;,
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
-              let resultType = $f->functionReturnType().rawType;
               if ($resultType->toOne()->instanceOf(PrimitiveType),
                 | let preResultFinal = $res.result.rows->at(0).values->at(0);
                   let resultFinal = 
