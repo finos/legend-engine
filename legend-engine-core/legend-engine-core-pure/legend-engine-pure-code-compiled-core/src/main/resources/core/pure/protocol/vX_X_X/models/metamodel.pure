@@ -264,6 +264,17 @@ Class meta::protocols::pure::vX_X_X::metamodel::type::PackageableType extends me
   
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::type::RelationType extends meta::protocols::pure::vX_X_X::metamodel::type::Type
+{
+  columns: meta::protocols::pure::vX_X_X::metamodel::type::Column[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::type::Column
+{
+  name: String[1];
+  type: String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::type::GenericType
 {
     rawType : meta::protocols::pure::vX_X_X::metamodel::type::Type[1];

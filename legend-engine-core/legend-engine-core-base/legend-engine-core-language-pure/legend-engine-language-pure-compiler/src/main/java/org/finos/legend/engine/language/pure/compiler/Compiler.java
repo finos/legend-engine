@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
+import java.io.IOException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -22,13 +23,18 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_type_GenericType;
+import org.finos.legend.pure.generated.core_pure_protocol_protocol;
+import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class Compiler
 {
@@ -75,5 +81,20 @@ public class Compiler
     {
         ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
         return HelperModelBuilder.getTypeFullPath(valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
+    }
+
+    public static GenericType getLambdaReturnGenericType(Lambda lambda, PureModel pureModel)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel)._genericType();
+        Root_meta_protocols_pure_vX_X_X_metamodel_type_GenericType protocolGenericType = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(genericType, pureModel.getExecutionSupport());
+        String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(protocolGenericType, pureModel.getExecutionSupport());
+        try
+        {
+            return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(json, GenericType.class);
+        }
+        catch (IOException e)
+        {
+            throw new UnsupportedOperationException(e);
+        }
     }
 }
