@@ -319,16 +319,6 @@ function meta::pure::mapping::with<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1
    $t->from($m, $runtime);
 }
 
-function meta::pure::mapping::with(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1]):TabularDataSet[1]
-{
-   $tds->from($mapping, $runtime);
-}
-
-function meta::pure::mapping::with(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:meta::pure::runtime::ExecutionContext[1]):TabularDataSet[1]
-{
-   $tds->from($mapping, $runtime, $executionContext);
-}
-
 
 ###Mapping
 Mapping meta::pure::mapping::MergedMapping
