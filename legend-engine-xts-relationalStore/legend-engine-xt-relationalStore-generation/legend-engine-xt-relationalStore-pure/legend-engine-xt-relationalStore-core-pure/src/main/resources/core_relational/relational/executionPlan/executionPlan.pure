@@ -71,6 +71,7 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    connection: DatabaseConnection[1];
    metadata: QueryMetadata[*];
    isResultColumnsDynamic : Boolean[0..1];
+   isMutationSQL: Boolean[0..1];
 }
 
 Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode

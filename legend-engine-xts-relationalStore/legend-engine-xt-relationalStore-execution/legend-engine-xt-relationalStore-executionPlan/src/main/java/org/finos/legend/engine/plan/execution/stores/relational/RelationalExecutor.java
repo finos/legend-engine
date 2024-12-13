@@ -245,6 +245,11 @@ public class RelationalExecutor
             return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
         }
 
+        if (node.isMutationSQL != null && node.isMutationSQL)
+        {
+            return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, node.connection, identity, tempTableList, executionState.getRequestContext());
+        }
+
         return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
     }
 

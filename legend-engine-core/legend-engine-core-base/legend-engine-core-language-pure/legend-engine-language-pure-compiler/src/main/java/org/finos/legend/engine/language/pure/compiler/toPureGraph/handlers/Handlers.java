@@ -1366,6 +1366,8 @@ public class Handlers
         register("meta::pure::tds::asc_String_1__SortInformation_1_", false, ps -> res("meta::pure::tds::SortInformation", "one"));
         register("meta::pure::tds::desc_String_1__SortInformation_1_", false, ps -> res("meta::pure::tds::SortInformation", "one"));
 
+        register("meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_", true, ps -> res("Integer", "one"));
+
         register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
         register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
 

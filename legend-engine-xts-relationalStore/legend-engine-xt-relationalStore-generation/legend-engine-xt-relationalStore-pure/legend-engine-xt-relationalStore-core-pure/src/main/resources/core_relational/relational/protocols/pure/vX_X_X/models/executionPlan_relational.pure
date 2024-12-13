@@ -23,6 +23,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode 
    resultColumns : meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLResultColumn[*];
    connection : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[1];
    isResultColumnsDynamic : Boolean[0..1];
+   isMutationSQL : Boolean[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalSaveNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode

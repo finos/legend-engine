@@ -203,7 +203,8 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
             meta::pure::functions::math::sum_Float_MANY__Float_1_,
             meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
             meta::pure::functions::math::sum_Number_MANY__Number_1_,
-            meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_
+            meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_,
+            meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_
          ]->contains($f.func);
   );
 }
@@ -230,8 +231,13 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
         ),
         pair(
           |$func->in(meta::pure::mutation::mutationFunctions()),
-          | // Write Flow
+          | // Save Flow
             $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
+        ),
+        pair(
+          |$func->in([meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_]),
+          | // Write Flow
+            $sq->meta::relational::mutation::executionPlan::planWriteExecution($ext, $m, $runtime->toOne(), $exeCtx, $extensions, $debug);
         )
       ]
       ,|

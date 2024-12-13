@@ -22,31 +22,20 @@ native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::fu
 function <<PCT.test>> meta::pure::functions::relation::testWrite<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
-               |
-                 let targetTDS = meta::pure::metamodel::relation::newTDSRelationAccessor(#TDS
-                   val,str,other
-                   1,aaa,a
-                 #);
-                 let rowsAdded = #TDS
-                      val,str,other
-                      1,a,a
-                      3,ewe,b
-                      4,qw,c
-                      5,wwe,d
-                      6,weq,e
-                  #->write($targetTDS);
-                  $targetTDS->select();
+               |  #TDS
+                    val,str,other
+                    1,a,a
+                    3,ewe,b
+                    4,qw,c
+                    5,wwe,d
+                    6,weq,e
+                  #->select()
+                  ->write(
+                  #TDS
+                    val,str,other
+                    1,aaa,a
+                  #->newTDSRelationAccessor());
               };
-    
     let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   val,str,other\n'+
-                  '   1,aaa,a\n'+
-                  '   1,a,a\n'+
-                  '   3,ewe,b\n'+
-                  '   4,qw,c\n'+
-                  '   5,wwe,d\n'+
-                  '   6,weq,e\n'+
-                  '#', $res->toString());
+    assertEquals(5, $res);
 }
