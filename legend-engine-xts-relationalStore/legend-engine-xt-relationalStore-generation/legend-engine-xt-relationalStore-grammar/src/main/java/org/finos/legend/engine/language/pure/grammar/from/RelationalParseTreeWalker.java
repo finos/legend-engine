@@ -1145,14 +1145,7 @@ public class RelationalParseTreeWalker
         LocalMappingPropertyInfo localMappingPropertyInfo = new LocalMappingPropertyInfo();
         localMappingPropertyInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(localMappingPropertyContext);
         localMappingPropertyInfo.type = PureGrammarParserUtility.fromQualifiedName(localMappingPropertyContext.qualifiedName().packagePath() == null ? Collections.emptyList() : localMappingPropertyContext.qualifiedName().packagePath().identifier(), localMappingPropertyContext.qualifiedName().identifier());
-        Multiplicity multiplicity = new Multiplicity();
-        localMappingPropertyInfo.multiplicity = multiplicity;
-        RelationalParserGrammar.LocalMappingPropertyFromMultiplicityContext fromMultiplicityContext = localMappingPropertyContext.localMappingPropertyFromMultiplicity();
-        RelationalParserGrammar.LocalMappingPropertyToMultiplicityContext toMultiplicityContext = localMappingPropertyContext.localMappingPropertyToMultiplicity();
-        multiplicity.lowerBound = fromMultiplicityContext == null
-                ? Integer.parseInt("*".equals(toMultiplicityContext.getText()) ? "0" : toMultiplicityContext.getText())
-                : Integer.parseInt(fromMultiplicityContext.getText());
-        multiplicity.setUpperBound("*".equals(toMultiplicityContext.getText()) ? null : Integer.parseInt(toMultiplicityContext.getText()));
+        localMappingPropertyInfo.multiplicity = PureGrammarParserUtility.buildMultiplicity(localMappingPropertyContext.localMappingPropertyFromMultiplicity(), localMappingPropertyContext.localMappingPropertyToMultiplicity());
         PropertyPointer propertyPointer = new PropertyPointer();
         propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         propertyPointer._class = null;

@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::runtime::*;
+import meta::pure::router::store::routing::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
 import meta::relational::tests::csv::*;
 import meta::relational::functions::database::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::pure::router::routing::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -412,3 +417,30 @@ function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpec
    let getAllFe = $vs->findExpressionsForFunctionInValueSpecification([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]);
    if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
 }
+
+function meta::relational::mapping::transformRelationFunctionClassMapping(classMapping:RelationFunctionInstanceSetImplementation[1]):RelationFunctionInstanceSetImplementation[1]
+{
+  ^$classMapping(propertyMappings=$classMapping.propertyMappings->cast(@RelationFunctionPropertyMapping)->transformRelationPropertyMappingsToRelational($classMapping));
+}
+
+function meta::relational::mapping::transformRelationPropertyMappingsToRelational(propertyMappings:RelationFunctionPropertyMapping[*], classMapping:RelationFunctionInstanceSetImplementation[1]):RelationalPropertyMapping[*]
+{
+  println($propertyMappings.column.classifierGenericType);
+  $propertyMappings->map(r| let relationColumnType = $r.column.classifierGenericType.typeArguments->at(1).rawType->toOne();
+                            let relOpElement = ^TableAliasColumn(alias=^TableAlias(name=$classMapping.id, relationalElement=^RelationFunction(owner=$classMapping)),
+                                                                 column=^RelationFunctionColumn(column=$r.column, name=$r.column.name->toOne(), type=pureTypeToRelationalTypeMap()->get($relationColumnType)->toOne())
+                                                                );
+                            ^RelationalPropertyMapping(
+                              owner = $r.owner,
+                              targetSetImplementationId = $r.targetSetImplementationId,
+                              sourceSetImplementationId = $r.sourceSetImplementationId,
+                              property = $r.property,
+                              localMappingProperty = $r.localMappingProperty,
+                              localMappingPropertyType = $r.localMappingPropertyType,
+                              localMappingPropertyMultiplicity = $r.localMappingPropertyMultiplicity,
+                              store = $r.store,
+                              relationalOperationElement = $relOpElement
+                            );
+                        );
+}
+

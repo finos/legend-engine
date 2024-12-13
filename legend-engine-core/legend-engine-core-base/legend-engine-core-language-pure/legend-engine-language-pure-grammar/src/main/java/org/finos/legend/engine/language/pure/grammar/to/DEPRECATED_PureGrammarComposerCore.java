@@ -48,6 +48,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
@@ -521,8 +523,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
-        return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
-                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(purePropertyMapping) +
                 (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
                 (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
                 (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
@@ -555,11 +556,27 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
+    public String visit(RelationFunctionClassMapping classMapping)
+    {
+        return ": Relation\n" +
+        getTabString(getBaseTabLevel()) + "{\n" +
+        getTabString(getBaseTabLevel() + 1) + "~func " + classMapping.relationFunction + "\n" +
+        LazyIterate.collect(classMapping.propertyMappings, pm -> getTabString(getBaseTabLevel() + 1) + pm.accept(this)).makeString(",\n") + (classMapping.propertyMappings.isEmpty() ? "" : "\n") +
+        getTabString(getBaseTabLevel()) + "}";
+    }
+
+    @Override
     public String visit(AggregationAwarePropertyMapping propertyMapping)
     {
         return unsupported(AggregationAwarePropertyMapping.class);
     }
 
+    @Override
+    public String visit(RelationFunctionPropertyMapping propertyMapping)
+    {
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
+                ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, false);
+    }
 
     // ----------------------------------------------- CONNECTION -----------------------------------------------
 

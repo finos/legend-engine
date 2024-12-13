@@ -16,7 +16,10 @@
 package org.finos.legend.engine.repl.client;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
@@ -25,7 +28,8 @@ public class ModelState
 {
     private final LegendInterface legendInterface;
     private final MutableList<ReplExtension> replExtensions;
-    private MutableList<String> state = Lists.mutable.empty();
+    private final MutableList<String> state = Lists.mutable.empty();
+    private final MutableMap<String, String> namedState = Maps.mutable.empty();
 
     public ModelState(LegendInterface legendInterface, MutableList<ReplExtension> replExtensions)
     {
@@ -39,9 +43,30 @@ public class ModelState
         return this;
     }
 
+    public ModelState addNamedElement(String name, String element)
+    {
+        this.namedState.put(name, element);
+        return this;
+    }
+
+    public String getNamedElement(String name)
+    {
+        return this.namedState.get(name);
+    }
+
     public PureModelContextData parse()
     {
         return this.legendInterface.parse(getText());
+    }
+
+    public PureModel compile()
+    {
+        return this.legendInterface.compile(parse());
+    }
+
+    public PureModel compileWithTransient(String transientCode)
+    {
+        return this.legendInterface.compile(parseWithTransient(transientCode));
     }
 
     public PureModelContextData parseWithTransient(String transientCode)
@@ -51,7 +76,7 @@ public class ModelState
 
     public String getText()
     {
-        String code = Lists.mutable.withAll(state).makeString("\n");
+        String code = Lists.mutable.withAll(state).withAll(namedState.values()).makeString("\n");
         return code + replExtensions.flatCollect(r -> r.generateDynamicContent(code)).makeString("\n");
     }
 }

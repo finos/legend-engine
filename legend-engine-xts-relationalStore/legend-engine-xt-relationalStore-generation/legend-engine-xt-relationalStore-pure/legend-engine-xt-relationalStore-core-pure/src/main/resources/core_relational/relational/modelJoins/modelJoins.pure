@@ -1,3 +1,4 @@
+import meta::relational::contract::*;
 import meta::pure::store::*;
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
@@ -17,6 +18,7 @@ import meta::relational::metamodel::join::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::pureToSqlQuery::relationalmappingspecification::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::milestoning::*;
@@ -37,19 +39,23 @@ import meta::external::store::relational::modelJoins::*;
 function meta::external::store::relational::modelJoins::localizeXStoreAssociation(xstoreAssociation: XStoreAssociationImplementation[1], setImpl:SetImplementation[*], stores:Store[*]):AssociationImplementation[1]
 {
   let database = ^Database(includes=$stores->cast(@Database));
-  let relationalPropertyMappings = $xstoreAssociation.propertyMappings->cast(@XStorePropertyMapping)->map(xstorePropertyMapping | transformXStorePropertyIntoRelationalProperty($xstorePropertyMapping, $setImpl, $database));
-  ^RelationalAssociationImplementation(association=$xstoreAssociation.association,parent=$xstoreAssociation.parent,id=$xstoreAssociation.id, stores=$database, propertyMappings=$relationalPropertyMappings);
+  let newAssociation = ^RelationalAssociationImplementation(association=$xstoreAssociation.association,parent=$xstoreAssociation.parent,id=$xstoreAssociation.id, stores=$database);
+  let relationalPropertyMappings = $xstoreAssociation.propertyMappings->cast(@XStorePropertyMapping)->map(xstorePropertyMapping | transformXStorePropertyIntoRelationalProperty($xstorePropertyMapping, $setImpl, $database, $newAssociation));
+  ^$newAssociation(propertyMappings = $relationalPropertyMappings);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::transformXStorePropertyIntoRelationalProperty(xstoreProperty: meta::pure::mapping::xStore::XStorePropertyMapping[1], setImpl:SetImplementation[*], database:Database[1]): RelationalPropertyMapping[1]
+function <<access.private>> meta::external::store::relational::modelJoins::transformXStorePropertyIntoRelationalProperty(xstoreProperty: meta::pure::mapping::xStore::XStorePropertyMapping[1], setImpl:SetImplementation[*], database:Database[1], propertyMappingOwner:AssociationImplementation[1]): RelationalPropertyMapping[1]
 {
   let expressionSequence = $xstoreProperty.crossExpression.expressionSequence->cast(@SimpleFunctionExpression)->toOne()->evaluateAndDeactivate();
   let sourceId = $xstoreProperty.sourceSetImplementationId->toOne();
   let targetId = $xstoreProperty.targetSetImplementationId->toOne();
-  let classMappings = $setImpl->cast(@RootRelationalInstanceSetImplementation);
-  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias;
+  let classMappings = $setImpl->map(s|$s->match([ 
+                                        r:RelationalInstanceSetImplementation[1]|$r,
+                                        r:RelationFunctionInstanceSetImplementation[1]|$r->transformRelationFunctionClassMapping()
+                                      ]
+                                    ))->cast(@InstanceSetImplementation);
 
-  let join = transformExpressionSequenceIntoJoin($expressionSequence, $sourceId, $targetId, $classMappings);
+  let join = transformExpressionSequenceIntoJoin($expressionSequence, $sourceId, $targetId, $classMappings, $database);
 
   let joinTreeNode = ^JoinTreeNode(
     joinName=$join.name,
@@ -59,15 +65,25 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
   );
 
   let ro = ^RelationalOperationElementWithJoin(joinTreeNode=$joinTreeNode);
-  let r = ^RelationalPropertyMapping(sourceSetImplementationId=$sourceId,property=$xstoreProperty.property->toOne(),relationalOperationElement=$ro,targetSetImplementationId=$targetId);
+  let r = ^RelationalPropertyMapping(owner=$propertyMappingOwner, sourceSetImplementationId=$sourceId,property=$xstoreProperty.property->toOne(),relationalOperationElement=$ro,targetSetImplementationId=$targetId);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::getClassMappingAtId(classMappings:RootRelationalInstanceSetImplementation[*], id:String[1]):RootRelationalInstanceSetImplementation[1]
+function <<access.private>> meta::external::store::relational::modelJoins::getClassMappingAtId(classMappings:InstanceSetImplementation[*], id:String[1]):InstanceSetImplementation[1]
 {
   $classMappings->filter(c| $c.id == $id)->toOne('More than one class mapping at the given id: ' + $id);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::convertToRelationalElement(vs:ValueSpecification[1], sourceSet:RootRelationalInstanceSetImplementation[1], targetSet: RootRelationalInstanceSetImplementation[1]):RelationalOperationElement[1]
+function <<access.private>> meta::external::store::relational::modelJoins::getMainTableAliasForSetId(classMapping:InstanceSetImplementation[1]):TableAlias[1]
+{
+  $classMapping->match(
+                        [
+                          r:RootRelationalInstanceSetImplementation[1]| $r.mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name)),
+                          t:RelationFunctionInstanceSetImplementation[1]| ^TableAlias(name=$t.id, relationalElement=^RelationFunction(owner=$t))
+                        ]
+                      );
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::convertToRelationalElement(vs:ValueSpecification[1], sourceSet:InstanceSetImplementation[1], targetSet: InstanceSetImplementation[1]):RelationalOperationElement[1]
 {
   $vs->match([
     p : SimpleFunctionExpression[1] | 
@@ -85,15 +101,14 @@ function <<access.private>> meta::external::store::relational::modelJoins::conve
 
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:RootRelationalInstanceSetImplementation[*]): Join[1]
+function <<access.private>> meta::external::store::relational::modelJoins::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:InstanceSetImplementation[*], database:Database[1]): Join[1]
 {
   let functionOperator = $expressionSequence.functionName->toOne();
   let joinName = $sourceId + '_' + $targetId + '_GeneratedRelationalJoin';
-  let sourceMainTableAlias = $classMappings->getClassMappingAtId($sourceId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
-  let targetMainTableAlias = $classMappings->getClassMappingAtId($targetId).mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@NamedRelation).name));
-  let sourceDatabase = $sourceMainTableAlias.database->toOne();
-  let targetDatabase = $targetMainTableAlias.database->toOne();
-  let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
+  let sourceClassMapping = $classMappings->getClassMappingAtId($sourceId);
+  let targetClassMapping = $classMappings->getClassMappingAtId($targetId);
+  let sourceMainTableAlias = $sourceClassMapping->getMainTableAliasForSetId();
+  let targetMainTableAlias = $targetClassMapping->getMainTableAliasForSetId();
 
   assertContains(['equal', 'not', 'and', 'or', 'greaterThanEqual', 'greaterThan', 'lessThanEqual', 'lessThan' ], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
 
@@ -109,18 +124,18 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
         name=$joinName,
         operation=$operation, 
         target=$targetMainTableAlias,
-        database=$aggregatedDatabase,
+        database=$database,
         aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]
       );, 
     | let childJoins = $expressionSequence.parametersValues->map(p | 
-        transformExpressionSequenceIntoJoin($p->cast(@SimpleFunctionExpression)->evaluateAndDeactivate(), $sourceId, $targetId, $classMappings)
+        transformExpressionSequenceIntoJoin($p->cast(@SimpleFunctionExpression)->evaluateAndDeactivate(), $sourceId, $targetId, $classMappings, $database)
       );
       let operation = ^DynaFunction(name=$functionOperator, parameters=$childJoins.operation->evaluateAndDeactivate());
       ^Join(
         name=$joinName,
         operation=$operation,
         target=$targetMainTableAlias,
-        database=$aggregatedDatabase,
+        database=$database,
         aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]->concatenate($childJoins.aliases)
       );
   );

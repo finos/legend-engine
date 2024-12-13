@@ -23,6 +23,7 @@ import org.eclipse.collections.impl.factory.Multimaps;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
@@ -32,6 +33,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.finos.legend.pure.m4.exception.PureCompilationException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +67,7 @@ public class MappingValidator
         this.validateEnumerationMappings(pureModel, mappings);
         this.validateMappingElementIds(pureModel, mappings, pureMappings, mappingByClassMappingId);
         this.validateClassMappingRoots(pureModel, mappings, pureMappings);
+        this.validateRelationFunctionClassMapping(pureModel, pureMappings);
 
         MappingValidatorContext mappingValidatorContext = new MappingValidatorContext(mappingByClassMappingId, pureMappings, mappings);
         extensions.getExtraMappingPostValidators().forEach(v -> v.accept(pureModel, mappingValidatorContext));
@@ -275,7 +287,7 @@ public class MappingValidator
     {
         if (!"".equals(id) && !ids.contains(id))
         {
-            return Lists.mutable.with(new Warning(org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Error '" + id + "' can't be found in the mapping " + pureModel.buildPackageString(mapping._package()._name(), mapping._name())));
+            return Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Error '" + id + "' can't be found in the mapping " + pureModel.buildPackageString(mapping._package()._name(), mapping._name())));
         }
         return Lists.mutable.empty();
     }
@@ -311,4 +323,39 @@ public class MappingValidator
             }
         });
     }
+
+    public void validateRelationFunctionClassMapping(PureModel pureModel, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
+    {
+        pureMappings.forEach((mappingPath, mapping) ->
+                mapping._classMappings().select(classMapping -> (classMapping instanceof RelationFunctionInstanceSetImplementation)).each(classMapping ->
+                {
+                    RelationFunctionInstanceSetImplementation relationClassMapping = (RelationFunctionInstanceSetImplementation) classMapping;
+                    FunctionDefinition<?> relationFunction = relationClassMapping._relationFunction();
+                    GenericType lastExpressionType = relationFunction._expressionSequence().toList().getLast()._genericType();
+                    ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+                    if (!processorSupport.type_subTypeOf(lastExpressionType._rawType(), processorSupport.package_getByUserPath("meta::pure::metamodel::relation::Relation")))
+                    {
+                        throw new EngineException("Relation mapping function should return a Relation! Found a " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(lastExpressionType, processorSupport) + " instead.", SourceInformationHelper.fromM3SourceInformation(relationFunction.getSourceInformation()), EngineErrorType.COMPILATION);
+                    }
+                    RelationType<?> relationType = (RelationType<?>) lastExpressionType._typeArguments().toList().getFirst()._rawType();
+                    relationClassMapping._propertyMappings().each(pm -> 
+                    {
+                        RelationFunctionPropertyMapping propertyMapping = (RelationFunctionPropertyMapping) pm;
+                        try
+                        {
+                            Column<?, ?> column = (Column<?, ?>) _RelationType.findColumn(relationType, propertyMapping._column()._name(), propertyMapping.getSourceInformation(), processorSupport);
+                            if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.subTypeOf(_Column.getColumnType(column), _Column.getColumnType(propertyMapping._column()), processorSupport))
+                            {
+                                throw new EngineException("Mismatching property and relation column types. Property type is " + _Column.getColumnType(propertyMapping._column())._rawType()._name() + ", but relation column it is mapped to has type " + _Column.getColumnType(column)._rawType()._name() + ".", SourceInformationHelper.fromM3SourceInformation(propertyMapping.getSourceInformation()), EngineErrorType.COMPILATION);
+                            }
+                        }
+                        catch (PureCompilationException e) 
+                        {
+                            throw new EngineException(e.getInfo(), SourceInformationHelper.fromM3SourceInformation(e.getSourceInformation()), EngineErrorType.COMPILATION);
+                        }
+                    });
+                }));
+        
+    }
+    
 }

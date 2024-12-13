@@ -26,6 +26,7 @@ import meta::relational::functions::*;
 import meta::pure::store::*;
 import meta::pure::router::execution::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::mapping::*;
@@ -421,7 +422,7 @@ function <<access.private>> meta::relational::mapping::buildExecutionResultInTDS
                                                                        |  {a:Any[1]|$a},
                                                                        |  if ($matchedPath->toOne().second.type == Boolean, | {a:Any[1]|$a == 'true' || $a == true},
                                                                                 | let pm = $matchedPath->toOne().second;
-                                                                              if ($pm.propertyMapping == [] && $pm.type != Decimal, |{a:Any[1]|$a},
+                                                                              if (($pm.propertyMapping == [] || $pm.propertyMapping->toOne()->instanceOf(RelationFunctionPropertyMapping)) && $pm.type != Decimal, |{a:Any[1]|$a},
                                                                                  | if ($pm.propertyMapping == [] && $pm.type == Decimal, |{a:Any[1]|$a->cast(@Number)->toDecimal()},
                                                                                     | if ($pm.type == Decimal, |{a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne()->transform($a)->cast(@Number)->toOne()->toDecimal()},
                                                                                        | {a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne()->transform($a)}););););
@@ -664,7 +665,7 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 
    let context = ^DebugContext(debug=false, space='');
 
-   let mainTable = $srcSetImplementation->mainRelation()->processRelation([], '', false, 0, false, [], $state, $context, $extensions);
+   let mainTable = $srcSetImplementation->mainRelation()->processRelation([], $joinType, '', false, 0, false, [], $state, $context, $extensions);
 
    let innerJoinFilterExists = $srcSetImplementation->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let updatedMainTable = if ($innerJoinFilterExists,

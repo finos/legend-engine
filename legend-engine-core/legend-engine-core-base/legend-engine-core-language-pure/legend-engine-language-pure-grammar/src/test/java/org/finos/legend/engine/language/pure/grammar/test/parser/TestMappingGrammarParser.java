@@ -17,11 +17,13 @@ package org.finos.legend.engine.language.pure.grammar.test.parser;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.enumerationMapping.EnumerationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -30,6 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -55,7 +59,8 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 EnumerationMappingParserGrammar.VOCABULARY,
                 OperationClassMappingParserGrammar.VOCABULARY,
                 PureInstanceClassMappingParserGrammar.VOCABULARY,
-                XStoreAssociationMappingParserGrammar.VOCABULARY
+                XStoreAssociationMappingParserGrammar.VOCABULARY,
+                RelationFunctionMappingParserGrammar.VOCABULARY
         );
     }
 
@@ -81,6 +86,12 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    ~src anything::goes::" + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    incType : EnumerationMapping a : 1" +
+                "  }\n" +
+                // relation expression class mapping
+                "  *anything::goes[anything_goes]: Relation\n" +
+                "  {\n" +
+                "    ~func anything::goes::" + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+                "    firstName: firstName\n" +
                 "  }\n" +
                 "\n" +
                 ")\n";
@@ -872,5 +883,152 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         );
         Multiplicity latest = ((CLatestDate) ((AppliedProperty) model.getElementsOfType(Class.class).get(0).qualifiedProperties.get(0).body.get(0)).parameters.get(1)).multiplicity;
         Assert.assertTrue(latest.isUpperBoundEqualTo(1), () -> "CLatestDate must have multiplicity set to 1");
+    }
+
+    @Test
+    public void testFaultyRelationFunctionMapping()
+    {
+        // Missing relation function
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *Person: Relation\n" +
+                "    {\n" +
+                "        firstName : firstName,\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [6:9-17]: Unexpected token");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : firstName\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [8:9-12]: Unexpected token 'firm'. Valid alternatives: [',']");
+
+        // Column names cannot contain special characters
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : table.firstName,\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n", "PARSER error at [7:26]: Unexpected token '.'. Valid alternatives: [',']");
+    }
+
+    @Test
+    public void testValidRelationFunctionMapping()
+    {
+        // Empty property mappings are allowed
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : firstName,\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : firstName,\n" +
+                "        +firm : String[0..1] : firm,\n" +
+                "        +localProp : String[1] : localProp\n" +
+                "    }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : 'FIRST NAME',\n" +
+                "        firm : 'firm \"name\"'\n" +
+                "    }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingSourceInformation()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc__Any_1_\n" +
+                "        firstName : 'FIRST NAME',\n" +
+                "        age : AGE,\n" +
+                "        +firmId : String[0..1] : FIRMID\n" +
+                "    }\n" +
+                ")\n");
+        
+        Mapping mapping = (Mapping) ListIterate.select(pureModelContextData.getElements(), e -> e.name.equals("testMapping")).get(0);
+
+        org.junit.Assert.assertEquals(1, mapping.classMappings.size());
+        org.junit.Assert.assertTrue(mapping.classMappings.get(0) instanceof RelationFunctionClassMapping);
+        RelationFunctionClassMapping classMapping = (RelationFunctionClassMapping) mapping.classMappings.get(0);
+
+        org.junit.Assert.assertEquals("person", classMapping.id);
+        org.junit.Assert.assertEquals("my::Person", classMapping._class);
+        org.junit.Assert.assertEquals("my::testFunc__Any_1_", classMapping.relationFunction);
+        org.junit.Assert.assertEquals(4, classMapping.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(5, classMapping.sourceInformation.startColumn);
+        org.junit.Assert.assertEquals(10, classMapping.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(5, classMapping.sourceInformation.endColumn);
+
+        org.junit.Assert.assertEquals(3, classMapping.propertyMappings.size());
+        
+        RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
+        org.junit.Assert.assertEquals("my::Person", propertyMapping1.property._class);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.property.property);
+        org.junit.Assert.assertEquals("FIRST NAME", propertyMapping1.column);
+        org.junit.Assert.assertEquals(7, propertyMapping1.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(9, propertyMapping1.sourceInformation.startColumn);
+        org.junit.Assert.assertEquals(7, propertyMapping1.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(32, propertyMapping1.sourceInformation.endColumn);
+
+        RelationFunctionPropertyMapping propertyMapping2 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(1);
+        org.junit.Assert.assertEquals("my::Person", propertyMapping2.property._class);
+        org.junit.Assert.assertEquals("age", propertyMapping2.property.property);
+        org.junit.Assert.assertEquals("AGE", propertyMapping2.column);
+        org.junit.Assert.assertEquals(8, propertyMapping2.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(9, propertyMapping2.sourceInformation.startColumn);
+        org.junit.Assert.assertEquals(8, propertyMapping2.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(17, propertyMapping2.sourceInformation.endColumn);
+
+        RelationFunctionPropertyMapping propertyMapping3 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(2);
+        org.junit.Assert.assertEquals("my::Person", propertyMapping3.property._class);
+        org.junit.Assert.assertEquals("firmId", propertyMapping3.property.property);
+        org.junit.Assert.assertEquals("FIRMID", propertyMapping3.column);
+        org.junit.Assert.assertEquals("String", propertyMapping3.localMappingProperty.type);
+        org.junit.Assert.assertEquals(0, propertyMapping3.localMappingProperty.multiplicity.lowerBound);
+        org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.startLine);
+        org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.startColumn);
+        org.junit.Assert.assertEquals(9, propertyMapping3.sourceInformation.endLine);
+        org.junit.Assert.assertEquals(39, propertyMapping3.sourceInformation.endColumn);
     }
 }

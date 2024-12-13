@@ -19,8 +19,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
@@ -29,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
@@ -36,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MergeOperationSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_OperationSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_relation_RelationFunctionInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
@@ -43,12 +43,15 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MergeOperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
 import java.util.List;
 import java.util.Objects;
+
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
 public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>
 {
@@ -165,5 +168,22 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             res._propertyMappingsAdd(pm.accept(new PropertyMappingBuilder(this.context, res, HelperMappingBuilder.getAllEnumerationMappings(this.parentMapping))));
         }
         return Tuples.pair(res, Lists.immutable.empty());
+    }
+
+    @Override
+    public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(RelationFunctionClassMapping classMapping)
+    {
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.classSourceInformation);
+        String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
+        final RelationFunctionInstanceSetImplementation baseSetImpl = new Root_meta_pure_mapping_relation_RelationFunctionInstanceSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation"));
+        final RelationFunctionInstanceSetImplementation setImpl = baseSetImpl
+                ._class(pureClass)
+                ._id(id)
+                ._superSetImplementationId(classMapping.extendsClassMappingId)
+                ._root(classMapping.root)
+                ._parent(parentMapping)
+                ._propertyMappings(ListIterate.collect(classMapping.propertyMappings, p -> p.accept(new PropertyMappingBuilder(this.context, baseSetImpl, Lists.mutable.empty()))));
+        HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
+        return Tuples.pair(setImpl, Lists.immutable.empty());
     }
 }
