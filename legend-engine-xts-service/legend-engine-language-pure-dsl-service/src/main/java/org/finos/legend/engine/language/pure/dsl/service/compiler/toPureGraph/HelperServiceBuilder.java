@@ -199,7 +199,7 @@ public class HelperServiceBuilder
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramValueMultiplicity = paramValue._multiplicity();
                 if (!"Nil".equals(paramValue._genericType()._rawType()))
                 {
-                    HelperModelBuilder.checkCompatibility(context, paramValue._genericType()._rawType(), paramValueMultiplicity, param._genericType(), paramMultiplicity, "Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation);
+                    HelperModelBuilder.checkCompatibility(context, paramValue._genericType(), paramValueMultiplicity, param._genericType(), paramMultiplicity, "Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation);
                 }
             }
             else

@@ -22,7 +22,7 @@ public class TestDomainTypeVariablesRoundtrip extends TestGrammarRoundtrip.TestG
     @Test
     public void testFunctionWithTypeHavingTypeVariableValues()
     {
-        test("function withPath::f(s: Result(1)[1]): Result(1,'a')[0..1]\n" +
+        test("function withPath::f(s: Res(1)[1]): Res(1,'a')[0..1]\n" +
                 "{\n" +
                 "  []\n" +
                 "}\n");
@@ -31,7 +31,7 @@ public class TestDomainTypeVariablesRoundtrip extends TestGrammarRoundtrip.TestG
     @Test
     public void testFunctionWithTypeHavingTypeVariableValuesAndGenerics()
     {
-        test("function withPath::f(s: Result<String>(1)[1]): Result<Integer>(1,'a')[0..1]\n" +
+        test("function withPath::f(s: Res<String>(1)[1]): Res<Integer>(1,'a')[0..1]\n" +
                 "{\n" +
                 "  []\n" +
                 "}\n");

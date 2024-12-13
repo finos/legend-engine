@@ -1582,7 +1582,7 @@ public class DomainParseTreeWalker
             {
                 Column column = new Column(
                         PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
-                        processGenericType(PureGrammarParserUtility.fromIdentifier(x.columnType().identifier()))
+                        processGenericType(x.type())
                 );
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;
