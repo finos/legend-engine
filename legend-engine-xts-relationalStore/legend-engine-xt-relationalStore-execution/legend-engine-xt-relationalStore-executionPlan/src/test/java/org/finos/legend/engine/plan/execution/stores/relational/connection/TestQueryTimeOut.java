@@ -111,7 +111,7 @@ public class TestQueryTimeOut extends AlloyTestServer
         statement.execute("Drop table if exists PERSON;");
         statement.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,PRIMARY KEY(fullName));");
 
-        Integer personTableLength = 100000;
+        Integer personTableLength = 200000;
         for (int i = 1; i <= personTableLength; i++)
         {
             statement.execute(String.format("insert into PERSON (fullName,firmName,addressName) values ('fullName%d','firmName%d','addressName%d');", personTableLength - i, i, personTableLength - i));

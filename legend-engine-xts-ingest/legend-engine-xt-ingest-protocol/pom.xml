@@ -19,10 +19,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-dependencies</artifactId>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
