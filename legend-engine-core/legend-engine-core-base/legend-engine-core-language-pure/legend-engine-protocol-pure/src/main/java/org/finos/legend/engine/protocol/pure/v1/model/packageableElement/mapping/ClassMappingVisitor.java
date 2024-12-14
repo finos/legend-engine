@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 
 public interface ClassMappingVisitor<T>
@@ -27,4 +28,6 @@ public interface ClassMappingVisitor<T>
     T visit(PureInstanceClassMapping classMapping);
 
     T visit(AggregationAwareClassMapping classMapping);
+
+    T visit(RelationFunctionClassMapping classMapping);
 }

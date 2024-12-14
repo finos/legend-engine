@@ -169,10 +169,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
   ^Literal(value=$value);
 }
 
-function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls:RootRelationalInstanceSetImplementation[*], relationalPropertyMappings:RelationalPropertyMapping[*], inAsso:Boolean[1], inProject:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Union[1]
+function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls:RootRelationalInstanceSetImplementation[*], relationalPropertyMappings:RelationalPropertyMapping[*], joinType:JoinType[1], inAsso:Boolean[1], inProject:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Union[1]
 {
    let fullGet = !($inAsso || $inProject) || ($state.insertDriverTablePkInTempTable->isNotEmpty());
-   let simpleAllQueries = $setImpls->map(r| processGetAll($r, $r.class, $nodeId, $fullGet || $state.importDataFlow == true, $setImpls->indexOf($r), $fullGet, $milestoningContext, ^$state(importDataFlowAddFks=false), $context, $extensions));
+   let simpleAllQueries = $setImpls->map(r| processGetAll($r, $r.class, $joinType, $nodeId, $fullGet || $state.importDataFlow == true, $setImpls->indexOf($r), $fullGet, $milestoningContext, ^$state(importDataFlowAddFks=false), $context, $extensions));
 
    // Get FKs for importDataFlow OR from relationship
    let propertyMappingsInScope = if ($state.importDataFlow == true,
@@ -360,7 +360,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildColumnToNameMa
 }
 
 //XY
-function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutManySetImplementations(srcOperation:SelectWithCursor[1], relationalPropertyMappings:RelationalPropertyMapping[*], sourceClass:Class<Any>[1], targetClass:Class<Any>[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Pair<JoinTreeNode, Pair<SelectWithCursor,Relation>>[1]
+function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutManySetImplementations(srcOperation:SelectWithCursor[1], relationalPropertyMappings:RelationalPropertyMapping[*], sourceClass:Class<Any>[1], targetClass:Class<Any>[1], joinType:JoinType[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):Pair<JoinTreeNode, Pair<SelectWithCursor,Relation>>[1]
 {
    print(if(!$context.debug, |'', | $context.space+'*>Build SQL query out many set implementations (and join) (propertyMappings:'+$relationalPropertyMappings->size()->toString()+'):\n'));
 
@@ -433,7 +433,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
    print(if(!$context.debug, |'', | $context.space+'  - build new Union (using processGetAll)\n'));
    let newTargetOperation = if ($targetSetImplementations->size() == 1,
                      | $targetSetImplementations->at(0)->mainRelation(),
-                     | buildUnion($targetSetImplementations, $relationalPropertyMappings, true, false, $srcOperation.milestoningContext, $nodeId, $state, $context, $extensions)
+                     | buildUnion($targetSetImplementations, $relationalPropertyMappings, $joinType, true, false, $srcOperation.milestoningContext, $nodeId, $state, $context, $extensions)
                );
 
    print(if(!$context.debug, |'', | $context.space+'  - build new JoinTreeNode\n'));
@@ -665,7 +665,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                                           let joinTreeNode = $rpm->getJoinTreeNode()->toOne();
                                                           let sourceRelation = $rpm.sourceSetImplementationId->getRelation($mapping, $state)->cast(@NamedRelation);
                                                           let joinedRelation = $joinTreeNode.join->otherTable($sourceRelation).relationalElement->cast(@NamedRelation)->toOne();
-                                                          let processedRelation = $joinedRelation->processRelation([], $nodeId, false, 0, false, $parentSourceOperation.milestoningContext, $state, $debugContext, $extensions);
+                                                          let processedRelation = $joinedRelation->processRelation([], JoinType.LEFT_OUTER, $nodeId, false, 0, false, $parentSourceOperation.milestoningContext, $state, $debugContext, $extensions);
                                                           let newAlias = ^TableAlias(name='root', relationalElement=$processedRelation);
                                                           let rootNode = ^RootJoinTreeNode(alias=$newAlias);
                                                           let swc = ^SelectWithCursor(select=^SelectSQLQuery(data=$rootNode), currentTreeNode=$rootNode);

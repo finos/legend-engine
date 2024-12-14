@@ -46,7 +46,6 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
 
             // BUG: unsupported compositions
             one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
-            one("meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: missing FROM-clause entry for table \"restrict__d#2\""),
             one("meta::pure::functions::relation::tests::composition::test_GroupBy_Filter_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: column \"subselect.newCol\" must appear in the GROUP BY clause or be used in an aggregate function"),
 
             // BUG: Column name with special characters is not properly escaped

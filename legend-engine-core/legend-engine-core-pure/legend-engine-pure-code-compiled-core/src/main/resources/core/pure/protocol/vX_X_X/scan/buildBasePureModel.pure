@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::store::routing::*;
+import meta::core::runtime::*;
 import meta::protocols::*;
 import meta::json::*;
 import meta::pure::store::*;
 import meta::external::store::model::*;
 import meta::pure::milestoning::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 
 Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::AllTypes
@@ -252,7 +255,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::extractSt
 {
    $si->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildBasePureModel_extractStores->map(e|$e->eval($m, $extensions))->concatenate([
                ins: OperationSetImplementation[1] | [],
-               p: PureInstanceSetImplementation[1] | []
+               p: PureInstanceSetImplementation[1] | [],
+               r: RelationFunctionInstanceSetImplementation[1] | $si->routeRelationFunctionSetImplementation($m, $extensions)->meta::pure::router::routing::getStoreFromSet($m, $extensions)
             ])->toOneMany()
       );
 }
@@ -321,6 +325,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
                         ->concatenate($allMappings->map(m|$m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping($extensions)))
                         ->concatenate($stores->map(store|$store->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::transformStore($extensions)))
                         ->concatenate($extensions->map(e|$e.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildBasePureModel_getExtraElementsFromStores->map(z|$z->eval($stores,$extensions))))
+                        ->concatenate($allMappings->map(m|$m.classMappings->map(cm|$cm->match([
+                                                                                                r:RelationFunctionInstanceSetImplementation[1]|$r.relationFunction->cast(@ConcreteFunctionDefinition<Any>)->transformFunction($extensions),
+                                                                                                a:Any[1]|[]
+                                                                                              ]))))
         )
    );
 }

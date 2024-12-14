@@ -75,7 +75,7 @@ public class PureInstanceClassMappingParseTreeWalker
             // Local property mapping
             purePropertyMapping.localMappingProperty = new LocalMappingPropertyInfo();
             purePropertyMapping.localMappingProperty.type = ctx.type().getText();
-            purePropertyMapping.localMappingProperty.multiplicity = buildMultiplicity(ctx.multiplicity().multiplicityArgument());
+            purePropertyMapping.localMappingProperty.multiplicity = PureGrammarParserUtility.buildMultiplicity(ctx.multiplicity().multiplicityArgument().fromMultiplicity(), ctx.multiplicity().multiplicityArgument().toMultiplicity());
             purePropertyMapping.localMappingProperty.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
         }
 
@@ -116,12 +116,4 @@ public class PureInstanceClassMappingParseTreeWalker
         return lambda;
     }
 
-    private static Multiplicity buildMultiplicity(PureInstanceClassMappingParserGrammar.MultiplicityArgumentContext ctx)
-    {
-        String star = "*";
-        Multiplicity m = new Multiplicity();
-        m.lowerBound = Integer.parseInt(ctx.fromMultiplicity() != null ? ctx.fromMultiplicity().getText() : star.equals(ctx.toMultiplicity().getText()) ? "0" : ctx.toMultiplicity().getText());
-        m.setUpperBound(star.equals(ctx.toMultiplicity().getText()) ? null : Integer.parseInt(ctx.toMultiplicity().getText()));
-        return m;
-    }
 }

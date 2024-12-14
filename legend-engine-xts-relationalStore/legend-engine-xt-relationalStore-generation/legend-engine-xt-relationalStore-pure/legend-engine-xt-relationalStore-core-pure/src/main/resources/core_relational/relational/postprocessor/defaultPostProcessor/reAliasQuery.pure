@@ -182,6 +182,10 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                           assertNotEmpty($new); 
                                           let alias = $tac.alias; 
                                           ^$tac(alias = ^$alias(name=$new->toOne()));,
+                tacn: TableAliasColumnName[1]|  let new = $m->get($tacn.alias.name); 
+                                                assertNotEmpty($new); 
+                                                let alias = $tacn.alias; 
+                                                ^$tacn(alias = ^$alias(name=$new->toOne()));,
       
                 a:Alias[1] |  let transformedRelElement = $a.relationalElement->transformAliasName($m);
                               ^$a(relationalElement=$transformedRelElement);,

@@ -13,6 +13,10 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::extension::*;
+import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::*;
+import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::relation::*;
+import meta::pure::metamodel::relation::*;
 import meta::pure::milestoning::*;
 import meta::pure::graphFetch::execution::*;
 import meta::json::*;
@@ -76,7 +80,18 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpe
                                                       agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                       agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                       func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_,
-                                                      func_FunctionDefinition_1__TdsOlapRank_1_
+                                                      func_FunctionDefinition_1__TdsOlapRank_1_,
+                                                      
+                                                      meta::pure::functions::relation::colSpecArray_String_MANY__T_1__ColSpecArray_1_,
+                                                      meta::pure::functions::relation::colSpec_String_1__T_1__ColSpec_1_,
+                                                      meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                      meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                      meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                      meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                      meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                      meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                      meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                      meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
                                                    ];
 
                                               let isExtractEnum = $fe->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpecification::hasExtractEnumValue();
@@ -310,6 +325,70 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
                      (
                         _type = 'latestDate'
                      ),
+                 r:meta::pure::metamodel::relation::ColSpec<Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpec',
+                             value = $r.name->transformColSpec()
+                           );,
+                   r:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|
+                      
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpecArray',
+                             value = ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpecArray
+                                     (
+                                       colSpecs = $r.names->map(n|$n->transformColSpec())
+                                     )
+                           );,
+                   r:meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpec',
+                             value = $r->transformFuncColSpec($extensions)
+                           );,
+                   r:meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpecArray',
+                             value = ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpecArray
+                                     (
+                                       colSpecs = $r.funcSpecs->map(c|$c->transformFuncColSpec($extensions))
+                                     )
+                           );,
+                   r:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpec',
+                             value = $r->transformAggColSpec($extensions)
+                           );,
+                   r:meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'colSpecArray',
+                             value = ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpecArray
+                                     (
+                                       colSpecs = $r.aggSpecs->map(c|$c->transformAggColSpec($extensions))
+                                     )
+                           );,
+                       
+                   r:meta::pure::store::RelationStoreAccessor<Any>[1]|
+                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
+                           (
+                             _type = 'classInstance',
+                             type = 'relationStoreAccessor',
+                             type = '>',
+                             value = ^meta::protocols::pure::v1_33_0::metamodel::store::RelationStoreAccessor
+                                     (
+                                       path = $r.path
+                                     )
+                           ),
                   c:Class<Any>[1]|
                      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::PackageableElementPtr
                      (
@@ -519,6 +598,33 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
                      );
                 ])->toOneMany()
               );
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::relation::transformColSpec(c:String[1]):meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec[1]
+{
+  ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec
+  (
+    name = $c
+  )
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::relation::transformFuncColSpec(cs:FuncColSpec<Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec[1]
+{
+  ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec
+  (
+    name = $cs.name,
+    function1 = $cs.function->cast(@FunctionDefinition<Any>)->transformLambda($extensions)
+  )
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::relation::transformAggColSpec(cs:AggColSpec<Any, Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec[1]
+{
+  ^meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec
+  (
+    name = $cs.name,
+    function1 = $cs.map->cast(@FunctionDefinition<Any>)->transformLambda($extensions),
+    function2 = $cs.reduce->cast(@FunctionDefinition<Any>)->transformLambda($extensions)
+  )
 }
 
 function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction(any:Any[1], m:Multiplicity[1],fe:FunctionExpression[0..1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ValueSpecification[1]

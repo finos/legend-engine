@@ -519,6 +519,23 @@ Class meta::protocols::pure::v1_33_0::metamodel::objectReference::AlloyObjectRef
    operationResolvedSetsId : String[*];
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec
+{
+   name: String[1];
+   type: String[0..1];
+   function1: meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[0..1];
+   function2: meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::relation::ColSpecArray
+{
+   colSpecs: meta::protocols::pure::v1_33_0::metamodel::relation::ColSpec[*];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::store::RelationStoreAccessor
+{
+   path:String[*];
+}
 
 Class meta::protocols::pure::v1_33_0::metamodel::store::Store extends meta::protocols::pure::v1_33_0::metamodel::PackageableElement
 {
@@ -727,7 +744,16 @@ Class meta::protocols::pure::v1_33_0::metamodel::mapping::modelToModel::Aggregat
 {
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionClassMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::ClassMapping
+{
+  relationFunction: String[1];
+  propertyMappings : meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[*];
+}
 
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
+{
+  column: String[1];
+}
 
 Class meta::protocols::pure::v1_33_0::metamodel::runtime::Connection
 {
