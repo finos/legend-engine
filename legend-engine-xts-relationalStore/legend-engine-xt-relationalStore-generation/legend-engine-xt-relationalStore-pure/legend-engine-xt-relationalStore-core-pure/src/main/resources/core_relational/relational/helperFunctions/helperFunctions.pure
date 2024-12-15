@@ -425,7 +425,6 @@ function meta::relational::mapping::transformRelationFunctionClassMapping(classM
 
 function meta::relational::mapping::transformRelationPropertyMappingsToRelational(propertyMappings:RelationFunctionPropertyMapping[*], classMapping:RelationFunctionInstanceSetImplementation[1]):RelationalPropertyMapping[*]
 {
-  println($propertyMappings.column.classifierGenericType);
   $propertyMappings->map(r| let relationColumnType = $r.column.classifierGenericType.typeArguments->at(1).rawType->toOne();
                             let relOpElement = ^TableAliasColumn(alias=^TableAlias(name=$classMapping.id, relationalElement=^RelationFunction(owner=$classMapping)),
                                                                  column=^RelationFunctionColumn(column=$r.column, name=$r.column.name->toOne(), type=pureTypeToRelationalTypeMap()->get($relationColumnType)->toOne())

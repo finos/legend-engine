@@ -35,7 +35,7 @@ import meta::pure::store::*;
 // =========================================================================================
 // Store Mapping Routing Strategy Builder Helper
 // =========================================================================================
-function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
+function <<access.private>> meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
 {
   ^StoreMappingRoutingStrategy(
     mapping = $mapping,

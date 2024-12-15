@@ -382,7 +382,6 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
                       ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance
                            (
                              _type = 'classInstance',
-                             type = 'relationStoreAccessor',
                              type = '>',
                              value = ^meta::protocols::pure::v1_33_0::metamodel::store::RelationStoreAccessor
                                      (
