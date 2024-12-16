@@ -1087,7 +1087,7 @@ public class TestCompilationFromGrammar
                         "{" +
                         "   country : meta::external::catalog::precisePrimitives::Varchar(200,1)[1];" +
                         "}",
-                "COMPILATION error at [2:33-90]: Missing type variables for type: Varchar(x:Integer)"
+                "COMPILATION error at [2:33-90]: Wrong type variables count (2) for type: Varchar(x:Integer)"
         );
     }
 

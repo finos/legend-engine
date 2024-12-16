@@ -45,4 +45,13 @@ public class TestDomainTypeVariablesRoundtrip extends TestGrammarRoundtrip.TestG
                 "  name: VARCHAR(200)[1];\n" +
                 "}\n");
     }
+
+    @Test
+    public void testRelationWithPropertyHavingTypeVariableValues()
+    {
+        test("function t::f(): X<(a:Integer(200), z:V('ok'))>[0..1]\n" +
+                "{\n" +
+                "  []\n" +
+                "}\n");
+    }
 }
