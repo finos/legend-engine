@@ -614,15 +614,15 @@ public class CompileContext
         {
             if ((((Class<?>) type)._typeParameters().size() != genericType.typeArguments.size()))
             {
-                throw new EngineException("Missing type arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong type arguments count (" + genericType.typeArguments.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
             if ((((Class<?>) type)._multiplicityParameters().size() != genericType.multiplicityArguments.size()))
             {
-                throw new EngineException("Missing multiplicity arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong multiplicity arguments count (" + genericType.multiplicityArguments.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
             if ((((Class<?>) type)._typeVariables().size() != genericType.typeVariableValues.size()))
             {
-                throw new EngineException("Missing type variables for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong type variable count (" + genericType.typeVariableValues.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
         }
 
@@ -631,7 +631,7 @@ public class CompileContext
         {
             if ((((PrimitiveType) type)._typeVariables().size() != genericType.typeVariableValues.size()))
             {
-                throw new EngineException("Missing type variables for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong type variables count (" + genericType.typeVariableValues.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
             typeVariablesValues = ListIterate.collect(genericType.typeVariableValues, x -> x.accept(new ValueSpecificationBuilder(this, Lists.mutable.empty(), null)));
             ((PrimitiveType) type)._typeVariables().zip(typeVariablesValues).forEach(x ->
