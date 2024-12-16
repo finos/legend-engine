@@ -72,6 +72,11 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                         | 
                                                           let tree = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
                                                           ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->cast(@RootGraphFetchTree<Any>)->toOne()));
+                                                      ),
+                                                      pair('meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_',
+                                                        |
+                                                          let tree = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
+                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->cast(@RootGraphFetchTree<Any>)->toOne()));
                                                       )
                                                     ];
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
