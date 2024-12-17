@@ -60,9 +60,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 
         fc2(defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_,                     {ctx,collection1,collection2  | j_conditional($collection1->j_streamOf()->js_count()->j_eq(j_int(0)), $library->j_invoke('toOneMany', $collection2, $ctx.returnType()), $library->j_invoke('toOneMany', $collection1, $ctx.returnType()))}),
 
-        fc2(in_Any_1__Any_MANY__Boolean_1_,                                     {ctx,obj,collection           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
-        fc (in_Any_$0_1$__Any_MANY__Boolean_1_,                                 fcAlias(                        in_Any_1__Any_MANY__Boolean_1_)),
-
         fc1(and_Boolean_MANY__Boolean_1_,                                       {ctx,collection               | $collection->j_streamOf()->js_reduce(j_true(), j_lambda([$x, $y], $x->j_and($y)))}),
         fc1(or_Boolean_$1_MANY$__Boolean_1_,                                    {ctx,collection               | $collection->j_streamOf()->js_reduce(j_false(), j_lambda([$x, $y], $x->j_or($y)))}),
         fc1(or_Boolean_MANY__Boolean_1_,                                        {ctx,collection               | $collection->j_streamOf()->js_reduce(j_false(), j_lambda([$x, $y], $x->j_or($y)))}),

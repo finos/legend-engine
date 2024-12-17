@@ -11,6 +11,7 @@
         "core_functions_standard",
         "core",
         "core_external_language_java",
-        "core_external_language_java_conventions_essential"
+        "core_external_language_java_conventions_essential",
+        "core_external_language_java_conventions_standard"
     ]
 }

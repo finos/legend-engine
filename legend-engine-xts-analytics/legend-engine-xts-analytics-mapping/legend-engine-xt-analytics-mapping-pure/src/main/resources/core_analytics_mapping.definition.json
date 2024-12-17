@@ -6,6 +6,7 @@
     "platform_dsl_mapping",
     "platform_store_relational",
     "core_functions_json",
+    "core_functions_standard",
     "core_functions_unclassified",
     "core_analytics_class",
     "core_relational",

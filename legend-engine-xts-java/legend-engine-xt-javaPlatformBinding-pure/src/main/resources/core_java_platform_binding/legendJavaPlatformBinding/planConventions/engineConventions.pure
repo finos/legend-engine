@@ -46,6 +46,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::engineConventio
       ->meta::external::language::java::generation::essential::multiplicity::registerMultiplicityLibrary()
 
       ->meta::external::language::java::generation::essential::collection::registerCollectionsLibrary($boxPrimitives)
+      ->meta::external::language::java::generation::standard::collection::registerCollectionsLibrary($boxPrimitives)
       ->meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary($boxPrimitives)
 
       ->meta::external::language::java::generation::essential::math::registerMathsLibrary($boxPrimitives)

@@ -47,7 +47,12 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
             one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
             one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
-            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)")
+            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"),
+
+            // In
+            one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "class org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl cannot be cast to class java.lang.Boolean (org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl is in unnamed module of loader 'app'; java.lang.Boolean is in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::in(Firm[*],Firm[*])'"),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]")
     );
 
     public static Test suite()

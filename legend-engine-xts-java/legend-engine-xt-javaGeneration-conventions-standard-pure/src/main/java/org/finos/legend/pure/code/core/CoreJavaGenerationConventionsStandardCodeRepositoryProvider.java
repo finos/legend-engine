@@ -18,11 +18,11 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreJavaGenerationConventionsCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreJavaGenerationConventionsStandardCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_language_java_conventions_essential.definition.json");
+        return GenericCodeRepository.build("core_external_language_java_conventions_standard.definition.json");
     }
 }

@@ -247,6 +247,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
         </dependency>
         <dependency>

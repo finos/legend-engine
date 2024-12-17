@@ -56,6 +56,7 @@ public class PureIDELight extends PureIDEServer
                 // --- MINIMUM -----
 
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-conventions-essential-pure", "external_language_java_conventions_essential"))
+                .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-conventions-standard-pure", "external_language_java_conventions_standard"))
                 .with(this.buildCore("legend-engine-xts-protocol-java-generation/legend-engine-protocol-generation-pure", "protocol_generation"))
                 .with(this.buildCore("legend-engine-xts-persistence/legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xts-functionActivator/legend-engine-xt-functionActivator-pure", "function_activator"))

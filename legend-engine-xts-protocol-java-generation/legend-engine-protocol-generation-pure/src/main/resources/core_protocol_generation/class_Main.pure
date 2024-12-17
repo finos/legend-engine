@@ -369,7 +369,8 @@ function meta::protocols::generation::java::conventions(purePackage:String[1], j
     ]);
   // -----------------------------------------------------------------------------------------------------------------------------------
 
-  let base = meta::external::language::java::generation::essential::engineConventions()
+  let essential = meta::external::language::java::generation::essential::engineConventions();
+  let base = meta::external::language::java::generation::standard::engineConventions($essential)
              ->registerLibrary($lib);
 
   ^$base(

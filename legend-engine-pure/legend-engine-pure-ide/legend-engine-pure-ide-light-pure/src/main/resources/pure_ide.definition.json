@@ -5,6 +5,7 @@
     "platform",
     "platform_dsl_mapping",
     "platform_dsl_diagram",
+    "core_functions_standard",
     "core_functions_unclassified",
     "core_functions_json",
     "core"

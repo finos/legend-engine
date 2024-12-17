@@ -36,7 +36,11 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.duckDBAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-    );
+            // In
+            one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "class org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl cannot be cast to class java.lang.Boolean (org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl is in unnamed module of loader 'app'; java.lang.Boolean is in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.Firm (_pureId,legalName) values (10,'f1');"),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014...\n               ^")
+        );
 
     public static Test suite()
     {
