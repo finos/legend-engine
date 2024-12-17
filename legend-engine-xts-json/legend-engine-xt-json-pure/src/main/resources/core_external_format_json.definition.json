@@ -7,6 +7,7 @@
     "platform_dsl_path",
     "platform_dsl_graph",
     "core_functions_json",
+    "core_functions_standard",
     "core_functions_unclassified",
     "core",
     "core_generation"

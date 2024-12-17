@@ -1,0 +1,67 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::collection::tests::in::*;
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> meta::pure::functions::collection::in(value:Any[0..1], collection:Any[*]):Boolean[1]
+{
+    $value->isNotEmpty() && $collection->exists(x | $value == $x)
+}
+
+function <<PCT.function>> meta::pure::functions::collection::in(value:Any[1], collection:Any[*]):Boolean[1]
+{
+    $collection->exists(x | $value == $x)
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::in::testInPrimitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let col = [1, 2, 5, 2, 'a', true, %2014-02-01, 'c'];
+    assert($f->eval(|1->in($col)));
+    assert($f->eval(|2->in($col)));
+    assert($f->eval(|5->in($col)));
+    assert($f->eval(|'a'->in($col)));
+    assert($f->eval(|true->in($col)));
+    assert($f->eval(|%2014-02-01->in($col)));
+    assert($f->eval(|'c'->in($col)));
+
+    assertFalse($f->eval(|minus(5)->in($col)));
+    assertFalse($f->eval(|%2014-02-02->in($col)));
+    assertFalse($f->eval(|'the quick brown fox'->in($col)));
+    assertFalse($f->eval(|false->in($col)));
+}
+
+Class meta::pure::functions::collection::tests::in::Firm
+{
+    <<equality.Key>> legalName : String[1];
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::in::testInNonPrimitive<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let f1 = ^Firm(legalName='f1');
+    let f2 = ^Firm(legalName='f2');
+    let col = [$f1, $f2];
+    assert($f->eval(|$f1->in($col)));
+    assert($f->eval(|^Firm(legalName='f1')->in($col)));
+    assert($f->eval(|$f2->in($col)));
+    assert($f->eval(|^Firm(legalName='f2')->in($col)));
+
+    assertFalse($f->eval(|3->in($col)));
+    assertFalse($f->eval(|^Firm(legalName='f3')->in($col)));
+}
+
+function <<PCT.test>> meta::pure::functions::collection::tests::in::testInIsEmpty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertFalse($f->eval(|[]->in(['a', 'b'])));
+}
