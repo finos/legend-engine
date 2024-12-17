@@ -586,6 +586,7 @@ public class TestExtensions
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_external_language_java_conventions_essential")
+                .with("core_external_language_java_conventions_standard")
                 .with("core_java_platform_binding")
                 .with("core_java_platform_binding_external_format")
                 .with("core_relational_java_platform_binding")
