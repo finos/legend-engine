@@ -46,6 +46,16 @@ Class meta::protocols::generation::java::translation::Configuration
   json : JSONConfiguration[1] = ^meta::protocols::generation::java::translation::JSONConfiguration();
 }
 
+Class meta::protocols::generation::java::Context
+{
+  rootPackage: meta::external::language::java::metamodel::Package[1];
+  taxonomies: Taxonomy[*];
+  visitorByTaxonomy : Map<Taxonomy, meta::external::language::java::metamodel::Class>[0..1];
+  conventions: Conventions[1];
+  configuration : Configuration[1];
+  dependencies : Configuration[*];
+}
+
 function meta::protocols::generation::java::generateProtocolProject(configJson: String[1], dependenciesJson: String[*]):Project[1]
 {
   let config = $configJson->meta::json::fromJSON(Configuration)->toOne();
@@ -63,7 +73,8 @@ function meta::protocols::generation::java::generateProtocolProject(configJson: 
                          rootPackage=$package,
                          taxonomies = $taxonomies,
                          visitorByTaxonomy=$visitorByTaxonomy,
-                         configuration = $config);
+                         configuration = $config,
+                         dependencies = $dependencies);
 
   let javaClasses = if($config.multipleInheritance,
                       | $pack->map(c|generateProtocolTypes($c, {class, context|meta::protocols::generation::java::generateClassOrInterface($class, $context)}, $context)),
@@ -77,13 +88,10 @@ function meta::protocols::generation::java::generateProtocolProject(configJson: 
     ->addClasses(generateValidationResultClass($context));
 }
 
-Class meta::protocols::generation::java::Context
+function meta::protocols::generation::java::findConfiguration(class : meta::pure::metamodel::PackageableElement[1], context : Context[1]):Configuration[0..1]
 {
-  rootPackage: meta::external::language::java::metamodel::Package[1];
-  taxonomies: Taxonomy[*];
-  visitorByTaxonomy : Map<Taxonomy, meta::external::language::java::metamodel::Class>[0..1];
-  conventions: Conventions[1];
-  configuration : Configuration[1];
+  let path = $class->elementToPath();
+  $context.dependencies->concatenate($context.configuration)->filter(x|$path->startsWith($x.purePackage))->first();
 }
 
 function <<access.private>> meta::protocols::generation::java::generateProtocolTypes(
