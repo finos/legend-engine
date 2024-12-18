@@ -2843,4 +2843,317 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  Filter FirmFilter(firmTable.ADDRESSID = 1)\n" +
                 ")", null, Arrays.asList("COMPILATION error at [21:3-52]: Found filters with duplicate names: FirmFilter", "COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
+
+    @Test
+    public void testValidRelationFunctionMapping()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#;\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction__Any_1_\n" +
+                "    name: NAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testValidRelationFunctionMappingWithLocalPropertyMapping()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER,\n" +
+                "    FIRMID VARCHAR(100)\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#->filter(x | $x.AGE > 25);\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction__Any_1_\n" +
+                "    name: NAME,\n" +
+                "    age: AGE,\n" +
+                "    +firmId: String[1]: FIRMID\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testValidRelationFunctionMappingWithQuotedRelationColumn()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    FIRMID INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "function my::personFunction(): Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#->rename(~FIRMID, ~'FIRM ID');\n" +
+                "}\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunction__Relation_1_\n" +
+                "    name: NAME," +
+                "    firmId: 'FIRM ID'" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidFunctionPointer()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#->filter(x | $x.AGE > 25);\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someOtherRelationFunction__Any_1_\n" +
+                "    name: NAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [26:1-34:1]: Error in 'my::testMapping': Can't find function 'my::someOtherRelationFunction__Any_1_'");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithNonRelationFunction()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::integerFunction(): Integer[1]\n" +
+                "{\n" +
+                "  1;\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::integerFunction__Integer_1_\n" +
+                "    name: NAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [14:1-17:1]: Relation mapping function should return a Relation! Found a Integer instead.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidRelationColumn()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#;\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction__Any_1_\n" +
+                "    name: FOO,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [31:5-13]: The system can't find the column FOO in the Relation (NAME:String, AGE:Integer)");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithMismatchingTypes()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#;\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction__Any_1_\n" +
+                "    name: AGE,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [31:5-13]: Mismatching property and relation column types. Property type is String, but relation column it is mapped to has type Integer.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidMultiplicityProperty()
+    {
+        test("###Relational\n" +
+                "Database my::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    NAME VARCHAR(100) PRIMARY KEY,\n" +
+                "    AGE INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                " \n" +
+                "###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "\n" +
+                "function my::someRelationFunction(): Any[1]\n" +
+                "{\n" +
+                "  #>{my::DB.personTable}#;\n" +
+                "}\n" +
+                "\n" +
+                "Class my::Person\n" +
+                "{\n" +
+                "  name: String[*];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction__Any_1_\n" +
+                "    name: NAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [31:5-14]: Properties in relation mappings can only have multiplicity 1 or 0..1, but the property 'name' has multiplicity [*].");
+    }
+
 }

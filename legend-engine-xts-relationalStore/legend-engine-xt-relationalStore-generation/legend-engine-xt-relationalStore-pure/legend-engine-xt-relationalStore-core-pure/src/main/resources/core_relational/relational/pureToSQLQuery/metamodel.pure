@@ -36,3 +36,13 @@ Class meta::relational::functions::pureToSqlQuery::metamodel::TableFunctionParam
 {
   var: VarPlaceHolder[1];
 }
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunctionColumn extends Column
+{
+  column: meta::pure::metamodel::relation::Column<Nil,Any|*>[1];
+}
+
+Class meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction extends Relation
+{
+  owner: meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation[1];
+}

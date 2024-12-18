@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
@@ -27,7 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
         @JsonSubTypes.Type(value = PureInstanceClassMapping.class, name = "pureInstance"),
         @JsonSubTypes.Type(value = AggregationAwareClassMapping.class, name = "aggregationAware"),
         @JsonSubTypes.Type(value = MergeOperationClassMapping.class, name = "mergeOperation"),
-
+        @JsonSubTypes.Type(value = RelationFunctionClassMapping.class, name = "relation"),
 })
 public abstract class ClassMapping
 {
