@@ -54,7 +54,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
         String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
         JsonAssert.assertJsonEquals(
-                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"id\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
+                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"id\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
                 actualValue);
     }
 
