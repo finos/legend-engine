@@ -140,7 +140,7 @@
         <surefire.reports.directory />
 
         <!-- Databases -->
-        <databricks.version>2.6.27</databricks.version>
+        <databricks.version>2.6.40</databricks.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>2.1.214</h2.version>
         <mariadb.version>3.0.6</mariadb.version>
