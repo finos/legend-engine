@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.plan.dependencies.domain.date;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -40,6 +43,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+@JsonSerialize(using = ToStringSerializer.class)
 public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate, Serializable
 {
     private static final long serialVersionUID = 8608696099577042248L;
@@ -1632,6 +1636,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
      * @param string string
      * @return Pure date
      */
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static PureDate parsePureDate(String string)
     {
         return parsePureDate(string, 0, string.length());

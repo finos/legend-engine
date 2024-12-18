@@ -35,7 +35,7 @@ public class ConstantResult extends Result implements IConstantResult
         return resultVisitor.visit(this);
     }
 
-    public Object stream() throws IOException
+    public String stream() throws IOException
     {
         return ConstantResultHelper.stream(this.getValue());
     }

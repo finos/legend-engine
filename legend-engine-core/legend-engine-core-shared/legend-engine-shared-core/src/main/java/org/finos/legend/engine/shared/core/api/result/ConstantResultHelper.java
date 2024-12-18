@@ -21,12 +21,12 @@ import java.io.IOException;
 
 public class ConstantResultHelper
 {
-    public static Object stream(Object value) throws IOException
+    public static String stream(Object value) throws IOException
     {
         return ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(value);
     }
 
-    public static Object stream(Object value, ObjectMapper objectMapper) throws IOException
+    public static String stream(Object value, ObjectMapper objectMapper) throws IOException
     {
         return objectMapper.writeValueAsString(value);
     }
