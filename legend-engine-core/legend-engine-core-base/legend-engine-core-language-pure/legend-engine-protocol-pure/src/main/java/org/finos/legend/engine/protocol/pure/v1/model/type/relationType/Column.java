@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 
@@ -34,15 +35,17 @@ public class Column
     public SourceInformation sourceInformation;
     public String name;
     public GenericType genericType;
+    public Multiplicity multiplicity;
 
     public Column()
     {
     }
 
-    public Column(String name, GenericType genericType)
+    public Column(String name, GenericType genericType, Multiplicity multiplicity)
     {
         this.name = name;
         this.genericType = genericType;
+        this.multiplicity = multiplicity;
     }
 
     public static class ColumnDeserializer extends JsonDeserializer<Column>
@@ -58,6 +61,7 @@ public class Column
             result.name = processOne(node, "name", String.class, codec);
             result.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
             result.genericType = processOne(node, "genericType", GenericType.class, codec);
+            result.multiplicity = processOne(node, "multiplicity", Multiplicity.class, codec);
             // Backward compatibility --------------
             if (node.get("type") != null)
             {

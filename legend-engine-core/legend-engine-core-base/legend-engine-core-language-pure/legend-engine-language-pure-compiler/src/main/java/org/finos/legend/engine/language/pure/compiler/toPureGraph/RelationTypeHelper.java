@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.pure.m3.navigation.relation._Column;
@@ -28,6 +29,8 @@ public class RelationTypeHelper
             Column col = new Column();
             col.name = c._name();
             col.genericType = CompileContext.convertGenericType(_Column.getColumnType(c));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity m = _Column.getColumnMultiplicity(c);
+            col.multiplicity = new Multiplicity(m._lowerBound()._value().intValue(), m._upperBound()._value() == null ? null : m._upperBound()._value().intValue());
             return col;
         }).toList();
         return res;
