@@ -600,7 +600,7 @@ public class CompileContext
         {
             si = ((RelationType) protocolType).sourceInformation;
             type = _RelationType.build(
-                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, this.newGenericType(x.genericType), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport)),
+                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, this.newGenericType(x.genericType), pureModel.getMultiplicity(x.multiplicity), null, processorSupport)),
                     SourceInformationHelper.toM3SourceInformation(si),
                     processorSupport
             );

@@ -272,7 +272,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::type::relationType::RelationType
 Class meta::protocols::pure::vX_X_X::metamodel::type::relationType::Column
 {
   name: String[1];
-  type: String[1];
+  genericType: meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1];
+  multiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::type::GenericType
