@@ -29,20 +29,11 @@ import java.util.List;
 
 public class SetImplTransformers
 {
-    public static final Function<Object, Object> TEMPORARY_DATATYPE_TRANSFORMER = (Function<Object, Object>) o ->
+    public static final Function<Object, Object> TEMPORARY_DATATYPE_TRANSFORMER = o ->
     {
-        if (o instanceof Timestamp)
-        {
-            return DateFunctions.fromSQLTimestamp((Timestamp) o);
-        }
-        if (o instanceof java.sql.Date)
-        {
-            return StrictDate.fromSQLDate((java.sql.Date) o);
-        }
         if (o instanceof Date)
         {
-            PureDate pureDate = PureDate.fromDate((Date) o);
-            return pureDate.toString();
+            return PureDate.fromDate((Date) o);
         }
         return o;
     };

@@ -76,36 +76,24 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
 
 function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
 {
-   $col->fold({c,a| let last = $a->last()->toOne();
-                    let newState = if([
-                                        pair( |$c->instanceOf(ValueSpecification) && $shouldProcess->eval($c),
-                                              |^$last(
-                                                value = $c,
-                                                depth = $state.depth,
-                                                propertyMap = $state.propertyMap
-                                              )->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);),
-                                        pair( |$c->instanceOf(Path) && $shouldProcess->eval($c),
-                                              |^$last(
-                                                  value = $c,
-                                                  depth = $state.depth,
-                                                  propertyMap = $state.propertyMap
-                                                )->routePath($executionContext, $vars, $inScopeVars, $extensions, $debug);),
-                                        pair( |$c->instanceOf(KeyExpression) && $shouldProcess->eval($c),
-                                              |let ke = $c->cast(@KeyExpression);
-                                              let routedExpression = ^$last(value = $ke.expression, depth = $state.depth, propertyMap = $state.propertyMap)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
-                                              ^$last(value = ^$ke(expression=$routedExpression.value->cast(@ValueSpecification)->toOne()),
-                                                      depth = $state.depth,
-                                                      propertyMap = $state.propertyMap);)
-                                      ],
-                                      |^$last(value = $c,
-                                              depth = $state.depth,
-                                              propertyMap = $state.propertyMap
-                                            )
-                                   );
-                     $a->add($newState);
-               },
-               [$state]->toOneMany()
-   )->tail();
+   $col->map(c |
+                  let a = if([
+                        pair( |$c->instanceOf(ValueSpecification) && $shouldProcess->eval($c),
+                              |^$state(value = $c)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+                            ),
+                        pair( |$c->instanceOf(Path) && $shouldProcess->eval($c),
+                              |^$state(value = $c)->routePath($executionContext, $vars, $inScopeVars, $extensions, $debug);
+                            ),
+                        pair( |$c->instanceOf(KeyExpression) && $shouldProcess->eval($c),
+                              |let ke = $c->cast(@KeyExpression);
+                              let routedExpression = ^$state(value = $ke.expression, depth = $state.depth, propertyMap = $state.propertyMap)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+                              ^$state(value = ^$ke(expression=$routedExpression.value->cast(@ValueSpecification)->toOne()));
+                            )
+                      ],
+                      |^$state(value = $c)
+                    );
+                    $a;
+   );
 }
 
 function <<access.private>> meta::pure::router::routing::routePath(state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
@@ -294,14 +282,12 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
         let firstPass         = $firstPassResults.value->evaluateAndDeactivate()->cast(@ValueSpecification);
         let routed            = $firstPass->map(fp|$fp->match([f:FunctionRoutedValueSpecification[1]|$f.value,v:ValueSpecification[1]|$v]))->filter(p|!$p->isFunction() && $p->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification)->concatenate($state.routed->cast(@ExtendedRoutedValueSpecification)->evaluateAndDeactivate());
         // Second pass (lambdas)
-        let preLastFirstPass  = $firstPassResults->last()->toOne();
-        let lastFirstPass     = ^$preLastFirstPass(depth = $f.name->toOne()+'('+$fe.parametersValues->map(p|$p->varToString())->joinStrings(',')+')');
+        let lastFirstPass     = ^$state(depth = $f.name->toOne()+'('+$fe.parametersValues->map(p|$p->varToString())->joinStrings(',')+')');
         let pathPrefix        = $state.pathPrefix->add($fe->varToString())->joinStrings(',');
-        let secondPassResults = $firstPass->fold({p,a|  let currentLast = $a->last()->toOne();
-                                                        if($p->isFunction(),
+        let secondPassResults = $firstPass->map({p | if($p->isFunction(),
                                                           | let i   = $p->byPassRouterInfo()->cast(@InstanceValue);
                                                             let res = if($i.values->size() == 1,
-                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
+                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
                                                                         |$i.values->cast(@Function<Any>)
                                                                                   ->fold(
                                                                                     {f,a| let processOne    = ^$i(values=$f)->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$a(propertyMap=$state.propertyMap), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
@@ -313,13 +299,11 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                       )
                                                                                             );
                                                                                     },
-                                                                                    ^$currentLast(value=^$i(values=[]), pathPrefix=$pathPrefix)
+                                                                                    ^$lastFirstPass(value=^$i(values=[]), pathPrefix=$pathPrefix)
                                                                                   );
-                                                                      );
-                                                            $a->concatenate($res);,
+                                                                      );,
                                                           | if($p.genericType.rawType->isNotEmpty() && $p.genericType.rawType != Nil && $p.genericType.rawType->toOne()->_subTypeOf(meta::pure::tds::ColumnSpecification),
-                                                              | let res = $p->processColumnSpecification(^$currentLast(pathPrefix=$pathPrefix, routed+=$routed), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
-                                                                $a->concatenate($res);,
+                                                              | let res = $p->processColumnSpecification(^$lastFirstPass(pathPrefix=$pathPrefix, routed+=$routed), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
                                                               | let vsRawType = $p->cast(@ValueSpecification).genericType.rawType;
                                                                 if($vsRawType->in([ meta::pure::functions::collection::AggregateValue,
                                                                                     meta::pure::tds::AggregateValue,
@@ -329,21 +313,21 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                     meta::pure::metamodel::relation::AggColSpecArray]),                                             
                                                                   | let resolved = $p->match([v:VariableExpression[1]|meta::pure::functions::meta::resolve($v, $vars, $inScopeVars), v:ValueSpecification[1]|$v]);
                                                                     if($resolved->isEmpty(),
-                                                                      |$a->concatenate(^$currentLast(value = $p)),
+                                                                      |^$lastFirstPass(value = $p),
                                                                       |$resolved->match([
-                                                                            fe : FunctionExpression[1] | $a->concatenate($fe->processAggregationFunctionExpression($routed, $currentLast, $executionContext, $vars, $inScopeVars, $extensions, $debug)),
+                                                                            fe : FunctionExpression[1] | $fe->processAggregationFunctionExpression($routed, $lastFirstPass, $executionContext, $vars, $inScopeVars, $extensions, $debug),
                                                                             i : InstanceValue[1] | let fes = $i.values->evaluateAndDeactivate()
                                                                                                                   ->fold({fe,a| let lastState = $a->last()->toOne();
                                                                                                                                 $fe->match([v:VariableExpression[1]|meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values, v:Any[1]|$v])
                                                                                                                                    ->match(
                                                                                                                                         [
-                                                                                                                                          f:FunctionExpression[1]|$a->concatenate($fe->cast(@FunctionExpression)->processAggregationFunctionExpression($routed, ^$currentLast(routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, $debug));,
+                                                                                                                                          f:FunctionExpression[1]|$a->concatenate($fe->cast(@FunctionExpression)->processAggregationFunctionExpression($routed, ^$lastFirstPass(routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, $debug));,
                                                                                                                                           z:FuncColSpec<Any,Any>[1]|
-                                                                                                                                             let res = prevalFuncColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                             let res = prevalFuncColSpec($z, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                              $a->concatenate(^$lastState(value=$res));,
                                                                                                                                           d:FuncColSpecArray<Any,Any>[1]|
                                                                                                                                             let r = $d.funcSpecs->map(z|
-                                                                                                                                                prevalFuncColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                prevalFuncColSpec($z, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             );
                                                                                                                                             // Rebuild the FuncColSpecArray
                                                                                                                                             let other = $p.genericType->dynamicNew([
@@ -351,11 +335,11 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                                   ]);
                                                                                                                                             $a->concatenate(^$lastState(value=$other));,
                                                                                                                                           x:AggColSpec<Any,Any,Any>[1]|
-                                                                                                                                            let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                            let res = prevalAggColSpec($x, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             $a->concatenate(^$lastState(value=$res));,
                                                                                                                                           x:AggColSpecArray<Any,Any,Any>[1]|
                                                                                                                                             let r = $x.aggSpecs->map(z|
-                                                                                                                                                prevalAggColSpec($z, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                prevalAggColSpec($z, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             );
                                                                                                                                             // Rebuild the FuncColSpecArray
                                                                                                                                             let other = $p.genericType->dynamicNew([
@@ -363,7 +347,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                                   ]);
                                                                                                                                             $a->concatenate(^$lastState(value=$other));,
                                                                                                                                           agg:meta::pure::functions::collection::AggregateValue<Nil,Any,Any>[1]|
-                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 let aggFn = processAggregationValueFunction($agg.aggregateFn, $routed, $mapFn, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 
                                                                                                                                                 let d = $p->cast(@ValueSpecification).genericType->dynamicNew(
@@ -378,7 +362,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                                                       );
                                                                                                                                                 $a->concatenate(^$aggFn(value=$d));,
                                                                                                                                           agg:meta::pure::tds::AggregateValue<Any,Any>[1]|
-                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$lastFirstPass(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 let aggFn = processAggregationValueFunction($agg.aggregateFn, $routed, $mapFn, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 
                                                                                                                                                 let d = $p->cast(@ValueSpecification).genericType->dynamicNew(
@@ -395,19 +379,19 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                                 $a->concatenate(^$aggFn(value=$d));
                                                                                                                                         ]
                                                                                                                                  );
-                                                                                                                        },$currentLast
+                                                                                                                        },$lastFirstPass
                                                                                                                     )->tail();
                                                                                                 let last = $fes->last()->toOne();
-                                                                                                $a->concatenate(^$last(value=^$i(values=$fes.value)));
+                                                                                                ^$last(value=^$i(values=$fes.value));
                                                                             ]);
                                                                       );,
-                                                                  |$a->concatenate(^$currentLast(value = $p))
+                                                                  |^$lastFirstPass(value = $p)
                                                                 );
                                                         ););
-                                              }, $lastFirstPass->toOneMany());
+                                              });
 
 
-        let secondPassPre = $secondPassResults->tail()->evaluateAndDeactivate();
+        let secondPassPre = $secondPassResults->evaluateAndDeactivate();
 
         let secondPass = if($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]) && $secondPassPre->at(0).shouldBeRouted,  // TODO: cleanup needed
                             | let first = $secondPassPre->at(0);
@@ -419,8 +403,8 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                           );
 
 
-        let lastSecondPass = $secondPassResults->last()->toOne();
-
+        let lastSecondPass = $lastFirstPass;
+        
         let returnClass = if($fe.genericType.rawType->first() == Checked,
                               | $fe.genericType.typeArguments->first().rawType,
                               | $fe.genericType.rawType->first()

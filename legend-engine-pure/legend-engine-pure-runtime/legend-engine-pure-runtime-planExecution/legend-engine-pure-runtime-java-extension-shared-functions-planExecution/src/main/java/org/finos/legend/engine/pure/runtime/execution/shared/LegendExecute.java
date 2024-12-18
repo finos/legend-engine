@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -51,8 +50,7 @@ public class LegendExecute
                 .build();
 
         // execute plan
-        Result result = planExecutor.executeWithArgs(executeArgs);
-        try (AutoCloseable ignore = result::close)
+        try (Result result = planExecutor.executeWithArgs(executeArgs))
         {
             if (result instanceof StreamingResult)
             {
@@ -62,7 +60,7 @@ public class LegendExecute
             }
             else if (result instanceof ConstantResult)
             {
-                return ((ConstantResult) result).stream().toString();
+                return ((ConstantResult) result).stream();
             }
             else
             {
