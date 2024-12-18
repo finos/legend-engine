@@ -303,8 +303,8 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                                   expressionSequence =  ^SimpleFunctionExpression
                                                         (
                                                           importGroup=system::imports::coreImport,
-                                                          func = if($reprocessed.mapping->isEmpty(),|from_T_m__Runtime_1__T_m_,|from_T_m__Mapping_1__Runtime_1__T_m_),
-                                                          functionName = 'from',
+                                                          func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
+                                                          functionName = 'with',
                                                           genericType = $returnGenericType,
                                                           multiplicity = $returnMultiplicity,                                                        
                                                           parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
