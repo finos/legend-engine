@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Deprecated
 public class AppliedQualifiedProperty extends AbstractAppliedFunction

@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class PackageableElementPtr extends One
 {
@@ -58,5 +59,22 @@ public class PackageableElementPtr extends One
             result.sourceInformation = parser.getCodec().treeToValue(sourceInformation, SourceInformation.class);
         }
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof PackageableElementPtr))
+        {
+            return false;
+        }
+        PackageableElementPtr that = (PackageableElementPtr) o;
+        return Objects.equals(fullPath, that.fullPath);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(fullPath);
     }
 }

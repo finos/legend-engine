@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = CDateTime.CDateTimeDeserializer.class)
 public class CDateTime extends CDate
@@ -50,5 +51,22 @@ public class CDateTime extends CDate
         {
             return customParsePrimitive(jsonParser, x -> new CDateTime(x.asText()));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CDateTime))
+        {
+            return false;
+        }
+        CDateTime cDateTime = (CDateTime) o;
+        return Objects.equals(value, cDateTime.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }

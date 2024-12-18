@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
 
@@ -71,5 +72,22 @@ public class Column
             // Backward compatibility --------------
             return result;
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof Column))
+        {
+            return false;
+        }
+        Column column = (Column) o;
+        return Objects.equals(name, column.name) && Objects.equals(genericType, column.genericType) && Objects.equals(multiplicity, column.multiplicity);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name, genericType, multiplicity);
     }
 }

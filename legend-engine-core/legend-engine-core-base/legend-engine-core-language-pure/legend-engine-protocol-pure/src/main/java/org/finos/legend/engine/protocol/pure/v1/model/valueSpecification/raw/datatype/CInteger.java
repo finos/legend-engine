@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = CInteger.CIntegerDeserializer.class)
 public class CInteger extends PrimitiveValueSpecification
@@ -50,6 +51,23 @@ public class CInteger extends PrimitiveValueSpecification
         {
             return customParsePrimitive(jsonParser, x -> new CInteger(x.asLong()));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CInteger))
+        {
+            return false;
+        }
+        CInteger cInteger = (CInteger) o;
+        return value == cInteger.value;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }
 

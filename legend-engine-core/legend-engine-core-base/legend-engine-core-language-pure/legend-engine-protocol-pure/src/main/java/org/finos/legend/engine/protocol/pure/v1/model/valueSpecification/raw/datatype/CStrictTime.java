@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.da
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
+import java.util.Objects;
+
 public class CStrictTime extends PrimitiveValueSpecification
 {
     public String value;
@@ -33,5 +35,22 @@ public class CStrictTime extends PrimitiveValueSpecification
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CStrictTime))
+        {
+            return false;
+        }
+        CStrictTime that = (CStrictTime) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }

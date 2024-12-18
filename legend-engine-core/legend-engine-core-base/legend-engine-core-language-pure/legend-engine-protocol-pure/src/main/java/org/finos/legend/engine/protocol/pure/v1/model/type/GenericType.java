@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Objects;
 
 public class GenericType
 {
@@ -57,5 +58,22 @@ public class GenericType
         this.typeVariableValues = typeVariableValues;
         this.typeArguments = typeArguments;
         this.multiplicityArguments = multiplicityArguments;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof GenericType))
+        {
+            return false;
+        }
+        GenericType that = (GenericType) o;
+        return Objects.equals(rawType, that.rawType) && Objects.equals(typeArguments, that.typeArguments) && Objects.equals(multiplicityArguments, that.multiplicityArguments) && Objects.equals(typeVariableValues, that.typeVariableValues);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(rawType, typeArguments, multiplicityArguments, typeVariableValues);
     }
 }

@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.da
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
+import java.util.Objects;
+
 public class UnitInstance extends DataTypeValueSpecification
 {
     public String unitType;
@@ -25,5 +27,22 @@ public class UnitInstance extends DataTypeValueSpecification
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof UnitInstance))
+        {
+            return false;
+        }
+        UnitInstance that = (UnitInstance) o;
+        return Objects.equals(unitType, that.unitType) && Objects.equals(unitValue, that.unitValue);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(unitType, unitValue);
     }
 }
