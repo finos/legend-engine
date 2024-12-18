@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import java.util.Collections;
 import java.util.List;
 
-public class Schema
+public class TabularFunction
 {
+    //TODO params ?
     public String name;
-    public List<Table> tables = Collections.emptyList();
-    public List<View> views = Collections.emptyList();
-    public List<TabularFunction> tabularFunctions = Collections.emptyList();
+    public List<Column> columns = Collections.emptyList();
     public SourceInformation sourceInformation;
 }
