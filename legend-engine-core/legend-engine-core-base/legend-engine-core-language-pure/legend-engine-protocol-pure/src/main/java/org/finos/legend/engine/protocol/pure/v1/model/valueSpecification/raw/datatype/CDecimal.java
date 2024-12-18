@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @JsonDeserialize(using = CDecimal.CDecimalDeserializer.class)
 public class CDecimal extends PrimitiveValueSpecification
@@ -51,5 +52,22 @@ public class CDecimal extends PrimitiveValueSpecification
         {
             return customParsePrimitive(jsonParser, x -> new CDecimal(new BigDecimal((x.asText()))));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CDecimal))
+        {
+            return false;
+        }
+        CDecimal cDecimal = (CDecimal) o;
+        return Objects.equals(value, cDecimal.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }

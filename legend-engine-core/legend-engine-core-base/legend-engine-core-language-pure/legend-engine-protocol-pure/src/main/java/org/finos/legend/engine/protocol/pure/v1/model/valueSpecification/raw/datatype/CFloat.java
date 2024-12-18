@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = CFloat.CFloatDeserializer.class)
 public class CFloat extends PrimitiveValueSpecification
@@ -50,5 +51,22 @@ public class CFloat extends PrimitiveValueSpecification
         {
             return customParsePrimitive(jsonParser, x -> new CFloat(Double.parseDouble((x.asText()))));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CFloat))
+        {
+            return false;
+        }
+        CFloat cFloat = (CFloat) o;
+        return Double.compare(value, cFloat.value) == 0;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }
