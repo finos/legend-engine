@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.junit.Test;
 
 public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -1350,7 +1351,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }];\n" +
-                "}\n");
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [17:9-23:3]: Single execution test has empty asserts"));
 
         // not found executable
         test("###Service\n" +
@@ -1407,6 +1408,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
+                "}\n", "COMPILATION error at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'", Lists.fixedSize.with("COMPILATION error at [17:9-23:3]: Single execution test has empty asserts"));
     }
 }
