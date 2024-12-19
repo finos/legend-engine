@@ -17,7 +17,7 @@ unquotedIdentifier:                         VALID_STRING
                                             | MILESTONING | BUSINESS_MILESTONING | BUSINESS_MILESTONING_FROM | BUSINESS_MILESTONING_THRU
                                             | OUT_IS_INCLUSIVE | THRU_IS_INCLUSIVE | INFINITY_DATE | BUS_SNAPSHOT_DATE
                                             | PROCESSING_MILESTONING | PROCESSING_MILESTONING_IN | PROCESSING_MILESTONING_OUT
-                                            | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING
+                                            | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING | TABULAR_FUNC
 ;
 
 identifier:                                 unquotedIdentifier | STRING
@@ -36,6 +36,7 @@ database:                                   DATABASE stereotypes? qualifiedName
                                                         | table
                                                         | view
                                                         | join
+                                                        | tabularFunction
                                                         | filter
                                                         | multiGrainFilter
                                                     )*
@@ -57,6 +58,7 @@ schema:                                     SCHEMA identifier
                                                     (
                                                         table
                                                         | view
+                                                        | tabularFunction
                                                     )*
                                                 PAREN_CLOSE
 ;
@@ -130,6 +132,13 @@ viewGroupBy:                                GROUP_BY_CMD
                                                 PAREN_CLOSE
 ;
 viewColumnMapping:                          identifier (BRACKET_OPEN identifier BRACKET_CLOSE)? COLON operation PRIMARY_KEY?
+;
+
+// -------------------------------------- TABULAR FUNCTION --------------------------------------
+tabularFunction:                               TABULAR_FUNC relationalIdentifier
+                                                PAREN_OPEN
+                                                    (columnDefinition (COMMA columnDefinition)*)?
+                                                PAREN_CLOSE
 ;
 
 
