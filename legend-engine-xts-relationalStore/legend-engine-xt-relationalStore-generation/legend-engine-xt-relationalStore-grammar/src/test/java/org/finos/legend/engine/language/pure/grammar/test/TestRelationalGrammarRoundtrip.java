@@ -343,6 +343,12 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  (\n" +
                 "    col1 CHAR(32)\n" +
                 "  )\n" +
+                "  Table table3\n" +
+                "  (\n" +
+                // handle quoted column name
+                "    \"col1\" CHAR(32),\n" +
+                "    \"this is a col\" VARCHAR(32)\n" +
+                "  )\n" +
                 "\n" +
                 "  View view1\n" +
                 "  (\n" +
