@@ -1,0 +1,60 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "DuckDuckDatabase",
+      "package": "local",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "Athlete(s)",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 0
+                  }
+                },
+                {
+                  "name": "Age/Annee",
+                  "nullable": true,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                },
+                {
+                  "name": "Country of Origin",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 0
+                  }
+                },
+                {
+                  "name": "\"Final Event\"",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 0
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "sport",
+              "primaryKey": []
+            }
+          ],
+          "views": []
+        }
+      ],
+      "stereotypes": []
+    }
+  ]
+}
