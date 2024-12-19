@@ -17,7 +17,7 @@ unquotedIdentifier:                         VALID_STRING
                                             | MILESTONING | BUSINESS_MILESTONING | BUSINESS_MILESTONING_FROM | BUSINESS_MILESTONING_THRU
                                             | OUT_IS_INCLUSIVE | THRU_IS_INCLUSIVE | INFINITY_DATE | BUS_SNAPSHOT_DATE
                                             | PROCESSING_MILESTONING | PROCESSING_MILESTONING_IN | PROCESSING_MILESTONING_OUT
-                                            | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING
+                                            | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING | TABULAR_FUNC
 ;
 
 identifier:                                 unquotedIdentifier | STRING
