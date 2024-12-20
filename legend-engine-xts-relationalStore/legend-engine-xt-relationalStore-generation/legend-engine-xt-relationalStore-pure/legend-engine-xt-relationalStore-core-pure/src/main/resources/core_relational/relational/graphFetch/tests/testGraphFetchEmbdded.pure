@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::execute::*;
+import meta::relational::tests::mapping::embedded::model::store::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
@@ -19,6 +21,15 @@ import meta::pure::graphFetch::execution::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::embedded::setup(): Boolean[1]
 {
    meta::relational::tests::mapping::embedded::setUp();
+
+   let connection = meta::relational::tests::mapping::embedded::model::store::testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   //Insert 2 extra records to test the nullable bewhaviour
+   let s = 'insert into PERSON_FIRM_DENORM (PERSON_ID, PERSON_FIRSTNAME, PERSON_LASTNAME, FIRM_ID, FIRM_LEGALNAME, PERSON_ADDRESS_NAME, PERSON_ADDRESS_TYPE, FIRM_ADDRESS_NAME, FIRM_ADDRESS_TYPE) values ';
+   executeInDb($s + '(7, \'Bob\', \'Brown\', 4, NULL, \'7 Palo Alto\', 2, NULL, NULL);', $connection);
+   executeInDb($s + '(9, \'Anthony\', \'Smith\', 2, \'Firm A\', \'7 Palo Alto\', 2, NULL, NULL);', $connection);
+
+   true;
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testSimpleEmbeddedMapping(): Boolean[1]
@@ -38,7 +49,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
-      '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},{"firstName":"Fabrice","firm":{"legalName":"Firm A"}}]',
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X"}},{"firstName":"John","firm":{"legalName":"Firm X"}},{"firstName":"Fabrice","firm":{"legalName":"Firm A"}},{"firstName":"Bob","firm":null},{"firstName":"Anthony","firm":{"legalName":"Firm A"}}]"',
       $result
    );
 }
@@ -51,7 +62,8 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          firm {
             legalName,
             address {
-               name
+               name,
+               type
             }
          }
       }
@@ -63,7 +75,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
-      '[{"firstName":"Peter","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"John","firm":{"legalName":"Firm X","address":{"name":"200 west"}}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","address":{"name":"3 somewhere"}}}]',
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","address":{"name":"200 west","type":"CITY"}}},' +
+      '{"firstName":"John","firm":{"legalName":"Firm X","address":{"name":"200 west","type":"CITY"}}},' +
+      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","address":{"name":"3 somewhere","type":"CITY"}}},' +
+      '{"firstName":"Bob","firm":null},' +
+      '{"firstName":"Anthony","firm":{"legalName":"Firm A","address":null}}]',
       $result
    );
 }
@@ -88,7 +104,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
-      '[{"firstName":"Peter","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"John","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","employees":[{"firstName":"Fabrice"}]}}]',
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"John","firm":{"legalName":"Firm X","employees":[{"firstName":"Peter"},{"firstName":"John"}]}},{"firstName":"Fabrice","firm":{"legalName":"Firm A","employees":[{"firstName":"Fabrice"},{"firstName":"Anthony"}]}},{"firstName":"Bob","firm":null},{"firstName":"Anthony","firm":{"legalName":"Firm A","employees":[{"firstName":"Fabrice"},{"firstName":"Anthony"}]}}]',
       $result
    );
 }
@@ -111,9 +127,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
-      '[{"firstName":"Peter","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' + 
-      '{"firstName":"John","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' + 
-      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","nameAndAddress()":"Firm A,3 somewhere"}}]',
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' +
+      '{"firstName":"John","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' +
+      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","nameAndAddress()":"Firm A,3 somewhere"}},' +
+      '{"firstName":"Bob","firm":null},' +
+      '{"firstName":"Anthony","firm":{"legalName":"Firm A","nameAndAddress()":"Firm A,"}}]',
       $result
    );
 }

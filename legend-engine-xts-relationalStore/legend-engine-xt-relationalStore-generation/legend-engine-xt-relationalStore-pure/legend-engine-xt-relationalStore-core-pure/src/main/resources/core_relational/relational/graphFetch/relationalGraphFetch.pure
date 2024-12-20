@@ -493,9 +493,30 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    print(if($debug.debug,|$debug.space+'   >Generate local store property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
    let nonPrimitiveQuery   = generateNonPrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $simplePrimitiveProperties, $debug->indent(2), $extensions);
    let changedDriverQuery  = $nonPrimitiveQuery->changeDriverToTempWithPkProjection(tempTableName($parentIdx), $parentSets, $extensions);
+
+   let pkFilters = $changedDriverQuery.columns->cast(@Alias)
+                      ->filter(x | $x.name->startsWith('"pk_'))
+                      ->map(x | ^DynaFunction(name = 'isNotNull', parameters =  $x.relationalElement))
+                      ->andFilters($extensions);
+
+   //for embedded mappings we want to filter out any rows that have
+   let extraFilters = $setImpls->match([
+      e:EmbeddedRelationalInstanceSetImplementation[1] |
+        let propertyMappings = getEmbeddedPropertyMappings($currentTree);
+        let pureToSqlState = defaultState($mapping, $inScopeVars);
+        let base = $setImpls->buildBaseQueryForChild($pureToSqlState, $mc, $extensions, $debug);
+
+        let queries = $propertyMappings->map(pm | processPropertyMapping($pm, $pm.property->ownerClass(), $base, ^$pureToSqlState(inGetterFlow = true), JoinType.LEFT_OUTER, '_gftp', ^List<ColumnGroup>(), $debug, $extensions)->cast(@SelectWithCursor););
+
+        $queries.select.columns->map(a | ^DynaFunction(name = 'isNotNull', parameters = $a))->orFilters($extensions);,
+      s:SetImplementation[1] | []
+   ]);
+
+   let filters = $pkFilters->concatenate($extraFilters)->andFilters($extensions);
+
    let pkFilteredQuery     = ^$changedDriverQuery
                              (
-                                filteringOperation = andFilters($changedDriverQuery.filteringOperation->concatenate($changedDriverQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(x | ^DynaFunction(name = 'isNotNull', parameters =  $x.relationalElement))->andFilters($extensions)), $extensions)
+                                filteringOperation = $changedDriverQuery.filteringOperation->concatenate($filters)->andFilters($extensions)
                              );
    let postProcessorResult = $pkFilteredQuery->postProcessSQLQuery($store, [], $mapping, $runtime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
@@ -539,6 +560,20 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    );
 }
 
+
+function meta::relational::graphFetch::executionPlan::getEmbeddedPropertyMappings(tree:GraphFetchTree[1]):PropertyMapping[*]
+{
+ $tree->match([
+  g:RoutedPropertyGraphFetchTree[1] |
+  $g.propertyMapping->match([
+    e:EmbeddedRelationalInstanceSetImplementation[1] | $g.subTrees->map(t | getEmbeddedPropertyMappings($t)),
+    r:RelationalPropertyMapping[1] | $r->filter(e | !$e.relationalOperationElement->instanceOf(RelationalOperationElementWithJoin)),
+    p:PropertyMapping[*] | []
+  ]);,
+  g:GraphFetchTree[1] | $g.subTrees->map(t | getEmbeddedPropertyMappings($t))
+ ]);
+}
+
 function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]
 {
    print(if($debug.debug,|$debug.space+'>Relational cross-store graphFetch plan generation:\n',|''));
@@ -553,6 +588,9 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
 
    let parentIdx             = $orderedPaths->indexOf($parentPath);
    let currentIdx            = $orderedPaths->indexOf($rootPath);
+
+   assert($rootTree.propertyMapping->size() == 1, 'Property mappings for path ' + $parentPath + ' tree must be of size 1');
+   assert($rootTree.propertyMapping->toOne()->instanceOf(XStorePropertyMapping), | 'Property mapping should be of type XStore, ensure that your store aliases in mapping are set correctly');
 
    let xStorePropertyMapping = $rootTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
    let crossExpression       = $xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne();
