@@ -108,6 +108,18 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testMatchInMapping(): Bo
    assert(meta::json::jsonEquivalent($expected->meta::json::parseJSON(), $json->meta::json::parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{ serverVersion.start='v1_29_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::testNewOperatorInMapping(): Boolean[1]
+{
+   let runtime = testJsonRuntime(Firm, '[{"employees":[{"@type":"PersonA","role":"developer","firstNameA":"Smith","firstName":"testFirstName","lastName":"testLastName"}]}]');
+   let lambda = {|CountPersonBMiddleNames.all()->meta::pure::graphFetch::execution::graphFetch(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::CountPersonBMiddleNames{count}}#)->meta::pure::graphFetch::execution::serialize(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::CountPersonBMiddleNames{count}}#)};
+   let result = execute($lambda, meta::pure::mapping::modelToModel::test::alloy::simple::function::newOperatorMappingTest, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '{"count":0}';
+   assert(meta::json::jsonEquivalent($expected->meta::json::parseJSON(), $json->meta::json::parseJSON()));
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
 {
   name: String[0..1];
@@ -148,6 +160,12 @@ Enum meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeR
   productOwner,
   projectManager
 }
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::CountPersonBMiddleNames
+{
+  count: Integer[1];
+}
+
 
 ###Mapping
    
@@ -197,5 +215,16 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaul
            ]
         )
      )
+   }
+ )
+
+###Mapping
+
+ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::newOperatorMappingTest
+ (
+   meta::pure::mapping::modelToModel::test::alloy::simple::function::CountPersonBMiddleNames: Pure
+   {
+     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+     count: ^meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonB(firstNameB='VijayB',firstName='Vijay',lastName='Lather').middleNames->size()
    }
  )

@@ -147,10 +147,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
    print(if($debug.debug,|$debug.space+'processNew: \n',|''));
    let args = $fe.parametersValues->evaluateAndDeactivate();
 
+
    let cls = $args->at(0).genericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    assert($conventions.newFunctionProhibitedList->filter(c|$c == $cls)->size()==0, 'Cannot create new instance for class used in mapping: ' + $cls->elementToPath());
    
    let kv = $args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
+
    let processedKV = $kv->map(k|let s = $k.key.values->toOne();
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
@@ -158,9 +160,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
     
    let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
-   
+
    let proto = $conventions->implClassName($cls)->addModifiers(['public']);
-                                      
+
    let name = 'new_' + $cls->elementToPath();
    let dep = newDependency(
       $name,
@@ -205,17 +207,25 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
             let project = mergeProjects(newProject()->addClass($interface)->concatenate($implementationProject)->concatenate($nestedDeps)->toOneMany());
             $state->addDependencyProject($name, $project);});
       
-   let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
-                                                let propType = $conventions->pureTypeToJavaType($prop);
-                                                let value = $arg.second->castExpressionToReturnType($propType);
-                                                pair($prop, $value););
-                                      
-   let invoke = $processed_args
-                ->fold({p,code |let arg= $p.second; let prop = $p.first;
-                                $code->j_invoke([], $conventions->setterName($prop), $arg, $proto);
-                       }, j_new($proto, []));
+    let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
+                                                  let propType = $conventions->pureTypeToJavaType($prop);
+                                                  let value = $arg.second->castExpressionToReturnType($propType);
+                                                  pair($prop, $value););
+                                     
+    let invoke = $processed_args
+                  ->fold({p,code |let arg= $p.second; let prop = $p.first;
+                                  $code->j_invoke([], $conventions->setterName($prop), $arg, $proto);
+                        }, j_new($proto, []));
 
-   $invoke->dependsOn($dep);
+    let setProperties = $processedKV->map(k| $k.first);
+    let unsetListProperties = $props->filter(p| !$p.name->in($setProperties) && $p.multiplicity->isListMultiplicity());
+
+    let newInvoke = $unsetListProperties->fold({prop, code |
+      let javaType = $conventions->pureTypeToJavaType($prop);
+      $code->j_invoke([], $conventions->setterName($prop), j_emptyList($javaType), $proto);
+    }, $invoke);
+
+   $newInvoke->dependsOn($dep);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
