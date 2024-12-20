@@ -31,6 +31,7 @@ import org.finos.legend.engine.ide.api.*;
 import org.finos.legend.engine.ide.api.concept.Concept;
 import org.finos.legend.engine.ide.api.concept.MovePackageableElements;
 import org.finos.legend.engine.ide.api.concept.RenameConcept;
+import org.finos.legend.engine.ide.api.debug.Debugging;
 import org.finos.legend.engine.ide.api.execution.function.Execute;
 import org.finos.legend.engine.ide.api.execution.go.ExecuteGo;
 import org.finos.legend.engine.ide.api.execution.test.ExecuteTests;
@@ -106,6 +107,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         environment.jersey().register(new Execute(pureSession));
         environment.jersey().register(new ExecuteGo(pureSession));
         environment.jersey().register(new ExecuteTests(pureSession));
+        environment.jersey().register(new Debugging(pureSession));
 
         environment.jersey().register(new FindInSources(pureSession));
         environment.jersey().register(new FindPureFile(pureSession));
