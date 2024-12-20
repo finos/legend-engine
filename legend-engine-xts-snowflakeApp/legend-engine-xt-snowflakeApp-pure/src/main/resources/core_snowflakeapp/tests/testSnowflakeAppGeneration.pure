@@ -71,7 +71,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
-function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
+function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
 {
   let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
   let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))

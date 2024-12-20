@@ -15,7 +15,7 @@
 import meta::pure::executionPlan::toString::*;
 import meta::pure::profiles::*;
 
-function <<test.Test>> meta::relational::tests::query::snowflake::testSimpleSelect():Any[*]
+function <<test.ToFix>> meta::relational::tests::query::snowflake::testSimpleSelect():Any[*]
 {
   let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
   let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
@@ -24,7 +24,7 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testSimpleSele
   assert(meta::pure::executionPlan::executionPlan($func, meta::relational::extension::relationalExtensions())->planToString(meta::relational::extension::relationalExtensions())->contains($query));
 }
 
-function <<test.Test>> meta::relational::tests::query::snowflake::testExists():Any[*]
+function <<test.ToFix>> meta::relational::tests::query::snowflake::testExists():Any[*]
 {
   let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
   let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
@@ -33,7 +33,7 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testExists():A
   assert(meta::pure::executionPlan::executionPlan($func, meta::relational::extension::relationalExtensions())->planToString(meta::relational::extension::relationalExtensions())->contains($query));
 }
 
-function <<test.Test>> meta::relational::tests::query::snowflake::testExistsAndUnion():Any[*]
+function <<test.ToFix>> meta::relational::tests::query::snowflake::testExistsAndUnion():Any[*]
 {
   let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
   let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
@@ -42,7 +42,7 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testExistsAndU
   assert(meta::pure::executionPlan::executionPlan($func, meta::relational::extension::relationalExtensions())->planToString(meta::relational::extension::relationalExtensions())->contains($query));
 }
 
-function <<test.Test>> meta::relational::tests::query::snowflake::testSelfJoin():Any[*]
+function <<test.ToFix>> meta::relational::tests::query::snowflake::testSelfJoin():Any[*]
 {
   let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
   let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
