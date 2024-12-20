@@ -240,7 +240,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeGroupBy()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"count\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"count\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -248,7 +248,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeCast()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->from(test::test)->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->cast(@meta::pure::metamodel::relation::Relation<(hai:String,ba:Integer)>)";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"hai\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"ba\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"hai\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"ba\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -256,7 +256,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeSimpleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~newCol:c|'ok')";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"newCol\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -264,7 +264,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeMultipleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"colX\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -272,7 +272,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeWithDummySource()
     {
         String lambda = "|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String,LASTNAME:String)>)->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"name\":\"colX\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, null);
     }
 
