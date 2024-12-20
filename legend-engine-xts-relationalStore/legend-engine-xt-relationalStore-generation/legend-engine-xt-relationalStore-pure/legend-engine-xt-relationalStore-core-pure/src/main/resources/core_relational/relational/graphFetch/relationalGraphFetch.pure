@@ -499,7 +499,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
                       ->map(x | ^DynaFunction(name = 'isNotNull', parameters =  $x.relationalElement))
                       ->andFilters($extensions);
 
-   //for embedded mappings we want to filter out any rows that have
+   //for embedded mappings we want to filter out any rows that have no values associated with any of the selected
+   //embedded properties. This is to effectively mimic a left outer join which would result in [0] if no join match
    let extraFilters = $setImpls->match([
       e:EmbeddedRelationalInstanceSetImplementation[1] |
         let propertyMappings = getEmbeddedPropertyMappings($currentTree);
