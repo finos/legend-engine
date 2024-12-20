@@ -284,6 +284,13 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             builder.append("\n");
             nonEmpty = true;
         }
+        if (defaultSchema != null && !defaultSchema.tabularFunctions.isEmpty())
+        {
+            builder.append(nonEmpty ? "\n" : "");
+            builder.append(LazyIterate.collect(defaultSchema.tabularFunctions, tabularFunction -> HelperRelationalGrammarComposer.renderDatabaseTabularFunction(tabularFunction, 1, context)).makeString("\n"));
+            builder.append("\n");
+            nonEmpty = true;
+        }
         if (defaultSchema != null && !defaultSchema.views.isEmpty())
         {
             builder.append(nonEmpty ? "\n" : "");
