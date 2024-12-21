@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.type.Type;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class RelationType implements Type
 {
@@ -32,5 +33,22 @@ public class RelationType implements Type
     public RelationType(List<Column> columns)
     {
         this.columns = columns;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof RelationType))
+        {
+            return false;
+        }
+        RelationType that = (RelationType) o;
+        return Objects.equals(columns, that.columns);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(columns);
     }
 }

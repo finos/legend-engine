@@ -3,6 +3,7 @@
   "pattern": "(meta::external::function::description::openapi)(::.*)?",
   "dependencies": [
     "platform",
+    "core_functions_standard",
     "core_functions_unclassified",
     "core_functions_json",
     "platform_dsl_mapping",

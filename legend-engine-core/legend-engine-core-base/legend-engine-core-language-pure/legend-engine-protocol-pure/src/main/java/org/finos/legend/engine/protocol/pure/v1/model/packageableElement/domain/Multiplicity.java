@@ -17,8 +17,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
+import java.util.Objects;
+
 public class Multiplicity
 {
+    public static final Multiplicity ZERO_ONE = new Multiplicity(1, 1);
     public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
     public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
 
@@ -70,5 +73,22 @@ public class Multiplicity
     public boolean isInfinite()
     {
         return infinite;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof Multiplicity))
+        {
+            return false;
+        }
+        Multiplicity that = (Multiplicity) o;
+        return lowerBound == that.lowerBound && infinite == that.infinite && Objects.equals(upperBound, that.upperBound);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(lowerBound, upperBound, infinite);
     }
 }

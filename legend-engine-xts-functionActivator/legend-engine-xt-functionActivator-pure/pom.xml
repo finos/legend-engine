@@ -172,7 +172,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
         </dependency>
         <!-- ENGINE -->
 

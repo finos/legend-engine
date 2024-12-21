@@ -1831,6 +1831,260 @@ public class TestCompatibilityAndMigration
     }
 
     @Test
+    public void testRelationColumns() throws Exception
+    {
+        check("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              },\n" +
+                        "              \"values\": []\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"multiplicityArguments\": [],\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"Relation\"\n" +
+                        "                },\n" +
+                        "                \"typeArguments\": [\n" +
+                        "                  {\n" +
+                        "                    \"multiplicityArguments\": [],\n" +
+                        "                    \"rawType\": {\n" +
+                        "                      \"_type\": \"relationType\",\n" +
+                        "                      \"columns\": [\n" +
+                        "                        {\n" +
+                        "                          \"type\": \"Integer\",\n" +
+                        "                          \"name\": \"a\"\n" +
+                        "                        }\n" +
+                        "                      ]\n" +
+                        "                    },\n" +
+                        "                    \"typeArguments\": [],\n" +
+                        "                    \"typeVariableValues\": []\n" +
+                        "                  }\n" +
+                        "                ],\n" +
+                        "                \"typeVariableValues\": []\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"f_Result_1__Relation_$0_1$_\",\n" +
+                        "      \"package\": \"withPath\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        "          \"genericType\": {\n" +
+                        "            \"multiplicityArguments\": [],\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"packageableType\",\n" +
+                        "              \"fullPath\": \"a::Result\"\n" +
+                        "            },\n" +
+                        "            \"typeArguments\": [\n" +
+                        "              {\n" +
+                        "                \"multiplicityArguments\": [],\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"x::String\"\n" +
+                        "                },\n" +
+                        "                \"typeArguments\": [],\n" +
+                        "                \"typeVariableValues\": []\n" +
+                        "              }\n" +
+                        "            ],\n" +
+                        "            \"typeVariableValues\": []\n" +
+                        "          },\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"name\": \"s\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"postConstraints\": [],\n" +
+                        "      \"preConstraints\": [],\n" +
+                        "      \"returnGenericType\": {\n" +
+                        "        \"multiplicityArguments\": [],\n" +
+                        "        \"rawType\": {\n" +
+                        "          \"_type\": \"packageableType\",\n" +
+                        "          \"fullPath\": \"Relation\"\n" +
+                        "        },\n" +
+                        "        \"typeArguments\": [\n" +
+                        "          {\n" +
+                        "            \"multiplicityArguments\": [],\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"relationType\",\n" +
+                        "              \"columns\": [\n" +
+                        "                {\n" +
+                        "                  \"type\": \"Integer\",\n" +
+                        "                  \"name\": \"a\"\n" +
+                        "                }\n" +
+                        "              ]\n" +
+                        "            },\n" +
+                        "            \"typeArguments\": [],\n" +
+                        "            \"typeVariableValues\": []\n" +
+                        "          }\n" +
+                        "        ],\n" +
+                        "        \"typeVariableValues\": []\n" +
+                        "      },\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"stereotypes\": [],\n" +
+                        "      \"taggedValues\": [],\n" +
+                        "      \"tests\": []\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"package\": \"__internal__\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"withPath::f_Result_1__Relation_$0_1$_\"\n" +
+                        "          ],\n" +
+                        "          \"imports\": [],\n" +
+                        "          \"parserName\": \"Pure\"\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n",
+                "{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"name\": \"f_Result_1__Relation_$0_1$_\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"var\",\n" +
+                        "          \"name\": \"s\",\n" +
+                        "          \"genericType\": {\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"packageableType\",\n" +
+                        "              \"fullPath\": \"a::Result\"\n" +
+                        "            },\n" +
+                        "            \"typeArguments\": [\n" +
+                        "              {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"x::String\"\n" +
+                        "                }\n" +
+                        "              }\n" +
+                        "            ]\n" +
+                        "          },\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"returnGenericType\": {\n" +
+                        "        \"rawType\": {\n" +
+                        "          \"_type\": \"packageableType\",\n" +
+                        "          \"fullPath\": \"Relation\"\n" +
+                        "        },\n" +
+                        "        \"typeArguments\": [\n" +
+                        "          {\n" +
+                        "            \"rawType\": {\n" +
+                        "              \"_type\": \"relationType\",\n" +
+                        "              \"columns\": [\n" +
+                        "                {\n" +
+                        "                  \"name\": \"a\",\n" +
+                        "                  \"genericType\": {\n" +
+                        "                    \"rawType\": {\n" +
+                        "                      \"_type\": \"packageableType\",\n" +
+                        "                      \"fullPath\": \"Integer\"\n" +
+                        "                    }\n" +
+                        "                  }\n" +
+                        "                }\n" +
+                        "              ]\n" +
+                        "            }\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0,\n" +
+                        "        \"upperBound\": 1\n" +
+                        "      },\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"func\",\n" +
+                        "          \"function\": \"cast\",\n" +
+                        "          \"parameters\": [\n" +
+                        "            {\n" +
+                        "              \"_type\": \"collection\",\n" +
+                        "              \"multiplicity\": {\n" +
+                        "                \"lowerBound\": 0,\n" +
+                        "                \"upperBound\": 0\n" +
+                        "              }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"_type\": \"genericTypeInstance\",\n" +
+                        "              \"genericType\": {\n" +
+                        "                \"rawType\": {\n" +
+                        "                  \"_type\": \"packageableType\",\n" +
+                        "                  \"fullPath\": \"Relation\"\n" +
+                        "                },\n" +
+                        "                \"typeArguments\": [\n" +
+                        "                  {\n" +
+                        "                    \"rawType\": {\n" +
+                        "                      \"_type\": \"relationType\",\n" +
+                        "                      \"columns\": [\n" +
+                        "                        {\n" +
+                        "                          \"name\": \"a\",\n" +
+                        "                          \"genericType\": {\n" +
+                        "                            \"rawType\": {\n" +
+                        "                              \"_type\": \"packageableType\",\n" +
+                        "                              \"fullPath\": \"Integer\"\n" +
+                        "                            }\n" +
+                        "                          }\n" +
+                        "                        }\n" +
+                        "                      ]\n" +
+                        "                    }\n" +
+                        "                  }\n" +
+                        "                ]\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"withPath\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"_type\": \"sectionIndex\",\n" +
+                        "      \"name\": \"SectionIndex\",\n" +
+                        "      \"sections\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"importAware\",\n" +
+                        "          \"parserName\": \"Pure\",\n" +
+                        "          \"elements\": [\n" +
+                        "            \"withPath::f_Result_1__Relation_$0_1$_\"\n" +
+                        "          ]\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"package\": \"__internal__\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}"
+        );
+    }
+
+    @Test
     public void testStoreTestData() throws Exception
     {
         check(

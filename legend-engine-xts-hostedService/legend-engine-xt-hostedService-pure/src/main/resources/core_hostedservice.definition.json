@@ -8,6 +8,7 @@
     "platform_dsl_store",
     "platform_store_relational",
     "core_functions_unclassified",
+    "core_functions_standard",
     "core_functions_json",
     "core_relational",
     "core_function_activator",

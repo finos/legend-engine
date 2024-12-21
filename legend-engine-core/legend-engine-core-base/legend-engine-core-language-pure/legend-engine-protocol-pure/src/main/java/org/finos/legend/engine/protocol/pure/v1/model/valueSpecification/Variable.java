@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.IOException;
+import java.util.Objects;
+
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
@@ -95,6 +97,23 @@ public class Variable extends ValueSpecification
             }
             return variable;
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof Variable))
+        {
+            return false;
+        }
+        Variable variable = (Variable) o;
+        return Objects.equals(name, variable.name) && Objects.equals(genericType, variable.genericType) && Objects.equals(multiplicity, variable.multiplicity) && Objects.equals(supportsStream, variable.supportsStream);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name, genericType, multiplicity, supportsStream);
     }
 }
 

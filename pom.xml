@@ -108,7 +108,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.26.0</legend.pure.version>
+        <legend.pure.version>5.28.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>12.72.0</legend.web-application.version>
 
@@ -2469,6 +2469,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-code-precisePrimitives-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-core-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2485,6 +2490,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-javaGeneration-conventions-essential-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-javaGeneration-conventions-standard-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

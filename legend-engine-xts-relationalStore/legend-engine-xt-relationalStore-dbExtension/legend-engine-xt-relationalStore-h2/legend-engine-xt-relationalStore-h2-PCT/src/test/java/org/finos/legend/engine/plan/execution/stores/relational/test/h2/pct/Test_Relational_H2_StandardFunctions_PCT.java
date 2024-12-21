@@ -47,8 +47,13 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_pop([*][1,2])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_pop([1,2]) [42001-214]"),
             one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_samp([*][CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_samp([CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)]) [42001-214]"),
             one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_pop([*][1,2])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_pop([1,2]) [42001-214]"),
-            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_samp([*][CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_samp([CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)]) [42001-214]")
-        );
+            one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_samp([*][CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_samp([CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)]) [42001-214]"),
+
+            // In
+            one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "class org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl cannot be cast to class java.lang.Boolean (org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl is in unnamed module of loader 'app'; java.lang.Boolean is in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.Firm (_pureId,legalName) values (10,'f1');"),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types \"INTEGER\" and \"BOOLEAN\" are not comparable; SQL statement:\nselect 1 in (1, 2, 5, 2, 'a', true, DATE'2014-02-01', 'c') [90110-214]")
+    );
 
     public static Test suite()
     {
@@ -56,7 +61,7 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
                 () -> true,
                 () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
                 () -> false,
-                Lists.mutable.with((TestServerResource)TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.H2).getFirst())
+                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.H2).getFirst())
         );
     }
 

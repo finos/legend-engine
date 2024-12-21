@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applic
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
@@ -29,5 +31,22 @@ public class AppliedFunction extends AbstractAppliedFunction
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof AppliedFunction))
+        {
+            return false;
+        }
+        AppliedFunction that = (AppliedFunction) o;
+        return Objects.equals(function, that.function) && Objects.equals(parameters, that.parameters);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(function, parameters);
     }
 }
