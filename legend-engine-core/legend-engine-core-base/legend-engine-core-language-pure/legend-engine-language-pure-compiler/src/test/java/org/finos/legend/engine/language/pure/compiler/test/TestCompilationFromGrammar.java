@@ -20,13 +20,11 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -1064,6 +1062,128 @@ public class TestCompilationFromGrammar
                         "        year: x|$x.year\n" +
                         "      ])->pivot(~[country, city], ~[total: x|$x.treePlanted : x|$x->sum()])->cast(@meta::pure::metamodel::relation::Relation<(year2:Integer)>)->filter(x|$x.year2 == 2000)\n" +
                         "}"
+        );
+    }
+
+
+    @Test
+    public void testTypeVariables()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Report" +
+                        "{" +
+                        "   country : meta::external::catalog::precisePrimitives::Varchar(200)[1];" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesError()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Report" +
+                        "{" +
+                        "   country : meta::external::catalog::precisePrimitives::Varchar(200,1)[1];" +
+                        "}",
+                "COMPILATION error at [2:33-90]: Wrong type variables count (2) for type: Varchar(x:Integer)"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesErrorType()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Report" +
+                        "{" +
+                        "   country : meta::external::catalog::precisePrimitives::Varchar('200')[1];" +
+                        "}",
+                "COMPILATION error at [2:33-90]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesErrorInFunction()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar('200')[1]):String[1]" +
+                        "{" +
+                        "   'x';" +
+                        "}",
+                "COMPILATION error at [2:17-74]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+        );
+    }
+
+    @Test
+    public void testTypeVariableInRelation()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::a():meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar(200))>[1]" +
+                        "{" +
+                        "   []->cast(@meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar('200'))>);" +
+                        "}",
+                "COMPILATION error at [2:182-239]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesFunctionMatching()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
+                        "{" +
+                        "   true;" +
+                        "}" +
+                        "function x::call():Boolean[1]" +
+                        "{" +
+                        "   x::a('www'->cast(@meta::external::catalog::precisePrimitives::Varchar(200)));" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesFunctionMatchingError()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
+                        "{" +
+                        "   true;" +
+                        "}" +
+                        "function x::call():Boolean[1]" +
+                        "{" +
+                        "   x::a('www'->cast(@meta::external::catalog::precisePrimitives::Varchar(250)));" +
+                        "}",
+                "COMPILATION error at [2:131-134]: Can't find a match for function 'x::a(Varchar(250)[1])"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesFunctionMatchingNative()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::call():Integer[1]" +
+                        "{" +
+                        "   1->cast(@meta::external::catalog::precisePrimitives::TinyInt) + 1;" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testTypeVariablesFunctionMatchingNativeError()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::call():Integer[1]" +
+                        "{" +
+                        "   1->cast(@meta::external::catalog::precisePrimitives::TinyInt) + '1';" +
+                        "}", "COMPILATION error at [2:96-100]: Can't find a match for function 'plus(Any[2])'"
         );
     }
 }

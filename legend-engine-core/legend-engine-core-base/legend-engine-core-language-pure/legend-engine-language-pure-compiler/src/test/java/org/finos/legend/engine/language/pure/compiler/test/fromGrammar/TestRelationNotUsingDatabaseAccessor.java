@@ -62,7 +62,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.nme])\n" +
-                        "}","COMPILATION error at [4:45-47]: Can't find property 'nme' in class 'test::Person'"
+                        "}", "COMPILATION error at [4:45-47]: Can't find property 'nme' in class 'test::Person'"
         );
     }
 
@@ -88,7 +88,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.vals])\n" +
-                        "}","COMPILATION error at [4:59-62]: Can't find property 'vals' in class 'test::Person'"
+                        "}", "COMPILATION error at [4:59-62]: Can't find property 'vals' in class 'test::Person'"
         );
     }
 
@@ -115,6 +115,30 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                         "{\n" +
                         "   test::Person.all()->project(~[mycol:x|$x.name, co:x|$x.val])->filter(x|$x.ceo > 2)\n" +
                         "}", "COMPILATION error at [4:78-80]: The column 'ceo' can't be found in the relation (mycol:String, co:Integer)"
+        );
+    }
+
+    @Test
+    public void testTypeVariableInRelationError()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(x:meta::pure::metamodel::relation::Relation<(x:Integer(2))>[1]):Any[*]\n" +
+                        "{\n" +
+                        "   []" +
+                        "}", "COMPILATION error at [2:65-74]: Wrong type variables count (1) for type: Integer"
+        );
+    }
+
+    @Test
+    public void testTypeVariableWithPrecisePrimitiveInRelation()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(x:meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar(2))>[1]):Any[*]\n" +
+                        "{\n" +
+                        "   []" +
+                        "}"
         );
     }
 }

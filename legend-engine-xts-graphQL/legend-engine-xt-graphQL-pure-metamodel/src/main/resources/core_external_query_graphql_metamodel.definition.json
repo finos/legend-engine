@@ -4,6 +4,6 @@
   "dependencies": [
     "platform",
     "platform_dsl_diagram",
-    "core_functions_unclassified"
+    "core_functions_standard"
   ]
 }

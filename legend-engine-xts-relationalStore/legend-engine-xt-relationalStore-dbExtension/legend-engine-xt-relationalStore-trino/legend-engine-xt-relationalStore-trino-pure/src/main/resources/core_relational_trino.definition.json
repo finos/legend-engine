@@ -5,6 +5,7 @@
     "platform",
     "platform_store_relational",
     "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_relational"
   ]

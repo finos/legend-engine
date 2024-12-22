@@ -1,0 +1,11 @@
+{
+    "name" : "core_external_language_java_conventions_essential",
+    "pattern" : "(meta::external::language::java|meta::protocols::generation::java|meta::pure::executionPlan::platformBinding::legendJava)(::.*)?",
+    "dependencies" :
+    [
+        "platform",
+        "platform_dsl_mapping",
+        "platform_dsl_graph",
+        "core_external_language_java"
+    ]
+}

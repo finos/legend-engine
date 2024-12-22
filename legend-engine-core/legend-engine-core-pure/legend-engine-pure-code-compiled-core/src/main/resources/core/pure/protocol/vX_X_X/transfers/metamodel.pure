@@ -141,14 +141,15 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(genericType:GenericType[1]):meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1]
 {
     let rawType = $genericType.rawType->match([
-        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::type::RelationType
+        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::type::relationType::RelationType
                                (
                                  _type='relationType',
                                  columns=$rel.columns->map(c |
-                                        ^meta::protocols::pure::vX_X_X::metamodel::type::Column
+                                        ^meta::protocols::pure::vX_X_X::metamodel::type::relationType::Column
                                         (
                                             name = $c.name->toOne(),
-                                            type = $c.classifierGenericType.typeArguments->at(1).rawType->toOne()->elementToPath()
+                                            genericType = $c.classifierGenericType.typeArguments->at(1)->transformGenericType(),
+                                            multiplicity = $c.classifierGenericType.multiplicityArguments->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                                         )
                                     )
                                ),

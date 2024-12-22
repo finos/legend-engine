@@ -47,6 +47,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -55,6 +56,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -588,7 +590,7 @@ public class CompileContext
         GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType));
         SourceInformation si = null;
         org.finos.legend.engine.protocol.pure.v1.model.type.Type protocolType = genericType.rawType;
-        Type type = null;
+        final Type type;
         if (protocolType instanceof PackageableType)
         {
             si = ((PackageableType) protocolType).sourceInformation;
@@ -598,7 +600,7 @@ public class CompileContext
         {
             si = ((RelationType) protocolType).sourceInformation;
             type = _RelationType.build(
-                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, x.type, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport)),
+                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, this.newGenericType(x.genericType), pureModel.getMultiplicity(x.multiplicity), null, processorSupport)),
                     SourceInformationHelper.toM3SourceInformation(si),
                     processorSupport
             );
@@ -612,14 +614,37 @@ public class CompileContext
         {
             if ((((Class<?>) type)._typeParameters().size() != genericType.typeArguments.size()))
             {
-                throw new EngineException("Missing type arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong type arguments count (" + genericType.typeArguments.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
             if ((((Class<?>) type)._multiplicityParameters().size() != genericType.multiplicityArguments.size()))
             {
-                throw new EngineException("Missing multiplicity arguments for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Wrong multiplicity arguments count (" + genericType.multiplicityArguments.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if ((((Class<?>) type)._typeVariables().size() != genericType.typeVariableValues.size()))
+            {
+                throw new EngineException("Wrong type variable count (" + genericType.typeVariableValues.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
             }
         }
+
+        MutableList<ValueSpecification> typeVariablesValues = Lists.mutable.empty();
+        if (type instanceof PrimitiveType)
+        {
+            if ((((PrimitiveType) type)._typeVariables().size() != genericType.typeVariableValues.size()))
+            {
+                throw new EngineException("Wrong type variables count (" + genericType.typeVariableValues.size() + ") for type: " + _Class.print(type), ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+            }
+            typeVariablesValues = ListIterate.collect(genericType.typeVariableValues, x -> x.accept(new ValueSpecificationBuilder(this, Lists.mutable.empty(), null)));
+            ((PrimitiveType) type)._typeVariables().zip(typeVariablesValues).forEach(x ->
+            {
+                String _type = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) x.getOne()._genericType()._rawType(), getExecutionSupport());
+                if (!processorSupport.valueSpecification_instanceOf(x.getTwo(), _type))
+                {
+                    throw new EngineException("Error for type: " + _Class.print(type) + ", '" + x.getTwo().getValueForMetaPropertyToOne("values").getName() + "' is not an instance of " + _type, ((PackageableType) genericType.rawType).sourceInformation, EngineErrorType.COMPILATION);
+                }
+            });
+        }
         return gt._rawType(type)
+                ._typeVariableValues(typeVariablesValues)
                 ._typeArguments(ListIterate.collect(genericType.typeArguments, this::newGenericType))
                 ._multiplicityArguments(ListIterate.collect(genericType.multiplicityArguments, pureModel::getMultiplicity));
     }

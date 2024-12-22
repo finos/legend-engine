@@ -8,7 +8,7 @@
     "platform_dsl_graph",
     "platform_dsl_path",
     "core_functions_json",
-    "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_authentication"
   ]

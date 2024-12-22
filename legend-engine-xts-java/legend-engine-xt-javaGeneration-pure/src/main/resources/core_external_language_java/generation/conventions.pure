@@ -176,9 +176,11 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
       },
   |if($g.rawType == LambdaFunction,
       | $conventions->pureTypeToJavaType($g.rawType->toOne(), [], $mult),
-      {|
-          let multArgs = if($g.multiplicityArguments->isEmpty(), |ZeroOne->repeat($g.typeArguments->size()), |$g.multiplicityArguments);
-          assert($g.typeArguments->size() == $multArgs->size());
+      {|  let multArgs = if($g.multiplicityArguments->isEmpty(),
+                            |ZeroOne->repeat($g.typeArguments->size()),
+                            |$g.multiplicityArguments
+                         );
+          //assert($g.typeArguments->size() == $multArgs->size());
           let javaTypeArguments = zip($g.typeArguments, $multArgs)->map(p | $conventions->pureTypeToJavaType($p.first, $p.second));
           $conventions->pureTypeToJavaType($g.rawType->toOne(), $javaTypeArguments, $mult);
       }
@@ -365,9 +367,9 @@ function meta::external::language::java::transform::identifier(conventions: Conv
 
 function meta::external::language::java::transform::className(conventions: Conventions[1], type:meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-    if($conventions->isProvidedType($type),
+  if($conventions->isProvidedType($type),
        | $conventions->getProvidedType($type),
-       | $conventions->generateClassName($type, 'app', ''))
+       | $conventions->generateClassName($type, 'app', ''));
 }
 
 function meta::external::language::java::transform::className(conventions: Conventions[1], pe:PackageableElement[1]): meta::external::language::java::metamodel::Class[1]
@@ -399,7 +401,7 @@ function meta::external::language::java::transform::implClassName(conventions: C
 function <<access.private>> meta::external::language::java::transform::generateClassName(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], zone:String[1], suffix:String[1]): meta::external::language::java::metamodel::Class[1]
 {
    assert(!$conventions->isProvidedType($type), 'Cannot provide implementation for provided types');
-   assert($type != Function, 'Cannot handle function, should use pureTypeToJavaType with generic type');
+   //assert($type != Function, 'Cannot handle function, should use pureTypeToJavaType with generic type');
 
    let packageAndName = if($conventions.typeAndPackageNameStrategy->isEmpty(),
     |let zoneRoot    = $conventions.basePackageName + '.' + $zone + '.';

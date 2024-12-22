@@ -3,7 +3,7 @@
   "pattern": "(meta::external::function::activator|meta::protocols)(::.*)?",
   "dependencies": [
     "core_analytics_lineage",
-    "core_functions_unclassified",
+    "core_functions_standard",
     "platform",
     "core"
   ]

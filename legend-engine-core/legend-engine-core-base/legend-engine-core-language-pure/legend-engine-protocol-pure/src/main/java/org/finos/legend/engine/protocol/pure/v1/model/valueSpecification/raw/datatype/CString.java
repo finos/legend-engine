@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = CString.CStringDeserializer.class)
 public class CString extends PrimitiveValueSpecification
@@ -59,5 +60,22 @@ public class CString extends PrimitiveValueSpecification
             }
             return customParsePrimitive(jsonParser.getCodec(), node, x -> new CString(x.asText()));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CString))
+        {
+            return false;
+        }
+        CString cString = (CString) o;
+        return Objects.equals(value, cString.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }
