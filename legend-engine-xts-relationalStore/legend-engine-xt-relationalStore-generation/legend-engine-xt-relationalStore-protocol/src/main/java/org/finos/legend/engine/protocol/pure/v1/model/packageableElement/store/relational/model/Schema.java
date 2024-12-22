@@ -24,6 +24,5 @@ public class Schema
     public String name;
     public List<Table> tables = Collections.emptyList();
     public List<View> views = Collections.emptyList();
-    public List<TabularFunction> tabularFunctions = Collections.emptyList();
     public SourceInformation sourceInformation;
 }

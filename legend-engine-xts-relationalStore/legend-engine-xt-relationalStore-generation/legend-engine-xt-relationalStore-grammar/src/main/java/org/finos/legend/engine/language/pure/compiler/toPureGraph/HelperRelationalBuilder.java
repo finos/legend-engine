@@ -107,7 +107,6 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_B
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_Table_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_TabularFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_View_Impl;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m2.relational.M2RelationalPaths;
@@ -158,7 +157,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.ProcessingMilestoning;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.TabularFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.View;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -328,10 +326,6 @@ public class HelperRelationalBuilder
                 {
                     table = schema._views().detect(v -> tableName.equals(v._name()));
                 }
-                if (table == null)
-                {
-                    table = schema._tabularFunctions().detect(tf -> tableName.equals(tf._name()));
-                }
                 if (table != null)
                 {
                     tables.add(table);
@@ -420,8 +414,7 @@ public class HelperRelationalBuilder
     {
         Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name, SourceInformationHelper.toM3SourceInformation(srcSchema.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Schema"))._name(srcSchema.name);
         RichIterable<Table> tables = ListIterate.collect(srcSchema.tables, _table -> processDatabaseTable(_table, context, schema));
-        RichIterable<TabularFunction> functions = ListIterate.collect(srcSchema.tabularFunctions, _function -> processDatabaseFunction(_function, context, schema));
-        return schema._tables(tables)._tabularFunctions(functions)._database(database);
+        return schema._tables(tables)._database(database);
     }
 
     public static Schema processDatabaseSchemaViewsFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema srcSchema, CompileContext context, Database database)
@@ -464,13 +457,6 @@ public class HelperRelationalBuilder
         RichIterable<Column> pk = ListIterate.collect(databaseTable.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning> milestoning = ListIterate.collect(databaseTable.milestoning, m -> processMilestoning(m, context, columns.groupBy(ColumnAccessor::_name)));
         return table._columns(columns)._primaryKey(pk)._schema(schema)._milestoning(milestoning);
-    }
-
-    public static TabularFunction processDatabaseFunction(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.TabularFunction srcFunction, CompileContext context, Schema schema)
-    {
-        TabularFunction tabularFunction = new Root_meta_relational_metamodel_relation_TabularFunction_Impl(srcFunction.name, SourceInformationHelper.toM3SourceInformation(srcFunction.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::TabularFunction"))._name(srcFunction.name);
-        MutableList<Column> columns = ListIterate.collect(srcFunction.columns, column -> new Root_meta_relational_metamodel_Column_Impl(column.name, SourceInformationHelper.toM3SourceInformation(column.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(tabularFunction));
-        return tabularFunction._columns(columns)._schema(schema);
     }
 
     public static View processDatabaseViewFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View srcView, CompileContext context, Schema schema)

@@ -42,7 +42,7 @@ public class TestRelationalOperationElementApi extends TestGrammar<RelationalOpe
     @Test
     public void testSimpleError()
     {
-        testError("add(1,", "Unexpected token '<EOF>'. Valid alternatives: ['Database', 'include', 'Table', 'Schema', 'View', 'TabularFunction', 'Filter', 'MultiGrainFilter', 'Join', '{target}', 'and', 'or', 'milestoning', 'business', 'BUS_FROM', 'BUS_THRU', 'THRU_IS_INCLUSIVE', 'BUS_SNAPSHOT_DATE', 'processing', 'PROCESSING_IN', 'PROCESSING_OUT', 'OUT_IS_INCLUSIVE', 'INFINITY_DATE', 'AssociationMapping', 'EnumerationMapping', 'Otherwise', 'Inline', 'Binding', 'scope', '[', '(', '@']", new SourceInformation("", 1, 7, 1, 11));
+        testError("add(1,", "Unexpected token '<EOF>'. Valid alternatives: ['Database', 'include', 'Table', 'Schema', 'View', 'Filter', 'MultiGrainFilter', 'Join', '{target}', 'and', 'or', 'milestoning', 'business', 'BUS_FROM', 'BUS_THRU', 'THRU_IS_INCLUSIVE', 'BUS_SNAPSHOT_DATE', 'processing', 'PROCESSING_IN', 'PROCESSING_OUT', 'OUT_IS_INCLUSIVE', 'INFINITY_DATE', 'AssociationMapping', 'EnumerationMapping', 'Otherwise', 'Inline', 'Binding', 'scope', '[', '(', '@']", new SourceInformation("", 1, 7, 1, 11));
     }
 
     @Test

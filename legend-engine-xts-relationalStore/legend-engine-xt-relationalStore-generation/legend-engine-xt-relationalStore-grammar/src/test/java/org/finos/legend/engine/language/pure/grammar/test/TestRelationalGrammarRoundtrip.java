@@ -89,17 +89,6 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "    NAME VARCHAR(200)\n" +
                 "  )\n" +
                 "\n" +
-                "  TabularFunction personFunction\n" +
-                "  (\n" +
-                "    ID INTEGER,\n" +
-                "    FIRSTNAME VARCHAR(200),\n" +
-                "    LASTNAME VARCHAR(200),\n" +
-                "    AGE INTEGER,\n" +
-                "    ADDRESSID INTEGER,\n" +
-                "    FIRMID INTEGER,\n" +
-                "    MANAGERID INTEGER\n" +
-                "  )\n" +
-                "\n" +
                 "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)\n" +
                 "  Join Address_Person(addressTable.ID = personTable.ADDRESSID = personTable.ADDRESSID)\n" +
                 "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.YEEEEEE or addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.niketh)\n" +

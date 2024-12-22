@@ -3865,7 +3865,6 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
    $r->match([
                s:SelectSQLQuery[1] | $s,
                t:Table[1] | $t,
-               f:TabularFunction[1] | $f,
                u:Union[1] | $u,
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
                             let select = $selectWithCursor.select;
@@ -7883,7 +7882,6 @@ function meta::relational::functions::pureToSqlQuery::findMainTable(relation : R
 function meta::relational::functions::pureToSqlQuery::findMainNamedRelation(relation : RelationalOperationElement[1]):NamedRelation[1]
 {
    $relation->match([v:View[1]|$v,
-                     tf:TabularFunction[1]|$tf,
                      s:SelectSQLQuery[1]|if($s.preIsolationCurrentTreeNode->isEmpty(),
                                                   |$s.data->toOne()->findLastJoinTreeNode(),
                                                   |$s.preIsolationCurrentTreeNode->toOne();

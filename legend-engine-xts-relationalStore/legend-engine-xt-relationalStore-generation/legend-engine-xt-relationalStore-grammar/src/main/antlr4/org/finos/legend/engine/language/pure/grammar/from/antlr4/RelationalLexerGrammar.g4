@@ -12,7 +12,6 @@ INCLUDE:                                    'include';
 TABLE:                                      'Table';
 SCHEMA:                                     'Schema';
 VIEW:                                       'View';
-TABULAR_FUNC:                               'TabularFunction';
 FILTER:                                     'Filter';
 MULTIGRAIN_FILTER:                          'MultiGrainFilter';
 JOIN:                                       'Join';

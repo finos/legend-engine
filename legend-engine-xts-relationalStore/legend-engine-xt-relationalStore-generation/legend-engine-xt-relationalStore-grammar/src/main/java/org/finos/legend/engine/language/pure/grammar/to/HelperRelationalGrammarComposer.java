@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
@@ -44,7 +43,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.ColumnMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.TabularFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Binary;
@@ -316,12 +314,6 @@ public class HelperRelationalGrammarComposer
             builder.append(LazyIterate.collect(schema.views, view -> renderDatabaseView(view, baseIndentation + 1, context)).makeString("\n"));
             builder.append("\n");
         }
-        if (!schema.tabularFunctions.isEmpty())
-        {
-            builder.append(nonEmpty ? "\n" : "");
-            builder.append(LazyIterate.collect(schema.tabularFunctions, tFunc -> renderDatabaseTabularFunction(tFunc, baseIndentation + 1, context)).makeString("\n"));
-            builder.append("\n");
-        }
         builder.append(getTabString(baseIndentation)).append(")");
         return builder.toString();
     }
@@ -346,23 +338,6 @@ public class HelperRelationalGrammarComposer
         {
             builder.append(nonEmpty ? "\n" : "");
             builder.append(LazyIterate.collect(table.columns, column -> renderDatabaseTableColumn(column, table.primaryKey, baseIndentation + 1)).makeString(",\n"));
-            builder.append("\n");
-        }
-        builder.append(getTabString(baseIndentation)).append(")");
-        return builder.toString();
-    }
-
-    public static String renderDatabaseTabularFunction(TabularFunction tabularFunction, int baseIndentation, RelationalGrammarComposerContext context)
-    {
-        StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append("TabularFunction ").append(tabularFunction.name).append("\n");
-        builder.append(getTabString(baseIndentation)).append("(\n");
-        boolean nonEmpty = false;
-
-        if (!tabularFunction.columns.isEmpty())
-        {
-            builder.append(nonEmpty ? "\n" : "");
-            builder.append(LazyIterate.collect(tabularFunction.columns, column -> renderDatabaseTableColumn(column, Lists.mutable.empty(), baseIndentation + 1)).makeString(",\n"));
             builder.append("\n");
         }
         builder.append(getTabString(baseIndentation)).append(")");

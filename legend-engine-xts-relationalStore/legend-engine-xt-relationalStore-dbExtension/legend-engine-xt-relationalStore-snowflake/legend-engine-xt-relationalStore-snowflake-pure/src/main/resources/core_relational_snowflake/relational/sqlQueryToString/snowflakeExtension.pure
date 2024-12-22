@@ -51,7 +51,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
-      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
@@ -97,11 +96,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
                         + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
       ]
     );
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1]):String[1]
-{
-   'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '())';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
