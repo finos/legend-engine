@@ -45,9 +45,8 @@ public class AlloySDLCLoader
     {
         Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
         Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
-        return (isLatestRevision(alloySDLC)) ?
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
-                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
+        String version = isLatestRevision(alloySDLC) ? "master-SNAPSHOT" : alloySDLC.version;
+        return this.metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + version + "/pureModelContextData?convertToNewProtocol=false&clientVersion=" + clientVersion;
     }
 
     public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC)

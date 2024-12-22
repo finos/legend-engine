@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Collection extends Many
 {
@@ -40,5 +41,22 @@ public class Collection extends Many
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof Collection))
+        {
+            return false;
+        }
+        Collection that = (Collection) o;
+        return Objects.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(values);
     }
 }

@@ -4,11 +4,12 @@
   "dependencies": [
     "platform",
     "platform_dsl_graph",
-    "core_functions_unclassified",
+    "core_functions_standard",
     "core",
     "core_external_format_json",
     "core_external_language_java",
     "core_java_platform_binding",
-    "core_java_platform_binding_external_format"
+    "core_java_platform_binding_external_format",
+    "core_external_language_java_conventions_essential"
   ]
 }

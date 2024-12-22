@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = CBoolean.CBooleanDeserializer.class)
 public class CBoolean extends PrimitiveValueSpecification
@@ -50,5 +51,22 @@ public class CBoolean extends PrimitiveValueSpecification
         {
             return customParsePrimitive(jsonParser, x -> new CBoolean(Boolean.parseBoolean(x.asText())));
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof CBoolean))
+        {
+            return false;
+        }
+        CBoolean cBoolean = (CBoolean) o;
+        return value == cBoolean.value;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(value);
     }
 }

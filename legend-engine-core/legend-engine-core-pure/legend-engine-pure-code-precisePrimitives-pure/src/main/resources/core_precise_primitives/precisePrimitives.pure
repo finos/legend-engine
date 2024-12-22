@@ -1,0 +1,64 @@
+###Pure
+import meta::external::catalog::precisePrimitives::*;
+
+Primitive meta::external::catalog::precisePrimitives::TinyInt extends Integer
+[
+  $this >= -pow(2,7) && ($this < pow(2,7))
+]
+
+Primitive meta::external::catalog::precisePrimitives::UTinyInt extends Integer
+[
+  $this < pow(2,8)
+]
+
+Primitive meta::external::catalog::precisePrimitives::SmallInt extends Integer
+[
+  $this >= -pow(2,15) && ($this < pow(2,15))
+]
+
+Primitive meta::external::catalog::precisePrimitives::USmallInt extends Integer
+[
+  $this < pow(2,16)
+]
+
+Primitive meta::external::catalog::precisePrimitives::Int extends Integer
+[
+  $this >= -pow(2,31) && ($this < pow(2,31))
+]
+
+Primitive meta::external::catalog::precisePrimitives::UInt extends Integer
+[
+  $this < pow(2,32)
+]
+
+Primitive meta::external::catalog::precisePrimitives::BigInt extends Integer
+[
+  $this >= -pow(2,63) && ($this < pow(2,63))
+]
+
+Primitive meta::external::catalog::precisePrimitives::UBigInt extends Integer
+[
+  $this < pow(2,64)
+]
+
+Primitive meta::external::catalog::precisePrimitives::Varchar(x:Integer[1]) extends String
+[
+  $this->length() <= $x
+]
+
+Primitive meta::external::catalog::precisePrimitives::Timestamp extends DateTime
+
+Primitive meta::external::catalog::precisePrimitives::Float4 extends Float
+
+Primitive meta::external::catalog::precisePrimitives::Double extends Float
+
+Primitive meta::external::catalog::precisePrimitives::Decimal(x:Integer[1], y:Integer[1]) extends Decimal
+[
+  $this->floor()->toString()->length() <= $x && ($this->fractionDigits()->toString()->length()-2 <= $y)
+]
+
+function meta::external::catalog::precisePrimitives::fractionDigits(x:Decimal[1]):Decimal[1]
+{
+  let val = $x - $x->floor();
+  $val->toDecimal();
+}

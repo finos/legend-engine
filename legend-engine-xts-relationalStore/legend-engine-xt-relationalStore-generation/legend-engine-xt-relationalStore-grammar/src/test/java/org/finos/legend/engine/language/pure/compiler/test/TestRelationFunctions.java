@@ -54,7 +54,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
         String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
         JsonAssert.assertJsonEquals(
-                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"name\":\"id\",\"type\":\"Integer\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
+                "{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::store::RelationStoreAccessor\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"id\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]}",
                 actualValue);
     }
 
@@ -564,7 +564,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id2)\n" +
                         "}",
-                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor[1],ColSpec[1])"
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor<(id:Integer)>[1],ColSpec<(id2:NULL)>[1])"
         );
     }
 
@@ -580,7 +580,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(~id->desc())\n" +
                         "}",
-                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec[1])'"
+                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec<(id:Integer)>[1])'"
         );
     }
 

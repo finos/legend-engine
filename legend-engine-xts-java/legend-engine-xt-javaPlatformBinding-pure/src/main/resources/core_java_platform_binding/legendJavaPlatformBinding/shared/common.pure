@@ -76,20 +76,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::graphIn
    javaParameterizedType($conventions->className(GraphInstance), $elementType);
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::shared::castExpressionToReturnType(expression:Code[1], returnType:meta::external::language::java::metamodel::Type[1]): Code[1]
-{
-  if($expression.type == $returnType,
-    |
-      $expression,
-    |
-  if($returnType->isJavaList(),
-    |
-      $expression->j_listOf($returnType),
-    |
-      $expression->j_cast($returnType)
-  ));
-}
-
 // ----------------------------------------------------------------------------------------------------------
 // --- Implementation
 // ----------------------------------------------------------------------------------------------------------

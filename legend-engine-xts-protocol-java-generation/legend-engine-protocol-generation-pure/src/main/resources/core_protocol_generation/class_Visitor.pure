@@ -30,6 +30,7 @@ function meta::protocols::generation::java::generateVisitor(taxonomy : Taxonomy[
   buildVisitorClass($taxonomy, $typeParam, $conventions)
       ->addMethods($taxonomy.children
                                   ->sortBy(a|$a.name->toOne())
+                                  ->distinct()
                                   ->map(c| javaMethod($typeParam, 'visit', j_parameter(pureTypeToJavaType($conventions, $c, PureOne), 'val')))
   );
 }
