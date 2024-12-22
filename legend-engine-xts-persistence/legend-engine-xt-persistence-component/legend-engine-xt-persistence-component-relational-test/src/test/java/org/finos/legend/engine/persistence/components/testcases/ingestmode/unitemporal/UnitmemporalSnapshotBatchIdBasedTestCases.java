@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -216,8 +217,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                     .transactionMilestoning(BatchId.builder()
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeys))
-                    .putAllPartitionValuesByField(partitionFilter)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                     .build();
 
             Assertions.fail("Exception was not thrown");
@@ -300,8 +300,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForMultipleKeys)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForMultipleKeys).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -309,7 +308,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value", e.getMessage());
         }
     }
 
@@ -324,8 +323,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
         }
@@ -346,9 +344,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey)
-                    .addAllPartitionSpecList(partitionSpecList())
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey).addAllPartitionSpecList(partitionSpecList()).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -356,7 +352,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, Provide either partitionValuesByField or partitionSpecList, both not supported together", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, Provide either partitionValuesByField or partitionSpecList, both not supported together", e.getMessage());
         }
     }
 
@@ -371,8 +367,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeys))
-                    .addAllPartitionSpecList(partitionSpecList())
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).addAllPartitionSpecList(partitionSpecList()).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -380,7 +375,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, size of each partitionSpec must be same as size of partitionFields", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, size of each partitionSpec must be same as size of partitionFields", e.getMessage());
         }
     }
 

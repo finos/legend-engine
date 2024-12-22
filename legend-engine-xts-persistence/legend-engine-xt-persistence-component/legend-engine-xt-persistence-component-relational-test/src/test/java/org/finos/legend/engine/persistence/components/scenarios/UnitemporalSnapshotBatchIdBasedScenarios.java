@@ -19,6 +19,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioning;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 
 import java.util.Arrays;
@@ -51,6 +53,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
                         .batchIdOutName(batchIdOutField)
                         .build())
                 .emptyDatasetHandling(NoOp.builder().build())
+                .partitioningStrategy(NoPartitioning.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -77,7 +80,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -86,12 +89,11 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
-                .putAllPartitionValuesByField(partitionFilter)
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -104,8 +106,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                .addAllPartitionSpecList(partitionSpecList())
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).addAllPartitionSpecList(partitionSpecList()).build())
                 .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableMultiPartitionsBased, stagingTableWithMultiPartitions, ingestMode);

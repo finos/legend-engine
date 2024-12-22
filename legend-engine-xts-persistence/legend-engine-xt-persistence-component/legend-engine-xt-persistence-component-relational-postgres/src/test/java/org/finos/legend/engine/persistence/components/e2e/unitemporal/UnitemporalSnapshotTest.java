@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -254,7 +255,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -362,7 +363,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().build();
@@ -400,7 +401,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -505,7 +506,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())
@@ -568,7 +569,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())
@@ -632,7 +633,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())

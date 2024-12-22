@@ -16,8 +16,9 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioning;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.PartitioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
-import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
@@ -28,7 +29,6 @@ import org.immutables.value.Value;
 
 import java.util.*;
 
-import static org.immutables.value.Value.Derived;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -44,31 +44,10 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
 {
     String digestField();
 
-    @Override
-    TransactionMilestoning transactionMilestoning();
-
-    List<String> partitionFields();
-
-    List<Map<String, Object>> partitionSpecList(); // [ {date: D1, Id: ID1, Name: N1}, {date: D2, Id: ID2, Name: N2}, ....]
-
-    Map<String, Set<String>> partitionValuesByField(); // for Backward compatibility -- to be deprecated
-
-    @Derived
-    default boolean partitioned()
-    {
-        return !partitionFields().isEmpty();
-    }
-
     @Value.Default
-    default boolean derivePartitionSpec()
+    default PartitioningStrategy partitioningStrategy()
     {
-        return false;
-    }
-
-    @Value.Default
-    default Long maxPartitionSpecFilters()
-    {
-        return 1000L;
+        return NoPartitioning.builder().build();
     }
 
     @Value.Default
@@ -86,61 +65,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
-
-        if (!partitionValuesByField().isEmpty() && !partitionSpecList().isEmpty())
-        {
-            throw new IllegalStateException("Can not build UnitemporalSnapshot, Provide either partitionValuesByField or partitionSpecList, both not supported together");
-        }
-
-        // All the keys in partitionValuesByField must exactly match the fields in partitionFields
-        if (!partitionValuesByField().isEmpty())
-        {
-            if (partitionFields().size() != partitionValuesByField().size())
-            {
-                throw new IllegalStateException("Can not build UnitemporalSnapshot, size of partitionValuesByField must be same as partitionFields");
-            }
-            for (String partitionKey: partitionValuesByField().keySet())
-            {
-                if (!partitionFields().contains(partitionKey))
-                {
-                    throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionFields", partitionKey));
-                }
-            }
-            int partitionKeysWithMoreThanOneValues = 0;
-            for (Set<String> partitionValues: partitionValuesByField().values())
-            {
-                if (partitionValues.size() > 1)
-                {
-                    partitionKeysWithMoreThanOneValues++;
-                }
-            }
-            if (partitionKeysWithMoreThanOneValues > 1)
-            {
-                throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value"));
-            }
-        }
-
-        if (!partitionSpecList().isEmpty())
-        {
-            for (Map<String, Object> partitionSpec : partitionSpecList())
-            {
-                if (partitionFields().size() != partitionSpec.size())
-                {
-                    throw new IllegalStateException("Can not build UnitemporalSnapshot, size of each partitionSpec must be same as size of partitionFields");
-                }
-            }
-            for (Map<String, Object> partitionSpec : partitionSpecList())
-            {
-                for (String partitionKey: partitionSpec.keySet())
-                {
-                    if (!partitionFields().contains(partitionKey))
-                    {
-                        throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionSpec", partitionKey));
-                    }
-                }
-            }
-        }
-
         // Allowed Versioning Strategy - NoVersioning, MaxVersioining
         this.versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
         {

@@ -113,7 +113,8 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Optional.of(unitemporalSnapshot.digestField());
+            return Optional.of(unitemporalSnapshot
+                    .digestField());
         }
 
         @Override

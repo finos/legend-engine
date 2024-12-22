@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -104,7 +105,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -119,8 +120,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
-                .putAllPartitionValuesByField(partitionFilter)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                 .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);

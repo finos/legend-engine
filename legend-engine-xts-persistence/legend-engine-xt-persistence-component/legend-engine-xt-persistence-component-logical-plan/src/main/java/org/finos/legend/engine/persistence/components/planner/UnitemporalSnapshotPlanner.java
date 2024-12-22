@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.D
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOpAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -41,28 +42,37 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
+    private Optional<Partitioning> partitioning = Optional.empty();
+
     UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        // validate
-        if (ingestMode.partitioned())
-        {
-            List<String> fieldNames = stagingDataset().schema().fields().stream().map(Field::name).collect(Collectors.toList());
-            // All partitionFields must be present in staging dataset
-            ingestMode.partitionFields().forEach(field -> validateExistence(
-                    fieldNames,
-                    field,
-                    "Field [" + field + "] from partitionFields not present in incoming dataset"));
-        }
+        // validate all partitionFields must be present in staging dataset
+        ingestMode.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+         {
+             @Override
+             public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+             {
+                 List<String> fieldNames = stagingDataset().schema().fields().stream().map(Field::name).collect(Collectors.toList());
+                 partitionStrategy.partitionFields().forEach(field -> validateExistence(
+                         fieldNames,
+                         field,
+                         "Field [" + field + "] from partitionFields not present in incoming dataset"));
+                 return null;
+             }
+
+             @Override
+             public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+             {
+                 return null;
+             }
+         });
     }
 
     @Override
@@ -75,6 +85,11 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
+
+        if (ingestMode().partitioningStrategy() instanceof Partitioning)
+        {
+            partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
+        }
 
         if (resources.stagingDataSetEmpty())
         {
@@ -118,42 +133,56 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         List<Condition> whereClauseForNotInSink = new ArrayList<>((Arrays.asList(openRecordCondition)));
 
-        if (ingestMode().partitioned())
+        if (partitioning.isPresent())
         {
+            Partitioning partition = partitioning.get();
             // if partitionValuesByField provided, add inCondition
-            if (!ingestMode().partitionValuesByField().isEmpty())
+            if (!partition.partitionValuesByField().isEmpty())
             {
-                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), partition.partitionValuesByField()));
             }
-            else if (!ingestMode().partitionSpecList().isEmpty())
+            else if (!partition.partitionSpecList().isEmpty())
             {
-                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
+                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), partition.partitionSpecList()));
             }
             else
             {
-                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), ingestMode().partitionFields().toArray(new String[0])));
+                whereClauseForNotInSink.add(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), partition.partitionFields().toArray(new String[0])));
             }
         }
 
-        Condition notInSinkCondition = Not.of(In.of(
-            FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField()).build(),
-            Selection.builder()
-                .source(mainDataset())
-                .condition(And.of(whereClauseForNotInSink))
-                .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField()).build())
-                .build()));
+            Condition notInSinkCondition = Not.of(In.of(
+                    FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField()).build(),
+                    Selection.builder()
+                            .source(mainDataset())
+                            .condition(And.of(whereClauseForNotInSink))
+                            .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField()).build())
+                            .build()));
 
-        List<Value> dataFields = getDataFields();
-        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
-        List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
-        fieldsToSelect.addAll(milestoneUpdateValues);
-        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
+            List<Value> dataFields = getDataFields();
+            List<Value> fieldsToSelect = new ArrayList<>(dataFields);
+            List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
+            fieldsToSelect.addAll(milestoneUpdateValues);
+            Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
 
-        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
-        fieldsToInsert.addAll(transactionMilestoningFields());
+            List<Value> fieldsToInsert = new ArrayList<>(dataFields);
+            fieldsToInsert.addAll(transactionMilestoningFields());
 
-        return Insert.of(mainDataset(), selectStage, fieldsToInsert);
-    }
+            return Insert.of(mainDataset(), selectStage, fieldsToInsert);
+        }
+//        else
+//        {
+//            List<Value> dataFields = getDataFields();
+//            List<Value> fieldsToSelect = new ArrayList<>(dataFields);
+//            List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
+//            fieldsToSelect.addAll(milestoneUpdateValues);
+//            Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
+//
+//            List<Value> fieldsToInsert = new ArrayList<>(dataFields);
+//            fieldsToInsert.addAll(transactionMilestoningFields());
+//
+//            return Insert.of(mainDataset(), selectStage, fieldsToInsert);
+//        }
 
     /*
     Non-Partition :
@@ -196,22 +225,24 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 
         List<Condition> whereClauseForPartition = new ArrayList<>((Arrays.asList(openRecordCondition, notExistsWhereClause)));
 
-        if (ingestMode().partitioned())
+        if (partitioning.isPresent())
         {
-            if (!ingestMode().partitionValuesByField().isEmpty())
+            Partitioning partition = partitioning.get();
+
+            if (!partition.partitionValuesByField().isEmpty())
             {
-                whereClauseForPartition.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+                whereClauseForPartition.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), partition.partitionValuesByField()));
             }
-            else if (!ingestMode().partitionSpecList().isEmpty())
+            else if (!partition.partitionSpecList().isEmpty())
             {
-                whereClauseForPartition.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
+                whereClauseForPartition.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), partition.partitionSpecList()));
             }
             else
             {
                 Condition partitionColumnCondition = Exists.of(
                     Selection.builder()
                         .source(stagingDataset())
-                        .condition(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), ingestMode().partitionFields().toArray(new String[0])))
+                        .condition(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), partition.partitionFields().toArray(new String[0])))
                         .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                         .build());
                 whereClauseForPartition.add(partitionColumnCondition);
@@ -234,14 +265,18 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         List<Condition> conditions = new ArrayList<>();
         conditions.add(openRecordCondition);
 
-        // Handle Partition Values
-        if (ingestMode().partitioned() && !(ingestMode().partitionValuesByField().isEmpty()))
+        if (partitioning.isPresent())
         {
-            conditions.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
-        }
-        else if (ingestMode().partitioned() && !ingestMode().partitionSpecList().isEmpty())
-        {
-            conditions.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), ingestMode().partitionSpecList()));
+            Partitioning partition = partitioning.get();
+
+            if (!(partition.partitionValuesByField().isEmpty()))
+            {
+                conditions.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), partition.partitionValuesByField()));
+            }
+            else if (!partition.partitionSpecList().isEmpty())
+            {
+                conditions.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), partition.partitionSpecList()));
+            }
         }
         return UpdateAbstract.of(mainDataset(), values, And.of(conditions));
     }
@@ -267,7 +302,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         public LogicalPlan visitDeleteTargetData(DeleteTargetDataAbstract deleteTargetDataAbstract)
         {
             List<Operation> operations = new ArrayList<>();
-            if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty() && ingestMode().partitionSpecList().isEmpty())
+            if (partitioning.isPresent() && partitioning.get().partitionValuesByField().isEmpty() && partitioning.get().partitionSpecList().isEmpty())
             {
                 return LogicalPlan.of(operations);
             }
