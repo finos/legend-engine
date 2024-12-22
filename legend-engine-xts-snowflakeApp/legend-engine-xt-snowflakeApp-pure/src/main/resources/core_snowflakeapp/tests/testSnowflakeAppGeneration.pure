@@ -71,6 +71,15 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
+function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
+{
+  let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
+  let func = $result->filter(f|$f->instanceOf(ConcreteFunctionDefinition))
+    ->cast(@ConcreteFunctionDefinition<Any>)->filter(c| $c.name=='FetchChildrenViaSelfJoin__TabularDataSet_1_')->toOne();
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"ID" INTEGER,"CHILDREN/AGE" INTEGER,"CHILDREN/ID" INTEGER,"CHILDREN/FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".firstname as "Firstname", "root".id as "Id", "parentandchildren_1".age as "Children/Age", "parentandchildren_1".id as "Children/Id", "parentandchildren_1".firstname as "Children/Firstname" from table(Org.ParentAndChildren()) as "root" left outer join table(Org.ParentAndChildren()) as "parentandchildren_1" on ("root".parentId = "parentandchildren_1".id) $$;';
+  meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifactForFunction($func, $expected);
+}
+
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1]
 {
     PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
@@ -144,3 +153,4 @@ function meta::external::function::activator::snowflakeApp::tests::assertSnowfla
   let generatedQuery = if($extensions->isNotEmpty(),| $app->generateArtifact($extensions),|$app->generateArtifact());  
   assertEquals($expected, $generatedQuery);
 }
+

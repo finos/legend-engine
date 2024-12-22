@@ -49,6 +49,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                      u:Union[1]               | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
                                      v:ViewSelectSQLQuery[1]  | pair($relElement->cast(@Table).name, $alias.name)->concatenate($v.selectSQLQuery->traverse());,
                                      t:Table[1]               | pair($relElement->cast(@Table).name, $alias.name);,
+                                     tf:TabularFunction[1]               | pair($relElement->cast(@TabularFunction).name, $alias.name);,
                                      c:CommonTableExpressionReference[1] | pair($relElement->cast(@CommonTableExpressionReference).name, $alias.name);,
                                      s:SelectSQLQuery[1]      | let childPairs = $s->traverse();
                                                                 if($childPairs->isNotEmpty(),
@@ -77,6 +78,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                let relElement = $ta.relationalElement;
                                                $relElement->match([
                                                                     t:Table[1]                  | pair($t.name,$name);,
+                                                                    tf:TabularFunction[1]        | pair($tf.name,$name);,
                                                                     c:CommonTableExpressionReference[1] | pair($c.name,$name);,
                                                                     u:Union[1]                  | pair('unionAlias', $name)->concatenate($u->traverse());,
                                                                     s:SelectSQLQuery[1]         | let children = $s->traverse();
@@ -175,6 +177,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                    ^$ta(name = $new->toOne(),relationalElement = $transformedRelElement);,
       
                 t:Table[1] | $t,
+                tf:TabularFunction[1] | $tf,
 
                 t:CommonTableExpressionReference[1] | $t,
       
