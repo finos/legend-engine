@@ -16,7 +16,10 @@ package org.finos.legend.engine.repl.dataCube.server.model;
 
 public class DataCubeInfrastructureInfo
 {
+    public String currentUser;
     public String gridClientLicense;
+    public String queryServerBaseUrl;
+    public String hostedApplicationBaseUrl;
     public String simpleSampleDataTableName;
     public String complexSampleDataTableName;
 }

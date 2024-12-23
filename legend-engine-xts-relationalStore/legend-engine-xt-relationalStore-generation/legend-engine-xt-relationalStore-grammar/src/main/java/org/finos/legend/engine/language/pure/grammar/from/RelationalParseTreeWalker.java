@@ -203,7 +203,7 @@ public class RelationalParseTreeWalker
     {
         Column column = new Column();
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.name = ctx.relationalIdentifier().getText();
+        column.name =  ctx.relationalIdentifier().getText();
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {

@@ -18,6 +18,7 @@ import java.util.Map;
 
 public class DataCubeGetBaseQueryResult
 {
-    public DataCubeQuery query;
+    public String query;
+    public Map<String, ?> configuration;
     public Map<String, ?> source;
 }

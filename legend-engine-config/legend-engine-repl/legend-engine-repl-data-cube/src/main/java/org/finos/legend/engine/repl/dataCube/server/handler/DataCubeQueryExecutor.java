@@ -50,11 +50,11 @@ public class DataCubeQueryExecutor
                         Lambda lambda = input.query;
                         PureModelContextData data = DataCubeHelpers.injectNewFunction(state.getCurrentPureModelContextData(), lambda).getOne();
                         DataCubeExecutionResult result = executeQuery(state.client, state.legendInterface, state.planExecutor, data, debug);
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e.getMessage(), state);
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
                     }
                 }
             };
