@@ -19,6 +19,8 @@ import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeInfrastructureInfo;
 import org.finos.legend.engine.repl.dataCube.shared.DataCubeSampleData;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,14 +41,28 @@ public class DataCubeInfrastructure
                     try
                     {
                         DataCubeInfrastructureInfo info = new DataCubeInfrastructureInfo();
-                        info.gridClientLicense = System.getProperty("legend.repl.dataCube.gridLicenseKey") == null ? "" : System.getProperty("legend.repl.dataCube.gridLicenseKey");
+                        try
+                        {
+                            Identity identity = Identity.makeIdentity(SubjectTools.getLocalSubject());
+                            if (identity != null)
+                            {
+                                info.currentUser = identity.getName();
+                            }
+                        }
+                        catch (Exception ignored)
+                        {
+                            // do nothing
+                        }
+                        info.gridClientLicense = System.getProperty("legend.repl.dataCube.gridLicenseKey");
+                        info.queryServerBaseUrl = System.getProperty("legend.repl.dataCube.queryServerBaseUrl");
+                        info.hostedApplicationBaseUrl = System.getProperty("legend.repl.dataCube.hostedApplicationBaseUrl");
                         info.simpleSampleDataTableName = DataCubeSampleData.TREE.tableName;
                         info.complexSampleDataTableName = DataCubeSampleData.SPORT.tableName;
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(info), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(info), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e.getMessage(), state);
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
                     }
                 }
             };
@@ -93,7 +109,7 @@ public class DataCubeInfrastructure
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e.getMessage(), state);
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
                     }
                 }
             };

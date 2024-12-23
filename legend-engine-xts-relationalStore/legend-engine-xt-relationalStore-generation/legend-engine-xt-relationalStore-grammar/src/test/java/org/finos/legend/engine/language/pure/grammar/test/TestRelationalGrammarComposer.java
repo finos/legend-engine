@@ -149,4 +149,30 @@ public class TestRelationalGrammarComposer
 
         Assert.assertEquals(expected, formatted);
     }
+
+    @Test
+    public void columnNameWithQuotes() throws Exception
+    {
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("columnNameWithQuotes.json")), PureModelContextData.class);
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        String formatted = grammarTransformer.renderPureModelContextData(context);
+
+        // Test checks that we do not output schema name before {target} - the grammar round trip tests do not exercise this code path as the graph
+        // produced for the roundtrip always sets the schema name in the table alias to default.
+        // This is testing out a graph as would be produced by tools such as Studio and checking that syntactically valid Pure is produced for self-joins
+        String expected =
+                "###Relational\n" +
+                        "Database local::DuckDuckDatabase\n" +
+                        "(\n" +
+                        "  Table sport\n" +
+                        "  (\n" +
+                        "    \"Athlete(s)\" VARCHAR(0),\n" +
+                        "    \"Age/Annee\" BIGINT,\n" +
+                        "    \"Country of Origin\" VARCHAR(0),\n" +
+                        "    \"Final Event\" VARCHAR(0)\n" +
+                        "  )\n" +
+                        ")\n";
+
+        Assert.assertEquals(expected, formatted);
+    }
 }

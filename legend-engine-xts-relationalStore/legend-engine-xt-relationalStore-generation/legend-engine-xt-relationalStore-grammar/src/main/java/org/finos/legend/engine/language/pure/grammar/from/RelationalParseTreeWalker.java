@@ -55,6 +55,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.MultiGrainFilter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.TabularFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Binary;
@@ -130,13 +131,15 @@ public class RelationalParseTreeWalker
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
         List<View> views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, scopeInfo));
-        if (!tables.isEmpty() || !views.isEmpty())
+        List<TabularFunction> tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
+        if (!tables.isEmpty() || !views.isEmpty() || !tabularFunctions.isEmpty())
         {
             Schema schema = new Schema();
             schema.sourceInformation = database.sourceInformation;
             schema.name = "default";
             schema.tables = tables;
             schema.views = views;
+            schema.tabularFunctions = tabularFunctions;
             database.schemas.add(schema);
         }
         database.joins = ListIterate.collect(ctx.join(), joinCtx -> this.visitJoin(joinCtx, scopeInfo));
@@ -174,6 +177,7 @@ public class RelationalParseTreeWalker
         schema.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         schema.tables = ListIterate.collect(ctx.table(), this::visitTable);
         schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.identifier().getStart()).build()));
+        schema.tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
         return schema;
     }
 
@@ -199,7 +203,7 @@ public class RelationalParseTreeWalker
     {
         Column column = new Column();
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.name = ctx.relationalIdentifier().getText();
+        column.name =  ctx.relationalIdentifier().getText();
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {
@@ -538,6 +542,20 @@ public class RelationalParseTreeWalker
         }
         return columnMapping;
     }
+
+    // ----------------------------------------------- TABULAR FUNCTION -----------------------------------------------
+
+    private TabularFunction visitTabularFunc(RelationalParserGrammar.TabularFunctionContext ctx)
+    {
+        TabularFunction tabularFunction = new TabularFunction();
+        tabularFunction.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        tabularFunction.name = ctx.relationalIdentifier().getText();
+        List<String> primaryKeys = FastList.newList();
+        tabularFunction.columns = ListIterate.collect(ctx.columnDefinition(), columnDefinitionContext -> this.visitColumnDefinition(columnDefinitionContext, primaryKeys));
+        return tabularFunction;
+    }
+
+
 
 
     // ----------------------------------------------- JOIN -----------------------------------------------

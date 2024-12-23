@@ -89,6 +89,17 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "    NAME VARCHAR(200)\n" +
                 "  )\n" +
                 "\n" +
+                "  TabularFunction personFunction\n" +
+                "  (\n" +
+                "    ID INTEGER,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "\n" +
                 "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)\n" +
                 "  Join Address_Person(addressTable.ID = personTable.ADDRESSID = personTable.ADDRESSID)\n" +
                 "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.YEEEEEE or addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.niketh)\n" +
@@ -331,6 +342,12 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  Table table2\n" +
                 "  (\n" +
                 "    col1 CHAR(32)\n" +
+                "  )\n" +
+                "  Table table3\n" +
+                "  (\n" +
+                // handle quoted column name
+                "    \"col1\" CHAR(32),\n" +
+                "    \"this is a col\" VARCHAR(32)\n" +
                 "  )\n" +
                 "\n" +
                 "  View view1\n" +

@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.dataCube.server.model;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
-import java.util.Map;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class DataCubeQuery
+import java.util.Collections;
+import java.util.List;
+
+public class TabularFunction
 {
-    public String query;
-    public Map<String, ?> configuration;
+    //TODO params ?
+    public String name;
+    public List<Column> columns = Collections.emptyList();
+    public SourceInformation sourceInformation;
 }

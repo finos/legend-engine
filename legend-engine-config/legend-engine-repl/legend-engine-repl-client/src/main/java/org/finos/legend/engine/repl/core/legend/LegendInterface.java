@@ -22,7 +22,14 @@ import java.net.URL;
 
 public interface LegendInterface
 {
-    PureModelContextData parse(String txt);
+    default PureModelContextData parse(String txt)
+    {
+        return this.parse(txt, true);
+    }
+
+    PureModelContextData parse(String txt, boolean returnSourceInformation);
+
+    String render(PureModelContextData model);
 
     PureModel compile(PureModelContextData model);
 
