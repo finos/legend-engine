@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.da
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
+import java.util.Objects;
+
 public class EnumValue extends DataTypeValueSpecification
 {
     public String fullPath;
@@ -36,5 +38,22 @@ public class EnumValue extends DataTypeValueSpecification
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof EnumValue))
+        {
+            return false;
+        }
+        EnumValue enumValue = (EnumValue) o;
+        return Objects.equals(fullPath, enumValue.fullPath) && Objects.equals(value, enumValue.value);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(fullPath, value);
     }
 }

@@ -40,4 +40,6 @@ public class CLatestDate extends CDate
             return customParsePrimitive(jsonParser, x -> new CLatestDate());
         }
     }
+
+
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::generation::essential::common::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::*;
@@ -30,41 +31,15 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
       ->usesJavaPackage('java.util')
       ->usesJavaPackage('java.util.stream')
       ->addFunctionCoders([
-         fc2(and_Boolean_1__Boolean_1__Boolean_1_,             {ctx,left,right                | j_and($left, $right)}),
-         fc2(or_Boolean_1__Boolean_1__Boolean_1_,              {ctx,left,right                | j_or($left, $right)}),
-         fc1(not_Boolean_1__Boolean_1_,                        {ctx,expression                | j_not($expression)}),
-
-         fc1(isEmpty_Any_$0_1$__Boolean_1_,                    {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_true(), |$maybe->j_box()->j_eq(j_null()))}),
-         fc1(isNotEmpty_Any_$0_1$__Boolean_1_,                 {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_false(), |$maybe->j_box()->j_ne(j_null()))}),
-         
-         fc2(match_Any_MANY__Function_$1_MANY$__T_m_,          {ctx,o,lf                      | $library->j_invoke('match', [$o, $ctx->matchPredicates($o), $ctx->adaptLambdas($o)], $ctx.returnType)}),
-
-         fc2(compare_T_1__T_1__Integer_1_,                     {ctx,left,right                | $library->j_invoke('compareInt', [$left, $right], javaInt())}),
-
-         fc2(cast_Any_m__T_1__T_m_,                            castCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc2(match_Any_MANY__Function_$1_MANY$__T_m_,          {ctx,o,lf | $library->j_invoke('match', [$o, $ctx->matchPredicates($o), $ctx->adaptLambdas($o)], $ctx.returnType)}),
          fc2(whenSubType_Any_1__T_1__T_$0_1$_,                 whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          fc2(whenSubType_Any_$0_1$__T_1__T_$0_1$_,             whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          fc2(whenSubType_Any_MANY__T_1__T_MANY_,               whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
-         fc3(if_Boolean_1__Function_1__Function_1__T_m_,       ifCoder_FuncCoderContext_1__Code_1__Code_1__Code_1__Code_1_),
-         fc2(letFunction_String_1__T_m__T_m_,                  letCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          fc(new_Class_1__String_1__KeyExpression_MANY__T_1_,   processNew_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
-
-         fc2(orElse_T_$0_1$__T_1__T_1_,                        {ctx,maybe,dflt                | if($maybe->isCollectionsEmptyList(), |$dflt, |j_conditional($maybe->j_box()->j_ne(j_null()), $maybe, $dflt))})
+         fc2(orElse_T_$0_1$__T_1__T_1_,                        {ctx,maybe,dflt | if($maybe->isCollectionsEmptyList(), |$dflt, |j_conditional($maybe->j_box()->j_ne(j_null()), $maybe, $dflt))})
       ]);
 
    $conventions->registerLibrary($lib);
-}
-
-function meta::pure::executionPlan::platformBinding::legendJava::library::lang::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
-{
-   let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
-
-   let castTo = if(isJavaList($collection.type),
-                   | javaList($type),
-                   | $type
-                );
-
-   $collection->j_cast($castTo);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::whenSubTypeCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
@@ -161,43 +136,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
    
    j_invoke(javaArrays(), javaFunction(javaObject(), $ctx.returnType), 'asList', $adapt, javaList(javaFunction(javaObject(), $ctx.returnType)));
 
-}
-
-function meta::pure::executionPlan::platformBinding::legendJava::library::lang::ifCoder(ctx:FuncCoderContext[1], condition:Code[1], then:Code[1], else:Code[1]) : Code[1]
-{
-      j_conditional($condition, $then->prepareIfClause($ctx), $else->prepareIfClause($ctx));
-}
-
-function <<access.private>>meta::pure::executionPlan::platformBinding::legendJava::library::lang::prepareIfClause( clause:Code[1],ctx:FuncCoderContext[1]) : Code[1]
-{
-  let returnType = $ctx.returnType();
-  let statements = $clause->cast(@Lambda).expression->cast(@Block).statements;
-  if ( $statements->size() == 1 && ($returnType->isSimpleIfType() || ($returnType->isJavaList() && $returnType->cast(@ParameterizedType).typeArguments->at(0)->isSimpleIfType())) ,
-                    |  let expression = $statements->at(0)->cast(@Return).expression->toOne();
-                        if($expression->isCollectionsEmptyList(),
-                           | if($returnType->isJavaList(),
-                                |   j_emptyList($returnType);,
-                                | j_null()
-                              );,
-                           | if($returnType->isJavaList() && !$expression.type->isJavaList(),
-                                 |    j_invoke(javaArrays(), 'asList', $expression, $expression.type)->j_cast(javaList($expression.type)),
-                                 |$expression;
-                                );
-                         );,
-                     | $clause->j_cast(javaSupplier($returnType))->j_invoke('get', [], $returnType )
-     
-    )->toOne();
-}
-
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::isSimpleIfType(type:meta::external::language::java::metamodel::Type[1]) : Boolean[1]
-{
-  $type->isPrimitiveOrBoxedType() || $type == javaString() ; 
-}
-function meta::pure::executionPlan::platformBinding::legendJava::library::lang::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
-{
-   let varName = $ctx.params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String); 
-
-   j_variable($ctx.returnType(), $ctx.conventions->identifier($varName))->j_declare($expression);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::processNew(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]

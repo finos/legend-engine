@@ -1,4 +1,6 @@
-// Copyright 2020 Goldman Sachs
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +14,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function meta::pure::functions::io::println(param:Any[*]):Nil[0]
-{
-    println($param, 1);
-}
 
-function meta::pure::functions::io::print(param:Any[*]):Nil[0]
+function meta::external::language::java::generation::essential::common::castExpressionToReturnType(expression:Code[1], returnType:meta::external::language::java::metamodel::Type[1]): Code[1]
 {
-    print($param, 1);
-}
-
-function meta::pure::functions::io::println(param:Any[*], max:Integer[1]):Nil[0]
-{
-    print($param, $max);
-    print('\n');
+  if($expression.type == $returnType,
+    |
+      $expression,
+    |
+  if($returnType->isJavaList(),
+    |
+      $expression->j_listOf($returnType),
+    |
+      $expression->j_cast($returnType)
+  ));
 }

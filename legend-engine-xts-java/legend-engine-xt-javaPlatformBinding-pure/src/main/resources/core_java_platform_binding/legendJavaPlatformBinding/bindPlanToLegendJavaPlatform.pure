@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
@@ -65,7 +67,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareGenerationContext(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): GenerationContext[1]
 {
    let conventions  = engineConventions($extensions);
-  
+   
    let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(), 
                           | $conventions, 
                           | $conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$legendJavaConfig.planId->toOne()))

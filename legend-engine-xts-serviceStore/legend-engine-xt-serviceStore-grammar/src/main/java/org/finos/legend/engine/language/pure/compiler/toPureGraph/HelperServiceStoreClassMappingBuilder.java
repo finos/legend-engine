@@ -391,7 +391,8 @@ public class HelperServiceStoreClassMappingBuilder
     private static boolean validateTransformWithServiceParameterType(Root_meta_external_store_service_metamodel_mapping_ServiceRequestParameterBuildInfo requestParameterBuildInfo, CompileContext context, SourceInformation sourceInformation)
     {
         Root_meta_external_store_service_metamodel_TypeReference typeReference = requestParameterBuildInfo._serviceParameter()._type();
-        Type rawtype = requestParameterBuildInfo._transform()._expressionSequence().getLast()._genericType()._rawType();
+        GenericType gt = requestParameterBuildInfo._transform()._expressionSequence().getLast()._genericType();
+        Type rawtype = gt._rawType();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicity = requestParameterBuildInfo._transform()._expressionSequence().getLast()._multiplicity();
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity parameterMultiplicty;
@@ -427,7 +428,7 @@ public class HelperServiceStoreClassMappingBuilder
         }
         else if (typeReference instanceof Root_meta_external_store_service_metamodel_ComplexTypeReference)
         {
-            HelperModelBuilder.checkTypeCompatibility(context, ((Root_meta_external_store_service_metamodel_ComplexTypeReference) typeReference)._type(), rawtype, "Parameter Type is not compatible with transform type", sourceInformation);
+            HelperModelBuilder.checkTypeCompatibility(context, context.newGenericType(((Root_meta_external_store_service_metamodel_ComplexTypeReference) typeReference)._type()), gt, "Parameter Type is not compatible with transform type", sourceInformation);
             return true;
         }
         else
