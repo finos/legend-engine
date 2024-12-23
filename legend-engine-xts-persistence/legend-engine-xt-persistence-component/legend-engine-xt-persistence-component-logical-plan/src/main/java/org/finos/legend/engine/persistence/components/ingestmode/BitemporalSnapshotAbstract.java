@@ -35,7 +35,6 @@ import static org.immutables.value.Value.Style;
 )
 public interface BitemporalSnapshotAbstract extends IngestMode, BitemporalMilestoned
 {
-    String digestField();
 
     @Override
     TransactionMilestoning transactionMilestoning();

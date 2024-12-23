@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.*;
@@ -52,6 +53,11 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
+
+        if (ingestMode().partitioningStrategy() instanceof Partitioning)
+        {
+            partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
+        }
 
         // validate all partitionFields must be present in staging dataset
         ingestMode.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
@@ -85,11 +91,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
-
-        if (ingestMode().partitioningStrategy() instanceof Partitioning)
-        {
-            partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
-        }
 
         if (resources.stagingDataSetEmpty())
         {
@@ -131,6 +132,19 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
      */
     protected Insert sqlToUpsertRows()
     {
+        List<Value> dataFields = getDataFields();
+        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
+        List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
+        fieldsToSelect.addAll(milestoneUpdateValues);
+        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
+        fieldsToInsert.addAll(transactionMilestoningFields());
+
+        if (partitioning.isPresent() && partitioning.get().deleteStrategy() == DeleteStrategy.DELETE_ALL)
+        {
+            Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
+            return Insert.of(mainDataset(), selectStage, fieldsToInsert);
+        }
+
         List<Condition> whereClauseForNotInSink = new ArrayList<>((Arrays.asList(openRecordCondition)));
 
         if (partitioning.isPresent())
@@ -151,38 +165,18 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             }
         }
 
-            Condition notInSinkCondition = Not.of(In.of(
-                    FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField()).build(),
-                    Selection.builder()
-                            .source(mainDataset())
-                            .condition(And.of(whereClauseForNotInSink))
-                            .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField()).build())
-                            .build()));
+        Condition notInSinkCondition = Not.of(In.of(
+                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build(),
+                Selection.builder()
+                        .source(mainDataset())
+                        .condition(And.of(whereClauseForNotInSink))
+                        .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build())
+                        .build()));
 
-            List<Value> dataFields = getDataFields();
-            List<Value> fieldsToSelect = new ArrayList<>(dataFields);
-            List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
-            fieldsToSelect.addAll(milestoneUpdateValues);
-            Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
+        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
 
-            List<Value> fieldsToInsert = new ArrayList<>(dataFields);
-            fieldsToInsert.addAll(transactionMilestoningFields());
-
-            return Insert.of(mainDataset(), selectStage, fieldsToInsert);
+        return Insert.of(mainDataset(), selectStage, fieldsToInsert);
         }
-//        else
-//        {
-//            List<Value> dataFields = getDataFields();
-//            List<Value> fieldsToSelect = new ArrayList<>(dataFields);
-//            List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
-//            fieldsToSelect.addAll(milestoneUpdateValues);
-//            Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
-//
-//            List<Value> fieldsToInsert = new ArrayList<>(dataFields);
-//            fieldsToInsert.addAll(transactionMilestoningFields());
-//
-//            return Insert.of(mainDataset(), selectStage, fieldsToInsert);
-//        }
 
     /*
     Non-Partition :
@@ -223,19 +217,24 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build()));
 
-        List<Condition> whereClauseForPartition = new ArrayList<>((Arrays.asList(openRecordCondition, notExistsWhereClause)));
+        List<Condition> whereClause = new ArrayList<>((Arrays.asList(openRecordCondition)));
 
         if (partitioning.isPresent())
         {
             Partitioning partition = partitioning.get();
 
+            if (partition.deleteStrategy() == DeleteStrategy.DELETE_UPDATED)
+            {
+                whereClause.add(notExistsWhereClause);
+            }
+
             if (!partition.partitionValuesByField().isEmpty())
             {
-                whereClauseForPartition.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), partition.partitionValuesByField()));
+                whereClause.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), partition.partitionValuesByField()));
             }
             else if (!partition.partitionSpecList().isEmpty())
             {
-                whereClauseForPartition.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), partition.partitionSpecList()));
+                whereClause.add(LogicalPlanUtils.getPartitionSpecMatchCondition(mainDataset(), partition.partitionSpecList()));
             }
             else
             {
@@ -245,11 +244,15 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                         .condition(LogicalPlanUtils.getPartitionColumnsMatchCondition(mainDataset(), stagingDataset(), partition.partitionFields().toArray(new String[0])))
                         .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                         .build());
-                whereClauseForPartition.add(partitionColumnCondition);
+                whereClause.add(partitionColumnCondition);
             }
         }
+        else
+        {
+            whereClause.add(notExistsWhereClause);
+        }
 
-        return UpdateAbstract.of(mainDataset(), values, And.of(whereClauseForPartition));
+        return UpdateAbstract.of(mainDataset(), values, And.of(whereClause));
     }
 
     /*

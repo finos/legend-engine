@@ -16,8 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioning;
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.PartitioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
@@ -25,6 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
+import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
 import org.immutables.value.Value;
 
 import java.util.*;
@@ -42,7 +42,7 @@ import static org.immutables.value.Value.Style;
 )
 public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMilestoned
 {
-    String digestField();
+    Optional<String> digestField();
 
     @Value.Default
     default PartitioningStrategy partitioningStrategy()
@@ -65,6 +65,29 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
+        //Digest should be provided for unitemporal snapshot without partition and for unitemporal snapshot with partition, with delete strategy = DELETE_UPDATED
+        if (!digestField().isPresent())
+        {
+            this.partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
+            {
+                @Override
+                public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                {
+                    if (partitionStrategy.deleteStrategy() == DeleteStrategy.DELETE_UPDATED)
+                    {
+                        throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
+                    }
+                    return null;
+                }
+
+                @Override
+                public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for NoPartitioning");
+                }
+            });
+        }
+
         // Allowed Versioning Strategy - NoVersioning, MaxVersioining
         this.versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
         {
@@ -95,6 +118,5 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 throw new IllegalStateException("Cannot build UnitemporalSnapshot, AllVersionsStrategy not supported");
             }
         });
-
     }
 }

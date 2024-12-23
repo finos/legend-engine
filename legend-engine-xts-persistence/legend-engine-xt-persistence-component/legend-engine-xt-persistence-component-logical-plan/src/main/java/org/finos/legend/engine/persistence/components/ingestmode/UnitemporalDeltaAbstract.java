@@ -41,7 +41,6 @@ import static org.immutables.value.Value.Style;
 )
 public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilestoned
 {
-    String digestField();
 
     List<OptimizationFilter> optimizationFilters();
 
