@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-test-deprecated</artifactId>
-        <version>4.67.9-SNAPSHOT</version>
+        <version>4.67.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-test-http-server</artifactId>
