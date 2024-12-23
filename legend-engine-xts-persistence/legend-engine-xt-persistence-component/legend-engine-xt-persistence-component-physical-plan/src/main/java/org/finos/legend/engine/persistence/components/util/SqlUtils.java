@@ -54,7 +54,6 @@ public class SqlUtils
 
             String doubleQuotedPattern = String.format("\"%s\"", placeholder);
             enrichedSql = enrichedSql.replaceAll(Pattern.quote(doubleQuotedPattern), actualValue);
-
         }
         return enrichedSql.replaceAll(Pattern.quote(placeholder), actualValue);
     }
