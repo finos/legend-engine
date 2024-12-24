@@ -17,8 +17,10 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -146,13 +148,13 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).build())
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
                 .emptyDatasetHandling(NoOp.builder().build())
                 .build();
 
@@ -203,15 +205,14 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
-                .digestField(digestField)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
-                .addAllPartitionFields(Arrays.asList(partitionKeys))
-                .putAllPartitionValuesByField(partitionFilter)
+                .digestField(digestField)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                 .emptyDatasetHandling(NoOp.builder().build())
                 .build();
 
@@ -332,21 +333,20 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
         try
         {
             UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
-                    .digestField(digestField)
                     .transactionMilestoning(BatchIdAndDateTime.builder()
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .dateTimeInName(batchTimeInField)
                             .dateTimeOutName(batchTimeOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList("business_date"))
-                    .putAllPartitionValuesByField(partitionFilter)
+                    .digestField(digestField)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList("business_date")).putAllPartitionValuesByField(partitionFilter).build())
                     .build();
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, partitionKey: [biz_date] not specified in partitionFields", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, partitionKey: [biz_date] not specified in partitionFields", e.getMessage());
         }
     }
 

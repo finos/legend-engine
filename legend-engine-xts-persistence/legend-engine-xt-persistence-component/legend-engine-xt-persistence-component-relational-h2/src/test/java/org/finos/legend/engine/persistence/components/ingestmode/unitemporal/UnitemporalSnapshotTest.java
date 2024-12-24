@@ -20,8 +20,10 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -245,7 +247,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -347,7 +349,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().build();
@@ -385,7 +387,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -490,7 +492,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())
@@ -553,7 +555,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())
@@ -617,7 +619,7 @@ class UnitemporalSnapshotTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
                 .mergeDataVersionResolver(DigestBasedResolver.builder().build())
@@ -656,5 +658,65 @@ class UnitemporalSnapshotTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with Partition, without digest when staging table pre populated
+    Empty Batch Handling : Default
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithPartitionNoDigest() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getEntityPriceMainTableWithoutDigest();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTableWithoutDigest();
+        MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
+
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).deleteStrategy(DeleteAllStrategy.builder().build()).build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_partition/no_version_no_digest/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/no_version_no_digest/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithoutDigest(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 6, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_partition/no_version_no_digest/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_partition/no_version_no_digest/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithoutDigest(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(3, 0, 1, 2, 1);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+
+        options = options.withCleanupStagingData(true);
+
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_partition/no_version_no_digest/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithPartitionWithoutDigest(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 }
