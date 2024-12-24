@@ -452,38 +452,41 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
 {
   $a->match(
     [
-      z:FunctionExpression[1]| if($z.func == new_Class_1__String_1__KeyExpression_MANY__T_1_,
-                                | meta::relational::tests::pct::process::reprocessNew($z->reactivate()->evaluateAndDeactivate(), $z.genericType.rawType->toOne()->cast(@Class<Any>), $state);,
-                                | if (!$z.func->in(
-                                              [
-                                                  meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
-                                                  meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
-                                                  meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
-                                                  meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
-                                                  meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
-                                                  meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
-                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
-                                                  meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
-                                              ]),
-                                    | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
-                                      ^$state
-                                      (
-                                          current = ^$z(parametersValues = if ($z->cast(@FunctionExpression).func == write_Relation_1__RelationElementAccessor_1__Integer_1_,
-                                                                              | let reproCurrent = $repro.current->cast(@ValueSpecification);
-                                                                                let tds = $reproCurrent->at(1)->cast(@FunctionExpression).parametersValues->at(0);
-                                                                                $reproCurrent->at(0)->concatenate($tds);,
-                                                                              | $repro.current->cast(@ValueSpecification))
-                                                       )->evaluateAndDeactivate(),
-                                          mapping = $repro.mapping->first(),
-                                          replaced = $repro.replaced,
-                                          csvs = $repro.csvs
-                                      );,
-                                    | ^$state
-                                      (
-                                        current = $z
-                                      )
-                                  )                                  
-                               );,
+      z:FunctionExpression[1]| 
+          let ifElseIf = [
+            pair(
+                |$z.func == new_Class_1__String_1__KeyExpression_MANY__T_1_, 
+                |meta::relational::tests::pct::process::reprocessNew($z->reactivate()->evaluateAndDeactivate(), $z.genericType.rawType->toOne()->cast(@Class<Any>), $state)
+            ),          
+            pair(
+                |!$z.func->in(
+                                [
+                                    meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                    meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                    meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                    meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
+                                    meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                    meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                    meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                    meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                ]
+                            ),
+                |let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
+                  ^$state
+                  (
+                      current = ^$z(parametersValues = if ($z->cast(@FunctionExpression).func == write_Relation_1__RelationElementAccessor_1__Integer_1_,
+                                                          | let reproCurrent = $repro.current->cast(@ValueSpecification);
+                                                            let tds = $reproCurrent->at(1)->cast(@FunctionExpression).parametersValues->at(0);
+                                                            $reproCurrent->at(0)->concatenate($tds);,
+                                                          | $repro.current->cast(@ValueSpecification))
+                                    )->evaluateAndDeactivate(),
+                      mapping = $repro.mapping->first(),
+                      replaced = $repro.replaced,
+                      csvs = $repro.csvs
+                  ); 
+            )
+          ];
+          if($ifElseIf, |^$state(current = $z));,
       ix:InstanceValue[1]|
                           let i = $ix->evaluateAndDeactivate();
                           let type = $i.genericType.rawType->toOne();
