@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.test;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -1445,7 +1446,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [30:9-34:3]: Single execution test has empty asserts","COMPILATION error at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -1691,7 +1692,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                         "      }\n" +
                         "    ];\n" +
                         "  }\n" +
-                        "}", null, Collections.singletonList("COMPILATION error at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
+                        "}", null, Lists.fixedSize.with("COMPILATION error at [52:9-56:3]: Single execution test has empty asserts","COMPILATION error at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
