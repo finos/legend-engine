@@ -309,6 +309,16 @@ function <<functionType.NotImplementedFunction>> meta::pure::mapping::from(tds:T
    $tds;
 }
 
+function meta::pure::mapping::with<T|m>(t:T[m], runtime:Runtime[1]):T[m]
+{
+   $t->from($runtime);
+}
+
+function meta::pure::mapping::with<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):T[m]
+{
+   $t->from($m, $runtime);
+}
+
 
 ###Mapping
 Mapping meta::pure::mapping::MergedMapping
