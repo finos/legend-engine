@@ -129,6 +129,23 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                   [ and {MILESTONING_PARTITION_COLUMN_EQUALITY} ]
             )
      )
+
+     Partition without digest :
+
+    insert into main_table
+    (
+       select
+            {TABLE_BATCH_ID} as "batch_id_in",
+            999999999 as "batch_id_out",
+            {BATCH_TIME} as "batch_time_in_utc",
+            '9999-12-31 23:59:59' as "batch_time_out_utc",
+            (
+            select fields from stage
+            )
+        from
+            stage
+    )
+
      */
     protected Insert sqlToUpsertRows()
     {
@@ -203,6 +220,18 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         sink."digest" = stage."digest" and sink.primaryKeys = stage.primaryKeys
         ) and
         exists
+        (
+        sink.partitionColumns = stage.partitionColumns
+        )
+
+        Partition without digest:
+
+      update "table_name" as sink
+        set
+        sink."batch_id_out"  = <<BATCH_ID>> - 1
+      where
+        sink."batch_id_out" = 999999999 and
+       exists
         (
         sink.partitionColumns = stage.partitionColumns
         )
