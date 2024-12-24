@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.util;
+package org.finos.legend.engine.persistence.components.ingestmode.deletestrategy;
 
-public enum DeleteStrategy
+public interface DeleteStrategy
 {
-    DELETE_ALL,
-    DELETE_UPDATED
+    <T> T accept(DeleteStrategyVisitor<T> visitor);
 }

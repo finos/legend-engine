@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
@@ -31,7 +32,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
-import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -683,7 +683,7 @@ class UnitemporalSnapshotTest extends BaseTest
                         .dateTimeInName(batchTimeInName)
                         .dateTimeOutName(batchTimeOutName)
                         .build())
-                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).deleteStrategy(DeleteStrategy.DELETE_ALL).build())
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).deleteStrategy(DeleteAllStrategy.builder().build()).build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

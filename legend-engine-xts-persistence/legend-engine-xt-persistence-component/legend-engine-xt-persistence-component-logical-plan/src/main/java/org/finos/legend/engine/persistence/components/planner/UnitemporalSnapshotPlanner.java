@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.exception.EmptyBatchException;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetDataAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
@@ -40,7 +41,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
-import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.*;
@@ -139,7 +139,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
         fieldsToInsert.addAll(transactionMilestoningFields());
 
-        if (partitioning.isPresent() && partitioning.get().deleteStrategy() == DeleteStrategy.DELETE_ALL)
+        if (partitioning.isPresent() && partitioning.get().deleteStrategy() instanceof DeleteAllStrategy)
         {
             Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
             return Insert.of(mainDataset(), selectStage, fieldsToInsert);
@@ -212,7 +212,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         List<Condition> whereClause = new ArrayList<>(Arrays.asList(openRecordCondition));
 
-        if (!(partitioning.isPresent() && partitioning.get().deleteStrategy() == DeleteStrategy.DELETE_ALL))
+        if (!(partitioning.isPresent() && partitioning.get().deleteStrategy() instanceof DeleteAllStrategy))
         {
             Condition notExistsWhereClause = Not.of(Exists.of(
                     Selection.builder()

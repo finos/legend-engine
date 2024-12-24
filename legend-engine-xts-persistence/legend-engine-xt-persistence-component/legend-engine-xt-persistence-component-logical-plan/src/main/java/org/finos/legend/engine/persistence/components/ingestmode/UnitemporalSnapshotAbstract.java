@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
@@ -24,7 +25,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
-import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
 import org.immutables.value.Value;
 
 import java.util.*;
@@ -71,7 +71,7 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 @Override
                 public Void visitPartitioning(PartitioningAbstract partitionStrategy)
                 {
-                    if (partitionStrategy.deleteStrategy() == DeleteStrategy.DELETE_UPDATED)
+                    if (partitionStrategy.deleteStrategy() instanceof DeleteUpdatedStrategy)
                     {
                         throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
                     }

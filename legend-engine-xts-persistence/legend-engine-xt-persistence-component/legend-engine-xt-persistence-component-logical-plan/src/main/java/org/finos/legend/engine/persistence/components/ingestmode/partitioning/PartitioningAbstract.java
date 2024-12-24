@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.partitioning;
 
-import org.finos.legend.engine.persistence.components.util.DeleteStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.*;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public interface PartitioningAbstract extends PartitioningStrategy
     @Value.Default
     default DeleteStrategy deleteStrategy()
     {
-        return DeleteStrategy.DELETE_UPDATED;
+        return DeleteUpdatedStrategy.builder().build();
     }
 
     List<String> partitionFields();
