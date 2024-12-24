@@ -375,6 +375,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return Partitioning.builder()
                     .addAllPartitionFields(applyCase(partitionStrategy.partitionFields()))
+                    .deleteStrategy(partitionStrategy.deleteStrategy())
                     .putAllPartitionValuesByField(applyCase(partitionStrategy.partitionValuesByField()))
                     .addAllPartitionSpecList(applyCaseForListOfMap(partitionStrategy.partitionSpecList()))
                     .derivePartitionSpec(partitionStrategy.derivePartitionSpec())

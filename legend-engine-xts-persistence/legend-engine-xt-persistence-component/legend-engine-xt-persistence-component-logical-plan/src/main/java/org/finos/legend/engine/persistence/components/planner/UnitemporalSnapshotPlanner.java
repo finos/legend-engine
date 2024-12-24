@@ -210,23 +210,22 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
      */
     protected Update getSqlToMilestoneRows(List<Pair<FieldValue, Value>> values)
     {
-        Condition notExistsWhereClause = Not.of(Exists.of(
-            Selection.builder()
-                .source(stagingDataset())
-                .condition(And.builder().addConditions(primaryKeysMatchCondition, digestMatchCondition).build())
-                .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
-                .build()));
+        List<Condition> whereClause = new ArrayList<>(Arrays.asList(openRecordCondition));
 
-        List<Condition> whereClause = new ArrayList<>((Arrays.asList(openRecordCondition)));
+        if (!(partitioning.isPresent() && partitioning.get().deleteStrategy() == DeleteStrategy.DELETE_ALL))
+        {
+            Condition notExistsWhereClause = Not.of(Exists.of(
+                    Selection.builder()
+                            .source(stagingDataset())
+                            .condition(And.builder().addConditions(primaryKeysMatchCondition, digestMatchCondition).build())
+                            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
+                            .build()));
+            whereClause.add(notExistsWhereClause);
+        }
 
         if (partitioning.isPresent())
         {
             Partitioning partition = partitioning.get();
-
-            if (partition.deleteStrategy() == DeleteStrategy.DELETE_UPDATED)
-            {
-                whereClause.add(notExistsWhereClause);
-            }
 
             if (!partition.partitionValuesByField().isEmpty())
             {
@@ -246,10 +245,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                         .build());
                 whereClause.add(partitionColumnCondition);
             }
-        }
-        else
-        {
-            whereClause.add(notExistsWhereClause);
         }
 
         return UpdateAbstract.of(mainDataset(), values, And.of(whereClause));

@@ -42,8 +42,6 @@ import static org.immutables.value.Value.Style;
 )
 public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMilestoned
 {
-    Optional<String> digestField();
-
     @Value.Default
     default PartitioningStrategy partitioningStrategy()
     {
