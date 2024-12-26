@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 
 import java.util.Collection;
 import java.util.Collections;

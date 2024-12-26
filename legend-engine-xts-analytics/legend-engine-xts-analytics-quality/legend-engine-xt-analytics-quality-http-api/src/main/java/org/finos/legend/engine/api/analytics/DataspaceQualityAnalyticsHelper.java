@@ -19,7 +19,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.pure.generated.Root_meta_analytics_quality_model_ViolationInstance;
 import org.finos.legend.pure.generated.core_analytics_quality_checksEngine;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;

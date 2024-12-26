@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 import java.util.Collections;
 import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 
 public abstract class Store extends PackageableElement
 {

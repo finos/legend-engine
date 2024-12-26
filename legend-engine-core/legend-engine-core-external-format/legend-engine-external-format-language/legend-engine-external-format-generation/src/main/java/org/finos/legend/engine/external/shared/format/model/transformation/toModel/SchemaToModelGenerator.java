@@ -104,7 +104,7 @@ public class SchemaToModelGenerator extends Generator
             {
                 Object result = packageableElementTransformer.invoke(null, element, Lists.mutable.empty(), pureModel.getExecutionSupport());
                 String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(result, pureModel.getExecutionSupport());
-                return objectMapper.readValue(json, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement.class);
+                return objectMapper.readValue(json, org.finos.legend.engine.protocol.pure.v1.model.PackageableElement.class);
             }
             catch (IOException | ReflectiveOperationException e)
             {

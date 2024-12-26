@@ -41,7 +41,7 @@ public class PackageableElementMilestoningPassBuilder implements PackageableElem
     }
 
     @Override
-    public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.PackageableElement element)
     {
         return null;
     }

@@ -25,7 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 
 import java.util.Collections;
 import java.util.List;

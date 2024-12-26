@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.shared.format.extension;
 
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;

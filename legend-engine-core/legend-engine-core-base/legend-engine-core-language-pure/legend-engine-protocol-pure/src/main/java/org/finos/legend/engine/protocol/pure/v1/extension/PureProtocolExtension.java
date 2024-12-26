@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.extension;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 
 import java.util.Collections;

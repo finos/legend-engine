@@ -30,6 +30,7 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.lineage.Lineage;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -101,7 +102,7 @@ public class HostedServiceArtifactGenerator
 
     public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
     {
-        MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements());
+        MutableList<PackageableElement> elements = org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements());
         HostedService h = (HostedService)elements.select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(e.getPath())).getFirst();
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function f = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function)elements.select(e ->
         {
@@ -125,7 +126,7 @@ public class HostedServiceArtifactGenerator
         return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
     }
 
-    public static String fullName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement e)
+    public static String fullName(PackageableElement e)
     {
         return e._package + "::" + e.name;
     }
