@@ -107,7 +107,7 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Optional.of(nontemporalDelta.digestField());
+            return nontemporalDelta.digestField();
         }
 
         @Override
@@ -189,7 +189,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.digestField().ifPresent(metaFields::add);
             nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
 

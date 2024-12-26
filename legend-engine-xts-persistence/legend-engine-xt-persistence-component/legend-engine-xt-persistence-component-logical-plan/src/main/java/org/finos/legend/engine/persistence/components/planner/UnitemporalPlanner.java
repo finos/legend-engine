@@ -95,6 +95,10 @@ abstract class UnitemporalPlanner extends Planner
         {
             remainingCols = Arrays.asList(digestField.get());
         }
+        else if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKNonVersionDataFields();
+        }
         return remainingCols;
     }
 
