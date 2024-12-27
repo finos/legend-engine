@@ -45,7 +45,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
@@ -1576,14 +1576,14 @@ public class DomainParseTreeWalker
             pType.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             type = pType;
         }
-        else if (ctx.PAREN_OPEN() != null)
+        else if (ctx.relationType() != null)
         {
-            type = new RelationType(ListIterate.collect(ctx.columnInfo(), x ->
+            type = new RelationType(ListIterate.collect(ctx.relationType().columnInfo(), x ->
             {
                 Column column = new Column(
                         PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
                         processGenericType(x.type()),
-                        Multiplicity.ZERO_ONE
+                        x.multiplicity() == null ? Multiplicity.ZERO_ONE : this.buildMultiplicity(x.multiplicity().multiplicityArgument())
                 );
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;

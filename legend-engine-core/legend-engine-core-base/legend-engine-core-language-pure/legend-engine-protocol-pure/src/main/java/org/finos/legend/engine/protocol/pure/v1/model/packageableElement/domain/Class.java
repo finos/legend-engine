@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain
 import java.util.Collections;
 import java.util.List;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
 public class Class extends PackageableElement

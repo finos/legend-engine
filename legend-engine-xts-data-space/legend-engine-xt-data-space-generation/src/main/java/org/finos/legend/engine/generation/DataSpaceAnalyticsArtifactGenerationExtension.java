@@ -81,7 +81,7 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
         String dataSpacePath = getElementFullPath(element, pureModel.getExecutionSupport());
         Assert.assertTrue(this.canGenerate(element), () -> "DataSpace analytics only supports dataSpace elements");
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) element;
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement dataSpaceProtocol = data.getElements().stream().filter(el -> dataSpacePath.equals(el.getPath())).findFirst().orElse(null);
+        org.finos.legend.engine.protocol.pure.v1.model.PackageableElement dataSpaceProtocol = data.getElements().stream().filter(el -> dataSpacePath.equals(el.getPath())).findFirst().orElse(null);
         Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + dataSpacePath + "'");
         DataSpaceAnalysisResult result = DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, data, clientVersion, this.returnLightGraph);
 

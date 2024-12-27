@@ -27,7 +27,7 @@ import org.finos.legend.engine.language.hostedService.grammar.from.HostedService
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 

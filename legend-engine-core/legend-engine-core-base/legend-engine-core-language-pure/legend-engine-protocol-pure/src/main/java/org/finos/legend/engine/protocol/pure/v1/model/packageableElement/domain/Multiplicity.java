@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class Multiplicity
 {
-    public static final Multiplicity ZERO_ONE = new Multiplicity(1, 1);
+    public static final Multiplicity ZERO_ONE = new Multiplicity(0, 1);
     public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
     public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
 

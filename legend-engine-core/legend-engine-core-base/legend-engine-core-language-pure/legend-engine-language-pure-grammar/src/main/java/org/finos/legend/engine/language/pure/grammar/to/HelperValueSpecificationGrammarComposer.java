@@ -391,7 +391,7 @@ public class HelperValueSpecificationGrammarComposer
         }
         else if (type instanceof RelationType)
         {
-            return "(" + ListIterate.collect(((RelationType) type).columns, x -> PureGrammarComposerUtility.convertIdentifier(x.name) + ":" + printGenericType(x.genericType, transformer)).makeString(", ") + ")";
+            return "(" + ListIterate.collect(((RelationType) type).columns, x -> PureGrammarComposerUtility.convertIdentifier(x.name) + ":" + printGenericType(x.genericType, transformer) + (x.multiplicity.equals(Multiplicity.ZERO_ONE) ? "" : "[" + HelperDomainGrammarComposer.renderMultiplicity(x.multiplicity) + "]")).makeString(", ") + ")";
         }
         throw new RuntimeException(type.getClass().getSimpleName() + ": Not supported");
     }
