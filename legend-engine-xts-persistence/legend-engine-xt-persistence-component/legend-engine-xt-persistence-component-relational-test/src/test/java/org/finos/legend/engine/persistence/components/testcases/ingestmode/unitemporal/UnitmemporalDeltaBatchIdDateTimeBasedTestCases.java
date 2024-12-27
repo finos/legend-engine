@@ -19,6 +19,8 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -257,9 +259,8 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
 
     public abstract RelationalSink getRelationalSink();
 
-    //todo : (zhlizh) - to change flow with optional digest and refactor tests
-    //@Test
-    void testUnitemporalDeltaValidationDigestMissing()
+    @Test
+    void testUnitemporalDeltaValidationDigestMissingNoVersioning()
     {
         try
         {
@@ -276,7 +277,33 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build UnitemporalDelta, some of required attributes are not set [digestField]", e.getMessage());
+            Assertions.assertEquals("Cannot build UnitemporalDelta, digestField is mandatory for NoVersioningStrategy", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUnitemporalDeltaValidationDigestMissingWithVersioning()
+    {
+        try
+        {
+            UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                    .batchIdInName(batchIdInField)
+                    .batchIdOutName(batchIdOutField)
+                    .dateTimeInName(batchTimeInField)
+                    .dateTimeOutName(batchTimeOutField)
+                    .build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                    .versioningField(versionField)
+                    .mergeDataVersionResolver(DigestBasedResolver.builder().build())
+                    .build())
+                .build();
+
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Cannot build UnitemporalDelta, digestField is mandatory for DigestBasedResolver", e.getMessage());
         }
     }
 
