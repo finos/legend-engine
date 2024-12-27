@@ -1,8 +1,6 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
 [![Maven Central](https://img.shields.io/maven-central/v/org.finos.legend.engine/legend-engine-server.svg)](https://central.sonatype.com/namespace/org.finos.legend.engine)
 ![Build CI](https://github.com/finos/legend-engine/workflows/Build%20CI/badge.svg)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=security_rating&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=legend-engine&metric=bugs&token=cbbc6d136c4f5671324244170afb9f0a6c22a7fb)](https://sonarcloud.io/dashboard?id=legend-engine)
 
 # legend-engine
 
@@ -13,21 +11,21 @@ Execution engine for Legend. It provides:
 
 ## Development setup
 
-- This applications uses Maven 3.6+ and JDK 11. Simply run `mvn install` to compile.
-- In order to start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
-- You can test by trying http://127.0.0.1:6300 in a web browser. The swagger page can be accessed at http://127.0.0.1:6300/api/swagger
+- This application uses Maven 3.6+ and JDK 11. Run `mvn install` to compile.
+- To start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
+- You can test by trying http://127.0.0.1:6300 on a web browser. The swagger page can be accessed at http://127.0.0.1:6300/api/swagger
 
-> Given the size of the project, developers should consider using paralellism to speed up build times, given enough RAM is provided.
+> Given the size of the project, developers should consider using parallelism to speed up build times, given enough RAM is provided.
 > In IntelliJ IDEA, this can be done by setting `Thread Count` (in `Preferences > Build, Execution, Deployment > Build Tools > Maven`) and `Shared build process heap size (Mbytes)` (in `Preferences > Build, Execution, Deployment > Compiler > Java Compiler`).
 > For example, setting `Thread Count` to `4` and `Shared build process heap size (Mbytes)` to `30000` can significantly reduce build times, you need to fine-tune this to match your machine's specs.
 > 
-> ⚠️ It's also important to disable `Clear output directory on rebuild` in `Preferences > Build, Execution, Deployment > Complier` as this blows away generated resources needed for running the servers from the IDE.
+> ⚠️ It's also important to disable the `Clear output directory on rebuild` in `Preferences > Build, Execution, Deployment > Complier` as this removes generated resources needed to run the servers from the IDE.
 
 ### Starting Pure IDE
 
 If you're making changes to the `Pure` codebase, it's highly recommended that you also spin up our `Pure IDE` application:
 
-- In order to start the server, please use the `Main` class `org.finos.legend.engine.ide.PureIDELight` with the parameters: `server legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json`.
+- To start the server, please use the `Main` class `org.finos.legend.engine.ide.PureIDELight` with the parameters: `server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`.
 - You can now access the IDE at http://127.0.0.1:9200/ide in a web browser.
 
 ## Roadmap
