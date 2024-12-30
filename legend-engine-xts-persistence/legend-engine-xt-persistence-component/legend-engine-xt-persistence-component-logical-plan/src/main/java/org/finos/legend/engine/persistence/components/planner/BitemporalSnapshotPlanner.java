@@ -110,11 +110,11 @@ class BitemporalSnapshotPlanner extends BitemporalPlanner
     protected Insert sqlToUpsertRows()
     {
         Condition notInSinkCondition = Not.of(In.of(
-            FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build(),
+            FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build(),
             Selection.builder()
                 .source(mainDataset())
                 .condition(openRecordCondition)
-                .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build())
+                .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build())
                 .build()));
 
         List<Value> fieldsToSelect = fieldsToSelect();

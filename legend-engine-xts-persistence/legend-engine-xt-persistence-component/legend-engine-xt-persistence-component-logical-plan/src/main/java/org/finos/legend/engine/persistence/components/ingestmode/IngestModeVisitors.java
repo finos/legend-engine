@@ -113,45 +113,24 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            if (unitemporalSnapshot.digestField().isPresent())
-            {
-                return Optional.of(unitemporalSnapshot
-                        .digestField().get());
-            }
-            return Optional.empty();
+            return unitemporalSnapshot.digestField();
         }
 
-        @Override
         public Optional<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
-            if (unitemporalDelta.digestField().isPresent())
-            {
-                return Optional.of(unitemporalDelta
-                        .digestField().get());
-            }
-            return Optional.empty();
+            return unitemporalDelta.digestField();
         }
 
         @Override
         public Optional<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            if (bitemporalSnapshot.digestField().isPresent())
-            {
-                return Optional.of(bitemporalSnapshot
-                        .digestField().get());
-            }
-            return Optional.empty();
+            return bitemporalSnapshot.digestField();
         }
 
         @Override
         public Optional<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
-            if (bitemporalDelta.digestField().isPresent())
-            {
-                return Optional.of(bitemporalDelta
-                        .digestField().get());
-            }
-            return Optional.empty();
+            return bitemporalDelta.digestField();
         }
 
         @Override

@@ -183,11 +183,11 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         }
 
         Condition notInSinkCondition = Not.of(In.of(
-                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build(),
+                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build(),
                 Selection.builder()
                         .source(mainDataset())
                         .condition(And.of(whereClauseForNotInSink))
-                        .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build())
+                        .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build())
                         .build()));
 
         Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();

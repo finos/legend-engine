@@ -26,12 +26,6 @@ import org.immutables.value.Value;
 )
 public interface NoPartitioningAbstract extends PartitioningStrategy
 {
-    @Value.Default
-    default boolean failOnDuplicatePrimaryKeys()
-    {
-        return false;
-    }
-
     @Override
     default <T> T accept(PartitioningStrategyVisitor<T> visitor)
     {
