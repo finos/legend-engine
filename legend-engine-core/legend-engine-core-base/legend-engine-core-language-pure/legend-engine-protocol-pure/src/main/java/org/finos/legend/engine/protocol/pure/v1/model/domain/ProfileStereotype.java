@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
+package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class TagPtr
+public class ProfileStereotype
 {
-    public String profile;
     public String value;
     public SourceInformation sourceInformation;
-    public SourceInformation profileSourceInformation;
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public ProfileStereotype(@JsonProperty("value") String value, @JsonProperty("sourceInformation") SourceInformation sourceInformation)
+    {
+        this.value = value;
+        this.sourceInformation = sourceInformation;
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public ProfileStereotype(String value)
+    {
+        this.value = value;
+        this.sourceInformation = null;
+    }
 }

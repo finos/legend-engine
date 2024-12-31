@@ -21,8 +21,8 @@ import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.Type;
@@ -313,14 +313,14 @@ public class HelperValueSpecificationGrammarComposer
         return builder.toString();
     }
 
-    public static String getFunctionName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
+    public static String getFunctionName(Function fn)
     {
         int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
         String name = signatureIndex > 0 ? fn.name.substring(0, signatureIndex) : fn.name;
         return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
     }
 
-    public static String getFunctionNameWithNoPackage(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
+    public static String getFunctionNameWithNoPackage(Function fn)
     {
         int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
         return signatureIndex > 0 ? fn.name.substring(0, signatureIndex) : fn.name;

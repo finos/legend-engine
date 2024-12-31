@@ -26,6 +26,9 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -133,9 +136,9 @@ public class SchemaToModelGenerationTest
         ModelTexts.Builder builder = ModelTexts.newBuilder();
         for (PackageableElement element : model.getElements())
         {
-            if (element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class
-                    || element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration
-                    || element instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association)
+            if (element instanceof Class
+                    || element instanceof Enumeration
+                    || element instanceof Association)
             {
                 PureModelContextData subContext = PureModelContextData.newBuilder().withElement(element).build();
                 PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());

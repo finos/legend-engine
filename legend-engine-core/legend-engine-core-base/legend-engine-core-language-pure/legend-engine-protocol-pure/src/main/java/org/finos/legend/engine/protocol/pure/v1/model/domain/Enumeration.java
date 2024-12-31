@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
+package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
 import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class Enumeration extends PackageableElement
 {
-    public List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue> values;
+    public List<EnumValue> values;
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 

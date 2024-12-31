@@ -12,21 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
+package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
-import java.util.List;
-
-public class Measure extends PackageableElement
+public class Constraint
 {
-    public Unit canonicalUnit;
-    public List<Unit> nonCanonicalUnits;
-
-    @Override
-    public <T> T accept(PackageableElementVisitor<T> visitor)
-    {
-        return visitor.visit(this);
-    }
+    public String name;
+    public Lambda functionDefinition;
+    public SourceInformation sourceInformation;
+    public String externalId;
+    public String enforcementLevel;
+    public Lambda messageFunction;
 }

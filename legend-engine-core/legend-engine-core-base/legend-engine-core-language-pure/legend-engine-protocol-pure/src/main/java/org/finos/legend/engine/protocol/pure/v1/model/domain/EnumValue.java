@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
+package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class StereotypePtr
+import java.util.Collections;
+import java.util.List;
+
+public class EnumValue
 {
-    public String profile;
     public String value;
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;
-    public SourceInformation profileSourceInformation;
 }

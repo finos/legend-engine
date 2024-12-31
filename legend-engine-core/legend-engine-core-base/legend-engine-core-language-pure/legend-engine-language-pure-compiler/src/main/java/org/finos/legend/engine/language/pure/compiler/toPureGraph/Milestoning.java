@@ -30,7 +30,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_propert
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
@@ -54,7 +53,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.runtime.java.compiled.compiler.Compile;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -532,7 +530,7 @@ public class Milestoning
         return isGeneratedMilestoningQualifiedProperty(property) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
     }
 
-    public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
+    public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
     {
         MilestoningStereotype ms = Milestoning.temporalStereotypes(_class._stereotypes());
         if (ms != null)

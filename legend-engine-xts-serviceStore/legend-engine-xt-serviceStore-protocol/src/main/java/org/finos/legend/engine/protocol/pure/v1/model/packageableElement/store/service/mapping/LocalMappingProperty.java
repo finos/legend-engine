@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 
 public class LocalMappingProperty
 {

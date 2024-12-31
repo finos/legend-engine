@@ -21,8 +21,8 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
+package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
-public enum AggregationKind
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+
+public class DefaultValue
 {
-    NONE,
-    SHARED,
-    COMPOSITE
+    public ValueSpecification value;
+    public SourceInformation sourceInformation;
 }

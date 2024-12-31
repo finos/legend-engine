@@ -20,8 +20,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Diagram_Impl;
 
