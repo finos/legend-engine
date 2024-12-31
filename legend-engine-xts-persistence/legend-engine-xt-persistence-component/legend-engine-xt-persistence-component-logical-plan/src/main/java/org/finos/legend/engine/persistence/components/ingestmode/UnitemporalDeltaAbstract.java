@@ -84,15 +84,7 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
                 {
                     throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
                 }
-
-                MergeDataVersionResolver mergeStrategy = maxVersionStrategy.mergeDataVersionResolver().get();
-                if (mergeStrategy instanceof DigestBasedResolver)
-                {
-                    if (!digestField().isPresent())
-                    {
-                        throw new IllegalStateException("Cannot build UnitemporalDelta, digestField is mandatory for DigestBasedResolver");
-                    }
-                }
+                validateDigest(maxVersionStrategy.mergeDataVersionResolver().get());
                 return null;
             }
 
@@ -103,8 +95,12 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
                 {
                     throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for AllVersionsStrategy");
                 }
+                validateDigest(allVersionsStrategyAbstract.mergeDataVersionResolver().get());
+                return null;
+            }
 
-                MergeDataVersionResolver mergeStrategy = allVersionsStrategyAbstract.mergeDataVersionResolver().get();
+            private void validateDigest(MergeDataVersionResolver mergeStrategy)
+            {
                 if (mergeStrategy instanceof DigestBasedResolver)
                 {
                     if (!digestField().isPresent())
@@ -112,7 +108,6 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
                         throw new IllegalStateException("Cannot build UnitemporalDelta, digestField is mandatory for DigestBasedResolver");
                     }
                 }
-                return null;
             }
         });
     }

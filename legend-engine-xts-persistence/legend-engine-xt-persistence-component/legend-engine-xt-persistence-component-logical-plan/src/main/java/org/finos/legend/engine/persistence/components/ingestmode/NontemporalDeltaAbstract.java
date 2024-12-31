@@ -86,15 +86,7 @@ public interface NontemporalDeltaAbstract extends IngestMode
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
                 }
-
-                MergeDataVersionResolver mergeStrategy = maxVersionStrategy.mergeDataVersionResolver().get();
-                if (mergeStrategy instanceof DigestBasedResolver)
-                {
-                    if (!digestField().isPresent())
-                    {
-                        throw new IllegalStateException("Cannot build NontemporalDelta, digestField is mandatory for DigestBasedResolver");
-                    }
-                }
+                validateDigest(maxVersionStrategy.mergeDataVersionResolver().get());
                 return null;
             }
 
@@ -105,8 +97,12 @@ public interface NontemporalDeltaAbstract extends IngestMode
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
                 }
+                validateDigest(allVersionsStrategyAbstract.mergeDataVersionResolver().get());
+                return null;
+            }
 
-                MergeDataVersionResolver mergeStrategy = allVersionsStrategyAbstract.mergeDataVersionResolver().get();
+            private void validateDigest(MergeDataVersionResolver mergeStrategy)
+            {
                 if (mergeStrategy instanceof DigestBasedResolver)
                 {
                     if (!digestField().isPresent())
@@ -114,7 +110,6 @@ public interface NontemporalDeltaAbstract extends IngestMode
                         throw new IllegalStateException("Cannot build NontemporalDelta, digestField is mandatory for DigestBasedResolver");
                     }
                 }
-                return null;
             }
         });
     }

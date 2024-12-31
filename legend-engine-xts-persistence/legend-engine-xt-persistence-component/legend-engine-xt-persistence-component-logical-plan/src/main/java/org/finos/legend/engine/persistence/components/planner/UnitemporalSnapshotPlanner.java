@@ -130,7 +130,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             )
      )
 
-     Partition without digest :
+     Partition with Delete All :
 
     insert into main_table
     (
@@ -224,7 +224,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         sink.partitionColumns = stage.partitionColumns
         )
 
-        Partition without digest:
+        Partition with Delete All:
 
       update "table_name" as sink
         set

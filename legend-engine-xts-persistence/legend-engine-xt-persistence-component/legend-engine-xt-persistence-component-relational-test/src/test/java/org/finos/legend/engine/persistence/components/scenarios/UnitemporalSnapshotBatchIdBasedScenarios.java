@@ -43,8 +43,8 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
     2) Without Partition, FailOnDups No Versioning
     3) With Partition, No Dedup No Versioning
     4) With Partition Filter, No Dedup No Versioning
-    5) With Partition, No Dedup No Versioning No digest
-    6) With Partition Filter, No Dedup No Versioning No digest
+    5) With Partition, Delete All, No Dedup No Versioning
+    6) With Partition Filter, Delete All, No Dedup No Versioning
     */
 
     public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION()
@@ -115,7 +115,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableMultiPartitionsBased, stagingTableWithMultiPartitions, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION__NO_DIGEST()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS_DELETE_ALL__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .transactionMilestoning(BatchId.builder()
@@ -127,7 +127,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchemaWithoutDigest, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION__NO_DIGEST()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER_DELETE_ALL__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).deleteStrategy(DeleteAllStrategy.builder().build()).build())
@@ -139,7 +139,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchemaWithoutDigest, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST_DELETE_ALL__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .transactionMilestoning(BatchId.builder()

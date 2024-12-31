@@ -278,7 +278,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -305,7 +305,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -331,7 +331,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -359,7 +359,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -386,7 +386,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

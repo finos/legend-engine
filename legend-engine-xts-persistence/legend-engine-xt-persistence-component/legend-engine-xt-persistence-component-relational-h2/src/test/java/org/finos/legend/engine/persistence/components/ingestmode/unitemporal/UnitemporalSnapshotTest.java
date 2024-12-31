@@ -661,11 +661,11 @@ class UnitemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic with Partition, without digest when staging table pre populated
+    Scenario: Test milestoning Logic with Partition delete all when staging table pre populated
     Empty Batch Handling : Default
     */
     @Test
-    void testUnitemporalSnapshotMilestoningLogicWithPartitionNoDigest() throws Exception
+    void testUnitemporalSnapshotMilestoningLogicWithPartitionDeleteAll() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getEntityPriceMainTableWithoutDigest();
         DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTableWithoutDigest();
