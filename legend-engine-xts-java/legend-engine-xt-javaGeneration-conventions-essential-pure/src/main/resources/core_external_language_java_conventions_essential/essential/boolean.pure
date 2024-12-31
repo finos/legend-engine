@@ -13,12 +13,21 @@
 // limitations under the License.
 
 import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
-import meta::external::language::java::generation::standard::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::generation::essential::boolean::*;
 
-function meta::external::language::java::generation::standard::engineConventions(conventions:Conventions[1]): Conventions[1]
+function meta::external::language::java::generation::essential::boolean::registerBooleanLibrary(conventions: Conventions[1]): Conventions[1]
 {
-   $conventions
-      ->meta::external::language::java::generation::standard::collection::registerCollectionsLibrary(true)
-      ->meta::external::language::java::generation::standard::math::registerMathsLibrary(true);
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->addFunctionCoders([
+         fc2(is_Any_1__Any_1__Boolean_1_,                                 {ctx,left,right | $left->j_eq($right)})
+      ]);
+
+   $conventions->registerLibrary($lib);
 }
+

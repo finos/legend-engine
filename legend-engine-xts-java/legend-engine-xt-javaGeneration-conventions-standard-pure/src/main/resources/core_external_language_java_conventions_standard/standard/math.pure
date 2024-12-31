@@ -1,0 +1,45 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::serialization::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::math::*;
+import meta::external::language::java::generation::essential::math::*;
+import meta::external::language::java::generation::grammar::math::*;
+
+function meta::external::language::java::generation::standard::math::registerMathsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->usesNumber( javaNumber(),     javaNumber(),      {n:Number[1]  | javaBigDecimal()->j_new(j_string($n->toString()))})
+      ->usesDecimal(javaBigDecimal(), javaBigDecimal(),  {d:Number[1]  | javaBigDecimal()->j_new(j_string($d->toString()))})
+      ->usesInteger(if($boxPrimitives, |javaLongBoxed(), |javaLong()),       javaLongBoxed(),   {i:Integer[1] | j_long($i)})
+      ->usesFloat(if($boxPrimitives, |javaDoubleBoxed(), |javaDouble()),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
+      ->usesJavaPackage('java.math')
+      ->addFunctionCoders([
+         fc1(average_Number_MANY__Float_1_,                            {ctx,collection | $library->j_invoke('average', $collection, javaDouble())}),
+         fc( average_Integer_MANY__Float_1_,                           fcAlias(          average_Number_MANY__Float_1_)),
+         fc( average_Float_MANY__Float_1_,                             fcAlias(          average_Number_MANY__Float_1_)),
+         fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())}),
+         fc1(varianceSample_Number_MANY__Number_1_,                    {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(true)], javaNumber())}),
+         fc1(variancePopulation_Number_MANY__Number_1_,                {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(false)], javaNumber())})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}

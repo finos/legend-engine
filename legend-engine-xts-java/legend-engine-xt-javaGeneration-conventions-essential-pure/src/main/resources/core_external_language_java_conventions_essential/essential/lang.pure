@@ -28,22 +28,21 @@ function meta::external::language::java::generation::essential::lang::registerLa
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
       ->usesJavaPackage('java.util.stream')
-      ->addFunctionCoders([
-         fc2(and_Boolean_1__Boolean_1__Boolean_1_,             {ctx,left,right                | j_and($left, $right)}),
-         fc2(or_Boolean_1__Boolean_1__Boolean_1_,              {ctx,left,right                | j_or($left, $right)}),
-         fc1(not_Boolean_1__Boolean_1_,                        {ctx,expression                | j_not($expression)}),
-
-         fc1(isEmpty_Any_$0_1$__Boolean_1_,                    {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_true(), |$maybe->j_box()->j_eq(j_null()))}),
-         fc1(isNotEmpty_Any_$0_1$__Boolean_1_,                 {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_false(), |$maybe->j_box()->j_ne(j_null()))}),
-         
-         fc2(compare_T_1__T_1__Integer_1_,                     {ctx,left,right                | $library->j_invoke('compareInt', [$left, $right], javaInt())}),
-
+      ->addFunctionCoders([         
          fc2(cast_Any_m__T_1__T_m_,                            castCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc1(toDecimal_Number_1__Decimal_1_,                   {ctx,num        | javaBigDecimal()->j_new($num->j_cast(javaNumber())->j_invoke('toString', []))}), 
+         fc1(toFloat_Number_1__Float_1_,                       {ctx,num        | $num->j_cast(javaNumber())->j_invoke('doubleValue', [])}),
          fc3(if_Boolean_1__Function_1__Function_1__T_m_,       ifCoder_FuncCoderContext_1__Code_1__Code_1__Code_1__Code_1_),
-         fc2(letFunction_String_1__T_m__T_m_,                  letCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_)
+         fc2(newUnit_Unit_1__Number_1__Any_1_,   {ctx,unit,value    | $ctx->unitImpl(0)->j_new($value);})
       ]);
 
    $conventions->registerLibrary($lib);
+}
+
+function meta::external::language::java::generation::essential::lang::unitImpl(ctx:FuncCoderContext[1], index:Integer[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let unit = $ctx.params->at($index)->cast(@InstanceValue).values->toOne()->cast(@Unit);
+   $ctx.conventions->implClassName($unit);
 }
 
 function meta::external::language::java::generation::essential::lang::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
@@ -97,10 +96,4 @@ function <<access.private>> meta::external::language::java::generation::essentia
 function <<access.private>> meta::external::language::java::generation::essential::lang::isSimpleIfType(type:meta::external::language::java::metamodel::Type[1]) : Boolean[1]
 {
   $type->isPrimitiveOrBoxedType() || $type == javaString() ; 
-}
-function meta::external::language::java::generation::essential::lang::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
-{
-   let varName = $ctx.params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String); 
-
-   j_variable($ctx.returnType(), $ctx.conventions->identifier($varName))->j_declare($expression);
 }

@@ -34,57 +34,43 @@ function meta::external::language::java::generation::essential::collection::regi
       ->usesJavaPackage('java.util.stream')
       ->usesBoolean(if($boxPrimitives, |javaBooleanBoxed(), |javaBoolean()), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
       ->addFunctionCoders([
+         fc2(exists_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_anyMatch($func)}),
+
+         fc2(forAll_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_allMatch($func)}),
+
+         fc2(contains_Any_MANY__Any_1__Boolean_1_,                               {ctx,collection,obj           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
+         fc3(contains_Z_MANY__Z_1__Function_1__Boolean_1_,                       {ctx,collection,obj,eqlf      | $library->j_invoke('contains', [$collection, $obj, $eqlf], javaBoolean())}),
+
          fc2(at_T_MANY__Integer_1__T_1_,                                         {ctx,collection,index         | $library->j_invoke('at', [$collection, $index], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),
          fc2(indexOf_T_MANY__T_1__Integer_1_,                                    {ctx,collection,obj           | $library->j_invoke('indexOf', [$collection, $obj], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),
-         fc1(first_T_MANY__T_$0_1$_,                                             {ctx,collection               | first($collection, $library)}),
-         fc (head_T_MANY__T_$0_1$_,                                              fcAlias(                        first_T_MANY__T_$0_1$_)),
 
-         fc1(range_Integer_1__Integer_MANY_,                                     {ctx,stop                     | javaLongStream()->j_invoke('range', [j_long(0), $stop])->j_invoke('boxed', [])}),
-         fc2(range_Integer_1__Integer_1__Integer_MANY_,                          {ctx,start,stop               | javaLongStream()->j_invoke('range', [$start, $stop])->j_invoke('boxed', [])}),
-         fc3(range_Integer_1__Integer_1__Integer_1__Integer_MANY_,               {ctx,start,stop,step          | $library->j_invoke('range', [$start, $stop, $step], javaStream(javaLongBoxed()))}),
+         fc3(fold_T_MANY__Function_1__V_m__V_m_,                                 {ctx,collection,acc,identity  | javaFold($ctx, $collection, $acc, $identity, $library) }),
+
+         fc1(reverse_T_m__T_m_,                                                  {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('reverse', $collection, $collection.type), | $collection) }),
+
+         fc1(sort_T_m__T_m_,                                                     {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('sort', $collection, $collection.type), | $collection) }),
+         fc2(sort_T_m__Function_$0_1$__T_m_,                                     {ctx,collection,comp          | if($collection.type->isJavaList(), | sortComp($ctx, $collection, $comp, $library),              | $collection) }),
+         fc3(sort_T_m__Function_$0_1$__Function_$0_1$__T_m_,                     {ctx,collection,key,comp      | if($collection.type->isJavaList(), | sortKeyComp($collection, $key, $comp, $library),           | $collection) }),
+
+         fc2(drop_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $ctx.param('collection')->j_streamOf()->js_skip(pinToZero($limit))}),
+         fc (head_T_MANY__T_$0_1$_,                                              fcAlias(                        first_T_MANY__T_$0_1$_)),
+         fc1(init_T_MANY__T_MANY_,                                               {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('init', $collection, $collection.type), | j_null($ctx.returnType->elementType())) }),
+         fc1(last_T_MANY__T_$0_1$_,                                              {ctx,collection               | last($collection, $library)}),
+         fc3(slice_T_MANY__Integer_1__Integer_1__T_MANY_,                        {ctx,collection,limit1,limit2 | $collection->j_streamOf()->js_skip(pinToZero($limit1))->js_limit($limit2->j_minus(pinToZero($limit1)))}),
+         fc1(tail_T_MANY__T_MANY_,                                               {ctx,collection               | $collection->j_streamOf()->js_skip(j_long(1))}),
+         fc2(take_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $collection->j_streamOf()->js_limit($limit)}),
 
          fc (add_T_MANY__T_1__T_$1_MANY$_,                                       fcAlias(                        concatenate_T_MANY__T_MANY__T_MANY_)),
          fc2(concatenate_T_MANY__T_MANY__T_MANY_,                                {ctx,collection1,collection2  | javaStream()->j_invoke('concat', [$collection1->j_streamOf(), $collection2->j_streamOf()], javaStream($ctx.returnType()->elementType()))}),
 
          fc1(removeDuplicates_T_MANY__T_MANY_,                                   {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, j_null(), j_null()], $collection.type), | j_null($ctx.returnType->elementType()))}),
          fc2(removeDuplicates_T_MANY__Function_1__T_MANY_,                       {ctx,collection,eqlf          | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, j_null(), $eqlf   ], $collection.type), | j_null($ctx.returnType->elementType()))}),
+
          fc2(removeDuplicatesBy_T_MANY__Function_1__T_MANY_,                     {ctx,collection,keyf          | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    j_null()], $collection.type), | j_null($ctx.returnType->elementType()))}),
-         fc3(removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_,   {ctx,collection,keyf,eqlf     | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    $eqlf   ], $collection.type), | j_null($ctx.returnType->elementType()))}),
-
-         fc1(init_T_MANY__T_MANY_,                                               {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('init', $collection, $collection.type), | j_null($ctx.returnType->elementType())) }),
-         fc1(tail_T_MANY__T_MANY_,                                               {ctx,collection               | $collection->j_streamOf()->js_skip(j_long(1))}),
-         fc1(last_T_MANY__T_$0_1$_,                                              {ctx,collection               | last($collection, $library)}),
-         fc1(reverse_T_m__T_m_,                                                  {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('reverse', $collection, $collection.type), | $collection) }),
-
-         fc1(sort_T_m__T_m_,                                                     {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('sort', $collection, $collection.type), | $collection) }),
-         fc2(sort_T_m__Function_$0_1$__T_m_,                                     {ctx,collection,comp          | if($collection.type->isJavaList(), | sortComp($ctx, $collection, $comp, $library),              | $collection) }),
-         fc3(sort_T_m__Function_$0_1$__Function_$0_1$__T_m_,                     {ctx,collection,key,comp      | if($collection.type->isJavaList(), | sortKeyComp($collection, $key, $comp, $library),           | $collection) }),
-         fc3(fold_T_MANY__Function_1__V_m__V_m_,                                 {ctx,collection,acc,identity  | javaFold($ctx, $collection, $acc, $identity, $library) }),
-         fc2(drop_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $ctx.param('collection')->j_streamOf()->js_skip(pinToZero($limit))}),
-         fc2(filter_T_MANY__Function_1__T_MANY_,                                 {ctx,collection,func          | $collection->j_streamOf()->js_filter($func)}),
-         fc2(map_T_MANY__Function_1__V_MANY_,                                    {ctx,collection,func          | $collection->j_streamOf()->js_map($func)}),
-         fc (map_T_m__Function_1__V_m_,                                          fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
-         fc (map_T_$0_1$__Function_1__V_$0_1$_,                                  fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
-         fc3(slice_T_MANY__Integer_1__Integer_1__T_MANY_,                        {ctx,collection,limit1,limit2 | $collection->j_streamOf()->js_skip(pinToZero($limit1))->js_limit($limit2->j_minus(pinToZero($limit1)))}),
-         fc2(take_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $collection->j_streamOf()->js_limit($limit)}),
-
-         fc2(contains_Any_MANY__Any_1__Boolean_1_,                               {ctx,collection,obj           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
-         fc3(contains_Z_MANY__Z_1__Function_1__Boolean_1_,                       {ctx,collection,obj,eqlf      | $library->j_invoke('contains', [$collection, $obj, $eqlf], javaBoolean())}),
-
-         fc2(exists_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_anyMatch($func)}),
-         fc2(forAll_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_allMatch($func)}),
-         fc1(isEmpty_Any_MANY__Boolean_1_,                                       {ctx,collection               | if($collection.type->isJavaList(), |$collection->j_invoke('isEmpty', []), |$collection->j_cast($collection.type->toBoxed())->j_eq(j_null()))}),
-         fc1(isNotEmpty_Any_MANY__Boolean_1_,                                    {ctx,collection               | if($collection.type->isJavaList(), | j_not($collection->j_invoke('isEmpty', [])), | $collection->j_cast($collection.type->toBoxed())->j_ne(j_null()))}),
-
-         fc1(size_Any_MANY__Integer_1_,                                          {ctx,collection               | $collection->j_streamOf()->js_count()})
+         fc3(removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_,   {ctx,collection,keyf,eqlf     | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    $eqlf   ], $collection.type), | j_null($ctx.returnType->elementType()))})
       ]);
 
    $conventions->registerLibrary($lib);
-}
-
-function meta::external::language::java::generation::essential::collection::first(collection:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
-{
-    $library->j_invoke('first', $collection, if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))
 }
 
 function meta::external::language::java::generation::essential::collection::last(collection:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]

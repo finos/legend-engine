@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,26 +17,29 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
-import meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::*;
+import meta::external::language::java::generation::grammar::lang::*;
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::registerMultiplicityLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::external::language::java::generation::grammar::lang::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
 {
+   let library  = $conventions->className(Library);
+
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
       ->usesJavaPackage('java.util.stream')
-      ->addFunctionCoder(
-         toOne_T_MANY__T_1_,
-         toOne_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_
-      )
-      ->addFunctionCoder(
-         toOneMany_T_MANY__T_$1_MANY$_,
-         toOneMany_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_
+      ->addFunctionCoder(toOne_T_MANY__T_1_, toOne_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_)
+      ->addFunctionCoder(toOneMany_T_MANY__T_$1_MANY$_, toOneMany_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_)
+      ->addFunctionCoders([
+          // Move when possible!!
+          //fc(extractEnumValue_Enumeration_1__String_1__T_1_,    extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+          fc2(compare_T_1__T_1__Integer_1_,                     {ctx,left,right | $library->j_invoke('compareInt', [$left, $right], javaInt())}),
+          fc2(letFunction_String_1__T_m__T_m_,                  letCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_)
+        ]
       );
 
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::toOne(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::external::language::java::generation::grammar::lang::toOne(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params = $fe.parametersValues->evaluateAndDeactivate();
 
@@ -51,7 +54,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::multip
    $conventions->className(Library)->j_invoke('toOne', $collection, $oneType);
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::toOneMany(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::external::language::java::generation::grammar::lang::toOneMany(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params = $fe.parametersValues->evaluateAndDeactivate();
 
@@ -64,4 +67,11 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::multip
                  );
 
    $conventions->className(Library)->j_invoke('toOneMany', $collection, $listType);
+}
+
+function meta::external::language::java::generation::grammar::lang::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
+{
+   let varName = $ctx.params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String); 
+
+   j_variable($ctx.returnType(), $ctx.conventions->identifier($varName))->j_declare($expression);
 }
