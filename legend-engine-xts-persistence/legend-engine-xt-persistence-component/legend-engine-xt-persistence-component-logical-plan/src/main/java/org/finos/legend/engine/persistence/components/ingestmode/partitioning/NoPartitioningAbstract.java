@@ -27,6 +27,12 @@ import org.immutables.value.Value;
 public interface NoPartitioningAbstract extends PartitioningStrategy
 {
     @Override
+    default boolean isPartitioned()
+    {
+        return false;
+    }
+
+    @Override
     default <T> T accept(PartitioningStrategyVisitor<T> visitor)
     {
         return visitor.visitNoPartitioning(this);

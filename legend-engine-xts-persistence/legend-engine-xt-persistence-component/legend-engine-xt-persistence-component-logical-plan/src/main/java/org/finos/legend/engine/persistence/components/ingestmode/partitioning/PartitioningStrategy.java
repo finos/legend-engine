@@ -16,5 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode.partitioning;
 
 public interface PartitioningStrategy
 {
+    boolean isPartitioned();
+
     <T> T accept(PartitioningStrategyVisitor<T> visitor);
 }

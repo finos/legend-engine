@@ -224,6 +224,23 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations);
 
     @Test
+    void testUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS_DELETE_ALL__FILTER_DUPLICATES__MAX_VERSION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .collectStatistics(true)
+            .ingestRunId(ingestRunId)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(GeneratorResult operations);
+
+    @Test
     void testUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion()
     {
         TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER_DELETE_ALL__NO_DEDUP__NO_VERSION();

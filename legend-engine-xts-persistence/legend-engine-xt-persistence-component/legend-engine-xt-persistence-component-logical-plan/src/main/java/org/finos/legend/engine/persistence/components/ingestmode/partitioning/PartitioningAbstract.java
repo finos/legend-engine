@@ -32,6 +32,12 @@ import java.util.Set;
 )
 public interface PartitioningAbstract extends PartitioningStrategy
 {
+    @Override
+    default boolean isPartitioned()
+    {
+        return true;
+    }
+
     @Value.Default
     default DeleteStrategy deleteStrategy()
     {

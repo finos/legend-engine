@@ -54,7 +54,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        if (ingestMode().partitioningStrategy() instanceof Partitioning)
+        if (ingestMode().partitioningStrategy().isPartitioned())
         {
             partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
         }

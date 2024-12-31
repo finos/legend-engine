@@ -17,12 +17,14 @@ package org.finos.legend.engine.persistence.components.scenarios;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
 import java.util.Arrays;
 
@@ -127,9 +129,24 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchemaWithoutDigest, stagingTableWithBaseSchema, ingestMode);
     }
 
+    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS_DELETE_ALL__FILTER_DUPLICATES__MAX_VERSION()
+    {
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).deleteStrategy(DeleteAllStrategy.builder().build()).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+            .build();
+        return new TestScenario(mainTableWithBatchIdBasedSchemaWithoutDigest, stagingTableWithBaseSchema, ingestMode);
+    }
+
     public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER_DELETE_ALL__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
                 .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).deleteStrategy(DeleteAllStrategy.builder().build()).build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
