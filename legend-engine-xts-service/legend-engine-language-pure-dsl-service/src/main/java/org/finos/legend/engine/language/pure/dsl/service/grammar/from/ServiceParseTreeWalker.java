@@ -32,9 +32,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;

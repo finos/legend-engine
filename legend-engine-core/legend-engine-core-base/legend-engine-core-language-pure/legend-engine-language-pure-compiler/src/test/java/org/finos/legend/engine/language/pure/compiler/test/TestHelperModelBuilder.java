@@ -19,7 +19,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
 import org.junit.Assert;
 import org.junit.Test;
 

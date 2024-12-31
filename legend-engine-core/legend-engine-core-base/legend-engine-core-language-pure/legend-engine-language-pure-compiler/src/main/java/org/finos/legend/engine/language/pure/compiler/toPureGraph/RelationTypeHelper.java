@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
 import org.finos.legend.pure.m3.navigation.relation._Column;

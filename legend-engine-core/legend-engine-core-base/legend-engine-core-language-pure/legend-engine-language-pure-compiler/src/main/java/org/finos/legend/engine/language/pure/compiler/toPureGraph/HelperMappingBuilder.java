@@ -27,8 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingEnumSourceValue;
@@ -95,7 +94,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 
 import java.util.List;
 import java.util.Map;
@@ -104,7 +102,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
-import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperMappingBuilder
 {
@@ -376,7 +373,7 @@ public class HelperMappingBuilder
         {
             mappingClass._setImplementation(mappingclass.setImplementation.accept(new ClassMappingFirstPassBuilder(context, parent)).getOne());
         }
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class rootClass = mappingclass.rootClass;
+        org.finos.legend.engine.protocol.pure.v1.model.domain.Class rootClass = mappingclass.rootClass;
         if (rootClass != null)
         {
             context.processThirdPass(rootClass);

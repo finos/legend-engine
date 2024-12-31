@@ -1,0 +1,67 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::hash::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::generation::essential::string::*;
+
+function meta::external::language::java::generation::essential::string::registerStringLibrary(conventions: Conventions[1]): Conventions[1]
+{   
+   let library  = $conventions->className(Library);
+   let pureDate = $conventions->className(PureDate);
+
+   let lib = newConventionsLibrary()
+      ->usesString(javaString(), javaString(), {s:String[1] | j_string($s)})
+      ->addFunctionCoders([
+         fc2(contains_String_1__String_1__Boolean_1_,                            {ctx,s,toFind                | $s->j_invoke('contains', [$toFind])}),
+         fc2(endsWith_String_1__String_1__Boolean_1_,                            {ctx,s,toFind                | $s->j_invoke('endsWith', [$toFind])}),
+         fc2(startsWith_String_1__String_1__Boolean_1_,                          {ctx,s,toFind                | $s->j_invoke('startsWith', [$toFind])}),
+
+         fc2(indexOf_String_1__String_1__Integer_1_,                             {ctx,s,toFind                | $s->j_invoke('indexOf', [$toFind])}),
+         fc3(indexOf_String_1__String_1__Integer_1__Integer_1_,                  {ctx,s,toFind,fromIndex      | $s->j_invoke('indexOf', [$toFind, $fromIndex->j_cast(javaInt())])}),
+
+         fc1(length_String_1__Integer_1_,                                        {ctx,s                       | $s->j_invoke('length', [])}),
+
+         fc1(parseBoolean_String_1__Boolean_1_,                                  {ctx,s                       | $ctx.conventions->codeParseBoolean($s)}),
+         fc1(parseDate_String_1__Date_1_,                                        {ctx,str                                | $pureDate->j_invoke('parsePureDate', [$str], $ctx.conventions->className(PureDate))}),
+         fc1(parseDecimal_String_1__Decimal_1_,                                  {ctx,s                       | $ctx.conventions->codeParseDecimal($s)}),
+         fc1(parseFloat_String_1__Float_1_,                                      {ctx,s                       | $ctx.conventions->codeParseFloat($s)}),
+         fc1(parseInteger_String_1__Integer_1_,                                  {ctx,s                       | $ctx.conventions->codeParseInteger($s)}),
+
+         fc2(substring_String_1__Integer_1__String_1_,                           {ctx,s,from                  | $s->j_invoke('substring', [$from->j_cast(javaInt())])}),
+         fc3(substring_String_1__Integer_1__Integer_1__String_1_,                {ctx,s,from,to               | $s->j_invoke('substring', [$from->j_cast(javaInt()), $to->j_cast(javaInt())])}),
+
+         fc2(split_String_1__String_1__String_MANY_,                             {ctx,s,token                 | $library->j_invoke('split', [$s, $token], javaList(javaString()))}),
+
+         fc2(format_String_1__Any_MANY__String_1_,                               {ctx,format,args             | $library->j_invoke('format', [$format, $args->j_listOf(javaList(javaObject()))], javaString())}),
+         fc2(joinStrings_String_MANY__String_1__String_1_,                       {ctx,strs,sep                | $strs->j_streamOf()->js_joining($sep)}),
+         fc1(toRepresentation_Any_1__String_1_,                                  {ctx,a                       | $library->j_invoke('toRepresentation', [$a], javaString())}),
+         fc1(toString_Any_1__String_1_,                                          {ctx,a                       | $library->j_invoke('pureToString', [$a], javaString())}),
+
+         fc1(ltrim_String_1__String_1_,                                          {ctx,s                       | $s->j_invoke('ltrim', [])}),
+         fc1(rtrim_String_1__String_1_,                                          {ctx,s                       | $s->j_invoke('rtrim', [])}),
+         fc1(trim_String_1__String_1_,                                           {ctx,s                       | $s->j_invoke('trim', [])}),
+
+         fc3(replace_String_1__String_1__String_1__String_1_,                    {ctx,s,toReplace,replacement | $s->j_invoke('replace', [$toReplace, $replacement])}),
+         fc1(toLower_String_1__String_1_,                                        {ctx,s                       | $s->j_invoke('toLowerCase', [])}),
+         fc1(toUpper_String_1__String_1_,                                        {ctx,s                       | $s->j_invoke('toUpperCase', [])})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}

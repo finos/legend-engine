@@ -26,7 +26,7 @@ import org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingSt
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Domain;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.Collection;

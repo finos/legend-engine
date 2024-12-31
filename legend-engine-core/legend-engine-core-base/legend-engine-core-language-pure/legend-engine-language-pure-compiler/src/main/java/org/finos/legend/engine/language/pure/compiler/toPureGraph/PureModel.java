@@ -48,8 +48,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.Pure
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -1284,7 +1284,7 @@ public class PureModel implements IPureModel
         return this.multiplicitiesIndex.get(m.toLowerCase());
     }
 
-    public Multiplicity getMultiplicity(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity multiplicity)
+    public Multiplicity getMultiplicity(org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity multiplicity)
     {
         if (multiplicity.lowerBound == 1 && multiplicity.isUpperBoundEqualTo(1))
         {

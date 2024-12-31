@@ -1,0 +1,108 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::external::language::java::serialization::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::generation::essential::math::*;
+
+function meta::external::language::java::generation::essential::math::registerMathsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let lib = newConventionsLibrary()
+      ->usesNumber( javaNumber(),     javaNumber(),      {n:Number[1]  | javaBigDecimal()->j_new(j_string($n->toString()))})
+      ->usesDecimal(javaBigDecimal(), javaBigDecimal(),  {d:Number[1]  | javaBigDecimal()->j_new(j_string($d->toString()))})
+      ->usesInteger(if($boxPrimitives, |javaLongBoxed(), |javaLong()),       javaLongBoxed(),   {i:Integer[1] | j_long($i)})
+      ->usesFloat(if($boxPrimitives, |javaDoubleBoxed(), |javaDouble()),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
+      ->usesJavaPackage('java.math')
+      ->addFunctionCoders([
+         fc1(exp_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('exp', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(log_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('log', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(log10_Number_1__Float_1_,                                 {ctx,num        | javaMath()->j_invoke('log10', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+
+         fc1(abs_Integer_1__Integer_1_,                                {ctx,num        | javaMath()->j_invoke('abs', $num, javaLong())}),
+         fc1(abs_Float_1__Float_1_,                                    {ctx,num        | javaMath()->j_invoke('abs', $num, javaDouble())}),
+         fc1(abs_Decimal_1__Decimal_1_,                                {ctx,num        | $num->j_invoke('abs', [], javaBigDecimal())}),
+         fc1(abs_Number_1__Number_1_,                                  {ctx,num        | $library->j_invoke('abs', [$num], javaNumber())}),
+         fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx,int1,int2  | javaMath()->j_invoke('floorMod', [$int1, $int2], javaLong())}),
+         fc2(rem_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | $library->j_invoke('rem', [$num1, $num2], javaNumber())}),
+         fc1(sign_Number_1__Integer_1_,                                {ctx,num        | javaMath()->j_invoke('signum', $num->j_box()->j_invoke('doubleValue', []), javaLong())}),
+
+         fc1(cbrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('cbrt', $num, javaDouble())}),
+         fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+         fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('sqrt', $num, javaDouble())}),
+
+         fc1(ceiling_Number_1__Integer_1_,                             {ctx,num        | $library->j_invoke('ceiling', $num, javaLong())}),
+         fc1(floor_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('floor', $num, javaLong())}),
+         fc1(round_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('round', $num, javaLong())}),
+         fc2(round_Decimal_1__Integer_1__Decimal_1_,                   {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaBigDecimal())}),
+         fc2(round_Float_1__Integer_1__Float_1_,                       {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaDouble())}),
+                          
+         fc1(acos_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('acos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(asin_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('asin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(atan_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('atan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc2(atan2_Number_1__Number_1__Float_1_,                       {ctx,num1,num2  | javaMath()->j_invoke('atan2', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+         fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(cot_Number_1__Float_1_,                                   {ctx,num        | $library->j_invoke('coTangent', [$num->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+         fc1(sin_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('sin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(tan_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('tan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::byTypes(typeSpecs:Pair<Pair<meta::external::language::java::metamodel::Class,meta::external::language::java::metamodel::Class>,Code>[*], default:Code[1]): Code[1]
+{
+   let left   = j_parameter(javaNumber(), 'left');
+   let right  = j_parameter(javaNumber(), 'right');
+
+   $typeSpecs->reverse()->fold(
+      {typeSpec, else|
+         let t1   = $typeSpec.first.first;
+         let t2   = $typeSpec.first.second;
+         let then = $typeSpec.second->j_return();
+         j_if(j_and($left->j_instanceof($t1), $right->j_instanceof($t2)), $then, $else);
+      },
+      $default->j_return()
+   );
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::valueAsDouble(of:Code[1]) : Code[1]
+{
+   j_conditional($of->j_instanceof(javaLongBoxed()), longValue($of), doubleValue($of), javaDouble());
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::longValue(of:Code[1]) : Code[1]
+{
+   $of->j_invoke('longValue', []);
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::doubleValue(of:Code[1]) : Code[1]
+{
+   $of->j_invoke('doubleValue', []);
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::bigDecimal(of:Code[1]) : Code[1]
+{
+   $of->j_cast(javaBigDecimal());
+}
+
+function <<access.private>> meta::external::language::java::generation::essential::math::bigDecimalValue(of:Code[1]) : Code[1]
+{
+   javaBigDecimal()->j_invoke('valueOf', $of);
+}

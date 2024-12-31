@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -118,7 +118,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataQuality.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
                 (dataquality, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQuality<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
@@ -147,7 +147,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataqualityRelationValidation.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
                 (dataqualityRelationValidation, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = new Root_meta_external_dataquality_DataQualityRelationValidation_Impl(
