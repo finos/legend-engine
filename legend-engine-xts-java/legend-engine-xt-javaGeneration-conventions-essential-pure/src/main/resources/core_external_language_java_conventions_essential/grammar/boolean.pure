@@ -1,0 +1,118 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::generation::grammar::boolean::*;
+
+function meta::external::language::java::generation::grammar::boolean::registerBooleanLibrary(conventions: Conventions[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+   let pureDate = $conventions->className(PureDate);
+
+   let lib = newConventionsLibrary()
+      ->addFunctionCoders([
+         fc (eq_Any_1__Any_1__Boolean_1_,                                 fcAlias(          equal_Any_MANY__Any_MANY__Boolean_1_)),
+         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        {ctx,left,right | equalTo($ctx, $left, $right, $library)}),
+         
+         fc2(greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,        {ctx,left,right | $library->j_invoke('greaterThan', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_,            fcAlias(          greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_,            fcAlias(          greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc2(greaterThan_Date_1__Date_1__Boolean_1_,                      {ctx,dt1,dt2                            | $library->j_invoke('greaterThan', [$dt1, $dt2], javaBoolean())}),
+         fc2(greaterThan_Number_1__Number_1__Boolean_1_,               {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_gt($r)}, $library)}),
+         fc2(greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_,       {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_gt(j_int(0))}),
+         fc (greaterThan_Number_$0_1$__Number_1__Boolean_1_,           fcAlias(          greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (greaterThan_Number_1__Number_$0_1$__Boolean_1_,           fcAlias(          greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(greaterThan_String_1__String_1__Boolean_1_,                         {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_gt(j_int(0))}),
+         fc2(greaterThan_String_$0_1$__String_$0_1$__Boolean_1_,                 {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_gt(j_int(0))}),
+         fc (greaterThan_String_$0_1$__String_1__Boolean_1_,                     fcAlias(                       greaterThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (greaterThan_String_1__String_$0_1$__Boolean_1_,                     fcAlias(                       greaterThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+
+         fc2(greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,   {ctx,left,right | $library->j_invoke('greaterThanEqual', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_,       fcAlias(          greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_,       fcAlias(          greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc2(greaterThanEqual_Date_1__Date_1__Boolean_1_,                 {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1, $dt2], javaBoolean())}),
+         fc2(greaterThanEqual_Date_$0_1$__Date_1__Boolean_1_,             {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1->j_cast($pureDate), $dt2], javaBoolean())}),
+         fc2(greaterThanEqual_Date_1__Date_$0_1$__Boolean_1_,             {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1, $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(greaterThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_,         {ctx,dt1,dt2                            | $library->j_invoke('greaterThanEqual', [$dt1->j_cast($pureDate), $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(greaterThanEqual_Number_1__Number_1__Boolean_1_,          {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_ge($r)}, $library)}),
+         fc2(greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_,  {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_ge(j_int(0))}),
+         fc (greaterThanEqual_Number_$0_1$__Number_1__Boolean_1_,      fcAlias(          greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_Number_1__Number_$0_1$__Boolean_1_,      fcAlias(          greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(greaterThanEqual_String_1__String_1__Boolean_1_,                    {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_ge(j_int(0))}),
+         fc2(greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_,            {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_ge(j_int(0))}),
+         fc (greaterThanEqual_String_$0_1$__String_1__Boolean_1_,                fcAlias(                       greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (greaterThanEqual_String_1__String_$0_1$__Boolean_1_,                fcAlias(                       greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+
+         fc2(lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,           {ctx,left,right | $library->j_invoke('greaterThan', [$right->j_cast(javaBooleanBoxed()), $left->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_,               fcAlias(          lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_,               fcAlias(          lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc2(lessThan_Date_1__Date_1__Boolean_1_,                                                    {ctx,dt1,dt2                            | $library->j_invoke('lessThan', [$dt1, $dt2], javaBoolean())}),
+         fc2(lessThan_Number_1__Number_1__Boolean_1_,                  {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_lt($r)}, $library)}),
+         fc2(lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_,          {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_lt(j_int(0))}),
+         fc (lessThan_Number_$0_1$__Number_1__Boolean_1_,              fcAlias(          lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (lessThan_Number_1__Number_$0_1$__Boolean_1_,              fcAlias(          lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(lessThan_String_1__String_1__Boolean_1_,                            {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_lt(j_int(0))}),
+         fc2(lessThan_String_$0_1$__String_$0_1$__Boolean_1_,                    {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_lt(j_int(0))}),
+         fc (lessThan_String_$0_1$__String_1__Boolean_1_,                        fcAlias(                       lessThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (lessThan_String_1__String_$0_1$__Boolean_1_,                        fcAlias(                       lessThan_String_$0_1$__String_$0_1$__Boolean_1_)),
+
+         fc2(lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,      {ctx,left,right | $library->j_invoke('greaterThanEqual', [$right->j_cast(javaBooleanBoxed()), $left->j_cast(javaBooleanBoxed())], javaBoolean())}),
+         fc (lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_,          fcAlias(          lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_,          fcAlias(          lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
+         fc2(lessThanEqual_Date_1__Date_1__Boolean_1_,                    {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1, $dt2], javaBoolean())}),
+         fc2(lessThanEqual_Date_$0_1$__Date_1__Boolean_1_,                {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1->j_cast($pureDate), $dt2], javaBoolean())}),
+         fc2(lessThanEqual_Date_1__Date_$0_1$__Boolean_1_,                {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1, $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(lessThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_,            {ctx,dt1,dt2                            | $library->j_invoke('lessThanEqual', [$dt1->j_cast($pureDate), $dt2->j_cast($pureDate)], javaBoolean())}),
+         fc2(lessThanEqual_Number_1__Number_1__Boolean_1_,             {ctx,num1,num2  | codeCompare($ctx, $num1, $num2, {l,r| $l->j_le($r)}, $library)}),
+         fc2(lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_,     {ctx,n,other    | $library->j_invoke('safeCompareNumbers', [$n, $other], javaInt())->j_le(j_int(0))}),
+         fc (lessThanEqual_Number_$0_1$__Number_1__Boolean_1_,         fcAlias(          lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_Number_1__Number_$0_1$__Boolean_1_,         fcAlias(          lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)),
+         fc2(lessThanEqual_String_1__String_1__Boolean_1_,                       {ctx,s,other                 | $s->j_invoke('compareTo', [$other])->j_le(j_int(0))}),
+         fc2(lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_,               {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_le(j_int(0))}),
+         fc (lessThanEqual_String_$0_1$__String_1__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc (lessThanEqual_String_1__String_$0_1$__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+
+         fc2(and_Boolean_1__Boolean_1__Boolean_1_,                        {ctx,left,right | j_and($left, $right)}),
+         fc2(or_Boolean_1__Boolean_1__Boolean_1_,                         {ctx,left,right | j_or($left, $right)}),
+         fc1(not_Boolean_1__Boolean_1_,                                   {ctx,expression | j_not($expression)})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+
+
+function <<access.private>> meta::external::language::java::generation::grammar::boolean::codeCompare(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], apply:Function<{Code[1],Code[1]->Code[1]}>[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+{
+   if(($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
+      | $apply->eval($left, $right),
+      |
+   if(($left.type == javaDouble() || $left.type == javaDoubleBoxed()) && ($right.type == javaDouble() || $right.type == javaDoubleBoxed()),
+      | $apply->eval($left, $right),
+      | $apply->eval($library->j_invoke('compareInt', [$left, $right], javaInt()), j_int(0))
+   ));
+}
+
+function meta::external::language::java::generation::grammar::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], library:meta::external::language::java::metamodel::Class[1]): Code[1]
+{
+   let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
+                | $left->j_eq($right),
+                | $library->j_invoke('equals', [$left, $right], javaBoolean())
+             );
+}
+

@@ -35,7 +35,11 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
          fc2(whenSubType_Any_1__T_1__T_$0_1$_,                 whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          fc2(whenSubType_Any_$0_1$__T_1__T_$0_1$_,             whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          fc2(whenSubType_Any_MANY__T_1__T_MANY_,               whenSubTypeCoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+
+         // ----------------- Move to Grammar when possible ------------------------
          fc(new_Class_1__String_1__KeyExpression_MANY__T_1_,   processNew_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         // ----------------- Move to Grammar when possible ------------------------
+
          fc2(orElse_T_$0_1$__T_1__T_1_,                        {ctx,maybe,dflt | if($maybe->isCollectionsEmptyList(), |$dflt, |j_conditional($maybe->j_box()->j_ne(j_null()), $maybe, $dflt))})
       ]);
 

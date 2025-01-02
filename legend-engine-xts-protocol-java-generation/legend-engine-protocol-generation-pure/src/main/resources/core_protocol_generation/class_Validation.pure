@@ -92,7 +92,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
              ->concatenate(
                 $c.properties->map(p|
                   let pType = $p->functionReturnType().rawType->toOne();
-                  if (!$pType->instanceOf(meta::pure::metamodel::type::DataType) && $pType->cast(@PackageableElement)->findConfiguration($context)->toOne().generateValidation,
+                  if ($pType != Any && !$pType->instanceOf(meta::pure::metamodel::type::DataType) && $pType->cast(@PackageableElement)->findConfiguration($context)->toOne().generateValidation,
                     | let mul = $p->functionReturnMultiplicity()->toOne();
                       if (!$mul->hasUpperBound() || ($mul->hasUpperBound() && ($mul->getUpperBound() > 1)),
                           |let rawType = $p->functionReturnType().rawType->toOne();

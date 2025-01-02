@@ -210,16 +210,18 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                     BRACE_CLOSE
                                                 )
                                                 |
-                                                (
-                                                    PAREN_OPEN
-                                                        columnInfo (COMMA columnInfo)*
-                                                    PAREN_CLOSE
-                                                )
+                                                    relationType
                                                 |
                                                 unitName
 ;
 
-columnInfo:                                     columnName COLON type
+
+relationType :  PAREN_OPEN
+                   columnInfo (COMMA columnInfo)*
+                PAREN_CLOSE
+;
+
+columnInfo:                                     columnName COLON type multiplicity?
 ;
 
 columnName: identifier

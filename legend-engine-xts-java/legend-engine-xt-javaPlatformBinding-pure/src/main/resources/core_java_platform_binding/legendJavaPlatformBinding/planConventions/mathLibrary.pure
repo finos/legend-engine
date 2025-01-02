@@ -20,6 +20,7 @@ import meta::external::language::java::serialization::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::math::*;
 import meta::external::language::java::generation::essential::math::*;
+import meta::external::language::java::generation::grammar::math::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
 {
@@ -32,10 +33,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
       ->usesFloat(if($boxPrimitives, |javaDoubleBoxed(), |javaDouble()),     javaDoubleBoxed(), {f:Float[1]   | j_double($f)})
       ->usesJavaPackage('java.math')
       ->addFunctionCoders([
-         fc1(average_Number_MANY__Float_1_,                            {ctx,collection | $library->j_invoke('average', $collection, javaDouble())}),
-         fc( average_Integer_MANY__Float_1_,                           fcAlias(          average_Number_MANY__Float_1_)),
-         fc( average_Float_MANY__Float_1_,                             fcAlias(          average_Number_MANY__Float_1_)),
-
          fc1(max_Number_MANY__Number_$0_1$_,                           {ctx,nums       | $nums->j_streamOf()->js_reduce($library->j_methodReference('max', reduceFT(javaNumber())))}),
          fc (max_Number_$1_MANY$__Number_1_,                           fcAlias(          max_Number_MANY__Number_$0_1$_)),
          fc1(max_Integer_MANY__Integer_$0_1$_,                         {ctx,nums       | $nums->j_streamOf()->js_reduce(javaLongBoxed()->j_methodReference('max'))}),
@@ -49,11 +46,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
          fc1(min_Integer_MANY__Integer_$0_1$_,                         {ctx,nums       | $nums->j_streamOf()->js_reduce(javaLongBoxed()->j_methodReference('min'))}),
          fc (min_Integer_$1_MANY$__Integer_1_,                         fcAlias(          min_Integer_MANY__Integer_$0_1$_)),
          fc1(min_Float_MANY__Float_$0_1$_,                             {ctx,nums       | $nums->j_streamOf()->js_reduce(javaDoubleBoxed()->j_methodReference('min'))}),
-         fc (min_Float_$1_MANY$__Float_1_,                             fcAlias(          min_Float_MANY__Float_$0_1$_)),
-
-         fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())}),
-         fc1(varianceSample_Number_MANY__Number_1_,                    {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(true)], javaNumber())}),
-         fc1(variancePopulation_Number_MANY__Number_1_,                {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(false)], javaNumber())})
+         fc (min_Float_$1_MANY$__Float_1_,                             fcAlias(          min_Float_MANY__Float_$0_1$_))
       ]);
 
    $conventions->registerLibrary($lib);

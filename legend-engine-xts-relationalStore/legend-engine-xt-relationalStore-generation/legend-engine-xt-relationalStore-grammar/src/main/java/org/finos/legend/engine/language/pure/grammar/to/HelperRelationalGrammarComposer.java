@@ -18,15 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
@@ -35,51 +27,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.InlineEmbeddedPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.OtherwiseEmbeddedRelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.ColumnMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.TabularFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Binary;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Bit;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Json;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SemiStructured;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Varbinary;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.ElementWithJoins;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
+import java.lang.Double;
+import java.lang.Float;
+import java.lang.Integer;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class HelperRelationalGrammarComposer
 {
@@ -112,7 +75,7 @@ public class HelperRelationalGrammarComposer
 
     public static String renderRelationalOperationElement(RelationalOperationElement op, RelationalGrammarComposerContext context)
     {
-       return renderRelationalOperationElement(op, context, false, 0);
+        return renderRelationalOperationElement(op, context, false, 0);
     }
 
     private static String renderDynaFunc(DynaFunc dynaFunc, RelationalGrammarComposerContext context, boolean nested, int numTabs)
@@ -152,7 +115,7 @@ public class HelperRelationalGrammarComposer
                     }
                     else
                     {
-                        return  LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
+                        return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
                     }
                 }
                 case "isNull":
@@ -263,7 +226,7 @@ public class HelperRelationalGrammarComposer
             if (elementWithJoins.joins.size() > 1)
             {
                 builder.append(" > ");
-                String joins = LazyIterate.collect((elementWithJoins.joins.subList(1,elementWithJoins.joins.size())), HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > ");
+                String joins = LazyIterate.collect((elementWithJoins.joins.subList(1, elementWithJoins.joins.size())), HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > ");
                 builder.append(joins);
             }
         }
@@ -372,7 +335,11 @@ public class HelperRelationalGrammarComposer
     private static String renderDatabaseTableColumn(Column column, List<String> primaryKeys, int baseIndentation)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append(column.name).append(" ");
+        builder.append(getTabString(baseIndentation)).append(
+                // NOTE: for backward compatibility, we have to keep the current behavior of storing quotes as part of column name if present
+                // so the composer need to compensate respectively
+                column.name.startsWith("\"") && column.name.endsWith("\"") ? column.name : PureGrammarComposerUtility.convertIdentifier(column.name, true)
+        ).append(" ");
         if (column.type instanceof Char)
         {
             builder.append("CHAR(").append(((Char) column.type).size).append(")");
@@ -723,7 +690,7 @@ public class HelperRelationalGrammarComposer
         }
         else if (_auth instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
         {
-            MiddleTierUserNamePasswordAuthenticationStrategy auth = (MiddleTierUserNamePasswordAuthenticationStrategy)_auth;
+            MiddleTierUserNamePasswordAuthenticationStrategy auth = (MiddleTierUserNamePasswordAuthenticationStrategy) _auth;
             int baseIndentation = 1;
             return "MiddleTierUserNamePassword" +
                     (auth.vaultReference != null

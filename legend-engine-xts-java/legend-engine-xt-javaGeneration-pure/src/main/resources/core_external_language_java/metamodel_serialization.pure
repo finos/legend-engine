@@ -488,7 +488,10 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:ArrayAccess[1]              | $sfer->doCode($c.array)->addText('[')->doCode($c.index)->addText(']'),
       c:Literal[1]                  | $sfer->addText($c.literal),
       c:InfixExpression[1]          | $sfer->maybeParentheses($c.left, $c)->space()->addText($c.op)->space()->maybeParentheses($c.right, $c),
-      c:PrefixExpression[1]         | $sfer->addText($c.op)->maybeParentheses($c.expression, $c),
+      c:PrefixExpression[1]         | if($c.op == '!' && $c.expression->findProxyUnderlier()->instanceOf(InstanceOf),
+                                        |$sfer->addText('!')->addText('(')->doCode($c.expression)->addText(')'),
+                                        |$sfer->addText($c.op)->maybeParentheses($c.expression, $c);
+                                        );,
       c:PostfixExpression[1]        | $sfer->maybeParentheses($c.expression, $c)->addText($c.op),
       c:Conditional[1]              | $sfer->maybeParentheses($c.test, $c)->addText(' ')->foldable()->addText('? ')->subFoldingStart()->maybeParentheses($c.then, $c)->addText(' ')->subFoldingEnd()->foldable()->addText(': ')->subFoldingStart()->maybeParentheses($c.else, $c)->subFoldingEnd(),
       c:InstanceOf[1]               | $sfer->maybeParentheses($c.expression, $c)->addText(' instanceof ')->doType($c.class),
@@ -584,6 +587,17 @@ function <<access.private>> meta::external::language::java::serialization::prece
       c:SimpleCode[1]                                           |  0,     //  unknown so no precedence
       c:Code[1]                                                 | 99      //  anything else considered atomic
    ])
+}
+
+
+function meta::external::language::java::serialization::findProxyUnderlier(code:Code[1]):Code[1]
+{
+  $code->match(
+    [
+      c:CastProxy[1]| $c.proxy->findProxyUnderlier(),
+      x:Code[1]|$x
+    ]
+  );
 }
 
 function <<access.private>> meta::external::language::java::serialization::maybeParentheses(sfer:Stringifier[1], code:Code[1], wrt:Code[1]): Stringifier[1]

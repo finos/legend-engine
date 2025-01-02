@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
 
 public class MappingClass extends Class
 {

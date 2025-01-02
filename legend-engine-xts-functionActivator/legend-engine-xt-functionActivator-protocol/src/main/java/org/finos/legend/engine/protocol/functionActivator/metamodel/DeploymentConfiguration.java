@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.functionActivator.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class DeploymentConfiguration extends PackageableElement

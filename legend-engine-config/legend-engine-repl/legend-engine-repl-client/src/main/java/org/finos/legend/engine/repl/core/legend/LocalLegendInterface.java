@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.repl.core.legend;
 
-import java.util.concurrent.ForkJoinPool;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -31,6 +32,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPla
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.net.URL;
+import java.util.concurrent.ForkJoinPool;
 
 import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_QUALIFIED_PATH;
 
@@ -39,7 +41,7 @@ public class LocalLegendInterface implements LegendInterface
     private final ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
     @Override
-    public PureModelContextData parse(String txt)
+    public PureModelContextData parse(String txt, boolean returnSourceInformation)
     {
 //        txt = "#>{a::DB.test}#->filter(t|$t.name->startsWith('Dr'))->meta::pure::mapping::from(^meta::core::runtime::Runtime\n" +
 //                "                                                      (\n" +
@@ -52,7 +54,7 @@ public class LocalLegendInterface implements LegendInterface
 //                "                                                                          )\n" +
 //                "                                                      )\n" +
 //                "                                                  )";
-        return PureGrammarParser.newInstance().parseModel(txt);
+        return PureGrammarParser.newInstance().parseModel(txt, returnSourceInformation);
 //
 //                "" +
 //                "###Runtime\n" +
@@ -79,6 +81,12 @@ public class LocalLegendInterface implements LegendInterface
     }
 
     @Override
+    public String render(PureModelContextData model)
+    {
+        return PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(model);
+    }
+
+    @Override
     public PureModel compile(PureModelContextData pureModelContextData)
     {
         return Compiler.compile(pureModelContextData, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), null, PureModelProcessParameter.newBuilder().withForkJoinPool(this.forkJoinPool).build());
@@ -87,7 +95,7 @@ public class LocalLegendInterface implements LegendInterface
     @Override
     public Root_meta_pure_executionPlan_ExecutionPlan generatePlan(PureModel pureModel, boolean debug)
     {
-        RichIterable<? extends Root_meta_pure_extension_Extension> extensions =  PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe(REPL_RUN_FUNCTION_QUALIFIED_PATH), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
         if (debug)
         {

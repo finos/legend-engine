@@ -21,7 +21,7 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
 import org.finos.legend.engine.plan.execution.validation.FunctionParametersParametersValidation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.junit.Assert;
 import org.junit.Test;

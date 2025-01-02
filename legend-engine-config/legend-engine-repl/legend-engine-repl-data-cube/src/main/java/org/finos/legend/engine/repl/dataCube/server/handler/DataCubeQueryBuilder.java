@@ -58,11 +58,18 @@ public class DataCubeQueryBuilder
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeParseQueryInput input = state.objectMapper.readValue(requestBody, DataCubeParseQueryInput.class);
                         ValueSpecification result = DataCubeHelpers.parseQuery(input.code, input.returnSourceInformation);
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 400, e instanceof EngineException ? state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)) : e.getMessage(), state);
+                        if (e instanceof EngineException)
+                        {
+                            handleJSONResponse(exchange, 400, state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)), state);
+                        }
+                        else
+                        {
+                            handleTextResponse(exchange, 500, e.getMessage(), state);
+                        }
                     }
                 }
             };
@@ -84,11 +91,11 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetValueSpecificationCodeInput input = state.objectMapper.readValue(requestBody, DataCubeGetValueSpecificationCodeInput.class);
-                        handleResponse(exchange, 200, DataCubeHelpers.getQueryCode(input.value, input.pretty), state);
+                        handleTextResponse(exchange, 200, DataCubeHelpers.getQueryCode(input.value, input.pretty), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 400, e.getMessage(), state);
+                        handleTextResponse(exchange, 400, e.getMessage(), state);
                     }
                 }
             };
@@ -122,11 +129,11 @@ public class DataCubeQueryBuilder
                                 result.queries.put(key, null);
                             }
                         });
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 400, e.getMessage(), state);
+                        handleTextResponse(exchange, 400, e.getMessage(), state);
                     }
                 }
             };
@@ -149,11 +156,11 @@ public class DataCubeQueryBuilder
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeQueryTypeaheadInput input = state.objectMapper.readValue(requestBody, DataCubeQueryTypeaheadInput.class);
                         CompletionResult result = DataCubeHelpers.getCodeTypeahead(input.code, input.baseQuery, input.isolated ? null : state.getCurrentPureModelContextData(), state.client.getCompleterExtensions(), state.legendInterface);
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result.getCompletion()), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result.getCompletion()), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e.getMessage(), state);
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
                     }
                 }
             };
@@ -175,11 +182,18 @@ public class DataCubeQueryBuilder
                         BufferedReader bufferReader = new BufferedReader(inputStreamReader);
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetQueryRelationReturnTypeInput input = state.objectMapper.readValue(requestBody, DataCubeGetQueryRelationReturnTypeInput.class);
-                        handleResponse(exchange, 200, state.objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(state.legendInterface, input.query, input.isolated ? null : state.getCurrentPureModelContextData())), state);
+                        handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(state.legendInterface, input.query, input.isolated ? null : state.getCurrentPureModelContextData())), state);
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e instanceof EngineException ? state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)) : e.getMessage(), state);
+                        if (e instanceof EngineException)
+                        {
+                            handleJSONResponse(exchange, 500, state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)), state);
+                        }
+                        else
+                        {
+                            handleTextResponse(exchange, 500, e.getMessage(), state);
+                        }
                     }
                 }
             };
@@ -224,19 +238,26 @@ public class DataCubeQueryBuilder
                         {
                             PureModelContextData data = PureGrammarParser.newInstance().parseModel(graphCode);
                             RelationType relationType = DataCubeHelpers.getRelationReturnType(state.legendInterface, data);
-                            handleResponse(exchange, 200, state.objectMapper.writeValueAsString(relationType), state);
+                            handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(relationType), state);
                         }
                         catch (EngineException e)
                         {
                             SourceInformation sourceInformation = e.getSourceInformation();
                             sourceInformation.startLine -= lineOffset;
                             sourceInformation.endLine -= lineOffset;
-                            handleResponse(exchange, 400, state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError(new EngineException(e.getMessage(), sourceInformation, e.getErrorType()))), state);
+                            handleJSONResponse(exchange, 400, state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError(new EngineException(e.getMessage(), sourceInformation, e.getErrorType()))), state);
                         }
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e instanceof EngineException ? state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)) : e.getMessage(), state);
+                        if (e instanceof EngineException)
+                        {
+                            handleJSONResponse(exchange, 500, state.objectMapper.writeValueAsString(new DataCubeQueryBuilderError((EngineException) e)), state);
+                        }
+                        else
+                        {
+                            handleTextResponse(exchange, 500, e.getMessage(), state);
+                        }
                     }
                 }
             };
@@ -254,14 +275,16 @@ public class DataCubeQueryBuilder
                 {
                     try
                     {
-                        DataCubeQuery query = state.getQuery();
-                        Map<String, ?> source = state.getSource();
+                        String query = state.getQuery();
+                        Map<String, ?> configuration = state.getQueryConfiguration();
+                        Map<String, ?> source = state.getQuerySource();
                         if (query != null)
                         {
                             DataCubeGetBaseQueryResult result = new DataCubeGetBaseQueryResult();
                             result.query = query;
+                            result.configuration = configuration;
                             result.source = source;
-                            handleResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
+                            handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
                         }
                         else
                         {
@@ -270,7 +293,7 @@ public class DataCubeQueryBuilder
                     }
                     catch (Exception e)
                     {
-                        handleResponse(exchange, 500, e.getMessage(), state);
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
                     }
                 }
             };
