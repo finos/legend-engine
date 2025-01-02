@@ -303,7 +303,7 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build UnitemporalDelta, digestField is mandatory for DigestBasedResolver", e.getMessage());
+            Assertions.assertEquals("digestField is mandatory for DigestBasedResolver", e.getMessage());
         }
     }
 

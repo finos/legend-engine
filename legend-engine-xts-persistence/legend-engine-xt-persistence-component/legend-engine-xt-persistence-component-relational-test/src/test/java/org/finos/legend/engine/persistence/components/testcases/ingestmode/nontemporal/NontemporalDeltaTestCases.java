@@ -257,7 +257,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build NontemporalDelta, digestField is mandatory for DigestBasedResolver", e.getMessage());
+            Assertions.assertEquals("digestField is mandatory for DigestBasedResolver", e.getMessage());
         }
     }
 

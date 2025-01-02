@@ -18,11 +18,10 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -86,7 +85,7 @@ public interface NontemporalDeltaAbstract extends IngestMode
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
                 }
-                validateDigest(maxVersionStrategy.mergeDataVersionResolver().get());
+                maxVersionStrategy.mergeDataVersionResolver().get().accept(new VersioningVisitors.ValidateDigest(digestField()));
                 return null;
             }
 
@@ -97,19 +96,8 @@ public interface NontemporalDeltaAbstract extends IngestMode
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
                 }
-                validateDigest(allVersionsStrategyAbstract.mergeDataVersionResolver().get());
+                allVersionsStrategyAbstract.mergeDataVersionResolver().get().accept(new VersioningVisitors.ValidateDigest(digestField()));
                 return null;
-            }
-
-            private void validateDigest(MergeDataVersionResolver mergeStrategy)
-            {
-                if (mergeStrategy instanceof DigestBasedResolver)
-                {
-                    if (!digestField().isPresent())
-                    {
-                        throw new IllegalStateException("Cannot build NontemporalDelta, digestField is mandatory for DigestBasedResolver");
-                    }
-                }
             }
         });
     }
