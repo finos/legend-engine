@@ -821,4 +821,68 @@ class UnitemporalSnapshotTest extends BaseTest
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, fixedClock_2000_01_01);
     }
+
+    /*
+    Scenario: Test milestoning Logic with max version and with Partition delete all when staging table pre populated with upper case
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithPartitionDeleteAllMaxVersionFilterDuplicatesUpperCase() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceWithVersionStagingTable();
+
+        String[] schema = new String[]{dateName.toUpperCase(), entityName.toUpperCase(), priceName.toUpperCase(), volumeName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase(), batchTimeInName.toUpperCase(), batchTimeOutName.toUpperCase()};
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"DATE\" DATE NOT NULL,\"ENTITY\" VARCHAR NOT NULL,\"PRICE\" DECIMAL(20,2),\"VOLUME\" BIGINT,\"DIGEST\" VARCHAR,\"VERSION\" INTEGER)");
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .partitioningStrategy(Partitioning.builder()
+                .addAllPartitionFields(Collections.singletonList(dateName))
+                .deleteStrategy(DeleteAllStrategy.builder().build())
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .performStageVersioning(true)
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_partition/max_version_delete_all/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/max_version_delete_all/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(13, 0, 6, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_partition/max_version_delete_all/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_partition/max_version_delete_all/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(5, 0, 1, 2, 1);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+        options = options.withCleanupStagingData(true);
+        String dataPass3 = "src/test/resources/data/empty_file.csv";;
+        String expectedDataPass3 = basePathForExpected + "with_partition/max_version_delete_all/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
 }
