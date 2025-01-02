@@ -107,7 +107,7 @@ public class DebugState
 
         ListIterable<CoreInstance> newInstances = inMemoryCodeBlock.getNewInstances();
 
-        CoreInstance result = this.debugSupport.startRaw(newInstances.get(0), Lists.fixedSize.of());
+        CoreInstance result = this.debugSupport.start(newInstances.get(0), Lists.fixedSize.of());
         CoreInstance lambda = Instance.getValueForMetaPropertyToOneResolved(result, M3Properties.values, this.debugSupport.getProcessorSupport());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -130,19 +130,23 @@ public class DebugState
 
     private static String computeVariableTypeAndMultiplicity(FunctionExecutionInterpretedWithDebugSupport debugSupport, CoreInstance coreInstance)
     {
-        // todo the GenericType.print has a bug with type arguments, and functions get printed wrong!
-        // ie. meta::pure::metamodel::function::ConcreteFunctionDefinition<<X> {meta::pure::metamodel::function::Function<{->X[o]}>[1]->X[o]}>
         String type;
+        String multiplicity = Multiplicity.print(coreInstance.getValueForMetaPropertyToOne(M3Properties.multiplicity));
+
+        CoreInstance genericType = coreInstance.getValueForMetaPropertyToOne(M3Properties.genericType);
         ProcessorSupport processorSupport = debugSupport.getProcessorSupport();
-        if (processorSupport.type_subTypeOf(coreInstance.getValueForMetaPropertyToOne(M3Properties.genericType).getValueForMetaPropertyToOne(M3Properties.rawType), debugSupport.getPureRuntime().getCoreInstance(M3Paths.Function)))
+
+        // todo the GenericType.print has a bug with type arguments on functions, and get printed wrong
+        // ie. meta::pure::metamodel::function::ConcreteFunctionDefinition<<X> {meta::pure::metamodel::function::Function<{->X[o]}>[1]->X[o]}>
+        if (processorSupport.type_subTypeOf(genericType.getValueForMetaPropertyToOne(M3Properties.rawType), debugSupport.getPureRuntime().getCoreInstance(M3Paths.ConcreteFunctionDefinition)))
         {
-            type = "Function<Any>";
+            type = M3Paths.ConcreteFunctionDefinition + "<Any>";
         }
         else
         {
-            type = GenericType.print(coreInstance.getValueForMetaPropertyToOne(M3Properties.genericType), true, processorSupport);
+            type = GenericType.print(genericType, true, processorSupport);
         }
-        String multiplicity = Multiplicity.print(coreInstance.getValueForMetaPropertyToOne(M3Properties.multiplicity));
+
         return type + multiplicity;
     }
 }

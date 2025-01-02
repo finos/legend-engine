@@ -15,16 +15,9 @@
 
 package org.finos.legend.engine.pure.ide.interpreted.debug;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.eclipse.collections.api.list.ListIterable;
-import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.finos.legend.pure.m3.execution.OutputWriter;
-import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.statelistener.VoidExecutionActivityListener;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
@@ -62,14 +55,13 @@ public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecut
         }
     }
 
-    @Override
-    public CoreInstance start(CoreInstance function, ListIterable<? extends CoreInstance> arguments)
+    public void startDebug(CoreInstance function, ListIterable<? extends CoreInstance> arguments)
     {
         this.resultHandler = new CompletableFuture<>();
 
         if (this.currentExecution == null)
         {
-            this.currentExecution = CompletableFuture.supplyAsync(() -> this.startRaw(function, arguments));
+            this.currentExecution = CompletableFuture.supplyAsync(() -> this.start(function, arguments));
             this.currentExecution.whenComplete((v, e) ->
             {
                 if (e != null)
@@ -85,38 +77,17 @@ public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecut
         }
         else
         {
+            this.getConsole().print("Resuming from debug point...");
             this.debugState.release();
         }
 
         try
         {
-            return this.resultHandler.join();
+            this.resultHandler.join();
         }
         catch (CompletionException e)
         {
             throw (RuntimeException) e.getCause();
-        }
-    }
-
-    public CoreInstance startRaw(CoreInstance function, ListIterable<? extends CoreInstance> arguments)
-    {
-        return super.start(function, arguments);
-    }
-
-    @Override
-    public void start(CoreInstance func, ListIterable<? extends CoreInstance> arguments, OutputStream
-            outputStream, OutputWriter writer)
-    {
-        CoreInstance result = this.startRaw(func, arguments);
-
-        try
-        {
-            ListIterable<? extends CoreInstance> values = result.getValueForMetaPropertyToMany(M3Properties.values);
-            writer.write(values, outputStream);
-        }
-        catch (IOException e)
-        {
-            throw new UncheckedIOException("Failed to write to output stream", e);
         }
     }
 }
