@@ -28,6 +28,29 @@ If you're making changes to the `Pure` codebase, it's highly recommended that yo
 - To start the server, please use the `Main` class `org.finos.legend.engine.ide.PureIDELight` with the parameters: `server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`.
 - You can now access the IDE at http://127.0.0.1:9200/ide in a web browser.
 
+#### Debugging Pure Code
+
+![Debugging](docs/debug.gif)
+
+To debug your `Pure` code, you need to use the `meta::pure::ide::debug()` function to create breakpoints.
+
+When you execute the `go` function using _F9_, the execution will be paused at the breakpoint, and a **_summary_** will be printed.
+
+This **_summary_** include the current stack (for easy navigation to the current breakpoint point) and the variables accessible on such breakpoint.   
+ 
+Once in a breakpoint, using the Pure IDE terminal, you can take certain debugging actions:
+
+- `debug` or `debug summary`: print the aforementioned **_summary_**.
+- `debug <pure expression>`: evaluate the given expression.  All variables on the current breakpoint are available.
+  - ie. `debug $f->map(x | $x->type())`: introspect variable `f` and apply some functions to it.
+- `debug abort`: stop the current execution.  Pressing _F9_ after an abort command will start the execution from the beginning (ie. from the `go` function) 
+
+To resume the execution to next breakpoint or to completion, just press _F9_ again.
+
+Caveats:
+- Editing the code while on a breakpoint will lead to evaluation errors.  You need to complete or abort current execution to pick new changes.
+- Print commands within the debug expressions won't show on console.  Avoid the print and evaluate to a string value instead.
+
 ## Roadmap
 
 Visit our [roadmap](https://github.com/finos/legend#roadmap) to know more about the upcoming features.
