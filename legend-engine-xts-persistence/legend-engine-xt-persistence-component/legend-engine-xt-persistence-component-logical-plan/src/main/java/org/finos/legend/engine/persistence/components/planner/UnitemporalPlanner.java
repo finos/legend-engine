@@ -44,12 +44,7 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
@@ -59,9 +54,9 @@ import static org.finos.legend.engine.persistence.components.util.LogicalPlanUti
 abstract class UnitemporalPlanner extends Planner
 {
     protected final Condition openRecordCondition;
-    protected final Condition digestMatchCondition;
-    protected final Condition digestDoesNotMatchCondition;
-    protected final String digestField;
+    protected Condition digestMatchCondition;
+    protected Condition digestDoesNotMatchCondition;
+    protected final Optional<String> digestField;
     protected Condition primaryKeysMatchCondition;
 
     UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -78,9 +73,12 @@ abstract class UnitemporalPlanner extends Planner
         // initialize parameters
         this.digestField = transactionMilestoned.digestField();
         this.openRecordCondition = transactionMilestoned.transactionMilestoning().accept(new DetermineOpenRecordCondition(mainDataset()));
-        this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
         this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
-        this.digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
+        if (digestField.isPresent())
+        {
+            this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField().get());
+            this.digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField().get());
+        }
     }
 
     @Override
@@ -92,7 +90,16 @@ abstract class UnitemporalPlanner extends Planner
     @Override
     List<String> getDigestOrRemainingColumns()
     {
-        return Arrays.asList(digestField);
+        List<String> remainingCols = new ArrayList<>();
+        if (digestField.isPresent())
+        {
+            remainingCols = Arrays.asList(digestField.get());
+        }
+        else if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKNonVersionDataFields();
+        }
+        return remainingCols;
     }
 
     protected void validatePrimaryKey(List<Field> fields, String targetFieldName)

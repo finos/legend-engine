@@ -37,7 +37,7 @@ public class NontemporalDeltaBasedDerivationTest
         TestScenario scenario = scenarios.NO_AUDTING__NO_DEDUP__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
     }
 
@@ -47,7 +47,7 @@ public class NontemporalDeltaBasedDerivationTest
         TestScenario scenario = scenarios.NO_AUDTING__WITH_DELETE_INDICATOR__NO_DEDUP__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
         Assertions.assertTrue(mode.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         DeleteIndicatorMergeStrategy mergeStrategy = (DeleteIndicatorMergeStrategy) mode.mergeStrategy();
@@ -61,7 +61,7 @@ public class NontemporalDeltaBasedDerivationTest
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
-        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 
@@ -74,7 +74,7 @@ public class NontemporalDeltaBasedDerivationTest
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DIGEST", mode.digestField().get());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class NontemporalDeltaBasedDerivationTest
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 }

@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -79,7 +80,6 @@ public class IngestModeOptimizerTest extends BaseTest
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
 
         UnitemporalSnapshot enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
-        assertTrue(enrichedUnitempSnapshot.partitionSpecList().isEmpty());
     }
 
     @Test
@@ -94,8 +94,7 @@ public class IngestModeOptimizerTest extends BaseTest
                         .dateTimeInName(batchTimeInName)
                         .dateTimeOutName(batchTimeOutName)
                         .build())
-                .addAllPartitionFields(Arrays.asList("date"))
-                .derivePartitionSpec(true)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList("date")).derivePartitionSpec(true).build())
                 .build();
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
@@ -105,7 +104,7 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-01");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02");
 
-        assertEquals(expectedPartitionSpec, enrichedUnitempSnapshot.partitionSpecList());
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
     @Test
@@ -120,8 +119,7 @@ public class IngestModeOptimizerTest extends BaseTest
                         .dateTimeInName(batchTimeInName)
                         .dateTimeOutName(batchTimeOutName)
                         .build())
-                .addAllPartitionFields(Arrays.asList("date", "entity"))
-                .derivePartitionSpec(true)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList("date", "entity")).derivePartitionSpec(true).build())
                 .build();
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
@@ -135,7 +133,7 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "IBM");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
 
-        assertEquals(expectedPartitionSpec, enrichedUnitempSnapshot.partitionSpecList());
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
     @Test
@@ -150,15 +148,13 @@ public class IngestModeOptimizerTest extends BaseTest
                         .dateTimeInName(batchTimeInName)
                         .dateTimeOutName(batchTimeOutName)
                         .build())
-                .addAllPartitionFields(Arrays.asList("date", "entity"))
-                .derivePartitionSpec(true)
-                .maxPartitionSpecFilters(2L)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList("date", "entity")).derivePartitionSpec(true).maxPartitionSpecFilters(2L).build())
                 .build();
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
 
         UnitemporalSnapshot enrichedUnitempSnapshot = (UnitemporalSnapshot) unitemporalSnapshot.accept(new IngestModeOptimizer(datasets, executor, transformer));
-        assertTrue(enrichedUnitempSnapshot.partitionSpecList().isEmpty());
+        assertTrue(((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList().isEmpty());
     }
 
 
@@ -174,8 +170,7 @@ public class IngestModeOptimizerTest extends BaseTest
                         .dateTimeInName(batchTimeInName)
                         .dateTimeOutName(batchTimeOutName)
                         .build())
-                .addAllPartitionFields(Arrays.asList("start_time"))
-                .derivePartitionSpec(true)
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList("start_time")).derivePartitionSpec(true).build())
                 .build();
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(H2Sink.get());
@@ -188,7 +183,7 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpecForTimestamp(expectedPartitionSpec, "2021-12-01 00:00:03.0");
         addPartitionSpecForTimestamp(expectedPartitionSpec, "2021-12-01 00:00:04.0");
 
-        assertEquals(expectedPartitionSpec, enrichedUnitempSnapshot.partitionSpecList());
+        assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
     }
 
 

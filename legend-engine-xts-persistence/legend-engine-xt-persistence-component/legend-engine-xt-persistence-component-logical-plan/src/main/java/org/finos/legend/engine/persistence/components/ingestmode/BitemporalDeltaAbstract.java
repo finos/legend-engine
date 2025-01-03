@@ -48,8 +48,6 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
         return false;
     }
 
-    String digestField();
-
     @Override
     TransactionMilestoning transactionMilestoning();
 
@@ -71,6 +69,11 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
     @Value.Check
     default void validate()
     {
+        if (!digestField().isPresent())
+        {
+            throw new IllegalStateException("Cannot build BitemporalDelta, digestField is mandatory");
+        }
+
         versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
         {
             @Override

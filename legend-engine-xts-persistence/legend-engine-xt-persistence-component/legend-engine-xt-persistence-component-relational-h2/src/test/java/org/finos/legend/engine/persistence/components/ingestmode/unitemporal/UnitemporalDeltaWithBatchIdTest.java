@@ -374,22 +374,21 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition stagingDataset = DatasetDefinition.builder()
                 .group(testSchemaName)
                 .name(stagingTableName)
-                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatchWithoutDigest)
                 .build();
 
         createStagingTableWithoutPks(stagingDataset);
         DerivedDataset stagingTable = DerivedDataset.builder()
                 .group(testSchemaName)
                 .name(stagingTableName)
-                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionWithoutDigest)
                 .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
                 .build();
-        String path = basePathForInput + "with_all_version/data1.csv";
-        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+        String path = basePathForInput + "with_all_version/data1_without_digest.csv";
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatchWithoutDigest(path);
 
         // Generate the milestoning object
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-                .digestField(digestName)
                 .versioningStrategy(AllVersionsStrategy.builder()
                         .versioningField(versionName)
                         .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
@@ -404,7 +403,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName};
 
         // ------------ Perform milestoning Pass1 ------------------------
         String expectedDataPass1 = basePathForExpected + "with_all_version/greater_than/expected_pass1.csv";

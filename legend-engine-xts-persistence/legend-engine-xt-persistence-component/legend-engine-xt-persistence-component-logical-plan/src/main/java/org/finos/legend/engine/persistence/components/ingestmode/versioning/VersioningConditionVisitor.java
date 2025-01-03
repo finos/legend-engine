@@ -23,6 +23,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
+import java.util.Optional;
+
 
 public class VersioningConditionVisitor implements VersioningStrategyVisitor<Condition>
 {
@@ -30,9 +32,9 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     Dataset mainDataset;
     Dataset stagingDataset;
     boolean invertComparison;
-    String digestField;
+    Optional<String> digestField;
 
-    public VersioningConditionVisitor(Dataset mainDataset, Dataset stagingDataset, boolean invertComparison, String digestField)
+    public VersioningConditionVisitor(Dataset mainDataset, Dataset stagingDataset, boolean invertComparison, Optional<String> digestField)
     {
         this.mainDataset = mainDataset;
         this.stagingDataset = stagingDataset;
@@ -115,11 +117,11 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     {
         if (invertComparison)
         {
-            return LogicalPlanUtils.getDigestMatchCondition(mainDataset, stagingDataset, digestField);
+            return LogicalPlanUtils.getDigestMatchCondition(mainDataset, stagingDataset, digestField.orElseThrow(IllegalStateException::new));
         }
         else
         {
-            return LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset, stagingDataset, digestField);
+            return LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset, stagingDataset, digestField.orElseThrow(IllegalStateException::new));
         }
     }
 }

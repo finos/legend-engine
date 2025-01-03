@@ -201,12 +201,24 @@ public class BigQueryTestArtifacts
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
 
+    public static String expectedMainTableBatchIdWithoutDigestBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE," +
+            "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
+
     public static String expectedMainTableWithMultiPartitionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`account_type` INT64,`biz_date` DATE,`digest` STRING," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
 
+    public static String expectedMainTableWithMultiPartitionWithoutDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`account_type` INT64,`biz_date` DATE," +
+            "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
+
     public static String expectedMainTableWithMultiPartitionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INT64 NOT NULL,`NAME` STRING NOT NULL,`AMOUNT` FLOAT64,`ACCOUNT_TYPE` INT64,`BIZ_DATE` DATE,`DIGEST` STRING," +
+            "`BATCH_ID_IN` INT64 NOT NULL,`BATCH_ID_OUT` INT64,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`) NOT ENFORCED)";
+
+    public static String expectedMainTableWithMultiPartitionWithoutDigestCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+            "(`ID` INT64 NOT NULL,`NAME` STRING NOT NULL,`AMOUNT` FLOAT64,`ACCOUNT_TYPE` INT64,`BIZ_DATE` DATE," +
             "`BATCH_ID_IN` INT64 NOT NULL,`BATCH_ID_OUT` INT64,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`) NOT ENFORCED)";
 
     public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +

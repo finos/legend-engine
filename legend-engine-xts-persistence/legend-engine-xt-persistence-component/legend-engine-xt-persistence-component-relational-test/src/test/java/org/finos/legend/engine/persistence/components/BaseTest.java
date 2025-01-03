@@ -252,6 +252,25 @@ public class BaseTest
         .addFields(batchIdOut)
         .build();
 
+    protected SchemaDefinition mainTableBatchIdBasedSchemaWithoutDigest = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
+
+    protected SchemaDefinition mainTableWithMultiPartitionsBasedSchemaWithoutDigest = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(accountType)
+            .addFields(bizDate)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
+
     protected SchemaDefinition mainTableWithMultiPartitionsBasedSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
@@ -319,6 +338,14 @@ public class BaseTest
             .addFields(accountType)
             .addFields(bizDate)
             .addFields(digest)
+            .build();
+
+    protected SchemaDefinition stagingTableSchemaWithMultiplePartitionsWithoutDigest = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(accountType)
+            .addFields(bizDate)
             .build();
 
     protected SchemaDefinition mainTableSchemaWithDigest = SchemaDefinition.builder()
@@ -713,6 +740,11 @@ public class BaseTest
             .schema(stagingTableSchemaWithMultiplePartitions)
             .build();
 
+    protected Dataset stagingTableWithMultiPartitionsWithoutDigest = DatasetDefinition.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithMultiplePartitionsWithoutDigest)
+            .build();
+
     protected Dataset stagingTableWithFilter = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(stagingTableSchemaWithDigest)
@@ -806,6 +838,16 @@ public class BaseTest
     protected Dataset mainTableWithBatchIdBasedSchema = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
             .schema(mainTableBatchIdBasedSchema)
+            .build();
+
+    protected Dataset mainTableWithBatchIdBasedSchemaWithoutDigest = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableBatchIdBasedSchemaWithoutDigest)
+            .build();
+
+    protected Dataset mainTableMultiPartitionsBasedWithoutDigest = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableWithMultiPartitionsBasedSchemaWithoutDigest)
             .build();
 
     protected Dataset mainTableMultiPartitionsBased = DatasetDefinition.builder()

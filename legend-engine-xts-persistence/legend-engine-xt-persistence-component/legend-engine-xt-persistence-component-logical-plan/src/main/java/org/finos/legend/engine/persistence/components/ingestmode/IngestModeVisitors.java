@@ -107,31 +107,30 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Optional.of(nontemporalDelta.digestField());
+            return nontemporalDelta.digestField();
         }
 
         @Override
         public Optional<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Optional.of(unitemporalSnapshot.digestField());
+            return unitemporalSnapshot.digestField();
         }
 
-        @Override
         public Optional<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
-            return Optional.of(unitemporalDelta.digestField());
+            return unitemporalDelta.digestField();
         }
 
         @Override
         public Optional<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return Optional.of(bitemporalSnapshot.digestField());
+            return bitemporalSnapshot.digestField();
         }
 
         @Override
         public Optional<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
-            return Optional.of(bitemporalDelta.digestField());
+            return bitemporalDelta.digestField();
         }
 
         @Override
@@ -169,7 +168,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.digestField().ifPresent(metaFields::add);
             nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
@@ -179,7 +178,11 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Collections.singleton(unitemporalSnapshot.digestField());
+            if (unitemporalSnapshot.digestField().isPresent())
+            {
+                return Collections.singleton(unitemporalSnapshot.digestField().get());
+            }
+            return Collections.emptySet();
         }
 
         @Override
@@ -187,7 +190,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(unitemporalDelta.digestField());
+            unitemporalDelta.digestField().ifPresent(metaFields::add);
             unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             unitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
@@ -197,7 +200,11 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return Collections.singleton(bitemporalSnapshot.digestField());
+            if (bitemporalSnapshot.digestField().isPresent())
+            {
+                return Collections.singleton(bitemporalSnapshot.digestField().get());
+            }
+            return Collections.emptySet();
         }
 
         @Override
@@ -205,7 +212,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(bitemporalDelta.digestField());
+            bitemporalDelta.digestField().ifPresent(metaFields::add);
             bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             bitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 

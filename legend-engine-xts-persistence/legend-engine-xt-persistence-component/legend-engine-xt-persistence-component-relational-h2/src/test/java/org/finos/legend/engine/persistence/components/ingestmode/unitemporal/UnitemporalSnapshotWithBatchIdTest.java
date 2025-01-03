@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -124,7 +125,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .emptyDatasetHandling(DeleteTargetData.builder().build())
             .build();
 
@@ -180,8 +181,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
-            .putAllPartitionValuesByField(partitionFilter)
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).putAllPartitionValuesByField(partitionFilter).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -267,14 +267,15 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         addPartitionSpec(partitionSpecList, "2024-01-03", "ACCOUNT_1");
         addPartitionSpec(partitionSpecList, "2024-01-03", "ACCOUNT_2");
 
+        Partitioning partition = Partitioning.builder().addAllPartitionFields(Arrays.asList(dateName, accountNumName)).addAllPartitionSpecList(partitionSpecList).build();
+
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestName)
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInName)
                         .batchIdOutName(batchIdOutName)
                         .build())
-                .addAllPartitionFields(Arrays.asList(dateName, accountNumName))
-                .addAllPartitionSpecList(partitionSpecList)
+                .partitioningStrategy(partition)
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -299,7 +300,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_3");
         addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_2");
         addPartitionSpec(partitionSpecList, "2024-01-04", "ACCOUNT_1");
-        ingestMode = ingestMode.withPartitionSpecList(partitionSpecList);
+        ingestMode = ingestMode.withPartitioningStrategy(partition.withPartitionSpecList(partitionSpecList));
 
         // 1. Load staging table
         loadStagingDataForWithMultiPartition(dataPass2);
@@ -323,7 +324,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         partitionSpecList = new ArrayList<>();
         addPartitionSpec(partitionSpecList, "2024-01-01", "ACCOUNT_1");
         addPartitionSpec(partitionSpecList, "2024-01-02", "ACCOUNT_2");
-        IngestMode ingestModeWithDeleteTargetData = ingestMode.withPartitionSpecList(partitionSpecList).withEmptyDatasetHandling(DeleteTargetData.builder().build());
+        IngestMode ingestModeWithDeleteTargetData = ingestMode.withPartitioningStrategy(partition.withPartitionSpecList(partitionSpecList)).withEmptyDatasetHandling(DeleteTargetData.builder().build());
         dataPass3 = "src/test/resources/data/empty_file.csv";
         expectedDataPass3 = basePathForExpected + "with_multi_values_partition/expected_pass3.csv";
         // 1. Load Staging table
@@ -369,8 +370,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                         .batchIdInName(batchIdInName)
                         .batchIdOutName(batchIdOutName)
                         .build())
-                .derivePartitionSpec(true)
-                .addAllPartitionFields(Arrays.asList(dateName, accountNumName))
+                .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(dateName, accountNumName)).derivePartitionSpec(true).build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -482,7 +482,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();

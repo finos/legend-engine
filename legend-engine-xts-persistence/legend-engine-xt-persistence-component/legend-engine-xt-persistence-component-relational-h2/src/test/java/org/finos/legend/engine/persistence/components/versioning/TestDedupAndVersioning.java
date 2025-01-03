@@ -100,6 +100,15 @@ public class TestDedupAndVersioning extends BaseTest
                     .addFields(digest)
                     .build();
 
+    public static SchemaDefinition baseSchemaWithVersionWithoutDigest =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(version)
+            .addFields(income)
+            .addFields(expiryDate)
+            .build();
+
     public static SchemaDefinition baseSchemaWithVersionAndBatch =
             SchemaDefinition.builder()
                     .addFields(id)
@@ -110,6 +119,16 @@ public class TestDedupAndVersioning extends BaseTest
                     .addFields(digest)
                     .addFields(batch)
                     .build();
+
+    public static SchemaDefinition baseSchemaWithVersionAndBatchWithoutDigest =
+        SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(version)
+            .addFields(income)
+            .addFields(expiryDate)
+            .addFields(batch)
+            .build();
 
     String[] schemaWithCount = new String[]{idName, nameName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
     String[] schemaWithVersion = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
@@ -797,6 +816,16 @@ public class TestDedupAndVersioning extends BaseTest
                 "INSERT INTO \"TEST\".\"staging\"(id, name, version, income ,expiry_date, digest, batch) " +
                 "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"version\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT )" +
                 " FROM CSVREAD( '" + path + "', 'id, name, version, income, expiry_date, digest, batch', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    public static void loadDataIntoStagingTableWithVersionAndBatchWithoutDigest(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, version, income ,expiry_date, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"version\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE), CONVERT( \"batch\",INT )" +
+            " FROM CSVREAD( '" + path + "', 'id, name, version, income, expiry_date, batch', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

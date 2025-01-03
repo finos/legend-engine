@@ -139,4 +139,30 @@ public class VersioningVisitors
             return null;
         }
     }
+
+    public static class ValidateDigest implements MergeDataVersionResolverVisitor<Void>
+    {
+        final Optional<String> digestField;
+
+        public ValidateDigest(Optional<String> digestField)
+        {
+            this.digestField = digestField;
+        }
+
+        @Override
+        public Void visitDigestBasedResolver(DigestBasedResolverAbstract digestBasedResolver)
+        {
+            if (!digestField.isPresent())
+            {
+                throw new IllegalStateException("digestField is mandatory for DigestBasedResolver");
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitVersionColumnBasedResolver(VersionColumnBasedResolverAbstract versionColumnBasedResolver)
+        {
+            return null;
+        }
+    }
 }
