@@ -187,6 +187,10 @@ public class DataCubeQueryStoreManager
                 filters.add(filter);
             }
         }
+        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
+        {
+            filters.add(Filters.in("owner", currentUser, null));
+        }
 
         List<DataCubeQuery> queries = new ArrayList<>();
         List<Bson> aggregateLists = new ArrayList<>();
