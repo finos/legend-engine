@@ -148,7 +148,7 @@ public class PureIDELight extends PureIDEServer
         String moduleName = core ? "".equals(module) ? "core" : ("core_" + module.replace("-", "_")) : module.replace("-", "_");
         GenericCodeRepository repository = GenericCodeRepository.build(Paths.get(resourceDir + moduleName + ".definition.json"));
         return new MutableFSCodeStorage(
-                GenericCodeRepository.build(repository.getName(), repository.getAllowedPackagesPattern(), repository.getDependencies().toSet().with("pure_ide")),
+                GenericCodeRepository.build(repository.getName(), repository.getAllowedPackagesPattern(), repository.getDependencies().toSet().with("pure_ide_debug")),
                 Paths.get(resourceDir + moduleName)
         );
     }

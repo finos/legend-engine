@@ -30,6 +30,7 @@
         <module>legend-engine-pure-ide-light-http-server</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-ide-light-pure</module>
+        <module>legend-engine-pure-ide-light-pure-debug</module>
         <module>legend-engine-pure-ide-light-interpreted-functions</module>
     </modules>
 </project>

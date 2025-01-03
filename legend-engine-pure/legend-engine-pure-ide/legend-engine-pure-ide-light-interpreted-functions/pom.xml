@@ -30,7 +30,8 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+            <artifactId>legend-engine-pure-ide-light-pure-debug</artifactId>
+            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 
