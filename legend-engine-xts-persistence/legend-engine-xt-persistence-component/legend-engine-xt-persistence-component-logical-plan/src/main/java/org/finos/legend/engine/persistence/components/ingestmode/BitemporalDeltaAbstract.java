@@ -48,8 +48,6 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
         return false;
     }
 
-    String digestField();
-
     @Override
     TransactionMilestoning transactionMilestoning();
 
