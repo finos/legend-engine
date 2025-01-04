@@ -402,7 +402,7 @@
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                      <autoPublish>true</autoPublish>
-                    <waitMaxTime>3600</waitMaxTime> 
+                    <waitMaxTime>3600</waitMaxTime>
                 </configuration>
             </plugin>
             <plugin>
