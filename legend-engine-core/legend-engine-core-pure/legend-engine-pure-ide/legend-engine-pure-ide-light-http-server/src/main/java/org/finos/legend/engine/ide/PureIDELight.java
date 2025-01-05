@@ -30,7 +30,7 @@ public class PureIDELight extends PureIDEServer
     {
         System.setProperty("legend.test.h2.port", "1975");
         System.setProperty("user.timezone", "GMT");
-        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
+        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
     }
 
     @Override
@@ -38,8 +38,8 @@ public class PureIDELight extends PureIDEServer
     {
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 // --- MINIMUM -----
-                .with(this.buildCore("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
-                .with(this.build("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-pure", "pure_ide", false))
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
+                .with(this.build("legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-pure", "pure_ide", false))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-core-pure", "relational"))
                 .with(this.buildCore("legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-pure", "servicestore"))
                 .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure", "service"))
