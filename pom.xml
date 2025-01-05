@@ -38,9 +38,6 @@
         <!-- Core System -->
         <module>legend-engine-core</module>
 
-        <!-- Pure Extension -->
-        <module>legend-engine-pure</module>
-
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
         <module>legend-engine-xts-relationalStore</module>
