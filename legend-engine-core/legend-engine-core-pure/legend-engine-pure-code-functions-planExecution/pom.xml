@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-runtime-planExecution</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure - Runtime - PlanExecution</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - PlanExecution</name>
 
     <modules>
         <module>legend-engine-pure-functions-planExecution-pure</module>

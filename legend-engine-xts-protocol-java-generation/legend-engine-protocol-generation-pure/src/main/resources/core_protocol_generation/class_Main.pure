@@ -149,11 +149,10 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
       ->implements($superTypes);
       $jInterface->addMethods(
         meta::protocols::generation::java::allProperties($c, false)->map(p|
-                        let javaName = $p.name->toOne()->sanitizeJavaKeywords();
-                        let javaType = pureTypeToJavaType($context.conventions, $p);
-                        let param  = j_parameter($javaType, $p.name->toOne());
+                        let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
+                        let param  = j_parameter($javaType, $p.name->toOne()->sanitizeJavaKeywords());
                         [
-                          javaMethod([], pureTypeToJavaType($context.conventions, $p), 'get' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), []),
+                          javaMethod([], pureTypeToJavaTypeNoTypeArgs($context.conventions, $p), 'get' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), []),
                           javaMethod([], $jInterface, 'set' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), [$param])
                         ];
                     )
@@ -166,10 +165,10 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
                     meta::protocols::generation::java::allProperties($c, true)->map(p|
                         let javaName = $p.name->toOne()->sanitizeJavaKeywords();
                         let field = $fields->filter(f | $f.name == $javaName)->toOne();
-                        let javaType = pureTypeToJavaType($context.conventions, $p);
-                        let param  = j_parameter($javaType, $field.name);
+                        let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
+                        let param  = j_parameter($javaType, $field.name->sanitizeJavaKeywords());
                         [
-                          javaMethod('public', pureTypeToJavaType($context.conventions, $p), 'get' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), [], j_this($jClass)->j_field($field.name)->j_return()),
+                          javaMethod('public', pureTypeToJavaTypeNoTypeArgs($context.conventions, $p), 'get' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), [], j_this($jClass)->j_field($field.name)->j_return()),
                           javaMethod('public', $jClass, 'set' + $p.name->toOne()->toUpperFirstCharacter()->toOne(), [$param], [j_this($jClass)->j_field($field)->j_assign($param), j_return(j_this($jClass))])
                         ];
                     )
@@ -180,7 +179,12 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
 
 function <<access.private>> meta::protocols::generation::java::allProperties(c:meta::pure::metamodel::type::Class<Any>[1], allParents:Boolean[1]):meta::pure::metamodel::function::property::Property<Nil,Any|*>[*]
 {
-  if($allParents,|$c->hierarchicalProperties(),|$c.properties)->filter(p|!$p->hasStereotype('inferred', ProtocolInfo) && !$p->hasStereotype('excluded', ProtocolInfo))->removeDuplicatesBy(x|$x.name->toOne());
+  if($allParents,
+    |$c->hierarchicalProperties(),
+    |$c.properties
+  )->filter(p|let returnType = $p->functionReturnType().rawType;
+              !$p->hasStereotype('inferred', ProtocolInfo) && !$p->hasStereotype('excluded', ProtocolInfo) && $returnType->isNotEmpty() && !$returnType->toOne()->hasStereotype('excluded', ProtocolInfo);)
+    ->removeDuplicatesBy(x|$x.name->toOne());
 }
 
 function <<access.private>> meta::protocols::generation::java::isInScope(c:PackageableElement[1], config:Configuration[1]):Boolean[1]
@@ -203,12 +207,11 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
 
   let sbase = $pbase->addMethods(
     $c.properties->map(p|
-        let javaType = pureTypeToJavaType($context.conventions, $p);
+        let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
         let javaName = $p.name->toOne()->sanitizeJavaKeywords();
         let field = $pbase.fields->filter(f | $f.name == $javaName)->toOne();
-        //let jfield = j_this($pbase)->j_field($field);   
-        let param  = j_parameter($javaType, $field.name);
-        javaMethod(['public'], $pbase, $context.conventions->setterName($field.name), j_parameter($javaType, $field.name), 
+        let param  = j_parameter($javaType, $field.name->sanitizeJavaKeywords());
+        javaMethod(['public'], $pbase, $context.conventions->setterName($field.name), $param, 
             [
               j_this($pbase)->j_field($field)->j_assign($param),
               j_return(j_this($pbase))
@@ -251,7 +254,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
   assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow [' + $superType.rawType.name->joinStrings(',') + ']');
   let withExtends = if ($superType.rawType == Any,
     |$base,
-    |$base->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne))
+    |$base->jextends(pureTypeToJavaTypeNoTypeArgs($context.conventions, $superType->toOne(), PureOne))
   );
 
   let result = if ($taxonomy->isEmpty() || !$context.configuration.generateVisitor,
@@ -275,7 +278,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
 function <<access.private>> meta::protocols::generation::java::generateProperty(p:meta::pure::metamodel::function::property::Property<Nil,Any|*>[1], modifiers:String[*], context:Context[1]):meta::external::language::java::metamodel::Field[0..1]
 {
     if (!$p->hasStereotype('inferred', ProtocolInfo) && !$p->hasStereotype('excluded', ProtocolInfo),
-     |let javaType = pureTypeToJavaType($context.conventions, $p);
+     |let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
       let javaName = $p.name->toOne()->sanitizeJavaKeywords();
       let default = $p.defaultValue.functionDefinition.expressionSequence;
       let field = if ($default->isNotEmpty(),
@@ -408,6 +411,19 @@ function <<access.private>> meta::protocols::generation::java::javaIdentifier(na
    $name->sanitizeIdentifier($keywordMap);
 }
 
+function <<access.private>> meta::protocols::generation::java::pureTypeToJavaTypeNoTypeArgs(conventions:Conventions[1], g:GenericType[1], m:Multiplicity[1]):meta::external::language::java::metamodel::Type[1]
+{
+  if ($g.rawType->isEmpty(),
+    | javaObject(),
+    | $conventions->pureTypeToJavaType($g.rawType->toOne(), [], $m)
+  )
+}
+
+function <<access.private>> meta::protocols::generation::java::pureTypeToJavaTypeNoTypeArgs(conventions:Conventions[1], p:Property<Nil,Any|ZeroMany>[1]):meta::external::language::java::metamodel::Type[1]
+{
+  $conventions->pureTypeToJavaTypeNoTypeArgs($p.genericType, $p.multiplicity);
+}
+
 function meta::protocols::generation::java::addProvidedTypesFromDependencies(conventions: Conventions[1], dependencies: Configuration[*]): Conventions[1]
 {
   $dependencies->fold({config: Configuration[1], c1: Conventions[1] |
@@ -479,7 +495,7 @@ function meta::protocols::generation::java::processNew(fe: FunctionExpression[1]
    let name = 'new_' + $cls->elementToPath();
       
    let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
-                                                let propType = $conventions->pureTypeToJavaType($prop);
+                                                let propType = $conventions->pureTypeToJavaTypeNoTypeArgs($prop);
                                                 let value = $arg.second->castExpressionToReturnType($propType);
                                                 pair($prop, $value););
                                       

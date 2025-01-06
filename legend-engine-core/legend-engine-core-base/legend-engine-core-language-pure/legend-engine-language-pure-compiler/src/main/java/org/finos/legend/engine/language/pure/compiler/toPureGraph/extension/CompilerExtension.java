@@ -212,7 +212,7 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    default List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return Collections.emptyList();
     }

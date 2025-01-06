@@ -24,7 +24,7 @@ import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 
 public class PersistenceTestableRunnerExtension implements TestableRunnerExtension

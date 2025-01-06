@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;

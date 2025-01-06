@@ -52,7 +52,7 @@ public class HelperFunctionBuilder
         }
     }
 
-    static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test buildFunctionTestSuites(ConcreteFunctionDefinition<?> metamodelFunction, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext compileContext, ProcessingContext processingContext
+    static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test buildFunctionTestSuites(ConcreteFunctionDefinition<?> metamodelFunction, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext compileContext, ProcessingContext processingContext
     )
     {
         if (test instanceof FunctionTestSuite)

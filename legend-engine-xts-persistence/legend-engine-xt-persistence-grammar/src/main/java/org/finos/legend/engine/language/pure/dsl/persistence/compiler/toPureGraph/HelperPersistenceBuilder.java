@@ -221,7 +221,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.ArrayDeque;

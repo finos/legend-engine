@@ -17,6 +17,7 @@ import meta::pure::mapping::*;
 import meta::relational::dbTestRunner::*;
 import meta::core::runtime::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 

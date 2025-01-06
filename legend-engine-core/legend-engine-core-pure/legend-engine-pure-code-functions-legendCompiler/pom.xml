@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-runtime-legendCompiler</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure - Runtime - LegendCompiler</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - LegendCompiler</name>
 
     <modules>
         <module>legend-engine-pure-functions-legendCompiler-pure</module>

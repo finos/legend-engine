@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-runtime-pureExtensions</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure - Runtime - PureExtensions</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - PureExtensions</name>
 
     <modules>
         <module>legend-engine-pure-functions-pureExtensions-pure</module>

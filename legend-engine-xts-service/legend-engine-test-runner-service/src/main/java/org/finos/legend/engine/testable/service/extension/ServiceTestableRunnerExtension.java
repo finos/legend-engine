@@ -24,8 +24,8 @@ import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.TestAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 import java.util.List;
 

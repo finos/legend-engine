@@ -318,7 +318,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
         assertEquals(0, notifyees.size());
 
         // tests
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test> persistenceTests = persistence._tests();
         assertNotNull(persistenceTests);
         assertFalse(persistenceTests.isEmpty());
         assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);
@@ -496,7 +496,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
         assertEquals(0, notifyees.size());
 
         // tests
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test> persistenceTests = persistence._tests();
         assertNotNull(persistenceTests);
         assertFalse(persistenceTests.isEmpty());
         assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);
@@ -766,7 +766,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
         assertEquals(0, notifyees.size());
 
         // tests
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test> persistenceTests = persistence._tests();
         assertNotNull(persistenceTests);
         assertFalse(persistenceTests.isEmpty());
         assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);
@@ -1033,7 +1033,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
         assertEquals(0, notifyees.size());
 
         // tests
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test> persistenceTests = persistence._tests();
         assertNotNull(persistenceTests);
         assertFalse(persistenceTests.isEmpty());
         assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);

@@ -113,7 +113,7 @@ public class CompilerExtensions
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
     private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
-    private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> extraTestProcessors;
+    private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> extraTestProcessors;
     private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
@@ -299,7 +299,7 @@ public class CompilerExtensions
         return this.extraEmbeddedDataProcessors.castToList();
     }
 
-    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return this.extraTestProcessors.castToList();
     }
