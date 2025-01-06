@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::test::testTestCollection::*;
 
 function <<paramTest.Test>> meta::pure::test::testTestCollection::test1(param:String[1]): Boolean[1]

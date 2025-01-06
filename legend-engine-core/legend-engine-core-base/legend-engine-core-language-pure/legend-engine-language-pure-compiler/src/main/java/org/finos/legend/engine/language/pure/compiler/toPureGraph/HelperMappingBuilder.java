@@ -92,7 +92,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.util.List;

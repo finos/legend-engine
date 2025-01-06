@@ -25,7 +25,7 @@
     <artifactId>legend-engine-protocol-pure</artifactId>
     <name>Legend Engine - Protocol - Pure</name>
 
-    <build>
+<!--    <build>-->
 <!--        <plugins>-->
 <!--            <plugin>-->
 <!--                <groupId>org.codehaus.mojo</groupId>-->
@@ -75,7 +75,7 @@
 <!--                </dependencies>-->
 <!--            </plugin>-->
 <!--        </plugins>-->
-    </build>
+<!--    </build>-->
 
     <dependencies>
         <!-- ENGINE -->

@@ -23,7 +23,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.Objects;
 
-public class TestFirstPassBuilder implements TestVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>
+public class TestFirstPassBuilder implements TestVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>
 {
     private final CompileContext context;
     private final ProcessingContext processingContext;
@@ -35,7 +35,7 @@ public class TestFirstPassBuilder implements TestVisitor<org.finos.legend.pure.m
     }
 
     @Override
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test visit(Test test)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test visit(Test test)
     {
         return context.getCompilerExtensions().getExtraTestProcessors().stream()
                 .map(processor -> processor.value(test, context, processingContext))

@@ -52,7 +52,7 @@ public class FunctionValidator
         {
             PureModel pureModel = compileContext.pureModel;
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = pureModel.getConcreteFunctionDefinition(func);
-            for (org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test test: targetFunc._tests())
+            for (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test test: targetFunc._tests())
             {
                 Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) test;
                 FunctionTestSuite protocolSuite =  ListIterate.detect(func.tests, t -> t.id.equals(metamodelSuite._id()));

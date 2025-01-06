@@ -20,7 +20,7 @@ import meta::pure::mapping::*;
 
 import meta::core::runtime::*;
 
-Class meta::legend::service::metamodel::Service extends PackageableElement, meta::pure::test::Testable
+Class meta::legend::service::metamodel::Service extends PackageableElement, meta::pure::metamodel::testable::Testable
 [
 
    executionAndTestTypesMatch: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution),
@@ -234,17 +234,6 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_5(
-        type=meta::pure::test::Test,
-        position=(1052.43457, 265.00000),
-        width=127.38965,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_14(
         type=meta::legend::service::metamodel::Service,
@@ -259,7 +248,7 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_15(
-        type=meta::pure::test::Testable,
+        type=meta::pure::metamodel::testable::Testable,
         position=(410.94825, 279.00000),
         width=67.79492,
         height=30.00000,
@@ -339,23 +328,7 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_1(
-        source=cview_4,
-        target=cview_5,
-        points=[(946.41553,440.00000),(1116.12939,294.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_2(
-        source=cview_7,
-        target=cview_5,
-        points=[(1197.19311,419.00000),(1116.12939,294.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
         source=cview_14,
@@ -375,19 +348,6 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    PropertyView pview_0(
-        property=meta::pure::test::Testable.tests,
-        source=cview_15,
-        target=cview_5,
-        points=[(444.84571,294.00000),(1116.12939,294.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_1(
         property=meta::legend::service::metamodel::ServiceTestSuite.serviceTestData,

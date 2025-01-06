@@ -20,6 +20,7 @@ import meta::relational::tests::tds::tdsJoin::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::relational::tests::dbSpecificTests::shared::*;
 import meta::core::runtime::*;
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::mixtureOfCluases::testFilterAfterJoinInner(config:DbTestConfig[1]):Boolean[1]

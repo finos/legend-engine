@@ -46,7 +46,7 @@ import meta::relational::metamodel::*;
 
 Class
 {doc.doc = 'A persistence specification. This consists of a trigger that initiates persistence, a service that provides data to persist, a persister that writes that data to a store, and a notifier that updates on significant events.'}
-meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta::pure::test::Testable
+meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta::pure::metamodel::testable::Testable
 {
    {doc.doc = 'A functional description of this persistence specification.'}
    documentation: String[1];

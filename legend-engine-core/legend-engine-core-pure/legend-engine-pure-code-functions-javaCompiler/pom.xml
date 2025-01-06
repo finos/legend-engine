@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-runtime-javaCompiler</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure - Runtime - JavaCompiler</name>
+    <name>Legend Engine - Pure - Code - Core - Functions - JavaCompiler</name>
 
     <modules>
         <module>legend-engine-pure-functions-javaCompiler-pure</module>

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 
 Profile meta::pure::test::paramTest
 {
