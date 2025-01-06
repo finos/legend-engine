@@ -32,7 +32,7 @@ function meta::protocols::generation::java::translation::generateMetamodelToProt
   let basePackageStr = $pack->elementToPath('.');
   let conventions = conventions($config.purePackage, $config.javaPackage, $basePackageStr)
     ->addProvidedTypesFromDependencies($dependencies);
-  let taxonomies = $pack->findTaxonomies($config);
+  let taxonomies = allTypes($config)->findTaxonomies($config);
   let package = javaPackage($config.javaPackage);
 
   let translatorClass = javaClass(['public'], $package, 'MetamodelToProtocolTranslator');
