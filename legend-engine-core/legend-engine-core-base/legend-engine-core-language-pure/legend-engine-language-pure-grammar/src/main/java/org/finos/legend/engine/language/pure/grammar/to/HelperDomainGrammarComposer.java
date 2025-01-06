@@ -21,15 +21,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.AggregationKind;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Constraint;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
@@ -70,7 +71,7 @@ public class HelperDomainGrammarComposer
                 + (taggedValues == null || taggedValues.isEmpty() ? "" : "{" + LazyIterate.collect(taggedValues, HelperDomainGrammarComposer::renderTaggedValue).makeString(", ") + "} ");
     }
 
-    public static String renderEnumValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue enumValue)
+    public static String renderEnumValue(EnumValue enumValue)
     {
         return renderAnnotations(enumValue.stereotypes, enumValue.taggedValues) + PureGrammarComposerUtility.convertIdentifier(enumValue.value);
     }

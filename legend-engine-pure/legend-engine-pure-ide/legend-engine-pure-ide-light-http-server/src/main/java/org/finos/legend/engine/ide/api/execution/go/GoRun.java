@@ -22,6 +22,7 @@ import org.finos.legend.engine.ide.helpers.response.IDEExceptionResponse;
 import org.finos.legend.engine.ide.helpers.response.IDEResponse;
 import org.finos.legend.engine.ide.session.PureSession;
 import org.finos.legend.engine.ide.session.SimpleFunction;
+import org.finos.legend.engine.pure.ide.interpreted.debug.FunctionExecutionInterpretedWithDebugSupport;
 import org.finos.legend.pure.m3.execution.Console;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
@@ -57,7 +58,14 @@ public class GoRun implements SimpleFunction
             console = functionExecution.getConsole();
             console.setPrintStream(new JSONPrintStream(outputStream));
             console.setConsole(true);
-            functionExecution.start(function, FastList.<CoreInstance>newList());
+            if (functionExecution instanceof FunctionExecutionInterpretedWithDebugSupport)
+            {
+                ((FunctionExecutionInterpretedWithDebugSupport) functionExecution).startDebug(function, FastList.newList());
+            }
+            else
+            {
+                functionExecution.start(function, FastList.newList());
+            }
             outputStream.write("\"".getBytes());
         }
         catch (Exception ex)

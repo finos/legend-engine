@@ -29,9 +29,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
@@ -165,6 +165,12 @@ public class CompileContext
             return this;
         }
 
+        public Builder withImports(ImmutableSet<String> extraImports)
+        {
+            this.imports = META_IMPORTS.newWithAll(extraImports);
+            return this;
+        }
+
         public CompileContext build()
         {
             return new CompileContext(this);
@@ -186,7 +192,7 @@ public class CompileContext
         return getCompilerExtensions().getExtraProcessorOrThrow(element);
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(PackageableElement element)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pureElement = getExtraProcessorOrThrow(element).processFirstPass(element, this);
         if (pureElement instanceof ConcreteFunctionDefinition<?>)
@@ -196,17 +202,17 @@ public class CompileContext
         return this.pureModel.setNameAndPackage(pureElement, element.name, element._package, element.sourceInformation);
     }
 
-    public void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public void processSecondPass(PackageableElement element)
     {
         getExtraProcessorOrThrow(element).processSecondPass(element, this);
     }
 
-    protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    protected RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> processPrerequisiteElementsPass(PackageableElement element)
     {
         return getExtraProcessorOrThrow(element).getPrerequisiteElements(element, this);
     }
 
-    public void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    public void processThirdPass(PackageableElement element)
     {
         getExtraProcessorOrThrow(element).processThirdPass(element, this);
     }
@@ -672,7 +678,7 @@ public class CompileContext
     }
 
 
-    public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue taggedValue)
+    public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue taggedValue)
     {
         return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass(M3Paths.TaggedValue))
                 ._tag(resolveTag(taggedValue.tag))

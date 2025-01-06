@@ -45,26 +45,27 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.AggregationKind;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Constraint;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.DefaultValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.EnumValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileStereotype;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ProfileTag;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.ProfileStereotype;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.ProfileTag;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
@@ -431,14 +432,14 @@ public class DomainParseTreeWalker
 
     // ----------------------------------------------- FUNCTION -----------------------------------------------
 
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function visitFunction(DomainParserGrammar.FunctionDefinitionContext ctx)
+    private Function visitFunction(DomainParserGrammar.FunctionDefinitionContext ctx)
     {
         if (ctx.typeAndMultiplicityParameters() != null && !ctx.typeAndMultiplicityParameters().isEmpty())
         {
             throw new EngineException("Type and/or multiplicity parameters are not authorized in Legend Engine", walkerSourceInformation.getSourceInformation(ctx.typeAndMultiplicityParameters()), EngineErrorType.PARSER);
         }
 
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function();
+        Function func = new Function();
         func._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         func.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         func.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
@@ -1576,14 +1577,14 @@ public class DomainParseTreeWalker
             pType.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             type = pType;
         }
-        else if (ctx.PAREN_OPEN() != null)
+        else if (ctx.relationType() != null)
         {
-            type = new RelationType(ListIterate.collect(ctx.columnInfo(), x ->
+            type = new RelationType(ListIterate.collect(ctx.relationType().columnInfo(), x ->
             {
                 Column column = new Column(
                         PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
                         processGenericType(x.type()),
-                        Multiplicity.ZERO_ONE
+                        x.multiplicity() == null ? Multiplicity.ZERO_ONE : this.buildMultiplicity(x.multiplicity().multiplicityArgument())
                 );
                 column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
                 return column;

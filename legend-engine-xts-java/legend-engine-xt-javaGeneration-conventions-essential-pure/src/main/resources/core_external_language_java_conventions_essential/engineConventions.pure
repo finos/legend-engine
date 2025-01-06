@@ -23,6 +23,13 @@ function meta::external::language::java::generation::essential::engineConvention
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::PureDate, javaDate())
       ->addProvidedType(meta::pure::functions::date::DurationUnit, javaDurationUnit())
       ->addProvidedType(meta::pure::functions::date::DayOfWeek, javaDayOfWeek())
+
+      ->meta::external::language::java::generation::grammar::boolean::registerBooleanLibrary()
+      ->meta::external::language::java::generation::grammar::collection::registerCollectionsLibrary(true)
+      ->meta::external::language::java::generation::grammar::lang::registerLangLibrary()
+      ->meta::external::language::java::generation::grammar::math::registerMathsLibrary(true)
+      ->meta::external::language::java::generation::grammar::string::registerStringLibrary()
+
       ->meta::external::language::java::generation::essential::boolean::registerBooleanLibrary()
       ->meta::external::language::java::generation::essential::collection::registerCollectionsLibrary(true)
       ->meta::external::language::java::generation::essential::pureDate::registerPureDateLibrary()
@@ -30,6 +37,5 @@ function meta::external::language::java::generation::essential::engineConvention
       ->meta::external::language::java::generation::essential::assert::registerAssertLibrary()
       ->meta::external::language::java::generation::essential::math::registerMathsLibrary(true)
       ->meta::external::language::java::generation::essential::meta::registerMetaLibrary()
-      ->meta::external::language::java::generation::essential::multiplicity::registerMultiplicityLibrary()
       ->meta::external::language::java::generation::essential::string::registerStringLibrary();
 }

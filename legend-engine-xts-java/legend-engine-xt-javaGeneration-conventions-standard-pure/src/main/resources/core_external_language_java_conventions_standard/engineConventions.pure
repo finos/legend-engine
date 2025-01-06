@@ -19,5 +19,6 @@ import meta::external::language::java::generation::standard::*;
 function meta::external::language::java::generation::standard::engineConventions(conventions:Conventions[1]): Conventions[1]
 {
    $conventions
-      ->meta::external::language::java::generation::standard::collection::registerCollectionsLibrary(true);
+      ->meta::external::language::java::generation::standard::collection::registerCollectionsLibrary(true)
+      ->meta::external::language::java::generation::standard::math::registerMathsLibrary(true);
 }

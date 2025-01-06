@@ -1,0 +1,60 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::functions::reportDelta::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::generation::grammar::collection::*;
+
+function meta::external::language::java::generation::grammar::collection::registerCollectionsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
+{
+   let library  = $conventions->className(Library);
+
+   let x = j_parameter(javaBoolean()->toBoxed(), 'x');
+   let y = j_parameter(javaBoolean()->toBoxed(), 'y');
+
+   let lib = newConventionsLibrary()
+      ->usesJavaPackage('java.util')
+      ->usesJavaPackage('java.util.stream')
+      ->usesBoolean(if($boxPrimitives, |javaBooleanBoxed(), |javaBoolean()), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
+      ->addFunctionCoders([
+         fc2(filter_T_MANY__Function_1__T_MANY_,                                 {ctx,collection,func          | $collection->j_streamOf()->js_filter($func)}),
+
+         fc2(map_T_MANY__Function_1__V_MANY_,                                    {ctx,collection,func          | $collection->j_streamOf()->js_map($func)}),
+         fc (map_T_m__Function_1__V_m_,                                          fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
+         fc (map_T_$0_1$__Function_1__V_$0_1$_,                                  fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
+
+         fc1(isEmpty_Any_$0_1$__Boolean_1_,                                      {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_true(), |$maybe->j_box()->j_eq(j_null()))}),
+         fc1(isEmpty_Any_MANY__Boolean_1_,                                       {ctx,collection               | if($collection.type->isJavaList(), |$collection->j_invoke('isEmpty', []), |$collection->j_cast($collection.type->toBoxed())->j_eq(j_null()))}),
+
+         fc1(isNotEmpty_Any_MANY__Boolean_1_,                                    {ctx,collection               | if($collection.type->isJavaList(), | j_not($collection->j_invoke('isEmpty', [])), | $collection->j_cast($collection.type->toBoxed())->j_ne(j_null()))}),
+         fc1(isNotEmpty_Any_$0_1$__Boolean_1_,                                   {ctx,maybe                     | if($maybe->isCollectionsEmptyList(), |j_false(), |$maybe->j_box()->j_ne(j_null()))}),
+
+         fc1(size_Any_MANY__Integer_1_,                                          {ctx,collection               | $collection->j_streamOf()->js_count()}),
+
+         fc1(first_T_MANY__T_$0_1$_,                                             {ctx,collection               | first($collection, $library)})
+      ]);
+
+   $conventions->registerLibrary($lib);
+}
+
+function meta::external::language::java::generation::grammar::collection::first(collection:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+{
+    $library->j_invoke('first', $collection, if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))
+}

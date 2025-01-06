@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.67.10-SNAPSHOT</version>
+    <version>4.67.13-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -110,7 +110,7 @@
         <!-- Legend -->
         <legend.pure.version>5.28.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
-        <legend.web-application.version>12.86.0</legend.web-application.version>
+        <legend.web-application.version>13.0.0</legend.web-application.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>

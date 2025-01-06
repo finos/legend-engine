@@ -19,7 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Measure;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;

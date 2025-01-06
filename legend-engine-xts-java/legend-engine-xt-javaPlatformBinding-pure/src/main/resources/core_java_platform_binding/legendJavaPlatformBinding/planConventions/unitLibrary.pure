@@ -18,6 +18,7 @@ import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::unit::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::external::language::java::generation::essential::lang::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::unit::registerUnitLibrary(conventions: Conventions[1]): Conventions[1]
 {
@@ -27,17 +28,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::unit::
       ->addFunctionCoders([
          fc1(unitType_Any_1__String_1_,          {ctx,unitValue     | $unitValue->j_cast($ctx.conventions->unitInterface())->j_invoke('getUnitType', [], javaString());}),
          fc1(unitValue_Any_1__Number_1_,         {ctx,unitValue     | $unitValue->j_cast($ctx.conventions->unitInterface())->j_invoke('getUnitValue', [], javaNumber());}),
-         fc2(newUnit_Unit_1__Number_1__Any_1_,   {ctx,unit,value    | $ctx->unitImpl(0)->j_new($value);}),
          fc2(convert_Any_1__Unit_1__Any_1_,      {ctx,from,unit     | $ctx->unitImpl(1)->j_new($ctx->unitImpl(1)->j_invoke('inverse', $from->j_cast($ctx.conventions->unitInterface())->j_invoke('convertToCanonical', [], javaNumber()), javaNumber()));})
       ]);
 
    $conventions->registerLibrary($lib);
-}
-
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitImpl(ctx:FuncCoderContext[1], index:Integer[1]): meta::external::language::java::metamodel::Class[1]
-{
-   let unit = $ctx.params->at($index)->cast(@InstanceValue).values->toOne()->cast(@Unit);
-   $ctx.conventions->implClassName($unit);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitInterface(conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]

@@ -25,15 +25,15 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -230,7 +230,7 @@ public class TestDependencyManagement
         mappingPrerequisiteGraphs.put(m5.getPath(), Sets.fixedSize.with(m3.getPath()));
         mappingPrerequisiteGraphs.put(m6.getPath(), Sets.fixedSize.with(m4.getPath()));
         mappingPrerequisiteGraphs.put(m7.getPath(), Sets.fixedSize.with(m4.getPath()));
-        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
+        MutableMap<java.lang.Class<? extends PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
 
         FastListMultimap<java.lang.Class<? extends PackageableElement>, DependencyManagement.PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = dependencyManagement.topologicallySortElements(classToElements, elementPrerequisitesByClass);
         MutableList<DependencyManagement.PackageableElementsByDependencyLevel> allMappingsByDependencyLevel = classToElementsSortedByDependencyLevel.get(Mapping.class);
@@ -300,7 +300,7 @@ public class TestDependencyManagement
         mappingPrerequisiteGraphs.put(m5.getPath(), Sets.fixedSize.with(m3.getPath()));
         mappingPrerequisiteGraphs.put(m6.getPath(), Sets.fixedSize.with(m4.getPath()));
         mappingPrerequisiteGraphs.put(m7.getPath(), Sets.fixedSize.with(m4.getPath()));
-        MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
+        MutableMap<java.lang.Class<? extends PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass = Maps.mutable.with(Mapping.class, mappingPrerequisiteGraphs);
 
         String expectedErrorMessage = "Detected a circular dependency in element prerequisites graph in the following metamodel: class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.\nCycle: test::M7 -> test::M4 -> test::M3 -> test::M7";
         try

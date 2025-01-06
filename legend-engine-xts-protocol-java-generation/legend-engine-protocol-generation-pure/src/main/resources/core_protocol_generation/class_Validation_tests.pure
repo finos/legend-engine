@@ -28,10 +28,12 @@ Class meta::protocols::generation::java::tests::validate::model::ASimpleConstrai
 
 Class meta::protocols::generation::java::tests::validate::model::ASimpleConstraintLight
 [
-  $this.value != 'bad value'
+  $this.value != 'bad value',
+  $this.value == 'tst' && !$this.anyValue->toOne()->instanceOf(MultiplicityAndChain)
 ]
 {
   value : String[0..1];
+  anyValue : MultiplicityAndChain_Parent[0..1];
 }
 
 Enum meta::protocols::generation::java::tests::validate::model::SomeEnum
@@ -143,10 +145,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 'public class ASimpleConstraintLight\n'+
                 '{\n'+
                 '    public String value;\n'+
+                '    public MultiplicityAndChain_Parent anyValue;\n'+
                 '\n'+
                 '    public ASimpleConstraintLight _value(String value)\n'+
                 '    {\n'+
                 '        this.value = value;\n'+
+                '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public ASimpleConstraintLight _anyValue(MultiplicityAndChain_Parent anyValue)\n'+
+                '    {\n'+
+                '        this.anyValue = anyValue;\n'+
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
@@ -158,6 +167,17 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '            result.add(new ValidationError("0",\n'+
                 '                                           "{this|not(($this.value == \'bad value\'))}",\n'+
                 '                                           null));\n'+
+                '        }\n'+
+                '        if (!(Library.equals(this.value, "tst") && !((Object) Library\n'+
+                '                     .toOne(this.anyValue) instanceof MultiplicityAndChain)))\n'+
+                '        {\n'+
+                '            result.add(new ValidationError("1",\n'+
+                '                                           "{this|(($this.value == \'tst\') && $this.anyValue->toOne()->instanceOf(meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain)->not())}",\n'+
+                '                                           null));\n'+
+                '        }\n'+
+                '        if (this.anyValue != null)\n'+
+                '        {\n'+
+                '            result.addAll(this.anyValue.validate());\n'+
                 '        }\n'+
                 '        return result;\n'+
                 '    }\n'+

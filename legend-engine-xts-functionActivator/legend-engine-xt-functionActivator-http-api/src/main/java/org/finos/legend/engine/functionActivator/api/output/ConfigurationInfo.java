@@ -18,7 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_domain_Class;
 import org.finos.legend.pure.generated.core_external_format_json_toJSON;
@@ -45,7 +45,7 @@ public class ConfigurationInfo
     {
     }
 
-    private MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class> buildModelFromElement(String element, PureModel pureModel, String version)
+    private MutableList<Class> buildModelFromElement(String element, PureModel pureModel, String version)
     {
         PackageableElement elem = pureModel.getPackageableElement(element);
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>> classes = core_pure_protocol_generation_serialization_scan.Root_meta_protocols_generation_scan_scanClass_Class_1__Class_MANY_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) elem, pureModel.getExecutionSupport());
@@ -54,7 +54,7 @@ public class ConfigurationInfo
             try
             {
                 Root_meta_protocols_pure_vX_X_X_metamodel_domain_Class protocolClass = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformClass_Class_1__Extension_MANY__Class_1_(x, Lists.mutable.empty(), pureModel.getExecutionSupport());
-                return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(serializeToJSON(protocolClass, pureModel), org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class.class);
+                return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(serializeToJSON(protocolClass, pureModel), Class.class);
             }
             catch (Exception e)
             {

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AbstractAppliedFunction;
 

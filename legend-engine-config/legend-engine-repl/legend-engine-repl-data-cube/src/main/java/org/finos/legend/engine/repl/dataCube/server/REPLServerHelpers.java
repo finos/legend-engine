@@ -36,7 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExe
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -58,7 +58,6 @@ import org.finos.legend.engine.repl.shared.ExecutionHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 
 import java.io.IOException;
 import java.io.OutputStream;

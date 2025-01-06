@@ -25,7 +25,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.lang.reflect.Modifier;
@@ -134,9 +134,9 @@ public class DependencyManagement
         }
     }
 
-    public FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, PackageableElementsByDependencyLevel> topologicallySortElements(FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, PackageableElementsByDependencyLevel> classToElements, MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass)
+    public FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> topologicallySortElements(FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> classToElements, MutableMap<java.lang.Class<? extends PackageableElement>, MutableMap<String, MutableSet<String>>> elementPrerequisitesByClass)
     {
-        FastListMultimap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>, PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = new FastListMultimap<>();
+        FastListMultimap<java.lang.Class<? extends PackageableElement>, PackageableElementsByDependencyLevel> classToElementsSortedByDependencyLevel = new FastListMultimap<>();
         classToElements.forEachKeyMultiValues((clazz, elementsByDependencyLevel) ->
         {
             if (elementPrerequisitesByClass.containsKey(clazz))
@@ -359,7 +359,7 @@ public class DependencyManagement
             this.independentElementAndPathPairs = Lists.fixedSize.withAll(packageableElementAndPathPairs);
         }
 
-        protected FixedSizeList<Pair<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement, String>> getIndependentElementAndPathPairs()
+        protected FixedSizeList<Pair<PackageableElement, String>> getIndependentElementAndPathPairs()
         {
             return this.independentElementAndPathPairs;
         }

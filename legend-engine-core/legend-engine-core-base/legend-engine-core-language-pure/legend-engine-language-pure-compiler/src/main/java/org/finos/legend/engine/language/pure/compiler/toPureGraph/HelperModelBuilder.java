@@ -19,10 +19,10 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -37,7 +37,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_propert
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
@@ -155,7 +154,7 @@ public class HelperModelBuilder
         return ve;
     }
 
-    public static org.eclipse.collections.api.block.function.Function<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty, QualifiedProperty<Object>> processQualifiedPropertyFirstPass(CompileContext context, PropertyOwner owner, String fullPath, ProcessingContext processingContext)
+    public static org.eclipse.collections.api.block.function.Function<org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty, QualifiedProperty<Object>> processQualifiedPropertyFirstPass(CompileContext context, PropertyOwner owner, String fullPath, ProcessingContext processingContext)
     {
         return property ->
         {
@@ -228,7 +227,7 @@ public class HelperModelBuilder
         targetFunc._postConstraints(functionPostConstraints);
     }
 
-    public static RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint> processConstraints(List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint> constraints, CompileContext context, String _package, String _name, ValueSpecificationContext vsContext, ProcessingContext ctx)
+    public static RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint> processConstraints(List<org.finos.legend.engine.protocol.pure.v1.model.domain.Constraint> constraints, CompileContext context, String _package, String _name, ValueSpecificationContext vsContext, ProcessingContext ctx)
     {
         String constraintSourceId = context.pureModel.buildPackageString(_package, _name).replace("::", "_") + "_Constraint$";
 
@@ -553,7 +552,7 @@ public class HelperModelBuilder
 //        when processing $p.nameWithTitle('Mr'), the parameter name is p, but the AppliedQualfiedProperty has name 'this' and thus the comparison on parameter names fails.
     }
 
-    public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty p)
+    public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty p)
     {
         return o._name().equals(p.name) && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }

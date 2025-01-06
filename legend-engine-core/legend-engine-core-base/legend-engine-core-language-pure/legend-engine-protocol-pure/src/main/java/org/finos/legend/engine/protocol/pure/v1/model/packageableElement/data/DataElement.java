@@ -16,10 +16,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
 
 import java.util.Collections;
 import java.util.List;
