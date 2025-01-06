@@ -42,12 +42,21 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArith
   )
 }
 
-function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::divide(): SqlDialectTest[1]
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::divideInteger(): SqlDialectTest[1]
 {
   testConfigForSimpleExpression(
     ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^IntegerLiteral(value = 202), type = ArithmeticType.DIVIDE),
+    0,
+    'NumberArithmetic - divide integer'
+  )
+}
+
+function <<SDT.test>> meta::external::store::relational::sdt::suite::numberArithmetic::divideDouble(): SqlDialectTest[1]
+{
+  testConfigForSimpleExpression(
+    ^ArithmeticExpression(left = ^IntegerLiteral(value = 101), right = ^DoubleLiteral(value = 202.0), type = ArithmeticType.DIVIDE),
     0.5,
-    'NumberArithmetic - divide'
+    'NumberArithmetic - divide double'
   )
 }
 
