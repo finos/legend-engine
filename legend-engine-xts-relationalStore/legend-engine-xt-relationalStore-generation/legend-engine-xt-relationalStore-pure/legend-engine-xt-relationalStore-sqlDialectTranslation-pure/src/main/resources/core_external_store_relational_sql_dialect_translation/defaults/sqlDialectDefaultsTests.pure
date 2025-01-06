@@ -21,20 +21,10 @@ import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testDialect(): SqlDialect[1]
 {
-  let postgresSqlDialect = postgresSqlDialect(); // Postgres is default. Hence using Postgres dialect for testing defaults
+  postgresSqlDialect() // Postgres is default. Hence using Postgres dialect for testing defaults
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::literal(a: Any[1]): Literal[1]
-{
-  $a->match([
-    i: Integer[1] | ^IntegerLiteral(value = $i),
-    i: Float[1] | ^DoubleLiteral(value = $i),
-    s: String[1] | ^StringLiteral(value = $s),
-    b: Boolean[1] | ^BooleanLiteral(value = $b)
-  ])
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationState(): SqlDialectTranslationState[1]
+function meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationState(): SqlDialectTranslationState[1]
 {
   ^SqlDialectTranslationState
   (
@@ -47,7 +37,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   ^SqlDialectTranslationConfig
   (
     dbConfig = ^DbConfig(dbType = 'Postgres'),
-    formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true)
+    formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
   )
 }
 
@@ -219,17 +210,17 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   assertEquals('101 + 102', $dialect->executeNodeProcessor($e1, $state, $config));
   assertEquals('103 - 104', $dialect->executeNodeProcessor($e2, $state, $config));
   assertEquals('105 * 106', $dialect->executeNodeProcessor($e3, $state, $config));
-  assertEquals('CAST(107 AS DECIMAL) / CAST(108 AS DECIMAL)', $dialect->executeNodeProcessor($e4, $state, $config));
+  assertEquals('107 / 108', $dialect->executeNodeProcessor($e4, $state, $config));
   assertEquals('109 % 110', $dialect->executeNodeProcessor($e5, $state, $config));
   assertEquals('111 ^ 112', $dialect->executeNodeProcessor($e6, $state, $config));
 
   assertEquals('101 + 102 + 101 + 102', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e1, type = ArithmeticType.ADD), $state, $config));
   assertEquals('101 + 102 - 103 - 104', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e2, type = ArithmeticType.SUBTRACT), $state, $config));
   assertEquals('(101 + 102) * (103 - 104)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e2, type = ArithmeticType.MULTIPLY), $state, $config));
-  assertEquals('CAST(105 * 106 AS DECIMAL) / CAST(CAST(107 AS DECIMAL) / CAST(108 AS DECIMAL) AS DECIMAL)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e3, right = $e4, type = ArithmeticType.DIVIDE), $state, $config));
-  assertEquals('(101 + 102) * CAST(107 AS DECIMAL) / CAST(108 AS DECIMAL)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.MULTIPLY), $state, $config));
-  assertEquals('(101 + 102) % CAST(107 AS DECIMAL) / CAST(108 AS DECIMAL)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.MODULUS), $state, $config));
-  assertEquals('(101 + 102) ^ (CAST(107 AS DECIMAL) / CAST(108 AS DECIMAL))', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.POWER), $state, $config));
+  assertEquals('(105 * 106) / (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e3, right = $e4, type = ArithmeticType.DIVIDE), $state, $config));
+  assertEquals('(101 + 102) * (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.MULTIPLY), $state, $config));
+  assertEquals('(101 + 102) % (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.MODULUS), $state, $config));
+  assertEquals('(101 + 102) ^ (107 / 108)', $dialect->executeNodeProcessor(^ArithmeticExpression(left = $e1, right = $e4, type = ArithmeticType.POWER), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testQualifiedNameReferenceProcessing(): Boolean[1]
@@ -460,97 +451,6 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
         ]
       ),
       $state, $config)
-  );
-}
-
-function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testFunctionCallProcessing(): Boolean[1]
-{
-  let dialect = testDialect();
-  let state = testSqlDialectTranslationState();
-  let config = testSqlDialectTranslationConfig(false);
-
-  let name = ^QualifiedName(parts = ['db', 'func']);
-  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c1']));
-  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c2']));
-  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c3']));
-  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
-
-  assertEquals('db.func()', $dialect->executeNodeProcessor(^FunctionCall(name =  $name), $state, $config));
-  assertEquals('db.func(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
-  assertEquals(
-    'db.func(101, FALSE) OVER (PARTITION BY db.schema.table.c1, db.schema.table.c2 ORDER BY db.schema.table.c3 DESC NULLS FIRST, db.schema.table.c4 ASC NULLS LAST)',
-    $dialect->executeNodeProcessor(
-      ^FunctionCall(
-        name =  $name,
-        arguments = [literal(101), literal(false)],
-        window = ^meta::external::query::sql::metamodel::Window(
-          partitions = [$c1, $c2],
-          orderBy = [
-            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
-            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
-          ]
-        )
-      ),
-      $state, $config
-    )
-  );
-}
-
-function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testFunctionCallPrettyFormatProcessing(): Boolean[1]
-{
-  let dialect = testDialect();
-  let state = testSqlDialectTranslationState();
-  let config = testSqlDialectTranslationConfig(true);
-
-  let name = ^QualifiedName(parts = ['db', 'func']);
-  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c1']));
-  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c2']));
-  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c3']));
-  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
-
-  assertEquals('db.func()', $dialect->executeNodeProcessor(^FunctionCall(name =  $name), $state, $config));
-  assertEquals('db.func(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101)), $state, $config));
-  assertEquals(
-    'db.func(101, FALSE) OVER (\n' + 
-    '  PARTITION BY\n' +
-    '    db.schema.table.c1,\n' +
-    '    db.schema.table.c2\n' +
-    '  ORDER BY\n' +
-    '    db.schema.table.c3 DESC NULLS FIRST,\n' +
-    '    db.schema.table.c4 ASC NULLS LAST\n' +
-    ')',
-    $dialect->executeNodeProcessor(
-      ^FunctionCall(
-        name =  $name,
-        arguments = [literal(101), literal(false)],
-        window = ^meta::external::query::sql::metamodel::Window(
-          partitions = [$c1, $c2],
-          orderBy = [
-            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
-            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
-          ]
-        )
-      ),
-      $state, $config
-    )
-  );
-
-  let caseExpression = ^SearchedCaseExpression(whenClauses = [^WhenClause(result = literal(101), operand = literal(false)), ^WhenClause(result = literal(102), operand = literal(true))]);
-  assertEquals(
-    'db.func(\n' +
-    '  101,\n' +
-    '  CASE\n' +
-    '    WHEN\n' +
-    '      FALSE\n' +
-    '    THEN\n' +
-    '      101\n' +
-    '    WHEN\n' +
-    '      TRUE\n' +
-    '    THEN\n' +
-    '      102\n' +
-    '  END\n' +
-    ')',
-    $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = [literal(101), $caseExpression]), $state, $config)
   );
 }
 

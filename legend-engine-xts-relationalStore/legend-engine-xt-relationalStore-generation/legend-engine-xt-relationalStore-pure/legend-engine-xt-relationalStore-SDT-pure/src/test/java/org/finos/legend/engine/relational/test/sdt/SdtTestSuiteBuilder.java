@@ -20,22 +20,24 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 import org.junit.Assert;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 import static org.finos.legend.pure.generated.core_external_store_relational_sdt_sdtFramework.*;
-import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.*;
 
 public class SdtTestSuiteBuilder
 {
@@ -43,15 +45,20 @@ public class SdtTestSuiteBuilder
             "meta::external::store::relational::sdt::suite"
     );
 
-    public static Test buildSdtTestSuite(String dbType, Function<CompiledExecutionSupport, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Map<String, String> expectedErrors)
+    public static Test buildSdtTestSuite(String dbType, Function<CompiledExecutionSupport, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Function<CompiledExecutionSupport, PureMap> expectedErrorsFunc)
     {
         final CompiledExecutionSupport es = getClassLoaderExecutionSupport();
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = extensionsFunc.apply(es);
+        PureMap expectedErrors = expectedErrorsFunc.apply(es);
         TestSuite suite = new TestSuite();
         SDT_TEST_PACKAGES.forEach(pkg ->
         {
             RichIterable<? extends ConcreteFunctionDefinition<?>> sdtTestInPackage = Root_meta_external_store_relational_sdt_framework_collectSDTTestsInPackage_String_1__ConcreteFunctionDefinition_MANY_(pkg, es);
-            sdtTestInPackage.forEach(x -> suite.addTest(new SDTTestCase(x, dbType, extensions, es, null)));
+            sdtTestInPackage.forEach(x ->
+            {
+                MutableList<? extends Root_meta_external_store_relational_sdt_framework_SqlDialectTest> sdtTests = Root_meta_external_store_relational_sdt_framework_getSqlDialectTests_ConcreteFunctionDefinition_1__SqlDialectTest_MANY_(x, es).toList();
+                sdtTests.forEach(test -> suite.addTest(new SDTTestCase(test, dbType, extensions, es, (String) expectedErrors.getMap().get(test._identifier()))));
+            });
         });
         return wrapSuite(
                 () -> true,
@@ -63,7 +70,7 @@ public class SdtTestSuiteBuilder
 
     public static final class SDTTestCase extends TestCase
     {
-        ConcreteFunctionDefinition<?> func;
+        Root_meta_external_store_relational_sdt_framework_SqlDialectTest sdtTest;
         String dbType;
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
         CompiledExecutionSupport es;
@@ -73,12 +80,12 @@ public class SdtTestSuiteBuilder
         {
         }
 
-        public SDTTestCase(ConcreteFunctionDefinition<?> func, String dbType, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, CompiledExecutionSupport es, String expectedError)
+        public SDTTestCase(Root_meta_external_store_relational_sdt_framework_SqlDialectTest sdtTest, String dbType, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, CompiledExecutionSupport es, String expectedError)
         {
-            super(Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(func, es));
+            super(sdtTest._identifier());
+            this.sdtTest = sdtTest;
             this.dbType = dbType;
             this.extensions = extensions;
-            this.func = func;
             this.es = es;
             this.expectedError = expectedError;
         }
@@ -92,10 +99,11 @@ public class SdtTestSuiteBuilder
             boolean testPass = false;
             try
             {
-                Root_meta_external_store_relational_sdt_framework_runSqlDialect_SqlDialectTest_1__String_1__Extension_MANY__Boolean_1_(
-                        Root_meta_external_store_relational_sdt_framework_getSqlDialectTest_ConcreteFunctionDefinition_1__SqlDialectTest_1_(this.func, this.es),
+                Root_meta_external_store_relational_sdt_framework_runSqlDialectTest_SqlDialectTest_1__String_1__Extension_MANY__DebugContext_1__Boolean_1_(
+                        sdtTest,
                         this.dbType,
                         this.extensions,
+                        new Root_meta_pure_tools_DebugContext_Impl("")._debug(false),
                         this.es
                 );
                 testPass = true;
@@ -104,7 +112,19 @@ public class SdtTestSuiteBuilder
             {
                 if (expectedError != null)
                 {
-                    Assert.assertEquals(expectedError, e.getMessage());
+                    String errorMessage = e.getMessage();
+                    Pattern p = Pattern.compile("Assert failure at \\((.*?)\\), (.*)", Pattern.DOTALL);
+                    Matcher m = p.matcher(errorMessage);
+                    if (m.matches())
+                    {
+                        // Check assert message
+                        String assertMessage = m.group(2);
+                        Assert.assertEquals(expectedError, assertMessage.startsWith("\"") ? assertMessage.substring(1, assertMessage.length() - 1) : assertMessage);
+                    }
+                    else
+                    {
+                        Assert.assertEquals(expectedError, e.getMessage());
+                    }
                     testPass = true;
                     return;
                 }

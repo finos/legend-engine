@@ -48,10 +48,35 @@ function meta::external::store::relational::sqlDialectTranslation::utils::differ
   ])
 }
 
+function meta::external::store::relational::sqlDialectTranslation::utils::doubleNegation(e1: meta::external::query::sql::metamodel::Expression[1], e2: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
+{
+  $e1->instanceOf(NegativeExpression) && $e2->instanceOf(NegativeExpression)
+}
+
 function meta::external::store::relational::sqlDialectTranslation::utils::isDivideExpr(e: meta::external::query::sql::metamodel::Expression[1]): Boolean[1]
 {
   $e->match([
     a: ArithmeticExpression[1] |  $a.type == ArithmeticType.DIVIDE,
     a: Any[*] | false
+  ])
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::simpleFunctionCall(name: String[*], arguments: meta::external::query::sql::metamodel::Expression[*]): FunctionCall[1]
+{
+  ^FunctionCall
+  (
+    name = ^QualifiedName(parts = $name),
+    arguments = $arguments,
+    distinct = false
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::literal(a: Any[1]): Literal[1]
+{
+  $a->match([
+    i: Integer[1] | ^IntegerLiteral(value = $i),
+    i: Float[1] | ^DoubleLiteral(value = $i),
+    s: String[1] | ^StringLiteral(value = $s),
+    b: Boolean[1] | ^BooleanLiteral(value = $b)
   ])
 }

@@ -15,7 +15,11 @@
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::*;
 import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::pure::extension::*;
 
@@ -46,6 +50,13 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
       )
     ]
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+   
+  ]->newMap()->cast(@Map<String, String>)
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBQuoteConfiguration(): QuoteConfiguration[1]
@@ -106,9 +117,13 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     comparisonExpressionNodeProcessor_default(),
     logicalBinaryExpressionNodeProcessor_default(),
     notExpressionNodeProcessor_default(),
-    arithmeticExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_duckDB(),
     columnTypeProcessor_default(),
-    castProcessor_default()
+    castProcessor_default(),
+    negativeNodeProcessor_default(),
+    functionCallProcessor_duckDB(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default()
   ]
 }
 
@@ -160,3 +175,112 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     'date'
   ]
 }
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::arithmeticExpressionNodeProcessor_duckDB(): NodeProcessor<ArithmeticExpression>[1]
+{
+  nodeProcessor(
+    ArithmeticExpression,
+    {sqlDialect, a, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($a.left, $a, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($a.right, $a, $state, $config);
+      let operator = if(
+        [
+          pair(|$a.type == ArithmeticType.ADD, | '+'),
+          pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
+          pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
+          pair(|$a.type == ArithmeticType.DIVIDE, | '//'),
+          pair(|$a.type == ArithmeticType.MODULUS, | '%'),
+          pair(|$a.type == ArithmeticType.POWER, | '^')
+        ],
+        | failWithMessage('Unhandled arithmetic operator type: ' + $a.type->toString())
+      );
+
+      $leftExpr + ' ' + $operator + ' ' + $rightExpr;
+    }
+  )
+}
+
+
+// ---------------------------- Function processing -------------------------
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::functionCallProcessor_duckDB(): NodeProcessor<FunctionCall>[1]
+{
+  let functionProcessorMap = functionProcessorMap();
+  nodeProcessor(
+    FunctionCall,
+    {sqlDialect, f, state, config | 
+      let funcName = $f.name.parts->joinStrings('.');
+      let functionProcessor = $functionProcessorMap->get($f->cast(@TypedFunctionCall).sqlFunction->type());
+      assert($functionProcessor->isNotEmpty(), | 'DuckDB SQL Dialect does not support the function - ' + $funcName);
+      $functionProcessor->toOne().processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+    },
+    {f | $functionProcessorMap->get($f->cast(@TypedFunctionCall).sqlFunction->type())->toOne('DuckDB SQL Dialect does not support the function - ' + $f.name.parts->joinStrings('.')).selfDelimiting->eval($f)}
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
+{
+  newMap([
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Cbrt, simpleFunctionProcessor('cbrt')),
+    pair(Ceil, simpleFunctionProcessor('ceil')),
+    pair(Ceiling, simpleFunctionProcessor('ceiling')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(Exp, simpleFunctionProcessor('exp')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    pair(Log, simpleFunctionProcessor('log')),
+    pair(Log10, simpleFunctionProcessor('log10')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt'))
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::simpleFunctionProcessor(targetFunction: String[*]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      $f->doFunctionCallChecks();
+      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+      $sqlDialect->generateFunctionCallWithArgs($targetFunction, $args, $f.window, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::argTransformFunctionProcessor(targetFunction: String[*], argTransform: Function<{Node[*]->Node[*]}>[1]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      $f->doFunctionCallChecks();
+      let args = $argTransform->eval($f.arguments)->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+      $sqlDialect->generateFunctionCallWithArgs($targetFunction, $args, $f.window, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
+{
+  assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
+  assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+  assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
+  assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction: String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separatorIfPretty(0, $config);
+  let sep1 = $state.separatorIfPretty(1, $config);
+  
+  let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
+
+  $sqlDialect->qualifiedName(^QualifiedName(parts = $targetFunction), $state, $config) + '(' + if($noArgIsMultiLine, | '', | $sep1) +
+  $args->joinStrings(',' + if($noArgIsMultiLine, | ' ', | $state.separator(1, $config))) +
+  + if($noArgIsMultiLine, | '', | $sep0) + ')' +
+  if ($window->isNotEmpty(),
+      | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
+      | ''
+  );
+}
+
+// --------------------------------------------------------------------------
