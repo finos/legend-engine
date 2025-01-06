@@ -272,6 +272,32 @@ public class TestDataCubeQueryStoreManager
     }
 
     @Test
+    public void testGetQueriesWithSearchTextSpec() throws Exception
+    {
+        String currentUser = "user1";
+        String user2 = "user2";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("3", "query3", user2).build(), user2);
+        Assert.assertEquals(1, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
+    }
+
+    @Test
+    public void testGetQueriesForCurrentUser() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), "testUser1");
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        Assert.assertEquals(2, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQueryStoreManager.TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).size());
+    }
+
+    @Test
     public void testGetNotFoundQuery()
     {
         Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1")).getMessage());
