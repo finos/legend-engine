@@ -553,12 +553,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       let opStr =
         if($s.filteringOperation->isEmpty(),
           | '',
-          | $s.filteringOperation->map(s | $s->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+          | $s.filteringOperation->map(s | $s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
       );
       let havingStr =
         if($s.havingOperation->isEmpty(),
           | '',
-          | $s.havingOperation->map(s|$s->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+          | $s.havingOperation->map(s|$s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
       );
 
       $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
@@ -585,20 +585,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
   if($s->size() == 0,
     |'*',
-    | 
-       $format.separator + $s->map(r| $r->match([
-      
+    | $format.separator + $s->map(r| $r->match([
         a: Alias[1] |
-
           let shouldWrapWithCase = $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed;
           if($shouldWrapWithCase,
             | 'case when ('
-              + $a.relationalElement->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions)
+              + $a.relationalElement->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions)
               + ') then \'true\' else \'false\' end as ' + $a.name,
-            | $r->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+            | $r->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
           );,
 
-        z: RelationalOperationElement[1] | $z->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+        z: RelationalOperationElement[1] | $z->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
       ]))->joinStrings(', ' + $format.separator);
   );
 }
@@ -614,8 +611,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
   // Base case: at an equals sign whose children are case and a booleanExpr OR we are a solitary case node
   // Tail recurse: if we are at oneOf ['and', 'or', 'not', 'group'] or a optional placeholder, then recurse left and right
-
-
   $op->match([
     d: DynaFunction[1]                | if(isCastableDyna($d),
                                           | ^DynaFunction(name='castBoolean', parameters=[$d]),
@@ -636,23 +631,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     e: RelationalOperationElement[1]  | $e
   ]);
 }
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::trimCharColumn( op: RelationalOperationElement[1], extensions: Extension[*]): RelationalOperationElement[1]
-{
-
-  $op->match([
-    d: DynaFunction[1]                |  ^$d(parameters=$d.parameters->map(p| $p->trimCharColumn($extensions))),
-    a: Alias[1]                       | ^$a(relationalElement = trimCharColumn($a.relationalElement, $extensions)),
-    c: TableAliasColumn[1]            |    $c.column.type->match([
-                                                    char:meta::relational::metamodel::datatype::Char[1]  |
-                                                                    println('found char column for h2 > ' + $c.column.name +  ' , inserting a trim function');
-                                                                     ^DynaFunction(name='trim', parameters=[$c]);,
-                                                    a:Any[1]  | $c
-                                                  ]);,
-    e: RelationalOperationElement[1]  | $e;
-  ]);
-}
-
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::isEqualComparingCastableDynaAndBoolean(
   d: DynaFunction[1]
@@ -734,7 +712,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                                                 + $j.alias
                                                     ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                     ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-                                                + ' ' + 'on (' + $j.join.operation->trimCharColumn($extensions)->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+                                                + ' ' + 'on (' + $j.join.operation->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';
                                             )),
                                        a:Any[1] | ''
                                     ]
