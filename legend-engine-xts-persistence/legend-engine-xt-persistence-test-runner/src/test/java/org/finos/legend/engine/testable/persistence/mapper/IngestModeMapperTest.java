@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
@@ -254,7 +255,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         UnitemporalSnapshot unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchId);
 
         ingestMode = getUnitemporalSnapshotBatchIdAndTimeBased();
@@ -264,7 +265,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchIdAndDateTime);
 
         ingestMode = getUnitemporalSnapshotTimeBased();
@@ -274,7 +275,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof TransactionDateTime);
     }
 
