@@ -21,36 +21,49 @@ import java.util.regex.Pattern;
 
 public class SqlUtils
 {
-
-    public static String getEnrichedSql(Map<String, PlaceholderValue> placeholderKeyValues, String sql)
+    public static String getEnrichedSql(Map<String, PlaceholderValue> placeholderKeyValues, String sql, String batchIdPattern)
     {
         String enrichedSql = sql;
         for (Map.Entry<String, PlaceholderValue> entry : placeholderKeyValues.entrySet())
         {
-            enrichedSql = enrichedSql.replaceAll(Pattern.quote(entry.getKey()), entry.getValue().value());
+            enrichedSql = replacePlaceholderWithActualValue(enrichedSql, entry.getKey(), entry.getValue().value(), batchIdPattern);
         }
         return enrichedSql;
     }
 
-    private static String getEnrichedSqlWithMasking(Map<String, PlaceholderValue> placeholderKeyValues, String sql)
+    private static String getEnrichedSqlWithMasking(Map<String, PlaceholderValue> placeholderKeyValues, String sql, String batchIdPattern)
     {
         String enrichedSql = sql;
         for (Map.Entry<String, PlaceholderValue> entry : placeholderKeyValues.entrySet())
         {
             if (!entry.getValue().isSensitive())
             {
-                enrichedSql = enrichedSql.replaceAll(Pattern.quote(entry.getKey()), entry.getValue().value());
+                enrichedSql = replacePlaceholderWithActualValue(enrichedSql, entry.getKey(), entry.getValue().value(), batchIdPattern);
             }
         }
         return enrichedSql;
     }
 
-    public static void logSql(Logger logger, SqlLogging sqlLogging, String sqlBeforeReplacingPlaceholders, String sqlAfterReplacingPlaceholders, Map<String, PlaceholderValue> placeholderKeyValues)
+    private static String replacePlaceholderWithActualValue(String enrichedSql, String placeholder, String actualValue, String batchIdPattern)
+    {
+        if (placeholder.equals(batchIdPattern))
+        {
+            // These are to address the issue of batch id patterns being quoted in multi-dataset flow
+            String singleQuotedPattern = String.format("'%s'", placeholder);
+            enrichedSql = enrichedSql.replaceAll(Pattern.quote(singleQuotedPattern), actualValue);
+
+            String doubleQuotedPattern = String.format("\"%s\"", placeholder);
+            enrichedSql = enrichedSql.replaceAll(Pattern.quote(doubleQuotedPattern), actualValue);
+        }
+        return enrichedSql.replaceAll(Pattern.quote(placeholder), actualValue);
+    }
+
+    public static void logSql(Logger logger, SqlLogging sqlLogging, String sqlBeforeReplacingPlaceholders, String sqlAfterReplacingPlaceholders, Map<String, PlaceholderValue> placeholderKeyValues, String batchIdPattern)
     {
         switch (sqlLogging)
         {
             case MASKED:
-                String maskedSql = getEnrichedSqlWithMasking(placeholderKeyValues, sqlBeforeReplacingPlaceholders);
+                String maskedSql = getEnrichedSqlWithMasking(placeholderKeyValues, sqlBeforeReplacingPlaceholders, batchIdPattern);
                 logger.info(maskedSql);
                 break;
             case UNMASKED:

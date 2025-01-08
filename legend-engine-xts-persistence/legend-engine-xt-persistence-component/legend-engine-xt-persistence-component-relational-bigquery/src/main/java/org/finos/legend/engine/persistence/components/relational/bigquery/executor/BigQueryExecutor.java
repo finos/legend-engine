@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.BATCH_ID_PATTERN;
+
 public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 {
     private final BigQuerySink bigQuerySink;
@@ -64,8 +66,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
         {
             for (String sql : sqlList)
             {
-                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
-                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
+                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql, BATCH_ID_PATTERN);
+                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues, BATCH_ID_PATTERN);
                 bigQueryHelper.executeQuery(enrichedSql);
             }
         }
@@ -73,8 +75,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
         {
             for (String sql : sqlList)
             {
-                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
-                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
+                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql, BATCH_ID_PATTERN);
+                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues, BATCH_ID_PATTERN);
                 bigQueryHelper.executeStatement(enrichedSql);
             }
         }
@@ -82,8 +84,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 
     public Map<StatisticName, Object> executeLoadPhysicalPlanAndGetStats(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
     {
-        String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, physicalPlan.getSqlList().get(0));
-        SqlUtils.logSql(LOGGER, sqlLogging, physicalPlan.getSqlList().get(0), enrichedSql, placeholderKeyValues);
+        String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, physicalPlan.getSqlList().get(0), BATCH_ID_PATTERN);
+        SqlUtils.logSql(LOGGER, sqlLogging, physicalPlan.getSqlList().get(0), enrichedSql, placeholderKeyValues, BATCH_ID_PATTERN);
         return bigQueryHelper.executeLoadStatement(enrichedSql);
     }
 
@@ -105,8 +107,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
-            SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
+            String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql, BATCH_ID_PATTERN);
+            SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues, BATCH_ID_PATTERN);
             List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {

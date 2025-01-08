@@ -77,9 +77,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
         this.versioningCondition = ingestMode().versioningStrategy()
-            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField().get()));
         this.inverseVersioningCondition = ingestMode.versioningStrategy()
-            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode().digestField()));
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode().digestField().get()));
     }
 
     @Override
