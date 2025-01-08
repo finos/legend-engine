@@ -28,6 +28,7 @@
       ]
     }
   },
+  "debugMode" : true,
   "sourceLocationConfiguration": {
     "welcomeFileDirectory": "./"
   }
