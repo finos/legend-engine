@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.ide.SourceLocationConfiguration;
 import org.finos.legend.engine.ide.api.execution.test.CallBack;
 import org.finos.legend.engine.ide.helpers.response.IDEResponse;
+import org.finos.legend.engine.pure.ide.interpreted.debug.FunctionExecutionInterpretedWithDebugSupport;
 import org.finos.legend.pure.m3.SourceMutation;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -81,7 +82,7 @@ public class PureSession
 
         this.repos = Lists.mutable.withAll(repos).with(new WelcomeCodeStorage(Paths.get(rootPath)));
 
-        this.functionExecution = new FunctionExecutionInterpreted(VoidExecutionActivityListener.VOID_EXECUTION_ACTIVITY_LISTENER);
+        this.functionExecution = new FunctionExecutionInterpretedWithDebugSupport();
 
         for (String property : System.getProperties().stringPropertyNames())
         {

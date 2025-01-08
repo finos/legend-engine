@@ -24,7 +24,6 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
 import org.finos.legend.engine.protocol.pure.v1.ProtocolToClassifierPathLoader;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import javax.ws.rs.Consumes;

@@ -1,0 +1,7 @@
+{
+  "name": "pure_ide_debug",
+  "pattern": "(meta::pure::ide)(::.*)?",
+  "dependencies": [
+    "platform"
+  ]
+}

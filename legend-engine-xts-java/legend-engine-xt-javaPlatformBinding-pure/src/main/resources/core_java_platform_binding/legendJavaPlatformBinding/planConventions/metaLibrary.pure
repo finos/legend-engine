@@ -23,8 +23,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
 {
     let lib = newConventionsLibrary()
       ->addFunctionCoders([
+         // ----------------- Move to Grammar when possible ------------------------
          fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         // ----------------- Move to Grammar when possible ------------------------
+         // ----------------- Move to Essential when possible ------------------------
          fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         // ----------------- Move to Essential when possible ------------------------
+
          fc1(typeName_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
                                                                                       | $obj->j_invoke(typeNameMethod(), [], javaString()),
                                                                                       | j_string($ctx.params->at(0).genericType.rawType.name->toOne()))}),         

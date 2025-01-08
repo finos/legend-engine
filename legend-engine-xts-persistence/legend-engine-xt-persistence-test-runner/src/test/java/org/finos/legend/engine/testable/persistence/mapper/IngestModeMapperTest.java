@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
@@ -182,7 +183,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         UnitemporalDelta unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchId);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -193,7 +194,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchIdAndDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -204,7 +205,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof TransactionDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -215,7 +216,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchId);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -226,7 +227,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchIdAndDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -237,7 +238,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", unitemporalDelta.digestField().get());
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof TransactionDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
@@ -253,8 +254,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         UnitemporalSnapshot unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField().get());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchId);
 
         ingestMode = getUnitemporalSnapshotBatchIdAndTimeBased();
@@ -263,8 +264,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField().get());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchIdAndDateTime);
 
         ingestMode = getUnitemporalSnapshotTimeBased();
@@ -273,8 +274,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
-        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
-        Assert.assertFalse(unitemporalSnapshot.partitioned());
+        Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField().get());
+        Assert.assertFalse(unitemporalSnapshot.partitioningStrategy() instanceof Partitioning);
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof TransactionDateTime);
     }
 

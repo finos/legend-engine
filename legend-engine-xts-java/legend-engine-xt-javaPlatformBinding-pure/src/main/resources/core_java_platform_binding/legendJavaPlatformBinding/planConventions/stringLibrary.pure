@@ -28,10 +28,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
    let lib = newConventionsLibrary()
       ->usesString(javaString(), javaString(), {s:String[1] | j_string($s)})
       ->addFunctionCoders([
-         fc2(joinStrings_String_MANY__String_1__String_1_,                       {ctx,strs,sep                | $strs->j_streamOf()->js_joining($sep)}),
-         fc4(joinStrings_String_MANY__String_1__String_1__String_1__String_1_,   {ctx,strs,pre,sep,post       | $pre->j_plus($strs->j_streamOf()->js_joining($sep))->j_plus($post)}),
          fc (joinStrings_String_MANY__String_1_,                                 fcAlias(                       plus_String_MANY__String_1_)),
-
+         
          fc2(chunk_String_1__Integer_1__String_MANY_,                            {ctx,s,val                   | $library->j_invoke('chunk', [$s, $val->j_cast(javaInt())], javaList(javaString()))}),
          fc2(repeatString_String_$0_1$__Integer_1__String_$0_1$_,                {ctx,s,times                 | $library->j_invoke('repeatString', [$s, $times->j_cast(javaInt())], javaString())}),
 

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 public abstract class One extends ValueSpecification

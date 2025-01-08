@@ -21,6 +21,7 @@ import meta::external::language::java::transform::*;
 import meta::pure::functions::reportDelta::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::collection::*;
+import meta::external::language::java::generation::grammar::collection::*;
 import meta::external::language::java::generation::essential::collection::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary(conventions: Conventions[1], boxPrimitives: Boolean[1]): Conventions[1]
