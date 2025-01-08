@@ -113,25 +113,45 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Optional.of(unitemporalSnapshot.digestField());
+            if (unitemporalSnapshot.digestField().isPresent())
+            {
+                return Optional.of(unitemporalSnapshot
+                        .digestField().get());
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
-            return Optional.of(unitemporalDelta.digestField());
+            if (unitemporalDelta.digestField().isPresent())
+            {
+                return Optional.of(unitemporalDelta
+                        .digestField().get());
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return Optional.of(bitemporalSnapshot.digestField());
+            if (bitemporalSnapshot.digestField().isPresent())
+            {
+                return Optional.of(bitemporalSnapshot
+                        .digestField().get());
+            }
+            return Optional.empty();
         }
 
         @Override
         public Optional<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
-            return Optional.of(bitemporalDelta.digestField());
+            if (bitemporalDelta.digestField().isPresent())
+            {
+                return Optional.of(bitemporalDelta
+                        .digestField().get());
+            }
+            return Optional.empty();
         }
 
         @Override
@@ -179,7 +199,11 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Collections.singleton(unitemporalSnapshot.digestField());
+            if (unitemporalSnapshot.digestField().isPresent())
+            {
+                return Collections.singleton(unitemporalSnapshot.digestField().get());
+            }
+            return Collections.emptySet();
         }
 
         @Override
@@ -187,7 +211,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(unitemporalDelta.digestField());
+            unitemporalDelta.digestField().ifPresent(metaFields::add);
             unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             unitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
@@ -197,7 +221,11 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return Collections.singleton(bitemporalSnapshot.digestField());
+            if (bitemporalSnapshot.digestField().isPresent())
+            {
+                return Collections.singleton(bitemporalSnapshot.digestField().get());
+            }
+            return Collections.emptySet();
         }
 
         @Override
@@ -205,7 +233,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
 
-            metaFields.add(bitemporalDelta.digestField());
+            bitemporalDelta.digestField().ifPresent(metaFields::add);
             bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             bitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 

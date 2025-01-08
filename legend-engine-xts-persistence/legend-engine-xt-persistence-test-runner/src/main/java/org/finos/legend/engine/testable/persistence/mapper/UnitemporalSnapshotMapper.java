@@ -48,7 +48,7 @@ public class UnitemporalSnapshotMapper
                 FieldBasedForTds fieldBasedForTds = (FieldBasedForTds) partition;
                 return org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot.builder()
                         .digestField(DIGEST_FIELD_DEFAULT)
-                        .addAllPartitionFields(fieldBasedForTds.partitionFields)
+                        .partitioningStrategy(org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning.builder().addAllPartitionFields(fieldBasedForTds.partitionFields).build())
                         .transactionMilestoning(temporality.processingDimension.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_PROCESSING_DIMENSION))
                         .build();
             }
@@ -61,7 +61,7 @@ public class UnitemporalSnapshotMapper
                 });
                 return org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot.builder()
                         .digestField(DIGEST_FIELD_DEFAULT)
-                        .addAllPartitionFields(partitionFields)
+                        .partitioningStrategy(org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning.builder().addAllPartitionFields(partitionFields).build())
                         .transactionMilestoning(temporality.processingDimension.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_PROCESSING_DIMENSION))
                         .build();
             }

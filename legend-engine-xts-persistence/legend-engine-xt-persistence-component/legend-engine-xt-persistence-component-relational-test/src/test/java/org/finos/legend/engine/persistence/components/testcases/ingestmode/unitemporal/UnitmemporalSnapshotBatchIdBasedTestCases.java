@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -207,6 +208,87 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalSnapshotWithCleanStagingData(GeneratorResult operations);
 
     @Test
+    void testUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .caseConversion(CaseConversion.TO_UPPER)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(GeneratorResult operations);
+
+    @Test
     void testUnitemporalSnasphotValidationBatchIdInMissing()
     {
         try
@@ -216,8 +298,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                     .transactionMilestoning(BatchId.builder()
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeys))
-                    .putAllPartitionValuesByField(partitionFilter)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                     .build();
 
             Assertions.fail("Exception was not thrown");
@@ -300,8 +381,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForMultipleKeys)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForMultipleKeys).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -309,7 +389,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, in partitionValuesByField at most one of the partition keys can have more than one value, all other partition keys must have exactly one value", e.getMessage());
         }
     }
 
@@ -324,8 +404,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
         }
@@ -346,9 +425,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeysMulti))
-                    .putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey)
-                    .addAllPartitionSpecList(partitionSpecList())
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeysMulti)).putAllPartitionValuesByField(partitionFilterWithMultiValuesForOneKey).addAllPartitionSpecList(partitionSpecList()).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -356,7 +433,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, Provide either partitionValuesByField or partitionSpecList, both not supported together", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, Provide either partitionValuesByField or partitionSpecList, both not supported together", e.getMessage());
         }
     }
 
@@ -371,8 +448,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                             .batchIdInName(batchIdInField)
                             .batchIdOutName(batchIdOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeys))
-                    .addAllPartitionSpecList(partitionSpecList())
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).addAllPartitionSpecList(partitionSpecList()).build())
                     .emptyDatasetHandling(DeleteTargetData.builder().build())
                     .build();
 
@@ -380,7 +456,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Can not build UnitemporalSnapshot, size of each partitionSpec must be same as size of partitionFields", e.getMessage());
+            Assertions.assertEquals("Can not build Partitioning, size of each partitionSpec must be same as size of partitionFields", e.getMessage());
         }
     }
 

@@ -134,7 +134,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         this.validDateTimeThru = FieldValue.builder().fieldName(VALID_DATE_TIME_THRU_NAME).build();
 
         this.dataFields = stagingDataset.schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
-        this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
+        this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField().get()));
         this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
 
         this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
@@ -159,7 +159,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         this.primaryKeyFieldsAndFromFieldForSelection.addAll(primaryKeyFields);
         this.primaryKeyFieldsAndFromFieldForSelection.add(validDateTimeFrom);
 
-        this.digest = FieldValue.builder().fieldName(ingestMode.digestField()).build();
+        this.digest = FieldValue.builder().fieldName(ingestMode.digestField().get()).build();
 
         if (deleteIndicatorField.isPresent())
         {

@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning;
+package org.finos.legend.engine.persistence.components.ingestmode.deletestrategy;
 
-import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.immutables.value.Value;
 
-public interface ValidityMilestoned extends IngestMode
+@Value.Immutable
+@Value.Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface DeleteAllStrategyAbstract extends DeleteStrategy
 {
-    ValidityMilestoning validityMilestoning();
+
+    @Override
+    default <T> T accept(DeleteStrategyVisitor<T> visitor)
+    {
+        return visitor.visitDeleteAll(this);
+    }
 }
