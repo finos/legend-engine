@@ -19,7 +19,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-pure-runtime-javaCompiler</artifactId>
+        <artifactId>legend-engine-pure-code-functions-javaCompiler</artifactId>
         <version>4.68.1-SNAPSHOT</version>
     </parent>
 
