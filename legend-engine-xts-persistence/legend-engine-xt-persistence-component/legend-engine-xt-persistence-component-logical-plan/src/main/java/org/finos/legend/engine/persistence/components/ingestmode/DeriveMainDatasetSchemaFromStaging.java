@@ -89,7 +89,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
     {
-        addDigestField(mainSchemaFields, nontemporalDelta.digestField());
+        nontemporalDelta.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         removeDataSplitField(nontemporalDelta.dataSplitField());
         nontemporalDelta.mergeStrategy().accept(new EnrichSchemaWithMergeStrategy(mainSchemaFields));
         nontemporalDelta.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, true));

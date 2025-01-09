@@ -71,7 +71,7 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
     @Override
     public IngestMode visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
     {
-        if (unitemporalSnapshot.partitioningStrategy() instanceof Partitioning)
+        if (unitemporalSnapshot.partitioningStrategy().isPartitioned())
         {
             Partitioning partition = (Partitioning) unitemporalSnapshot.partitioningStrategy();
             if (!partition.partitionFields().isEmpty() && partition.derivePartitionSpec())

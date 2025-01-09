@@ -572,15 +572,14 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithMaxVersioningGreaterThanEqualToWithDedup() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTableWithVersion();
-        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+        DatasetDefinition mainTable = TestUtils.getBasicMainTableWithVersionWithoutDigest();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersionWithoutDigest();
 
         // Create staging table
         createStagingTable(stagingTable);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-                .digestField(digestName)
                 .auditing(NoAuditing.builder().build())
                 .versioningStrategy(MaxVersionStrategy.builder()
                         .versioningField(versionName)
@@ -592,13 +591,13 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_max_versioning/greater_than_equal_to/with_dedup/data_pass1.csv";
         String expectedDataPass1 = basePath + "expected/with_max_versioning/greater_than_equal_to/with_dedup/expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass1);
+        loadStagingDataWithVersionWithoutDigest(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
@@ -613,7 +612,7 @@ class NontemporalDeltaTest extends BaseTest
         String dataPass2 = basePath + "input/with_max_versioning/greater_than_equal_to/with_dedup/data_pass2.csv";
         String expectedDataPass2 = basePath + "expected/with_max_versioning/greater_than_equal_to/with_dedup/expected_pass2.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass2);
+        loadStagingDataWithVersionWithoutDigest(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 10);
@@ -923,22 +922,21 @@ class NontemporalDeltaTest extends BaseTest
         DatasetDefinition stagingDataset = DatasetDefinition.builder()
                 .group(testSchemaName)
                 .name(stagingTableName)
-                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatchWithoutDigest)
                 .build();
 
         createStagingTableWithoutPks(stagingDataset);
         DerivedDataset stagingTable = DerivedDataset.builder()
                 .group(testSchemaName)
                 .name(stagingTableName)
-                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionWithoutDigest)
                 .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
                 .build();
         String path = "src/test/resources/data/incremental-delta-milestoning/input/with_staging_filter/with_all_version/greater_than/data1.csv";
-        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatchWithoutDigest(path);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-                .digestField(digestName)
                 .auditing(NoAuditing.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
                         .versioningField(versionName)
@@ -951,7 +949,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, batchIdName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/greater_than/expected_pass1.csv";

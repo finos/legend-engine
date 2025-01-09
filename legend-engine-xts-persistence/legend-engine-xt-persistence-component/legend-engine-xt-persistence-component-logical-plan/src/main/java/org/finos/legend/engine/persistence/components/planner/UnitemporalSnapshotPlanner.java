@@ -54,7 +54,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        if (ingestMode().partitioningStrategy() instanceof Partitioning)
+        if (ingestMode().partitioningStrategy().isPartitioned())
         {
             partitioning = Optional.of((Partitioning) ingestMode().partitioningStrategy());
         }
@@ -130,7 +130,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             )
      )
 
-     Partition without digest :
+     Partition with Delete All :
 
     insert into main_table
     (
@@ -183,11 +183,11 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         }
 
         Condition notInSinkCondition = Not.of(In.of(
-                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build(),
+                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build(),
                 Selection.builder()
                         .source(mainDataset())
                         .condition(And.of(whereClauseForNotInSink))
-                        .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().get()).build())
+                        .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField().orElseThrow(IllegalStateException::new)).build())
                         .build()));
 
         Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
@@ -224,7 +224,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         sink.partitionColumns = stage.partitionColumns
         )
 
-        Partition without digest:
+        Partition with Delete All:
 
       update "table_name" as sink
         set

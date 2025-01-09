@@ -208,9 +208,9 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalSnapshotWithCleanStagingData(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest()
+    void testUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS_DELETE_ALL__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -218,15 +218,32 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(operations);
+        verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest()
+    void testUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS_DELETE_ALL__FILTER_DUPLICATES__MAX_VERSION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .collectStatistics(true)
+            .ingestRunId(ingestRunId)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER_DELETE_ALL__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -234,15 +251,15 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(operations);
+        verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest()
+    void testUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST_DELETE_ALL__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -250,15 +267,15 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(operations);
+        verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest()
+    void testUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST_DELETE_ALL__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -267,15 +284,15 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(operations);
+        verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest()
+    void testUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST__NO_DEDUP__NO_VERSION__NO_DIGEST();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_SPEC_LIST_DELETE_ALL__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -283,10 +300,10 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(operations);
+        verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnasphotValidationBatchIdInMissing()

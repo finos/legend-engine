@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.deletestrategy;
 
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.NoPartitioningAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.PartitioningAbstract;
-
 public interface DeleteStrategyVisitor<T>
 {
     T visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy);

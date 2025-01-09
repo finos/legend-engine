@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import java.util.List;
 import java.util.Map;
 
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
 public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBatchIdBasedTestCases
@@ -273,7 +274,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -300,7 +301,47 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = " +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+            "UPPER(batch_metadata.`table_name`) = 'MAIN')-1 WHERE (sink.`batch_id_out` = 999999999) AND " +
+            "(EXISTS (SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE sink.`biz_date` = stage.`biz_date`))";
+
+        String expectedUpsertQuery = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `batch_id_in`, `batch_id_out`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+            "UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage)";
+
+        String maxDataErrorCheckSql = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+            "(SELECT COUNT(DISTINCT(`amount`)) as `legend_persistence_distinct_rows` FROM `mydb`.`staging_temp_staging_lp_yosulf` " +
+            "as stage GROUP BY `id`, `name`, `biz_date`) as stage";
+
+        String dataErrorsSql = "SELECT `id`,`name`,`biz_date`,COUNT(DISTINCT(`amount`)) as `legend_persistence_error_count` FROM " +
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage GROUP BY `id`, `name`, `biz_date` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdWithoutDigestBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSql, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -325,7 +366,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -354,7 +395,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -381,7 +422,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

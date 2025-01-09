@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
 import org.finos.legend.engine.persistence.components.PostgresTestArtifacts;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -29,6 +28,7 @@ import java.util.Map;
 import static org.finos.legend.engine.persistence.components.PostgresTestArtifacts.dupRowsSql;
 import static org.finos.legend.engine.persistence.components.PostgresTestArtifacts.lockAcquiredQuery;
 import static org.finos.legend.engine.persistence.components.PostgresTestArtifacts.lockInitializedQuery;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
 public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBatchIdBasedTestCases
@@ -303,7 +303,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -331,7 +331,48 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
+            "SET \"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "WHERE (sink.\"batch_id_out\" = 999999999) " +
+            "AND (EXISTS (SELECT * FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE sink.\"biz_date\" = stage.\"biz_date\"))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+            "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 " +
+            "FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage)";
+
+        String maxDataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+            "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
+            "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
+        String dataErrorsSql = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"amount\")) as \"legend_persistence_error_count\" FROM " +
+            "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING COUNT(DISTINCT(\"amount\")) > 1 LIMIT 20";
+
+        Assertions.assertEquals(PostgresTestArtifacts.expectedMainTableBatchIdNoDigestBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(PostgresTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(PostgresTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSql, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -356,7 +397,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -384,7 +425,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListNoDedupNoVersionInUpperCaseNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -411,7 +452,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionSpecListWithEmptyBatchHandlingNoDigest(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

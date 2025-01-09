@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteAllStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.DeleteUpdatedStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
@@ -71,10 +73,20 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 @Override
                 public Void visitPartitioning(PartitioningAbstract partitionStrategy)
                 {
-                    if (partitionStrategy.deleteStrategy() instanceof DeleteUpdatedStrategy)
+                    partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
                     {
-                        throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
-                    }
+                        @Override
+                        public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
+                        {
+                            return null;
+                        }
+
+                        @Override
+                        public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
+                        {
+                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, digestField is mandatory for Partitioning when delete strategy = DELETE_UPDATED");
+                        }
+                    });
                     return null;
                 }
 
@@ -98,15 +110,49 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                Optional<MergeDataVersionResolver> versionResolver = maxVersionStrategy.mergeDataVersionResolver();
-                if (!versionResolver.isPresent())
+                partitioningStrategy().accept(new PartitioningStrategyVisitor<Void>()
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
-                }
-                if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
-                {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
-                }
+                    @Override
+                    public Void visitPartitioning(PartitioningAbstract partitionStrategy)
+                    {
+                        partitionStrategy.deleteStrategy().accept(new DeleteStrategyVisitor<Void>()
+                        {
+                            @Override
+                            public Void visitDeleteAll(DeleteAllStrategyAbstract deleteStrategy)
+                            {
+                                return null;
+                            }
+
+                            @Override
+                            public Void visitDeleteUpdated(DeleteUpdatedStrategyAbstract deleteStrategy)
+                            {
+                                validateDigestBasedMergeResolver();
+                                return null;
+                            }
+                        });
+                        return null;
+                    }
+
+                    @Override
+                    public Void visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+                    {
+                        validateDigestBasedMergeResolver();
+                        return null;
+                    }
+
+                    private void validateDigestBasedMergeResolver()
+                    {
+                        Optional<MergeDataVersionResolver> versionResolver = maxVersionStrategy.mergeDataVersionResolver();
+                        if (!versionResolver.isPresent())
+                        {
+                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
+                        }
+                        if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
+                        {
+                            throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
+                        }
+                    }
+                });
                 return null;
             }
 

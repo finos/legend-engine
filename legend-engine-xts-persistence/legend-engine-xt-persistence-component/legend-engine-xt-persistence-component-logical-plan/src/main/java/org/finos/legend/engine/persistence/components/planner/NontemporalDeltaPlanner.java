@@ -54,7 +54,7 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 class NontemporalDeltaPlanner extends Planner
 {
     private final Condition pkMatchCondition;
-    private final Condition digestMatchCondition;
+    private Condition digestMatchCondition;
     private final Condition versioningCondition;
 
     private final Optional<String> deleteIndicatorField;
@@ -76,7 +76,11 @@ class NontemporalDeltaPlanner extends Planner
         validatePrimaryKeysNotEmpty(primaryKeys);
 
         this.pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
-        this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
+
+        if (ingestMode().digestField().isPresent())
+        {
+            this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField().get());
+        }
         this.versioningCondition = ingestMode().versioningStrategy()
             .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
 
@@ -344,7 +348,16 @@ class NontemporalDeltaPlanner extends Planner
     @Override
     List<String> getDigestOrRemainingColumns()
     {
-        return Arrays.asList(ingestMode().digestField());
+        List<String> remainingCols = new ArrayList<>();
+        if (ingestMode().digestField().isPresent())
+        {
+            remainingCols = Arrays.asList(ingestMode().digestField().get());
+        }
+        else if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKNonVersionDataFields();
+        }
+        return remainingCols;
     }
 
     @Override

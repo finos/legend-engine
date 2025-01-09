@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -68,6 +69,10 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
             @Override
             public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
             {
+                if (!digestField().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalDelta, digestField is mandatory for NoVersioningStrategy");
+                }
                 return null;
             }
 
@@ -78,6 +83,7 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
                 {
                     throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
                 }
+                maxVersionStrategy.mergeDataVersionResolver().get().accept(new VersioningVisitors.ValidateDigest(digestField()));
                 return null;
             }
 
@@ -88,6 +94,7 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
                 {
                     throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for AllVersionsStrategy");
                 }
+                allVersionsStrategyAbstract.mergeDataVersionResolver().get().accept(new VersioningVisitors.ValidateDigest(digestField()));
                 return null;
             }
         });
