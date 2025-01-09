@@ -15,7 +15,9 @@
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::store::relational::sqlDialectTranslation::postgres::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::pure::extension::*;
 
@@ -32,7 +34,6 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   )
 }
 
-
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(): Extension[1]
 {
   ^Extension
@@ -46,6 +47,20 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
       )
     ]
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+    pair(
+      'FuncTests - log10(0/1)',
+      'Postgres SQL Dialect does not support the function - log10'
+    ),
+    pair(
+      'FuncTests - log10(1/1)',
+      'Postgres SQL Dialect does not support the function - log10'
+    )
+  ]->newMap()
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresQuoteConfiguration(): QuoteConfiguration[1]
@@ -121,7 +136,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     inPredicateProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
-    functionCallProcessor_default(),
+    functionCallProcessor_postgres(),
     subQueryExpressionProcessor_default()
   ]
 }
@@ -174,3 +189,37 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     'date'
   ]
 }
+
+// ---------------------------- Function processing -------------------------
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionCallProcessor_postgres(): NodeProcessor<FunctionCall>[1]
+{
+  nodeProcessor(
+    FunctionCall,
+    {sqlDialect, f, state, config |
+      assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
+      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+      assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
+      assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
+
+      assert($f->cast(@TypedFunctionCall).sqlFunction->instanceOf(PostgresNativeSqlFunction), | 'Postgres SQL Dialect does not support the function - ' + $f.name.parts->joinStrings('.')->toLower());
+
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
+      
+      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+      let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
+
+      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($noArgIsMultiLine, | '', | $sep1) +
+      $args->joinStrings(',' + if($noArgIsMultiLine, | ' ', | $state.separator(1, $config))) +
+      + if($noArgIsMultiLine, | '', | $sep0) + ')' +
+      if ($f.window->isNotEmpty(),
+          | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
+          | ''
+      );
+    },
+    {n | true}
+  );
+}
+
+// --------------------------------------------------------------------------

@@ -1,0 +1,60 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+
+// ----------------------- Sql Types -------------------------------------------
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::SqlType {}
+
+// ---------------------- Numeric ----------------------------------------------
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractNumericSqlType extends SqlType {}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractIntegerSqlType extends AbstractNumericSqlType {}
+Class  meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::TinyIntSqlType extends AbstractIntegerSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::SmallIntSqlType extends AbstractIntegerSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::IntegerSqlType extends AbstractIntegerSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BigIntSqlType extends AbstractIntegerSqlType {}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractPrecisionScaleSqlType extends AbstractNumericSqlType {}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractFixedPointSqlType extends AbstractPrecisionScaleSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::NumericSqlType extends AbstractFixedPointSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::DecimalSqlType extends AbstractFixedPointSqlType {}
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractFloatingPointSqlType extends AbstractPrecisionScaleSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::FloatSqlType extends AbstractFloatingPointSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::DoubleSqlType extends AbstractFloatingPointSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::RealSqlType extends AbstractFloatingPointSqlType {}
+
+// -----------------------------------------------------------------------------
+
+// ---------------------- Boolean ----------------------------------------------
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BooleanSqlType extends SqlType {}
+
+// -----------------------------------------------------------------------------
+
+
+// For functions like coalesce, where return type could be anything
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AnySqlType extends SqlType {}
+
+function meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::orderedSubTypes(cls: Class<SqlType>[1]): Class<SqlType>[1..*]
+{
+  let specs = $cls.specializations.specific->map(s|$s->match([x:Class<SqlType>[1] | $x, a: Any[1]|[]]));
+  $specs->map(x | $x->orderedSubTypes())->concatenate($cls)->toOneMany();
+}
