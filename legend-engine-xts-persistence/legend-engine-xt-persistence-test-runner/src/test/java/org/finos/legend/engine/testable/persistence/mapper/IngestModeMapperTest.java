@@ -138,7 +138,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         NontemporalDelta nontemporalDelta = (NontemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", nontemporalDelta.digestField().get());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof NoAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
 
@@ -148,7 +148,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", nontemporalDelta.digestField().get());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof NoAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
 
@@ -158,7 +158,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", nontemporalDelta.digestField().get());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof DateTimeAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
 
@@ -168,7 +168,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
-        Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
+        Assert.assertEquals("DIGEST", nontemporalDelta.digestField().get());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof DateTimeAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
     }
