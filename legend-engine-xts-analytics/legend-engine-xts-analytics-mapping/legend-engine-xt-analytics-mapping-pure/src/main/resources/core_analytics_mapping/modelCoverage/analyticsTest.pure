@@ -485,20 +485,3 @@ Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping
     d : $src
   }
 )
-
-
-
-// Class meta::analytics::mapping::modelCoverage::test::SourcePrimitiveType 
-// {
-//   d : StrictDate[1];
-// }
-
-// Class meta::analytics::mapping::modelCoverage::test::Target 
-// {
-//   w : meta::analytics::mapping::modelCoverage::test::Wrapper[1];
-// }
-
-// Class meta::analytics::mapping::modelCoverage::test::Wrapper 
-// {
-//   d : StrictDate[1];
-// }
