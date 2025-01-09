@@ -34,6 +34,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -1913,10 +1914,11 @@ public class Handlers
         register("meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
     }
 
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationVisitor<ValueSpecification> valueSpecificationVisitor)
     {
-        FunctionExpressionBuilder builder = compileContext.resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, processingContext);
-        return builder.buildFunctionExpression(parameters, openVariables, sourceInformation, compileContext, processingContext);
+        ValueSpecificationBuilder valueSpecificationBuilder = (ValueSpecificationBuilder) valueSpecificationVisitor;
+        FunctionExpressionBuilder builder = valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
+        return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
     }
 
     private void registerMetaPackage(FunctionHandler... handlers)

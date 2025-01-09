@@ -274,7 +274,7 @@ public class HelperValueSpecificationBuilder
                 automapLambda.parameters = lambdaParams;
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
-                result = context.buildFunctionExpression("map", null, newParams, openVariables, sourceInformation, processingContext).getOne();
+                result = context.buildFunctionExpression("map", null, newParams, sourceInformation, new ValueSpecificationBuilder(context, openVariables, processingContext)).getOne();
                 processingContext.pop();
             }
             else

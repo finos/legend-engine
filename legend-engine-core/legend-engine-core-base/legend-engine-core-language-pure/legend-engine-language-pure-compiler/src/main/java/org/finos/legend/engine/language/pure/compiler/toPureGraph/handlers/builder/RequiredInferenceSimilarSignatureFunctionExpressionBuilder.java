@@ -17,12 +17,12 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.buil
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
@@ -64,11 +64,12 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationVisitor<ValueSpecification> valueSpecificationVisitor)
     {
-        if (test(handlers.handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
+        ValueSpecificationBuilder valueSpecificationBuilder = (ValueSpecificationBuilder) valueSpecificationVisitor;
+        if (test(handlers.handlers.get(0).getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext()))
         {
-            List<ValueSpecification> newParameters = parametersInference.update(parameters, openVariables, compileContext, processingContext);
+            List<ValueSpecification> newParameters = parametersInference.update(parameters, valueSpecificationBuilder.getOpenVariables(), valueSpecificationBuilder.getContext(), valueSpecificationBuilder.getProcessingContext());
             return Tuples.pair(this.handlers.buildFunctionExpressionGraph(newParameters, sourceInformation), newParameters);
         }
         else
