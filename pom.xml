@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.67.12-SNAPSHOT</version>
+    <version>PARTH-4.67.12-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -108,7 +108,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.28.0</legend.pure.version>
+        <legend.pure.version>PARTH-5.28.1-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.0.0</legend.web-application.version>
 
@@ -237,7 +237,7 @@
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
 
         <!--NPM registry -->
-        <npm.registry.url>https://registry.npmjs.org</npm.registry.url>
+        <npm.registry.url>http://npmscopes.site.gs.com</npm.registry.url>
     </properties>
 
     <scm>
