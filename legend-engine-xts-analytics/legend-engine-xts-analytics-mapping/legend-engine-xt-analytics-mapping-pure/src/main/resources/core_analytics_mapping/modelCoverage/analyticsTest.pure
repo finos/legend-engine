@@ -76,6 +76,12 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   assertContains($mappedEntityForTargetStreet.properties.name, 'streetName');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleM2MMappingPrimitiveSourceCoverage():Boolean[1]
+{
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(meta::analytics::mapping::modelCoverage::test::sampleModelToModelMappingPrimitiveSource);
+  assert($result.mappedEntities->size() == 2);
+}
+
 //-----------------------Test Auto Mapped Properties -----------------------
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedPrimitivePropertiesMappingCoverage():Boolean[1]
 {
@@ -354,6 +360,21 @@ Class meta::analytics::mapping::modelCoverage::test::_Street
   streetName: String[1];
 }
 
+Class meta::analytics::mapping::modelCoverage::test::SourcePrimitiveType 
+{
+  d : StrictDate[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Target 
+{
+  w : meta::analytics::mapping::modelCoverage::test::Wrapper[1];
+}
+
+Class meta::analytics::mapping::modelCoverage::test::Wrapper 
+{
+  d : StrictDate[1];
+}
+
 
 
 ###Mapping
@@ -448,3 +469,36 @@ Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping
     streetName: $src.streetName + '1'
   }
 )
+
+###Mapping 
+Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMappingPrimitiveSource 
+(
+  *meta::analytics::mapping::modelCoverage::test::Target : Pure 
+  {
+    ~src meta::analytics::mapping::modelCoverage::test::SourcePrimitiveType 
+    w : $src.d
+  }
+
+  *meta::analytics::mapping::modelCoverage::test::Wrapper : Pure 
+  {
+    ~src StrictDate
+    d : $src
+  }
+)
+
+
+
+// Class meta::analytics::mapping::modelCoverage::test::SourcePrimitiveType 
+// {
+//   d : StrictDate[1];
+// }
+
+// Class meta::analytics::mapping::modelCoverage::test::Target 
+// {
+//   w : meta::analytics::mapping::modelCoverage::test::Wrapper[1];
+// }
+
+// Class meta::analytics::mapping::modelCoverage::test::Wrapper 
+// {
+//   d : StrictDate[1];
+// }
