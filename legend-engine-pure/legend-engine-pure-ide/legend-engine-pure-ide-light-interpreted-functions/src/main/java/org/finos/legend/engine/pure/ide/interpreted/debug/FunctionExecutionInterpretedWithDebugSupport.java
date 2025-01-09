@@ -29,7 +29,7 @@ public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecut
     private volatile CompletableFuture<CoreInstance> currentExecution;
     private volatile CompletableFuture<CoreInstance> resultHandler;
     private volatile DebugState debugState;
-    private ForkJoinPool customPool;
+    private final ForkJoinPool customPool;
 
     public FunctionExecutionInterpretedWithDebugSupport()
     {
