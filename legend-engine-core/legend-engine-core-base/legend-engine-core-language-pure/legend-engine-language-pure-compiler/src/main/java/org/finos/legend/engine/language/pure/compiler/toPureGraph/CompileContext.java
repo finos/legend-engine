@@ -36,7 +36,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -457,10 +456,9 @@ public class CompileContext
 
     // ------------------------------------------ FUNCTION EXPRESSION BUILDER -----------------------------------------
 
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationVisitor<ValueSpecification> valueSpecificationVisitor)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         Pair<SimpleFunctionExpression, List<ValueSpecification>> functionExpression;
-        ValueSpecificationBuilder valueSpecificationBuilder = (ValueSpecificationBuilder) valueSpecificationVisitor;
         functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, sourceInformation, valueSpecificationBuilder);
         if (fControl != null)
         {

@@ -23,7 +23,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDat
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -74,10 +73,9 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationVisitor<ValueSpecification> valueSpecificationVisitor)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         List<ValueSpecification> resolvedParams = null;
-        ValueSpecificationBuilder valueSpecificationBuilder = (ValueSpecificationBuilder) valueSpecificationVisitor;
         for (FunctionExpressionBuilder b : builders)
         {
             Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);

@@ -131,7 +131,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class ValueSpecificationBuilder implements ValueSpecificationVisitor<ValueSpecification>
+public class ValueSpecificationBuilder implements ValueSpecificationVisitor<ValueSpecification>
 {
     private final CompileContext context;
     private final MutableList<String> openVariables;
