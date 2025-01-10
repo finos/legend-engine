@@ -88,6 +88,7 @@ public class REPLServer
                 .withKeyValue("/api/dataCube/getRelationReturnType", new DataCubeQueryBuilder.GetRelationReturnType())
                 .withKeyValue("/api/dataCube/getRelationReturnType/code", new DataCubeQueryBuilder.GetQueryCodeRelationReturnType())
                 .withKeyValue("/api/dataCube/executeQuery", new DataCubeQueryExecutor.ExecuteQuery())
+                .withKeyValue("/api/dataCube/getExecutionPlan", new DataCubeQueryExecutor.GetExecutionPlan())
                 .keyValuesView().collect(config -> server.createContext(config.getOne(), config.getTwo().getHandler(this.state))).toList();
 
         // CORS filter

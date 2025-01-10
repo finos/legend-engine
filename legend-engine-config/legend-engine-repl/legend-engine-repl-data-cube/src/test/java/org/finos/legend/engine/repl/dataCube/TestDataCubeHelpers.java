@@ -35,8 +35,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 import static org.finos.legend.engine.repl.dataCube.server.DataCubeHelpers.executeQuery;
+import static org.finos.legend.engine.repl.shared.ExecutionHelper.REPL_RUN_FUNCTION_SIGNATURE;
 
 public class TestDataCubeHelpers
 {
@@ -203,9 +203,24 @@ public class TestDataCubeHelpers
     @Test
     public void testTypeaheadPartialWithDummySource()
     {
+        // pmcd is empty and the query uses casting hack
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
-        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>)", false), null);
+        PureModelContextData pmcd = PureModelContextData.newBuilder().build();
+        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>)", false), pmcd);
+
+        // pmcd is minimal
+        pmcd = legendInterface.parse(
+                "###Relational\n" +
+                        "Database test::TestDatabase\n" +
+                        "(\n" +
+                        "    Table TEST0\n" +
+                        "    (\n" +
+                        "       FIRSTNAME VARCHAR(200)\n" +
+                        "     )\n" +
+                        ")"
+        );
+        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#", false), pmcd);
     }
 
     @Test
@@ -271,9 +286,27 @@ public class TestDataCubeHelpers
     @Test
     public void testExtractRelationReturnTypeWithDummySource()
     {
+        // pmcd is empty and the query uses casting hack
         String lambda = "|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String,LASTNAME:String)>)->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
+        PureModelContextData pmcd = PureModelContextData.newBuilder().build();
         String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
-        testExtractRelationReturnType(expectedResult, lambda, null);
+        testExtractRelationReturnType(expectedResult, lambda, pmcd);
+
+        // pmcd is minimal
+        lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
+        pmcd = legendInterface.parse(
+                "###Relational\n" +
+                        "Database test::TestDatabase\n" +
+                        "(\n" +
+                        "    Table TEST0\n" +
+                        "    (\n" +
+                        "       FIRSTNAME VARCHAR(200),\n" +
+                        "       LASTNAME   VARCHAR(200)\n" +
+                        "     )\n" +
+                        ")"
+        );
+        expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
+        testExtractRelationReturnType(expectedResult, lambda, pmcd);
     }
 
     private void testExtractRelationReturnType(String expectedResult, String code, PureModelContextData data)
@@ -301,6 +334,20 @@ public class TestDataCubeHelpers
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME2])";
         testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda, pureModelContextData);
+
+        // with dummy source
+        PureModelContextData pmcd = legendInterface.parse(
+                "###Relational\n" +
+                        "Database test::TestDatabase\n" +
+                        "(\n" +
+                        "    Table TEST0\n" +
+                        "    (\n" +
+                        "       FIRSTNAME VARCHAR(200),\n" +
+                        "       LASTNAME   VARCHAR(200)\n" +
+                        "     )\n" +
+                        ")"
+        );
+        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda, pmcd);
     }
 
     private void testExtractRelationReturnTypeFailure(String errorMessage, String code, PureModelContextData data)

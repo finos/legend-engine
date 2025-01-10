@@ -14,11 +14,9 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 
-public class DataCubeGetQueryRelationReturnTypeInput
+public class DataCubeGetExecutionPlanResult
 {
-    public Lambda query;
-    public PureModelContextData model;
+    public SingleExecutionPlan plan;
 }
