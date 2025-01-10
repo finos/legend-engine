@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -160,6 +161,12 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
 
     @Override
     public SetImplementation visit(AggregationAwareClassMapping classMapping)
+    {
+        return null;
+    }
+
+    @Override
+    public SetImplementation visit(RelationFunctionClassMapping classMapping)
     {
         return null;
     }

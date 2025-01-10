@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 
@@ -26,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
         @JsonSubTypes.Type(value = PurePropertyMapping.class, name = "purePropertyMapping"),
         @JsonSubTypes.Type(value = XStorePropertyMapping.class, name = "xStorePropertyMapping"),
         @JsonSubTypes.Type(value = AggregationAwarePropertyMapping.class, name = "AggregationAwarePropertyMapping"),
+        @JsonSubTypes.Type(value = RelationFunctionPropertyMapping.class, name = "relationFunctionPropertyMapping"),
 })
 public abstract class PropertyMapping
 {
@@ -40,5 +42,4 @@ public abstract class PropertyMapping
         return visitor.visit(this);
     }
 
-    ;
 }

@@ -2943,4 +2943,5 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  Filter FirmFilter(firmTable.ADDRESSID = 1)\n" +
                 ")", null, Arrays.asList("COMPILATION error at [21:3-52]: Found filters with duplicate names: FirmFilter", "COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
+
 }
