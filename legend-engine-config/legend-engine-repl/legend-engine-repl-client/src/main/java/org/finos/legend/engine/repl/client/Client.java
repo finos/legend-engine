@@ -119,6 +119,7 @@ public class Client
                                 new Debug(this),
                                 new Doc(this),
                                 new Graph(this),
+                                new PromoteRelationToModel(this),
                                 new Execute(this)
                         )
                 );

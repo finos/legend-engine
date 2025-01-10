@@ -2464,4 +2464,221 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  ]\n" +
                 ")\n");
     }
+
+    public static final String RELATION_MAPPING_PURE_SOURCE = "###Pure\n" +
+            "Class my::Person\n" +
+            "{\n" +
+            "  firstName: String[1];\n" +
+            "  age: Integer[1];\n" +
+            "  firmId: Integer[1];\n" +
+            "  address: my::Address[1];\n" +
+            "}\n" +
+            "\n" +
+            "Class my::Firm\n" +
+            "{\n" +
+            "  id: Integer[1];\n" +
+            "  legalName: String[1];\n" +
+            "  clientNames: String[*];\n" +
+            "}\n" +
+            "\n" +
+            "Class my::Address\n" +
+            "{\n" +
+            "  city: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "Association my::Person_Firm\n" +
+            "{\n" +
+            "  employees: my::Person[*];\n" +
+            "  firm: my::Firm[1];\n" +
+            "}\n" +
+            "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+            "{\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)>);\n" +
+            "}\n";
+
+    public void testRelationMapping(String grammar)
+    {
+        test(RELATION_MAPPING_PURE_SOURCE + grammar);
+    }
+    
+    public void testRelationMapping(String grammar, String expectedErrorMsg)
+    {
+        test(RELATION_MAPPING_PURE_SOURCE + grammar, expectedErrorMsg);
+    }
+
+    @Test
+    public void testValidRelationFunctionMapping()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testValidRelationFunctionMappingWithLocalPropertyMapping()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    +firmId: Integer[1]: FIRMID\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testValidRelationFunctionMappingWithQuotedRelationColumn()
+    {
+        testRelationMapping("###Pure\n" +
+                "import meta::pure::metamodel::relation::*;\n" +
+                "function my::personFunctionWithQuotedCol():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, 'FIRM ID':Integer, CITY:String)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunctionWithQuotedCol():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME," +
+                "    firmId: 'FIRM ID'" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidFunctionPointer()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::someRelationFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [34:3-39:3]: Can't find the packageable element 'my::someRelationFunction__Relation_1_'");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithNonRelationFunction()
+    {
+        testRelationMapping("###Pure\n" +
+                "function my::integerFunction():Integer[1]\n" +
+                "{\n" +
+                "  1;\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::integerFunction():Integer[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function should return a Relation! Found a Integer instead.");
+
+        testRelationMapping("###Pure\n" +
+                "function my::relationFunction(): Any[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::relationFunction():Any[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function should return a Relation! Found a Any instead.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidRelationColumn()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FOO,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [37:5-18]: The system can't find the column FOO in the Relation (FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithMismatchingTypes()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: AGE,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [37:5-18]: Mismatching property and relation column types. Property type is String, but relation column it is mapped to has type Integer.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInvalidMultiplicityProperty()
+    {
+        testRelationMapping("###Pure\n" +
+                "Class my::Person1\n" +
+                "{\n" +
+                "  name: String[*];\n" +
+                "  age: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person1: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    name: NAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [44:5-14]: Properties in relation mappings can only have multiplicity 1 or 0..1, but the property 'name' has multiplicity [*].");
+    }
+    
+    @Test
+    public void testRelationFunctionMappingWithArguments()
+    {
+        testRelationMapping("###Pure\n" +
+                "function my::relationFunction(i:Integer[1]):meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::relationFunction(Integer[1]):Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function expecting arguments is not supported!");
+    }
+    
 }

@@ -21,12 +21,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_SetImplementationContainer_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
+import org.finos.legend.pure.m3.navigation.function.InvalidFunctionDescriptorException;
 
 import java.util.stream.Collectors;
 
@@ -89,5 +94,24 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     {
         this.context.getCompilerExtensions().getExtraAggregationAwareClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
         return null;
+    }
+
+    @Override
+    public SetImplementation visit(RelationFunctionClassMapping classMapping)
+    {
+        RelationFunctionInstanceSetImplementation setImpl = (RelationFunctionInstanceSetImplementation) parentMapping._classMappings().detect(c -> c._id().equals(HelperMappingBuilder.getClassMappingId(classMapping, context)));
+        String functionPath = classMapping.relationFunction.path;
+        String functionId;
+        try
+        {
+            functionId = FunctionDescriptor.isValidFunctionDescriptor(functionPath) ? FunctionDescriptor.functionDescriptorToId(functionPath) : functionPath;
+        }
+        catch (InvalidFunctionDescriptorException e)
+        {
+            throw new EngineException("Invalid function descriptor specified!", classMapping.relationFunction.sourceInformation, EngineErrorType.COMPILATION, e);
+        }
+        FunctionDefinition<?> relationFunction = (FunctionDefinition<?>) context.resolvePackageableElement(functionId, classMapping.sourceInformation);
+        setImpl._relationFunction(relationFunction);
+        return setImpl;
     }
 }

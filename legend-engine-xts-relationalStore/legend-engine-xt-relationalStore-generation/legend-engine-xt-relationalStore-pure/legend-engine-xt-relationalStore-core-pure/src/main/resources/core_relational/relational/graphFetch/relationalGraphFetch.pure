@@ -744,7 +744,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::buildBa
       s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
    ])->cast(@RootRelationalInstanceSetImplementation);
 
-   let mainTable         = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
+   let mainTable         = $srcSetImpl->mainRelation()->processRelation([], JoinType.LEFT_OUTER, '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
    let innerFilterExists = $srcSetImpl->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let rootRelElement    = if ($innerFilterExists,
                                | // Create subquery with inner join filter
@@ -852,7 +852,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
 {
    let setImpl        = $propTree.sets->toOne()->cast(@RootRelationalInstanceSetImplementation);
    let pureToSqlState = ^State(inScopeVars = $inScopeVars, mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth=0, inProjectFunctions=false,  processingProjectionThread=false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($mapping));
-   let currentNode    = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $setImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions)));
+   let currentNode    = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $setImpl->mainRelation()->processRelation([], JoinType.LEFT_OUTER, '', false, 0, false, [], $pureToSqlState, $debug, $extensions)));
    let basePreFilter  = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode)->applyTypeFilter($setImpl, '_gftcm', $pureToSqlState, $debug, $extensions);
    let base           = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
 

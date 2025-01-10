@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 
 import java.util.Arrays;
 import java.util.List;
@@ -182,6 +183,12 @@ public class PureGrammarComposerUtility
             return appendTabString(builder).append('}').toString();
         }
         return String.valueOf(value);
+    }
+
+    public static String renderPossibleLocalMappingProperty(PropertyMapping propertyMapping)
+    {
+        return (propertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(propertyMapping.property.property) +
+                (propertyMapping.localMappingProperty != null ? ": " + propertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(propertyMapping.localMappingProperty.multiplicity) + "]" : "");
     }
 
 }

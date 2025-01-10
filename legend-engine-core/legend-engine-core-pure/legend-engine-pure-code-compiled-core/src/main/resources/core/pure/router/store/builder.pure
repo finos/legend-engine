@@ -36,9 +36,11 @@ Class meta::pure::router::store::routing::Void extends ValueSpecification
 
 function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecification(routedVs: StoreMappingRoutedValueSpecification[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):StoreMappingRoutedValueSpecification[1]
 {
-   let setsInScope = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy).sets;
-   let mapping     = $routedVs.mapping;
-   let runtime     = $routedVs.runtime;
+   let routingStrategy = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy);
+   let setsInScope = $routingStrategy.sets->map(s|^$s(sets = $s.sets->routeRelationFunctionSetImplementations($routedVs.mapping, $routedVs.runtime, $extensions)));
+   let newRoutedVs = ^$routedVs(routingStrategy = ^$routingStrategy(sets = $setsInScope));
+   let mapping     = $newRoutedVs.mapping;
+   let runtime     = $newRoutedVs.runtime;
    if(!$setsInScope->isEmpty(),
      |
       // Sets
@@ -53,7 +55,7 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
       // Build
       print(if($debug.debug,|'\n'+$debug.space+'Building new queries\n', |''));
       let built = $permutations->map(p|print(if($debug.debug,|'  Query '+$permutations->indexOf($p)->toString()+'\n', |''));
-                                       $routedVs->evaluateAndDeactivate()->build($p, [], $mapping, $idToClassMapping, $exeCtx, $extensions, $debug););
+                                       $newRoutedVs->evaluateAndDeactivate()->build($p, [], $mapping, $idToClassMapping, $exeCtx, $extensions, $debug););
 
       print(if($debug.debug,|'\n'+$debug.space+'Built queries:'+$built->size()->toString()+'\n', |''));
 
@@ -70,11 +72,11 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
                       print(if($debug.debug,|$debug.space+'Result: '+$concat->asString()+'\n',|''));
                        $concat;,
                      |    if($filteredBuilt->size()!=1,
-                                |$routedVs,
+                                |$newRoutedVs,
                                 |$filteredBuilt->toOne());
                    );
       $nbuilt->cast(@StoreMappingRoutedValueSpecification);,
-     |$routedVs;            // This is needed for expressions (like let x = 1->from($mapping, $runtime)) where there are no sets
+     |$newRoutedVs;            // This is needed for expressions (like let x = 1->from($mapping, $runtime)) where there are no sets
    );
 }
 
