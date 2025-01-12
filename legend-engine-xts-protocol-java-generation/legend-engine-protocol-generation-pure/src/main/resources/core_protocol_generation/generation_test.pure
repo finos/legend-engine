@@ -45,34 +45,6 @@ Class meta::protocols::generation::java::tests::model::pojo::PojoWithInheritance
   optionalFactor: Number[0..1];
 }
 
-Class <<typemodifiers.abstract>> meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics<T, V>
-{
-  t: T[1];
-  v: V[*];
-}
-
-
-Class <<typemodifiers.abstract>> meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics2<T> extends meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics<T, String>
-{
-  t2: T[*];
-}
-
-Class meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics3 extends meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics2<String>
-{
-
-}
-
-Class <<typemodifiers.abstract>> meta::protocols::generation::java::tests::model::pojo::PojoWithGenericsAndMult<T, V| n, m>
-{
-  t: T[n];
-  v: V[m];
-}
-
-Class meta::protocols::generation::java::tests::model::pojo::PojoWithGenericsAndMult2 extends meta::protocols::generation::java::tests::model::pojo::PojoWithGenericsAndMult<String, Integer| *, 0..1>
-{
-
-}
-
 Class meta::protocols::generation::java::tests::model::Message extends meta::protocols::generation::java::tests::model::ProtoBufType
 {
    name:String[1];
@@ -170,14 +142,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ProtoBufType;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType_Impl;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2_Impl;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics3;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics3_Impl;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult2;\n' +
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult2_Impl;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithInheritance;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_pojo_PojoWithInheritance_Impl;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Bool;\n' +
@@ -192,13 +156,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 'import org.finos.meta.pure.metamodel.ReferenceUsage;\n' +
                 'import org.finos.meta.pure.metamodel.extension.Stereotype;\n' +
                 'import org.finos.meta.pure.metamodel.extension.TaggedValue;\n' +
-                'import org.finos.pojo.PojoWithGenerics;\n' +
-                'import org.finos.pojo.PojoWithGenerics2;\n' +
-                'import org.finos.pojo.PojoWithGenerics3;\n' +
-                'import org.finos.pojo.PojoWithGenericsAndMult;\n' +
-                'import org.finos.pojo.PojoWithGenericsAndMult2;\n' +
-                'import org.finos.pojo.PojoWithGenericsAndMultVisitor;\n' +
-                'import org.finos.pojo.PojoWithGenericsVisitor;\n' +
                 'import org.finos.pojo.PojoWithInheritance;\n' +
                 'import org.finos.scalar.Bool;\n' +
                 'import org.finos.scalar.Int32;\n' +
@@ -367,79 +324,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '                return ProtocolToMetamodelTranslator.this.translate(val, pureModel);\n' +
                 '            }\n' +
                 '        });\n' +
-                '    }\n' +
-                '\n' +
-                '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics translate(PojoWithGenerics pojowithgenerics,\n' +
-                '                                                                                           PureModel pureModel)\n' +
-                '    {\n' +
-                '        return pojowithgenerics == null ? null\n' +
-                '                                        : pojowithgenerics.accept(new PojoWithGenericsVisitor<Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics>()\n' +
-                '        {\n' +
-                '            public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics visit(PojoWithGenerics2 val)\n' +
-                '            {\n' +
-                '                return ProtocolToMetamodelTranslator.this.translate(val, pureModel);\n' +
-                '            }\n' +
-                '            public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics visit(PojoWithGenerics3 val)\n' +
-                '            {\n' +
-                '                return ProtocolToMetamodelTranslator.this.translate(val, pureModel);\n' +
-                '            }\n' +
-                '        });\n' +
-                '    }\n' +
-                '\n' +
-                '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2 translate(PojoWithGenerics2 pojowithgenerics2,\n' +
-                '                                                                                            PureModel pureModel)\n' +
-                '    {\n' +
-                '        return pojowithgenerics2 == null ? null\n' +
-                '                                         : pojowithgenerics2.accept(new PojoWithGenericsVisitor<Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2>()\n' +
-                '        {\n' +
-                '            public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2 visit(PojoWithGenerics2 val)\n' +
-                '            {\n' +
-                '                return pojowithgenerics2 == null ? null\n' +
-                '                                                 : new Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2_Impl("",                                                                                  null,\n' +
-                '                                                                                                                                                                                                                        pureModel.getType("meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics2"))\n' +
-                '                                                                                                                                      ._t2(Lists.mutable.withAll(pojowithgenerics2.t2))\n' +
-                '                                                                                                                                      ._t(pojowithgenerics2.t)\n' +
-                '                                                                                                                                      ._v(Lists.mutable.withAll(pojowithgenerics2.v));\n' +
-                '            }\n' +
-                '            public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics2 visit(PojoWithGenerics3 val)\n' +
-                '            {\n' +
-                '                return ProtocolToMetamodelTranslator.this.translate(val, pureModel);\n' +
-                '            }\n' +
-                '        });\n' +
-                '    }\n' +
-                '\n' +
-                '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics3 translate(PojoWithGenerics3 pojowithgenerics3,\n' +
-                '                                                                                            PureModel pureModel)\n' +
-                '    {\n' +
-                '        return pojowithgenerics3 == null ? null\n' +
-                '                                         : new Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenerics3_Impl("",                                                                                  null,\n' +
-                '                                                                                                                                                                                                                pureModel.getType("meta::protocols::generation::java::tests::model::pojo::PojoWithGenerics3"))\n' +
-                '                                                                                                                              ._t2(Lists.mutable.withAll(pojowithgenerics3.t2))\n' +
-                '                                                                                                                              ._t(pojowithgenerics3.t)\n' +
-                '                                                                                                                              ._v(Lists.mutable.withAll(pojowithgenerics3.v));\n' +
-                '    }\n' +
-                '\n' +
-                '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult translate(PojoWithGenericsAndMult pojowithgenericsandmult,\n' +
-                '                                                                                                  PureModel pureModel)\n' +
-                '    {\n' +
-                '        return pojowithgenericsandmult == null ? null\n' +
-                '                                               : pojowithgenericsandmult.accept(new PojoWithGenericsAndMultVisitor<Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult>()\n' +
-                '        {\n' +
-                '            public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult visit(PojoWithGenericsAndMult2 val)\n' +
-                '            {\n' +
-                '                return ProtocolToMetamodelTranslator.this.translate(val, pureModel);\n' +
-                '            }\n' +
-                '        });\n' +
-                '    }\n' +
-                '\n' +
-                '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult2 translate(PojoWithGenericsAndMult2 pojowithgenericsandmult2,\n' +
-                '                                                                                                   PureModel pureModel)\n' +
-                '    {\n' +
-                '        return pojowithgenericsandmult2 == null ? null\n' +
-                '                                                : new Root_meta_protocols_generation_java_tests_model_pojo_PojoWithGenericsAndMult2_Impl("",                                                                                         null,\n' +
-                '                                                                                                                                                                                                                                     pureModel.getType("meta::protocols::generation::java::tests::model::pojo::PojoWithGenericsAndMult2"))\n' +
-                '                                                                                                                                            ._t(Lists.mutable.withAll(pojowithgenericsandmult2.t))\n' +
-                '                                                                                                                                            ._v(Lists.mutable.withAll(pojowithgenericsandmult2.v));\n' +
                 '    }\n' +
                 '\n' +
                 '    public Root_meta_protocols_generation_java_tests_model_pojo_PojoWithInheritance translate(PojoWithInheritance pojowithinheritance,\n' +
@@ -726,142 +610,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
   let sources = meta::protocols::generation::java::generateProtocolProject($config, $dependency)
         ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->sortBy(c | $c.simpleName)->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
 
-  assertEquals(22, $sources->size());
-
-  assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'import com.fasterxml.jackson.annotation.JsonSubTypes;\n' +
-		'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n' +
-		'import java.util.Collections;\n' +
-		'import java.util.List;\n' +
-    '\n' +  
-		'@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n' +
-		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.pojo.PojoWithGenerics2.class, name="pojoWithGenerics2"), @JsonSubTypes.Type(value=org.finos.pojo.PojoWithGenerics3.class, name="pojoWithGenerics3")})\n' +
-		'public abstract class PojoWithGenerics<T, V>\n' +
-		'{\n' +
-		'    public T t;\n' +
-		'    public List<V> v = Collections.<V>emptyList();\n' +
-    '\n'+
-    '    public PojoWithGenerics _t(T t)\n'+
-    '    {\n'+
-    '        this.t = t;\n'+
-    '        return this;\n'+
-    '    }\n'+
-    '\n'+
-    '    public PojoWithGenerics _v(List<V> v)\n'+
-    '    {\n'+
-    '        this.v = v;\n'+
-    '        return this;\n'+
-    '    }\n'+
-    '\n' +
-		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
-		'}', $sources->at(9));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'import com.fasterxml.jackson.annotation.JsonSubTypes;\n' +
-		'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n' +
-		'import java.util.Collections;\n' +
-		'import java.util.List;\n' +
-    '\n' + 
-		'@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n' +
-		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.pojo.PojoWithGenericsAndMult2.class, name="pojoWithGenericsAndMult2")})\n' +
-		'public abstract class PojoWithGenericsAndMult<T, V>\n' +
-		'{\n' +
-		'    public List<T> t = Collections.<T>emptyList();\n' +
-		'    public List<V> v = Collections.<V>emptyList();\n' +
-    '\n'+
-    '    public PojoWithGenericsAndMult _t(List<T> t)\n'+
-    '    {\n'+
-    '        this.t = t;\n'+
-    '        return this;\n'+
-    '    }\n'+
-    '\n'+
-    '    public PojoWithGenericsAndMult _v(List<V> v)\n'+
-    '    {\n'+
-    '        this.v = v;\n'+
-    '        return this;\n'+
-    '    }\n'+
-    '\n'+
-		'    public abstract <T> T accept(PojoWithGenericsAndMultVisitor<T> visitor);\n' +
-		'}', $sources->at(12));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'import java.util.Collections;\n' +
-		'import java.util.List;\n' +
-    '\n' +  
-		'public abstract class PojoWithGenerics2<T> extends PojoWithGenerics<T, String>\n' +
-		'{\n' +
-		'    public List<T> t2 = Collections.<T>emptyList();\n' +
-    '\n' +
-    '    public PojoWithGenerics2 _t2(List<T> t2)\n' +
-    '    {\n' +
-    '        this.t2 = t2;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
-		'}', $sources->at(10));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'import java.util.List;\n' +
-    '\n' +  
-		'public class PojoWithGenericsAndMult2 extends PojoWithGenericsAndMult<List<String>, Long>\n' +
-		'{\n' +
-		'    public <T> T accept(PojoWithGenericsAndMultVisitor<T> visitor)\n' +
-		'    {\n' +
-		'        return visitor.visit(this);\n' +
-		'    }\n' +
-		'}', $sources->at(13));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.ProvidedPojo;\n' +
-	  '\n' +
-  	'public class PojoWithInheritance extends ProvidedPojo\n' +
-		'{\n' +
-		'    public Number reqFactor;\n' +
-		'    public Number optionalFactor;\n' +
-	  '\n' +
-    '    public PojoWithInheritance _reqFactor(Number reqFactor)\n' +
-    '    {\n' +
-    '        this.reqFactor = reqFactor;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public PojoWithInheritance _optionalFactor(Number optionalFactor)\n' +
-    '    {\n' +
-    '        this.optionalFactor = optionalFactor;\n' +
-    '        return this;\n' +
-    '    }\n' + 
-		'}', $sources->at(16));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'public class PojoWithGenerics3 extends PojoWithGenerics2<String>\n' +
-		'{\n' +
-		'    public <T> T accept(PojoWithGenericsVisitor<T> visitor)\n' +
-		'    {\n' +
-		'        return visitor.visit(this);\n' +
-		'    }\n' +
-		'}', $sources->at(11));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'public interface PojoWithGenericsAndMultVisitor<T>\n' +
-		'{\n' +
-		'    T visit(PojoWithGenericsAndMult2 val);\n' +
-		'}', $sources->at(14));
-
-	assertEquals('package org.finos.pojo;\n' +
-    '\n' +
-		'public interface PojoWithGenericsVisitor<T>\n' +
-		'{\n' +
-		'    T visit(PojoWithGenerics2 val);\n' +
-		'    T visit(PojoWithGenerics3 val);\n' +
-		'}', $sources->at(15));
+  assertEquals(15, $sources->size());
 
 	assertEquals('package org.finos.scalar;\n' +
     '\n' +
@@ -876,49 +625,43 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    }\n' +
 		'}', $sources->at(0));
 
-	assertEquals('package org.finos.scalar;\n' +
-    '\n' +
-		'import org.finos.ProtoBufTypeVisitor;\n' +
-		'import org.finos.ScalarType;\n' +
-    '\n' +
-		'public class Int32 extends ScalarType\n' +
-		'{\n' +
-		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
-		'    {\n' +
-		'        return visitor.visit(this);\n' +
-		'    }\n' +
-		'}', $sources->at(6));
-
-	assertEquals('package org.finos.scalar;\n' +
-    '\n' +
-		'import org.finos.ProtoBufTypeVisitor;\n' +
-		'import org.finos.ScalarType;\n' +
-    '\n' +
-		'public class String extends ScalarType\n' +
-		'{\n' +
-		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
-		'    {\n' +
-		'        return visitor.visit(this);\n' +
-		'    }\n' +
-		'}', $sources->at(21));
-
-	assertEquals('package org.finos.store;\n' +
-    '\n' +
-		'public class Store extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store\n' +
-		'{\n' +
-		'}', $sources->at(20));
-
 	assertEquals('package org.finos;\n' +
     '\n' +
-		'import com.fasterxml.jackson.annotation.JsonSubTypes;\n' +
-		'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n' +
-    '\n' +
-		'@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n' +
-		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.scalar.Bool.class, name="bool"), @JsonSubTypes.Type(value=org.finos.EnumPtr.class, name="enumPtr"), @JsonSubTypes.Type(value=org.finos.Enumeration.class, name="enumeration"), @JsonSubTypes.Type(value=org.finos.scalar.Int32.class, name="int32"), @JsonSubTypes.Type(value=org.finos.Message.class, name="message"), @JsonSubTypes.Type(value=org.finos.MessagePtr.class, name="messagePtr"), @JsonSubTypes.Type(value=org.finos.ScalarType.class, name="scalarType"), @JsonSubTypes.Type(value=org.finos.scalar.String.class, name="string")})\n' +
-  	'public abstract class ProtoBufType\n' +
+		'public class Enum\n' +
 		'{\n' +
-		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
-		'}', $sources->at(17));
+		'    public String constant;\n' +
+		'    public Long constantNumber;\n' +
+    '\n' +
+    '    public Enum _constant(String constant)\n' +
+    '    {\n' +
+    '        this.constant = constant;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Enum _constantNumber(Long constantNumber)\n' +
+    '    {\n' +
+    '        this.constantNumber = constantNumber;\n' +
+    '        return this;\n' +
+    '    }\n' +
+		'}', $sources->at(1));
+
+    	assertEquals('package org.finos;\n' +
+    '\n' +
+		'public class EnumPtr extends ProtoBufType\n' +
+		'{\n' +
+		'    public String name;\n' +
+    '\n' +
+    '    public EnumPtr _name(String name)\n'+
+    '    {\n'+
+    '        this.name = name;\n'+
+    '        return this;\n'+
+    '    }\n'+
+    '\n'+
+		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
+		'    {\n' +
+		'        return visitor.visit(this);\n' +
+		'    }\n' +
+		'}', $sources->at(2));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -947,6 +690,80 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
 		'}', $sources->at(3));
+
+	assertEquals('package org.finos;\n' +
+    '\n' +
+		'public class Field\n' +
+		'{\n' +
+		'    public FieldFlag flag;\n' +
+		'    public Long binaryFieldNumber;\n' +
+		'    public String name;\n' +
+		'    public ProtoBufType type;\n' +
+		'    public Boolean repeated;\n' +
+    '\n' +
+    '    public Field _flag(FieldFlag flag)\n' +
+    '    {\n' +
+    '        this.flag = flag;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _binaryFieldNumber(Long binaryFieldNumber)\n' +
+    '    {\n' +
+    '        this.binaryFieldNumber = binaryFieldNumber;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _name(String name)\n' +
+    '    {\n' +
+    '        this.name = name;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _type(ProtoBufType type)\n' +
+    '    {\n' +
+    '        this.type = type;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public Field _repeated(Boolean repeated)\n' +
+    '    {\n' +
+    '        this.repeated = repeated;\n' +
+    '        return this;\n' +
+    '    }\n' +
+		'}', $sources->at(4));
+
+
+
+  assertEquals('package org.finos;\n' +
+    '\n' +
+		'public enum FieldFlag\n' +
+		'{\n' +
+		'    ON,\n' +
+		'    OFF;\n' +
+    '\n'+
+    '    public String getName()\n'+
+    '    {\n'+
+    '        return this.name();\n'+
+    '    }\n'+
+    '\n'+
+    '    public static FieldFlag getEnumFromPureName(String pureName)\n'+
+    '    {\n'+
+    '        return FieldFlag.valueOf(pureName);\n'+
+    '    }\n'+
+		'}', $sources->at(5));
+
+	assertEquals('package org.finos.scalar;\n' +
+    '\n' +
+		'import org.finos.ProtoBufTypeVisitor;\n' +
+		'import org.finos.ScalarType;\n' +
+    '\n' +
+		'public class Int32 extends ScalarType\n' +
+		'{\n' +
+		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
+		'    {\n' +
+		'        return visitor.visit(this);\n' +
+		'    }\n' +
+		'}', $sources->at(6));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -992,110 +809,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 
 	assertEquals('package org.finos;\n' +
     '\n' +
-		'import org.finos.scalar.Bool;\n' +
-		'import org.finos.scalar.Int32;\n' +
-		'import org.finos.scalar.String;\n' +
-    '\n' +
-		'public interface ProtoBufTypeVisitor<T>\n' +
-		'{\n' +
-		'    T visit(Bool val);\n' +
-		'    T visit(EnumPtr val);\n' +
-		'    T visit(Enumeration val);\n' +
-		'    T visit(Int32 val);\n' +
-		'    T visit(Message val);\n' +
-		'    T visit(MessagePtr val);\n' +
-		'    T visit(ScalarType val);\n' +
-		'    T visit(String val);\n' +
-		'}', $sources->at(18));
-
-	assertEquals('package org.finos;\n' +
-    '\n' +
-		'public abstract class ScalarType extends ProtoBufType\n' +
-		'{\n' +
-		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
-		'}', $sources->at(19));
-
-	assertEquals('package org.finos;\n' +
-    '\n' +
-		'public class Enum\n' +
-		'{\n' +
-		'    public String constant;\n' +
-		'    public Long constantNumber;\n' +
-    '\n' +
-    '    public Enum _constant(String constant)\n' +
-    '    {\n' +
-    '        this.constant = constant;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public Enum _constantNumber(Long constantNumber)\n' +
-    '    {\n' +
-    '        this.constantNumber = constantNumber;\n' +
-    '        return this;\n' +
-    '    }\n' +
-		'}', $sources->at(1));
-
-	assertEquals('package org.finos;\n' +
-    '\n' +
-		'public class EnumPtr extends ProtoBufType\n' +
-		'{\n' +
-		'    public String name;\n' +
-    '\n' +
-    '    public EnumPtr _name(String name)\n'+
-    '    {\n'+
-    '        this.name = name;\n'+
-    '        return this;\n'+
-    '    }\n'+
-    '\n'+
-		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
-		'    {\n' +
-		'        return visitor.visit(this);\n' +
-		'    }\n' +
-		'}', $sources->at(2));
-
-	assertEquals('package org.finos;\n' +
-    '\n' +
-		'public class Field\n' +
-		'{\n' +
-		'    public FieldFlag flag;\n' +
-		'    public Long binaryFieldNumber;\n' +
-		'    public String name;\n' +
-		'    public ProtoBufType type;\n' +
-		'    public Boolean repeated;\n' +
-    '\n' +
-    '    public Field _flag(FieldFlag flag)\n' +
-    '    {\n' +
-    '        this.flag = flag;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public Field _binaryFieldNumber(Long binaryFieldNumber)\n' +
-    '    {\n' +
-    '        this.binaryFieldNumber = binaryFieldNumber;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public Field _name(String name)\n' +
-    '    {\n' +
-    '        this.name = name;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public Field _type(ProtoBufType type)\n' +
-    '    {\n' +
-    '        this.type = type;\n' +
-    '        return this;\n' +
-    '    }\n' +
-    '\n' +
-    '    public Field _repeated(Boolean repeated)\n' +
-    '    {\n' +
-    '        this.repeated = repeated;\n' +
-    '        return this;\n' +
-    '    }\n' +
-		'}', $sources->at(4));
-
-	assertEquals('package org.finos;\n' +
-    '\n' +
 		'public class MessagePtr extends ProtoBufType\n' +
 		'{\n' +
 		'    public String name;\n' +
@@ -1112,21 +825,81 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    }\n' +
 		'}', $sources->at(8));
 
+	assertEquals('package org.finos.pojo;\n' +
+    '\n' +
+		'import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.ProvidedPojo;\n' +
+	  '\n' +
+  	'public class PojoWithInheritance extends ProvidedPojo\n' +
+		'{\n' +
+		'    public Number reqFactor;\n' +
+		'    public Number optionalFactor;\n' +
+	  '\n' +
+    '    public PojoWithInheritance _reqFactor(Number reqFactor)\n' +
+    '    {\n' +
+    '        this.reqFactor = reqFactor;\n' +
+    '        return this;\n' +
+    '    }\n' +
+    '\n' +
+    '    public PojoWithInheritance _optionalFactor(Number optionalFactor)\n' +
+    '    {\n' +
+    '        this.optionalFactor = optionalFactor;\n' +
+    '        return this;\n' +
+    '    }\n' + 
+		'}', $sources->at(9));
+
 	assertEquals('package org.finos;\n' +
     '\n' +
-		'public enum FieldFlag\n' +
+		'import com.fasterxml.jackson.annotation.JsonSubTypes;\n' +
+		'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n' +
+    '\n' +
+		'@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n' +
+		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.scalar.Bool.class, name="bool"), @JsonSubTypes.Type(value=org.finos.EnumPtr.class, name="enumPtr"), @JsonSubTypes.Type(value=org.finos.Enumeration.class, name="enumeration"), @JsonSubTypes.Type(value=org.finos.scalar.Int32.class, name="int32"), @JsonSubTypes.Type(value=org.finos.Message.class, name="message"), @JsonSubTypes.Type(value=org.finos.MessagePtr.class, name="messagePtr"), @JsonSubTypes.Type(value=org.finos.ScalarType.class, name="scalarType"), @JsonSubTypes.Type(value=org.finos.scalar.String.class, name="string")})\n' +
+  	'public abstract class ProtoBufType\n' +
 		'{\n' +
-		'    ON,\n' +
-		'    OFF;\n' +
-    '\n'+
-    '    public String getName()\n'+
-    '    {\n'+
-    '        return this.name();\n'+
-    '    }\n'+
-    '\n'+
-    '    public static FieldFlag getEnumFromPureName(String pureName)\n'+
-    '    {\n'+
-    '        return FieldFlag.valueOf(pureName);\n'+
-    '    }\n'+
-		'}', $sources->at(5));
+		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
+		'}', $sources->at(10));
+
+	assertEquals('package org.finos;\n' +
+    '\n' +
+		'import org.finos.scalar.Bool;\n' +
+		'import org.finos.scalar.Int32;\n' +
+		'import org.finos.scalar.String;\n' +
+    '\n' +
+		'public interface ProtoBufTypeVisitor<T>\n' +
+		'{\n' +
+		'    T visit(Bool val);\n' +
+		'    T visit(EnumPtr val);\n' +
+		'    T visit(Enumeration val);\n' +
+		'    T visit(Int32 val);\n' +
+		'    T visit(Message val);\n' +
+		'    T visit(MessagePtr val);\n' +
+		'    T visit(ScalarType val);\n' +
+		'    T visit(String val);\n' +
+		'}', $sources->at(11));
+
+	assertEquals('package org.finos;\n' +
+    '\n' +
+		'public abstract class ScalarType extends ProtoBufType\n' +
+		'{\n' +
+		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
+		'}', $sources->at(12));
+
+	assertEquals('package org.finos.store;\n' +
+    '\n' +
+		'public class Store extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store\n' +
+		'{\n' +
+		'}', $sources->at(13));
+
+	assertEquals('package org.finos.scalar;\n' +
+    '\n' +
+		'import org.finos.ProtoBufTypeVisitor;\n' +
+		'import org.finos.ScalarType;\n' +
+    '\n' +
+		'public class String extends ScalarType\n' +
+		'{\n' +
+		'    public <T> T accept(ProtoBufTypeVisitor<T> visitor)\n' +
+		'    {\n' +
+		'        return visitor.visit(this);\n' +
+		'    }\n' +
+		'}', $sources->at(14));
 }
