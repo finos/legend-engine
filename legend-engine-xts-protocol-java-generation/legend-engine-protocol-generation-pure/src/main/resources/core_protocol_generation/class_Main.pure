@@ -56,6 +56,7 @@ Class meta::protocols::generation::java::Context
   conventions: Conventions[1];
   configuration : Configuration[1];
   dependencies : Configuration[*];
+  typesFromDependencies : meta::pure::metamodel::type::Type[*];
 }
 
 function meta::protocols::generation::java::generateProtocolProject(configJson: String[1], dependenciesJson: String[*]):Project[1]
@@ -71,12 +72,15 @@ function meta::protocols::generation::java::generateProtocolProject(configJson: 
 
   let visitorByTaxonomy = newMap($taxonomies->map(t|pair($t, $t->generateVisitor($package, $conventions))));
 
+  let typesFromDependencies = getTypesFromDependencies($dependencies);
+
   let context = ^Context(conventions=$conventions,
                          rootPackage=$package,
                          taxonomies = $taxonomies,
                          visitorByTaxonomy=$visitorByTaxonomy,
                          configuration = $config,
-                         dependencies = $dependencies);
+                         dependencies = $dependencies,
+                         typesFromDependencies = $typesFromDependencies);
 
   let allElements = $pack->concatenate($config.pureClasses->map(x|$x->pathToElement()->cast(@meta::pure::metamodel::PackageableElement)));
 
@@ -150,7 +154,7 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
     | // Interface generation
       let jInterface = javaClass(['public', 'interface'], $typeAndPackages.first->javaPackage(), $typeAndPackages.second)->implements($superTypes);
       let withProperties = $jInterface->addMethods(
-                                  meta::protocols::generation::java::allProperties($c, false, $context.configuration)
+                                  meta::protocols::generation::java::allProperties($c, false, $context)
                                   ->removeDuplicatesBy(x|$x.name->toOne())
                                   ->map(p|
                                             let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
@@ -163,7 +167,7 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
                           );
 
       // Additional setters (remove ambiguity for result of conflicting properties)
-      let parentProperties = meta::protocols::generation::java::allProperties($c, true, $context.configuration)->removeAll($c.properties);
+      let parentProperties = meta::protocols::generation::java::allProperties($c, true, $context)->removeAll($c.properties);
       let propertiesByName = $parentProperties->groupBy(x|$x.name->toOne());
       $withProperties->addMethods(
         $propertiesByName
@@ -178,14 +182,14 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
 
       ,
     | // Class generation
-      let fields = meta::protocols::generation::java::allProperties($c, true, $context.configuration)
+      let fields = meta::protocols::generation::java::allProperties($c, true, $context)
                             ->removeDuplicatesBy(x|$x.name->toOne())
                             ->map(p| generateProperty($p, 'private', $context));
       let jClass = javaClass(['public'], $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
                     ->implements($superTypes)
                     ->addFields($fields);
       $jClass->addMethods(
-                    meta::protocols::generation::java::allProperties($c, true, $context.configuration)
+                    meta::protocols::generation::java::allProperties($c, true, $context)
                           ->removeDuplicatesBy(x|$x.name->toOne())
                           ->map(p|
                               let javaName = $p.name->toOne()->sanitizeJavaKeywords();
@@ -202,12 +206,12 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
 
 }
 
-function <<access.private>> meta::protocols::generation::java::allProperties(c:meta::pure::metamodel::type::Class<Any>[1], allParents:Boolean[1], configuration:Configuration[1]):meta::pure::metamodel::function::property::Property<Nil,Any|*>[*]
+function <<access.private>> meta::protocols::generation::java::allProperties(c:meta::pure::metamodel::type::Class<Any>[1], allParents:Boolean[1], context:Context[1]):meta::pure::metamodel::function::property::Property<Nil,Any|*>[*]
 {
   if($allParents,
     |$c->hierarchicalProperties(),
     |$c.properties
-  )->filter(p|isPropertyInScope($p, $configuration));   
+  )->filter(p|isPropertyInScope($p, $context));
 }
 
 function <<access.private>> meta::protocols::generation::java::generateClass(c:meta::pure::metamodel::type::Class<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[1]
@@ -224,7 +228,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
               ->addFields($c.properties->map(p| generateProperty($p, 'public', $context)));
 
   let sbase = $pbase->addMethods(
-    $c.properties->map(p|
+    meta::protocols::generation::java::allProperties($c, false, $context)->map(p|
         let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
         let javaName = $p.name->toOne()->sanitizeJavaKeywords();
         let field = $pbase.fields->filter(f | $f.name == $javaName)->toOne();
@@ -295,7 +299,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
 
 function <<access.private>> meta::protocols::generation::java::generateProperty(p:meta::pure::metamodel::function::property::Property<Nil,Any|*>[1], modifiers:String[*], context:Context[1]):meta::external::language::java::metamodel::Field[0..1]
 {
-    if (isPropertyInScope($p, $context.configuration),
+    if (isPropertyInScope($p, $context),
      |let javaType = pureTypeToJavaTypeNoTypeArgs($context.conventions, $p);
       let javaName = $p.name->toOne()->sanitizeJavaKeywords();
       let default = $p.defaultValue.functionDefinition.expressionSequence;
@@ -366,13 +370,17 @@ function <<access.private>> meta::protocols::generation::java::translation::coll
 
 function meta::protocols::generation::java::translation::isTypeInScope(c:meta::pure::metamodel::type::Type[1], configuration:Configuration[1]):Boolean[1]
 {
-  !$c->elementToPath()->in($configuration.elementsToBeExcluded) && !$c->hasStereotype('excluded', ProtocolInfo) && ($configuration.pureFiles->isEmpty() || $c->sourceInformation().source->in($configuration.pureFiles))
+  $c == Any || ($configuration.elementsToBeExcluded->fold({p,a|$a && !$c->elementToPath()->startsWith($p)}, true) && !$c->hasStereotype('excluded', ProtocolInfo) && ($configuration.pureFiles->isEmpty() || $c->sourceInformation().source->in($configuration.pureFiles)));
 }
 
-function meta::protocols::generation::java::translation::isPropertyInScope(p:Property<Nil,Any|ZeroMany>[1], configuration:Configuration[1]):Boolean[1]
+function meta::protocols::generation::java::translation::isPropertyInScope(p:Property<Nil,Any|ZeroMany>[1], context:Context[1]):Boolean[1]
 {
   let returnType = $p->functionReturnType().rawType;
-  !$p->hasStereotype('inferred', ProtocolInfo) && !$p->hasStereotype('excluded', ProtocolInfo) && $returnType->isNotEmpty() && isTypeInScope($returnType->toOne(), $configuration);
+
+  !$p->hasStereotype('inferred', ProtocolInfo) &&
+  !$p->hasStereotype('excluded', ProtocolInfo) &&
+  $returnType->isNotEmpty() &&
+  ($context.typesFromDependencies->contains($returnType->toOne()) || isTypeInScope($returnType->toOne(), $context.configuration));
 }
 
 function meta::protocols::generation::java::translation::findTaxonomy(c:meta::pure::metamodel::type::Class<Any>[1], src:Taxonomy[*]):Taxonomy[*]
@@ -456,6 +464,15 @@ function <<access.private>> meta::protocols::generation::java::pureTypeToJavaTyp
 function <<access.private>> meta::protocols::generation::java::pureTypeToJavaTypeNoTypeArgs(conventions:Conventions[1], p:Property<Nil,Any|ZeroMany>[1]):meta::external::language::java::metamodel::Type[1]
 {
   $conventions->pureTypeToJavaTypeNoTypeArgs($p.genericType, $p.multiplicity);
+}
+
+function meta::protocols::generation::java::getTypesFromDependencies(dependencies: Configuration[*]): meta::pure::metamodel::type::Type[*]
+{
+    $dependencies->map(config|
+          getAllPackageElements($config.purePackage->pathToElement()->cast(@Package), true)
+          ->filter(x | $x->instanceOf(meta::pure::metamodel::type::Type))
+          ->cast(@meta::pure::metamodel::type::Type)
+    )
 }
 
 function meta::protocols::generation::java::addProvidedTypesFromDependencies(conventions: Conventions[1], dependencies: Configuration[*]): Conventions[1]
