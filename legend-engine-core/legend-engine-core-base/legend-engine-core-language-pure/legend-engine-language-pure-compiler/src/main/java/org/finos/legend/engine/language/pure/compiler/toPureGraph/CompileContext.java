@@ -456,13 +456,13 @@ public class CompileContext
 
     // ------------------------------------------ FUNCTION EXPRESSION BUILDER -----------------------------------------
 
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         Pair<SimpleFunctionExpression, List<ValueSpecification>> functionExpression;
-        functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, openVariables, sourceInformation, this, processingContext);
+        functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, sourceInformation, valueSpecificationBuilder);
         if (fControl != null)
         {
-            testFunction(fControl, processingContext, functionExpression.getOne());
+            testFunction(fControl, valueSpecificationBuilder.getProcessingContext(), functionExpression.getOne());
         }
         return functionExpression;
     }

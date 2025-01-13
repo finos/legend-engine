@@ -94,6 +94,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_BasicColumnSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
@@ -136,6 +137,21 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     private final MutableList<String> openVariables;
     private final ProcessingContext processingContext;
 
+    public CompileContext getContext()
+    {
+        return context;
+    }
+
+    public MutableList<String> getOpenVariables()
+    {
+        return openVariables;
+    }
+
+    public ProcessingContext getProcessingContext()
+    {
+        return processingContext;
+    }
+
     public ValueSpecificationBuilder(CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         this.context = context;
@@ -162,10 +178,38 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             return visit(new UnitType(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation));
         }
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
-                ._genericType(packageableElement._classifierGenericType())
-                ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.with(packageableElement));
+
+        if (packageableElement instanceof Root_meta_pure_runtime_PackageableRuntime)
+        {
+            Root_meta_core_runtime_Runtime resolvedRuntime = this.context.resolveRuntime(packageableElementPtr.fullPath);
+            GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
+                    ._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime"));
+            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
+                    ._genericType(runtimeGenericType)
+                    ._multiplicity(this.context.pureModel.getMultiplicity("one"))
+                    ._values(Lists.mutable.with(resolvedRuntime));
+        }
+
+        MutableList<InstanceValue> values = this.context.getCompilerExtensions().getExtraValueSpecificationBuilderForFuncExpr().collect(x -> x.value(packageableElement, this.context, this.processingContext), Lists.mutable.empty());
+        values.removeIf(Objects::isNull);
+        switch (values.size())
+        {
+            case 0:
+            {
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
+                        ._genericType(packageableElement._classifierGenericType())
+                        ._multiplicity(this.context.pureModel.getMultiplicity("one"))
+                        ._values(Lists.mutable.with(packageableElement));
+            }
+            case 1:
+            {
+                return values.get(0);
+            }
+            default:
+            {
+                throw new EngineException("More than one handler found for the Packageable Element '" + packageableElementPtr.fullPath + "'", packageableElementPtr.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
     }
 
     @Override
@@ -224,8 +268,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(AggregateValue aggregateValue)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) aggregateValue.mapFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
-        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) aggregateValue.aggregateFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
+        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) aggregateValue.mapFn.accept(this))._values().getFirst();
+        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) aggregateValue.aggregateFn.accept(this))._values().getFirst();
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(aggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::functions::collection::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -473,7 +517,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         }
         else if (colSpec.function2 == null)
         {
-            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(this);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) funcVS._values().getFirst();
 
             FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func, this.context.pureModel.getExecutionSupport().getProcessorSupport());
@@ -507,10 +551,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         }
         else
         {
-            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(this);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func1 = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) funcVS._values().getFirst();
 
-            InstanceValue func2VS = (InstanceValue) colSpec.function2.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            InstanceValue func2VS = (InstanceValue) colSpec.function2.accept(this);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func2 = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) func2VS._values().getFirst();
 
             FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func1, this.context.pureModel.getExecutionSupport().getProcessorSupport());
@@ -567,7 +611,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                     GenericType genericType = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_(property, this.context.pureModel.getExecutionSupport());
                     MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PathElement> result = a.result;
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement ppe = new Root_meta_pure_metamodel_path_PropertyPathElement_Impl("", SourceInformationHelper.toM3SourceInformation(b.sourceInformation), null);
-                    RichIterable<ValueSpecification> params = ListIterate.collect(((PropertyPathElement) b).parameters, p -> p.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
+                    RichIterable<ValueSpecification> params = ListIterate.collect(((PropertyPathElement) b).parameters, p -> p.accept(this));
                     result.add(ppe._property(property)._parameters(params));
                     return new TypeAndList(genericType._rawType(), result);
                 }
@@ -678,8 +722,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(Pair pair)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification f = pair.first.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification s = pair.second.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification f = pair.first.accept(this);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification s = pair.second.accept(this);
         GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(this.context.pureModel.getType(M3Paths.Pair))
                 ._typeArguments(Lists.immutable.with(f._genericType(), s._genericType()));
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(pair.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
@@ -697,7 +741,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl(" ", SourceInformationHelper.toM3SourceInformation(pureList.sourceInformation), null)
                 ._genericType(this.context.pureModel.getGenericType(M3Paths.List))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(ListIterate.collect(pureList.values, v -> v.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext))));
+                ._values(ListIterate.collect(pureList.values, v -> v.accept(this)));
     }
 
     @Override
@@ -756,7 +800,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     {
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> transformed = ListIterate.collect(collection.values, expression ->
         {
-            ValueSpecification res = expression.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            ValueSpecification res = expression.accept(this);
             if (res._multiplicity()._lowerBound()._value() != 1 || res._multiplicity()._upperBound()._value() == null || res._multiplicity()._upperBound()._value() != 1)
             {
                 throw new EngineException("Collection element must have a multiplicity [1] - Context:" + processingContext.getStack() + ", multiplicity:" + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(res._multiplicity()), expression.sourceInformation, EngineErrorType.COMPILATION);
@@ -788,7 +832,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         MilestoningDatePropagationHelper.isValidSource(appliedFunction, processingContext);
         if (appliedFunction.function.equals("letFunction"))
         {
-            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
+            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(this));
             String letName = ((CString) appliedFunction.parameters.get(0)).value;
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation), this.context.pureModel.getClass(M3Paths.VariableExpression))._name(letName);
             ve._genericType(vs.get(1)._genericType());
@@ -796,7 +840,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             processingContext.addInferredVariables(letName, ve);
         }
 
-        org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function), appliedFunction.fControl, appliedFunction.parameters, openVariables, appliedFunction.sourceInformation, processingContext);
+        org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function), appliedFunction.fControl, appliedFunction.parameters, appliedFunction.sourceInformation, this);
         processingContext.pop();
         Assert.assertTrue(func != null, () -> "Can't find a match for function '" + appliedFunction.function + "(?)'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
         Assert.assertTrue(func.getOne() != null, () -> "Can't find a match for function '" + appliedFunction.function + "(" + (func.getTwo() == null ? "?" : LazyIterate.collect(func.getTwo(), v -> (v._genericType() == null ? "?" : org.finos.legend.pure.m3.navigation.generictype.GenericType.print(v._genericType(), context.pureModel.getExecutionSupport().getProcessorSupport())) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",")) + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
@@ -852,8 +896,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TDSAggregateValue tdsAggregateValue)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.mapFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
-        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.aggregateFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
+        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.mapFn.accept(this))._values().getFirst();
+        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.aggregateFn.accept(this))._values().getFirst();
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -871,7 +915,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TDSColumnInformation tdsColumnInformation)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsColumnInformation.columnFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
+        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsColumnInformation.columnFn.accept(this))._values().getFirst();
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsColumnInformation.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::BasicColumnSpecification"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -918,8 +962,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(KeyExpression keyExpression)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification key = keyExpression.key.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expression = keyExpression.expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification key = keyExpression.key.accept(this);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expression = keyExpression.expression.accept(this);
         GenericType keyExpressionGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))._rawType(this.context.pureModel.getType(M3Paths.KeyExpression));
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(keyExpressionGenericType)
