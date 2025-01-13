@@ -25,7 +25,7 @@
         <version>4.68.1-SNAPSHOT</version>
     </parent>
 
-    <name>Legend Pure - Code - Core - PrecisePrimitives - Pure</name>
+    <name>Legend Engine - Pure - Code - Core - PrecisePrimitives - Pure</name>
     <artifactId>legend-engine-pure-code-precisePrimitives-pure</artifactId>
     <packaging>jar</packaging>
 

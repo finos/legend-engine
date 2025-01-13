@@ -16,7 +16,7 @@ package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 
 import java.util.*;
 import java.util.function.Function;

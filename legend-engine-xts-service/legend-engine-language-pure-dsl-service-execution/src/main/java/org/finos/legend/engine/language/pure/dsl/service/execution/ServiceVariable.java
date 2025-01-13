@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 
 public class ServiceVariable
 {

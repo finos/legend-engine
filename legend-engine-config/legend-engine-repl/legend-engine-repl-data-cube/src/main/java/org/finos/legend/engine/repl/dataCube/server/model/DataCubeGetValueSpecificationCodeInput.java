@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 public class DataCubeGetValueSpecificationCodeInput
 {

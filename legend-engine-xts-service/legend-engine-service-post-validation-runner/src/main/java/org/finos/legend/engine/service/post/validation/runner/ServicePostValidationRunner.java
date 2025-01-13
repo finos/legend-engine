@@ -27,7 +27,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;

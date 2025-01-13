@@ -25,7 +25,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.lang.reflect.Modifier;

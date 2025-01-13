@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 import java.util.Collections;
 import java.util.List;

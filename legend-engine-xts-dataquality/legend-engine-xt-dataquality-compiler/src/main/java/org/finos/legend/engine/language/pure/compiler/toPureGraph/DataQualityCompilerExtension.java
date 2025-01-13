@@ -33,11 +33,11 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -118,7 +118,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataQuality.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
                 (dataquality, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQuality<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
@@ -147,7 +147,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataqualityRelationValidation.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
                 (dataqualityRelationValidation, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = new Root_meta_external_dataquality_DataQualityRelationValidation_Impl(
@@ -202,7 +202,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         relationValidation._description(relationalValidation.description);
         Variable assertionInputParam = relationalValidation.assertion.parameters.get(0);
         assertionInputParam.multiplicity = Multiplicity.PURE_ONE;
-        assertionInputParam.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(RelationTypeHelper.convert(fetchQueryRelationType(relationQuery)));
+        assertionInputParam.genericType = new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(RelationTypeHelper.convert(fetchQueryRelationType(relationQuery)));
 
         LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
         relationValidation._assertion(assertion);
