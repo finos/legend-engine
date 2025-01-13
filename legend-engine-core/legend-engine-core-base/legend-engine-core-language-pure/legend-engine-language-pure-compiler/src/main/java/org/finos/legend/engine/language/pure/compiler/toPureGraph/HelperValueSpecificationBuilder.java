@@ -24,11 +24,11 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -91,12 +91,12 @@ public class HelperValueSpecificationBuilder
         return buildLambdaWithContext(lambda.body, lambda.parameters, context, ctx);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
+    public static LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext("", expressions, parameters, context, ctx);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
+    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext(lambdaId, expressions, parameters, context, ctx, ValueSpecificationBuilder::new);
     }
@@ -306,7 +306,7 @@ public class HelperValueSpecificationBuilder
         return result;
     }
 
-    private static AbstractProperty<?> findProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> aClass, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, String name, SourceInformation sourceInformation)
+    private static AbstractProperty<?> findProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> aClass, List<ValueSpecification> parameters, String name, SourceInformation sourceInformation)
     {
         try
         {

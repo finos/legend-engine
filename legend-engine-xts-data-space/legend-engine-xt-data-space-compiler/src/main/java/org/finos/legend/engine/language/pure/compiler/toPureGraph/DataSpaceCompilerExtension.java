@@ -98,7 +98,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     {
         return Collections.singletonList(Processor.newProcessor(
                 DataSpace.class,
-                Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Function.class),
+                Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class, org.finos.legend.engine.protocol.pure.m3.function.Function.class),
                 (dataSpace, context) ->
                 {
                     Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl(dataSpace.name, null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpace"))._name(dataSpace.name);

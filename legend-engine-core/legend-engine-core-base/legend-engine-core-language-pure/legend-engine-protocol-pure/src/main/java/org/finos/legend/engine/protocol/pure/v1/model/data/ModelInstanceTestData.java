@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 public class ModelInstanceTestData extends ModelTestData
 {

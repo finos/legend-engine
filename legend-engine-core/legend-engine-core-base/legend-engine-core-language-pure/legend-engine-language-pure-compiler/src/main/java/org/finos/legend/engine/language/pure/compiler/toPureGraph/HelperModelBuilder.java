@@ -19,12 +19,12 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.function.property.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -154,7 +154,7 @@ public class HelperModelBuilder
         return ve;
     }
 
-    public static org.eclipse.collections.api.block.function.Function<org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty, QualifiedProperty<Object>> processQualifiedPropertyFirstPass(CompileContext context, PropertyOwner owner, String fullPath, ProcessingContext processingContext)
+    public static org.eclipse.collections.api.block.function.Function<org.finos.legend.engine.protocol.pure.m3.function.property.QualifiedProperty, QualifiedProperty<Object>> processQualifiedPropertyFirstPass(CompileContext context, PropertyOwner owner, String fullPath, ProcessingContext processingContext)
     {
         return property ->
         {
@@ -227,7 +227,7 @@ public class HelperModelBuilder
         targetFunc._postConstraints(functionPostConstraints);
     }
 
-    public static RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint> processConstraints(List<org.finos.legend.engine.protocol.pure.v1.model.domain.Constraint> constraints, CompileContext context, String _package, String _name, ValueSpecificationContext vsContext, ProcessingContext ctx)
+    public static RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint> processConstraints(List<org.finos.legend.engine.protocol.pure.m3.constraint.Constraint> constraints, CompileContext context, String _package, String _name, ValueSpecificationContext vsContext, ProcessingContext ctx)
     {
         String constraintSourceId = context.pureModel.buildPackageString(_package, _name).replace("::", "_") + "_Constraint$";
 
@@ -455,12 +455,12 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
      */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         return getPropertyOrResolvedEdgePointProperty(context, _class, parameters, name, false, sourceInformation);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, excludeQualified, sourceInformation);
         if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
@@ -473,12 +473,12 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property.
      */
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name)
     {
         return getAppliedProperty(context, _class, parameters, name, false, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
     }
 
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         return getAppliedProperty(context, _class, parameters, name, false, sourceInformation);
     }
@@ -486,7 +486,7 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property.
      */
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {
@@ -515,7 +515,7 @@ public class HelperModelBuilder
         throw new EngineException("Can't find property '" + name + "' in [" + org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()).makeString(", ") + "]", sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, boolean excludeQualified)
+    public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, boolean excludeQualified)
     {
         RichIterable<? extends QualifiedProperty<?>> propertiesWithSameName = qualifiedProperties.select(p -> name.equals(p._name()));
         RichIterable<? extends QualifiedProperty<?>> milestoningProperties = propertiesWithSameName.select(Milestoning::isDateArgGeneratedMilestoningQualifiedProperty);                             //dont pick NoArg Milestoned Property
@@ -541,7 +541,7 @@ public class HelperModelBuilder
         }
     }
 
-    public static boolean isCompatibleDerivedPropertyWithParameters(QualifiedProperty<?> o, List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> params)
+    public static boolean isCompatibleDerivedPropertyWithParameters(QualifiedProperty<?> o, List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> params)
     {
         FunctionType rawType = (FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType();
         return rawType._parameters().size() == params.size();
@@ -552,7 +552,7 @@ public class HelperModelBuilder
 //        when processing $p.nameWithTitle('Mr'), the parameter name is p, but the AppliedQualfiedProperty has name 'this' and thus the comparison on parameter names fails.
     }
 
-    public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.domain.QualifiedProperty p)
+    public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.m3.function.property.QualifiedProperty p)
     {
         return o._name().equals(p.name) && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }

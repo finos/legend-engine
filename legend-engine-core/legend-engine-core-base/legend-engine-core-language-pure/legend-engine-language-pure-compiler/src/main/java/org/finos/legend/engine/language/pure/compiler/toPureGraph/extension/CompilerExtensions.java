@@ -46,7 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
@@ -104,7 +104,7 @@ public class CompilerExtensions
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
-    private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
+    private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
     private final ImmutableList<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> extraLambdaPostProcessors;
     private final ImmutableList<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
     private final ImmutableList<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> extraExecutionContextProcessors;
@@ -269,7 +269,7 @@ public class CompilerExtensions
         return this.extraFunctionHandlerRegistrationInfoCollectors.castToList();
     }
 
-    public List<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
+    public List<Function4<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
     {
         return this.extraValueSpecificationProcessors.castToList();
     }

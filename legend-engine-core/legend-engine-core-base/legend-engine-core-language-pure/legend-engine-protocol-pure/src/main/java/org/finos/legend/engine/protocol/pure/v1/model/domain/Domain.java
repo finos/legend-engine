@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 
 import java.util.List;
 

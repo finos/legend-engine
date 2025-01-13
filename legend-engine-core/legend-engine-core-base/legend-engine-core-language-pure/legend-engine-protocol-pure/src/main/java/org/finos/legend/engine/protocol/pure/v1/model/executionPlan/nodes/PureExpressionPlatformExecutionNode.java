@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PureExpressionPlatformExecutionNode extends ExecutionNode

@@ -530,7 +530,7 @@ public class Milestoning
         return isGeneratedMilestoningQualifiedProperty(property) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
     }
 
-    public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
+    public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.m3.type.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
     {
         MilestoningStereotype ms = Milestoning.temporalStereotypes(_class._stereotypes());
         if (ms != null)

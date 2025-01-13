@@ -148,7 +148,7 @@ function <<access.private>> meta::protocols::generation::java::generateClassOrIn
   let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($c, $context.conventions);
 
   let isInterface = !$c.specializations->filter(x|isTypeInScope($x.specific, $context.configuration))->isEmpty();
-  let superTypes = if($c.generalizations.general.rawType == Any,|[], |$c.generalizations.general.rawType->map(super|$context.conventions->className($super)));
+  let superTypes = if($c.generalizations.general.rawType == Any,|[], |$c.generalizations.general.rawType->filter(x|$x->isTypeInScope($context.configuration))->map(super|$context.conventions->className($super)));
 
   if ($isInterface,
     | // Interface generation
