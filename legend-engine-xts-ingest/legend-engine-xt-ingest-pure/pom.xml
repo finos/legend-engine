@@ -16,7 +16,7 @@
     </properties>
 
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - INGEST - PAR/JAVA</name>
+    <name>Legend Engine - XT - INGEST - PURE</name>
 
     <build>
         <plugins>

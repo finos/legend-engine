@@ -53,7 +53,7 @@ class FunctionParameterProcessor
                 ValidationResult validationResult = FunctionParametersParametersValidation.validate(param, parameterValidationContext, val);
                 if (validationResult.isValid())
                 {
-                    return FunctionParametersNormalizer.normalizeParameterValue(param, val);
+                    return FunctionParametersNormalizer.normalizeParameterValue(param, parameterValidationContext.stream().filter(x -> x.varName.equals(param.name)).findAny().orElse(null), val);
                 }
                 else
                 {

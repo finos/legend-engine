@@ -14,13 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.validation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtensionLoader;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ProtocolObjectValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,22 +36,23 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 class FunctionParametersNormalizer
 {
-    static void normalizeParameters(RichIterable<Variable> functionParameters, ExecutionState executionState)
+    static void normalizeParameters(RichIterable<Variable> functionParameters,List<ParameterValidationContext> parameterValidationContexts, ExecutionState executionState)
     {
-        functionParameters.forEach(p -> normalizeParameter(p, executionState));
+        functionParameters.forEach(p -> normalizeParameter(p, parameterValidationContexts.stream().filter(x -> x.varName.equals(p.name)).findAny().orElse(null), executionState));
     }
 
-    private static void normalizeParameter(Variable parameter, ExecutionState executionState)
+    private static void normalizeParameter(Variable parameter, ParameterValidationContext parameterValidationContext, ExecutionState executionState)
     {
         Result paramResult = executionState.getResult(parameter.name);
         if (paramResult instanceof ConstantResult)
         {
             Object paramValue = ((ConstantResult) paramResult).getValue();
-            Object normalized = normalizeParameterValue(parameter, paramValue);
+            Object normalized = normalizeParameterValue(parameter, parameterValidationContext, paramValue);
             if (normalized != paramValue)
             {
                 ConstantResult updatedDateTime = new ConstantResult(normalized);
@@ -53,7 +61,7 @@ class FunctionParametersNormalizer
         }
     }
 
-    public static Object normalizeParameterValue(Variable parameter, Object paramValue)
+    public static Object normalizeParameterValue(Variable parameter, ParameterValidationContext parameterValidationContext, Object paramValue)
     {
         if (paramValue == null)
         {
@@ -91,8 +99,44 @@ class FunctionParametersNormalizer
             }
             default:
             {
+                if (parameterValidationContext instanceof ProtocolObjectValidationContext)
+                {
+                    return normalizeParameterValue(paramValue, x -> normalizeProtocolObjectParameterValue((ProtocolObjectValidationContext) parameterValidationContext, x));
+                }
                 return paramValue;
             }
+        }
+    }
+
+    private static Object normalizeProtocolObjectParameterValue(ProtocolObjectValidationContext parameterValidationContext, Object paramValue)
+    {
+        String protocolObjectClassName = parameterValidationContext.protocolClassName;
+        try
+        {
+            Class<?> protocolObjectClass = ExecutionPlanJavaCompilerExtensionLoader.extensions().stream()
+                    .map(ExecutionPlanJavaCompilerExtension::dependencies)
+                    .map(map -> map.get(protocolObjectClassName))
+                    .filter(Objects::nonNull)
+                    .findAny()
+                    .orElseThrow(() -> new IllegalArgumentException("Function Parameter class not found in package dependencies for class:." + protocolObjectClassName));
+
+            if (protocolObjectClass.isInstance(paramValue))
+            {
+                return paramValue;
+            }
+            else if (paramValue instanceof String)
+            {
+                ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                return objectMapper.readValue((String) paramValue, protocolObjectClass);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Function Parameter should be of type JSON String or " + protocolObjectClass.getName());
+            }
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 

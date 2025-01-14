@@ -14,13 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import java.util.Map;
 
 public interface ExecutionPlanJavaCompilerExtension extends LegendPlanExtension
 {
+    default Map<String, Class<?>> dependencies()
+    {
+        return Maps.fixedSize.empty();
+    }
+
     ClassPathFilter getExtraClassPathFilter();
 
     @Override

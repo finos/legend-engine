@@ -3,9 +3,8 @@ import meta::legend::*;
 import meta::external::ingest::barrier::*;
 import meta::external::ingest::metamodel::*;
 
-function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForSingleDataset() : Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::testAvailabilityForSingleDatasetTrue() : Boolean[1]
 {
-  fail('Needs fix in plan generation and clustering');
 
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);
@@ -21,9 +20,31 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
 
   };
 
-  let result = executeLegendQuery($barrierQuery,[^Pair<String,Watermark>(first='prevPublishedWatermark',second=$prevPublishedWatermark),^Pair<String,Watermark>(first='currentWM',second=$currentWM)],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = executeLegendQuery($barrierQuery,[pair('prevPublishedWatermark',meta::json::toJSON($prevPublishedWatermark)), pair('currentWatermark',meta::json::toJSON($currentWM))],^meta::pure::runtime::ExecutionContext(), meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions());
   
-  assertEquals(true,$result);
+  assertEquals('true',$result);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::testAvailabilityForSingleDatasetFalse() : Boolean[1]
+{
+
+  let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
+                          datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=3)]);
+
+  let currentWM = ^Watermark(watermarkId='watermark2',
+                          datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=3)]);
+
+  let ingestConfig = ^IngestConfig<EodBatchMetadata>(datasetName = 'Dataset1', metadataType = EodBatchMetadata);
+
+  let barrierQuery = {
+
+      prevPublishedWatermark: Watermark[1] , currentWatermark: Watermark[1] | isDatasetAvailable($ingestConfig, $prevPublishedWatermark, $currentWatermark);
+
+  };
+
+  let result = executeLegendQuery($barrierQuery,[pair('prevPublishedWatermark',meta::json::toJSON($prevPublishedWatermark)), pair('currentWatermark',meta::json::toJSON($currentWM))],^meta::pure::runtime::ExecutionContext(), meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions());
+
+  assertEquals('false',$result);
 }
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasets() : Boolean[1]
@@ -46,7 +67,7 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
                                                                   && isDatasetAvailable($ingestConfig2, $prevPublishedWatermark, $currentWatermark);
   };
 
-  let result = executeLegendQuery($barrierQuery,[^Pair<String,Watermark>(first='prevPublishedWatermark',second=$prevPublishedWatermark),^Pair<String,Watermark>(first='currentWM',second=$currentWM)],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = executeLegendQuery($barrierQuery,[pair('prevPublishedWatermark',meta::json::toJSON($prevPublishedWatermark)), pair('currentWatermark',meta::json::toJSON($currentWM))],^meta::pure::runtime::ExecutionContext(), meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions());
   
   assertEquals(true,$result);
 }
@@ -69,7 +90,7 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
 
   };
 
-  let result = executeLegendQuery($barrierQuery,[^Pair<String,Watermark>(first='prevPublishedWatermark',second=$prevPublishedWatermark),^Pair<String,Watermark>(first='currentWM',second=$currentWM)],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+ let result = executeLegendQuery($barrierQuery,[pair('prevPublishedWatermark',meta::json::toJSON($prevPublishedWatermark)), pair('currentWatermark',meta::json::toJSON($currentWM))],^meta::pure::runtime::ExecutionContext(), meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions());
   
   assertEquals(true,$result);
 }
@@ -94,7 +115,7 @@ function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> me
                                                                   && isDatasetAvailable($ingestConfig2,x | $x.endOfDay, $prevPublishedWatermark, $currentWatermark);
   };
 
-  let result = executeLegendQuery($barrierQuery,[^Pair<String,Watermark>(first='prevPublishedWatermark',second=$prevPublishedWatermark),^Pair<String,Watermark>(first='currentWM',second=$currentWM)],^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = executeLegendQuery($barrierQuery,[pair('prevPublishedWatermark',meta::json::toJSON($prevPublishedWatermark)), pair('currentWatermark',meta::json::toJSON($currentWM))],^meta::pure::runtime::ExecutionContext(), meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions());
   
   assertEquals(true,$result);
 }

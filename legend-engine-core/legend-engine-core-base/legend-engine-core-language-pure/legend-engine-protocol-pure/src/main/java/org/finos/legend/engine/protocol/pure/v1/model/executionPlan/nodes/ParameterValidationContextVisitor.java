@@ -17,4 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 public interface ParameterValidationContextVisitor<T>
 {
     T visit(EnumValidationContext enumValidationContext);
+
+    T visit(ProtocolObjectValidationContext protocolObjectValidationContext);
 }

@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>legend-engine-xt-ingest-protocol</artifactId>
-
+    <name>Legend Engine - XT - INGEST - Protocol</name>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>

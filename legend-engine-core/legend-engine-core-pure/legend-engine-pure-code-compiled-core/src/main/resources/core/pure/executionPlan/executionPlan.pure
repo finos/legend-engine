@@ -192,6 +192,11 @@ Class meta::pure::executionPlan::EnumValidationContext extends ParameterValidati
    validEnumValues: String[*];
 }
 
+Class meta::pure::executionPlan::ProtocolObjectValidationContext extends ParameterValidationContext
+{
+  protocolClassName: String[1];
+}
+
 Class meta::pure::executionPlan::FunctionParameter
 {
    name : String[1];

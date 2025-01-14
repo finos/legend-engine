@@ -3,9 +3,7 @@ import meta::external::ingest::metamodel::*;
 
 function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
 {
-  let prevHighBatchId = getBatchId($ingestConfig.datasetName, $prevPublishedWatermark);
-  let currentBatchId = getBatchId($ingestConfig.datasetName, $currentStateWatermark);   
-  ($currentBatchId > $prevHighBatchId) ;                
+  $prevPublishedWatermark.datasetMarks->filter(w | $w.datasetName == $ingestConfig.datasetName)->toOne().batchId <  $currentStateWatermark.datasetMarks->filter(w | $w.datasetName == $ingestConfig.datasetName)->toOne().batchId
 }
 
 function meta::external::ingest::barrier::isDatasetAvailable<T>(ingestConfig: IngestConfig<T>[1],filterFunc:Function<{T[1]->Boolean[1]}>[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]

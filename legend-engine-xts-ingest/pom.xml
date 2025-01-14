@@ -8,10 +8,13 @@
     </parent>
 
     <artifactId>legend-engine-xts-ingest</artifactId>
+    <name>Legend Engine - XTS - Ingest</name>
     <packaging>pom</packaging>
     <modules>
         <module>legend-engine-xt-ingest-pure</module>
         <module>legend-engine-xt-ingest-protocol</module>
+        <module>legend-engine-xt-ingest-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-ingest-executionPlan</module>
     </modules>
 
     <properties>

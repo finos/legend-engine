@@ -206,14 +206,21 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
         let javaType = pureTypeToJavaType($context.conventions, $p);
         let javaName = $p.name->toOne()->sanitizeJavaKeywords();
         let field = $pbase.fields->filter(f | $f.name == $javaName)->toOne();
-        //let jfield = j_this($pbase)->j_field($field);   
-        let param  = j_parameter($javaType, $field.name);
-        javaMethod(['public'], $pbase, $context.conventions->setterName($field.name), j_parameter($javaType, $field.name), 
+        let jfield = j_this($pbase)->j_field($field);   
+        let param  = j_parameter($javaType, $field.name);        
+        [
+          javaMethod(['public'], $pbase, $context.conventions->setterName($field.name), j_parameter($javaType, $field.name), 
             [
               j_this($pbase)->j_field($field)->j_assign($param),
               j_return(j_this($pbase))
             ]
-        );
+          ),
+          javaMethod(['public'], $javaType, $context.conventions->getterName($field.name),[], 
+              [                
+                j_return($jfield)
+              ]
+          )
+        ];
     )
   );            
 
