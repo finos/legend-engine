@@ -31,7 +31,68 @@ function meta::pure::router::platform::routing::getPlatformRoutingStrategy():Pla
   ^PlatformRoutingStrategy(processClass    = meta::pure::router::platform::routing::processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
                            processProperty = meta::pure::router::platform::routing::processProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
                            wrapValueSpec   = meta::pure::router::platform::routing::wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
-                           toString        = {strategy:RoutingStrategy[1] | 'PlatformRoutingStrategy'});
+                           toString        = {strategy:RoutingStrategy[1] | 'PlatformRoutingStrategy'},
+                           specializedRouteFunctionExpressions = meta::pure::router::platform::routing::specializedRouteFunctionExpressions()
+  );
+}
+
+function <<access.private>> meta::pure::router::platform::routing::specializedRouteFunctionExpressions():Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+{ 
+  // if platform is routing functions that return Relation, one of the inputs to these have already been routed to store, hence delegate to store
+  let relationFunctionsToOptimize = [  
+    // join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,
+    // asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_,
+    // asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_,
+    // distinct_Relation_1__ColSpecArray_1__Relation_1_,
+    // distinct_Relation_1__ColSpecArray_1__Relation_1_,
+    // drop_Relation_1__Integer_1__Relation_1_,
+    // extend_Relation_1__FuncColSpec_1__Relation_1_,
+    // extend_Relation_1__FuncColSpecArray_1__Relation_1_,
+    // groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_,
+    // groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_,
+    // groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_,
+    // groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_,
+    // limit_Relation_1__Integer_1__Relation_1_,
+    // rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_,
+    // slice_Relation_1__Integer_1__Integer_1__Relation_1_,
+    // sort_Relation_1__SortInfo_MANY__Relation_1_,
+    // size_Relation_1__Integer_1_,
+    // select_Relation_1__ColSpecArray_1__Relation_1_,
+    // select_Relation_1__ColSpec_1__Relation_1_,
+    // select_Relation_1__Relation_1_,
+    // extend_Relation_1__AggColSpec_1__Relation_1_,
+    // extend_Relation_1__AggColSpecArray_1__Relation_1_,
+    // extend_Relation_1___Window_1__AggColSpec_1__Relation_1_,
+    // extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_,
+    // extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_,
+    // extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_,
+    // pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_,
+    // pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_,
+    // pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_,
+    // pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_,
+    concatenate_Relation_1__Relation_1__Relation_1_,
+    filter_Relation_1__Function_1__Relation_1_
+  ];
+
+  [
+    pair(
+        fe:FunctionExpression[1] | $fe.func->in($relationFunctionsToOptimize),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state: meta::pure::router::routing::RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+          let processed = processCollection($state,
+                                    $fe.parametersValues->evaluateAndDeactivate(),
+                                    $executionContext,
+                                    $vars,
+                                    $inScopeVars,
+                                    x:Any[1] | true,
+                                    $extensions,
+                                    ^$debug(space = $debug.space+'  '));
+          // meta::pure::ide::debug();
+          let fullRes = ^$fe(parametersValues = $processed.value->cast(@ValueSpecification));
+          let firstRelation = $processed->head()->toOne();
+          ^$firstRelation(value=$fullRes);
+        }
+    )
+  ];
 }
 
 function <<access.private>> meta::pure::router::platform::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]

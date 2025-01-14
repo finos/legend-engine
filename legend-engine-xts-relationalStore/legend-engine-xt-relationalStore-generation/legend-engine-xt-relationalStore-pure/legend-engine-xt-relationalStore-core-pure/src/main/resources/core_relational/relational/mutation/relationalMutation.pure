@@ -86,7 +86,7 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
 
   // Variable name for each record processed from stream
   let generatedVariableName = 'generatedVariableSingleRecordFromStream';
-  let generatedVariableInput = ^VariableInput(multiplicity = PureOne, type = $rootType, name = $generatedVariableName);
+  let generatedVariableInput = ^VariableInput(multiplicity = PureOne, genericType = $fe.genericType, name = $generatedVariableName);
 
   // Uniquify the column names
   let uniquifyColumnNames = {p: String[1] | 'generatedColumnName_' + $p->toUpper()->toOne()};
@@ -96,7 +96,7 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
       pair(
         $pm,
         ^PureExpressionPlatformExecutionNode(
-          resultType = if($propertyMappingHasBindingFunction->eval($pm),| ^ClassResultType(type = $pm.property.genericType.rawType->toOne()), | ^DataTypeResultType(type = $pm.property.genericType.rawType->toOne())),
+          resultType = if($propertyMappingHasBindingFunction->eval($pm),| ^ClassResultType(genericType = $pm.property.genericType), | ^DataTypeResultType(genericType = $pm.property.genericType)),
           requiredVariableInputs = $generatedVariableInput,
           expression =
             ^SimpleFunctionExpression(
@@ -126,7 +126,7 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
             let tree = ^RootGraphFetchTree<Any>(class = $pm.property.genericType.rawType->toOne()->cast(@Class<Any>), subTrees = $propertyTree.subTrees);
 
             ^ExternalFormatExternalizeExecutionNode(
-              resultType      = ^ResultType(type = String),
+              resultType      = ^ResultType(genericType = ^GenericType(rawType=String)),
               resultSizeRange = PureOne,
               checked         = false,
               tree            = $tree,
@@ -163,13 +163,13 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
     )->processOperation($dbConnection.type, $extensions);
 
   let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
-  let varInputs = $funcParams->filter(x| $sq.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+  let varInputs = $funcParams->filter(x| $sq.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), genericType = $v.genericType, multiplicity = $v.multiplicity->toOne()));
 
   // node for providing source values
   let children = $fe.parametersValues->at(0)->toOne()->cast(@ClusteredValueSpecification)->generateExecutionNodeFromCluster($sq.inScopeVars, $exeCtx, $extensions, $debug);
 
   ^RelationalSaveNode(
-    resultType = ^ResultType(type=String),
+    resultType = ^ResultType(genericType = ^GenericType(rawType=String)),
     requiredVariableInputs = $varInputs->toOne(),
     generatedVariableName = $generatedVariableName,
     connection = $dbConnection,

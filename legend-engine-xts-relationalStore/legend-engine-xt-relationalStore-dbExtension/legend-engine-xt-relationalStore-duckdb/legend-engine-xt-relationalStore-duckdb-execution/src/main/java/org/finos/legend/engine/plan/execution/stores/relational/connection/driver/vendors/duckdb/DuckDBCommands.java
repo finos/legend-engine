@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.duckdb;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
@@ -27,19 +28,19 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     @Override
     public String dropTempTable(String tableName)
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        return this.dropTable(tableName);
     }
 
     @Override
     public List<String> createAndLoadTempTable(String tableName, List<Column> columns, String optionalCSVFileLocation)
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        return Lists.fixedSize.of(this.load(true, tableName, optionalCSVFileLocation, columns));
     }
 
     @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        return IngestionMethod.CLIENT_FILE;
     }
 
     @Override
@@ -51,14 +52,19 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     @Override
     public String load(String tableName, String location, List<Column> columns)
     {
+        return this.load(false, tableName, location, columns);
+    }
+
+    private String load(boolean temp, String tableName, String location, List<Column> columns)
+    {
         String columnTypesString = columns.stream().map(c -> String.format("'%s': '%s'", c.name, c.type)).collect(Collectors.joining(", ", "{", "}"));
-        return "CREATE TABLE " + tableName + " AS SELECT * FROM read_csv('" + location + "', header = true, columns = " + columnTypesString + ");";
+        return "CREATE " + (temp ? "TEMP" : "") + " TABLE " + tableName + " AS SELECT * FROM read_csv('" + location + "', header = true, columns = " + columnTypesString + ");";
     }
 
     @Override
     public String dropTable(String tableName)
     {
-        return "DROP TABLE " + tableName + ";";
+        return "DROP TABLE IF EXISTS " + tableName + ";";
     }
 
     @Override

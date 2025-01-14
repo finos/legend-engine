@@ -252,5 +252,5 @@ function meta::external::store::rel::mapping::planExecution(
 ): ExecutionNode[1] {
   fail('Not implemented');
 
-  ^ExecutionNode(resultType=^ResultType(type=^Type()));
+  ^ExecutionNode(resultType=^ResultType(genericType=^GenericType()));
 }

@@ -16,12 +16,11 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 
-public class PostgresConnectionExtension implements RelationalConnectionExtension
+public class PostgresConnectionExtension implements ConnectionExtension
 {
     @Override
     public String type()
@@ -39,21 +38,5 @@ public class PostgresConnectionExtension implements RelationalConnectionExtensio
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new PostgresManager());
-    }
-
-    @Override
-    public Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands)
-    {
-        if (databaseCommands instanceof PostgresCommands)
-        {
-            PostgresCommands postgresCommands = (PostgresCommands) databaseCommands;
-
-            if (visitor.ingestionMethod == null)
-            {
-                visitor.ingestionMethod = postgresCommands.getDefaultIngestionMethod();
-            }
-            throw new UnsupportedOperationException("not yet implemented");
-        }
-        return null;
     }
 }

@@ -116,7 +116,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
                                 |$updatedFuncBody,
                                 |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
 
-   let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
+   let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity))));
    let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
    ^FunctionAnalytics
    (
