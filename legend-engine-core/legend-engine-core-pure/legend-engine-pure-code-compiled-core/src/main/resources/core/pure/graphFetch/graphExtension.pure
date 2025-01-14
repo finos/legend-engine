@@ -254,11 +254,12 @@ function meta::pure::graphFetch::nodePathName(tree:GraphFetchTree[1]): String[1]
     ]);
 }
 
-function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):Type[1]
+function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):GenericType[1]
 {
+  // todo not cast
    $g->match([
-      r : RootGraphFetchTree<Any>[1] | $r.class,
-      p : PropertyGraphFetchTree[1]  | if($p.subType->isNotEmpty(), | $p.subType->toOne(), | $p.property->functionReturnType().rawType->toOne())
+      r : RootGraphFetchTree<Any>[1] | $r.class->cast(@GenericType),
+      p : PropertyGraphFetchTree[1]  | if($p.subType->isNotEmpty(), | $p.subType->toOne()->cast(@GenericType), | $p.property->functionReturnType())
    ])
 }
 

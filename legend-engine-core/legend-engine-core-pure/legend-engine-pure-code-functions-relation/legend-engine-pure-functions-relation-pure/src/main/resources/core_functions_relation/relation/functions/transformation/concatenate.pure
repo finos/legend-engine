@@ -48,3 +48,39 @@ function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testS
                   '   7,qqwew\n'+
                   '#', $res->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testConcatenateComposition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | 
+                let a = #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                #;
+                let b = #TDS
+                    val, str
+                    5, qwea
+                    6, eeewe
+                    7, qqwew
+                #;
+                let c = $a->concatenate($b);
+                $c->concatenate($b);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   4,qw\n'+
+                  '   5,qwea\n'+
+                  '   6,eeewe\n'+
+                  '   7,qqwew\n'+
+                  '   5,qwea\n'+
+                  '   6,eeewe\n'+
+                  '   7,qqwew\n'+
+                  '#', $res->toString());
+}

@@ -94,7 +94,7 @@ function meta::pure::router::clustering::areClustersCompatible(cluster1:Clustere
 function meta::pure::router::clustering::isFunctionSupportedByCluster(cluster:ClusteredValueSpecification[1], f:FunctionExpression[1]):Boolean[1]
 {
   $cluster->match([
-      sc:StoreMappingClusteredValueSpecification[1] |
+      sc:StoreClusteredValueSpecification[1] |
           $sc.s.supports->toOne()->eval($f->evaluateAndDeactivate()),
       ef:ExternalFormatClusteredValueSpecification[1] |
           $f->meta::pure::router::externalFormat::clustering::externalFormatSupportsFunction(),

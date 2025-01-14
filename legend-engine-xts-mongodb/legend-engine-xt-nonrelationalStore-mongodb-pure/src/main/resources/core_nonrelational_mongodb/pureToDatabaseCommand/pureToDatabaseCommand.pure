@@ -205,7 +205,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processVariableExpression(v: VariableExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
 {
   let var = $inScopeVars->get($v.name->toOne()).values->cast(@PlanVarPlaceHolder)->toOne();
-  let varType = $var.type;
+  let varType = $var.genericType.rawType;
 
   if($varType == String,                                    | ^LiteralValue(value=^VariableTypeValue(value='\"${'+$var->toOne().name+'}\"')),
   | if($varType == Boolean,                                 | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'?c}')),
@@ -213,7 +213,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
         | if($varType == StrictDate,                        | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}\")')),
           | if($varType->in([Date, DateTime]),              | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}Z\")')),
             {|
-              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
+              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.genericType.rawType->toOne()->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
               ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}'));
             }
           )

@@ -25,7 +25,9 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
@@ -41,10 +43,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Relatio
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.relational.result.DeferredRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -124,7 +128,7 @@ public class RelationalExecutor
 
     public Result execute(RelationalExecutionNode node, Identity identity, ExecutionState executionState)
     {
-        Connection connectionManagerConnection;
+        Pair<ConnectionKey, Connection> connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
         String databaseTypeName = node.getDatabaseTypeName();
         List<String> tempTableList = new FastList<>();
@@ -142,16 +146,16 @@ public class RelationalExecutor
         {
             if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
-                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection.getTwo(), identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
             }
             else if (node.isResultVoid())
             {
-                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
+                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection.getTwo(), identity, executionState.logSQLWithParamValues());
             }
             else
             {
                 // Refactor and clean up the flush to Constant
-                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection.getTwo(), identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
 
                 if (node.isResultPrimitiveType())
                 {
@@ -202,11 +206,11 @@ public class RelationalExecutor
         }
         else if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection.getTwo(), identity, executionState.logSQLWithParamValues());
         }
         else
         {
-            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection.getTwo(), identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
         }
     }
 
@@ -225,7 +229,7 @@ public class RelationalExecutor
 
     public Result execute(SQLExecutionNode node, Identity identity, ExecutionState executionState)
     {
-        Connection connectionManagerConnection;
+        Pair<ConnectionKey, Connection> connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
         String databaseType = node.getDatabaseTypeName();
         List<String> tempTableList = FastList.newList();
@@ -242,20 +246,20 @@ public class RelationalExecutor
         
         if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection.getTwo(), identity, executionState.logSQLWithParamValues());
         }
 
         if (node.isMutationSQL != null && node.isMutationSQL)
         {
-            return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, node.connection, identity, tempTableList, executionState.getRequestContext());
+            return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection.getTwo(), node.connection, identity, tempTableList, executionState.getRequestContext());
         }
 
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection.getTwo(), identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
     }
 
     public SQLUpdateResult execute(RelationalSaveNode node, Identity identity, ExecutionState executionState)
     {
-        Connection connectionManagerConnection;
+        Pair<ConnectionKey, Connection> connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
         String databaseType = node.getDatabaseTypeName();
         List<String> tempTableList = FastList.newList();
@@ -269,40 +273,61 @@ public class RelationalExecutor
 
         this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, identity, executionState, false);
 
-        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, node.connection, identity, tempTableList, executionState.getRequestContext());
+        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection.getTwo(), node.connection, identity, tempTableList, executionState.getRequestContext());
     }
 
-    private void prepareForSQLExecution(String sqlQuery, String sqlComment, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, Identity identity, ExecutionState executionState, boolean shouldLogSQL)
+    private void prepareForSQLExecution(String sqlQuery, String sqlComment, Pair<ConnectionKey, Connection> connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, Identity identity, ExecutionState executionState, boolean shouldLogSQL)
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         RelationalDatabaseCommands relationalDatabaseCommands = databaseManager.relationalDatabaseSupport();
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
         {
-            if (var.getValue() instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            Result result = var.getValue();
+
+            if (result instanceof DeferredRelationalResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            {
+                DeferredRelationalResult deferredRelationalResult = (DeferredRelationalResult) result;
+                // cross store - convert to relational result and letting temp table handle it
+                if (!deferredRelationalResult.getConnectionKey().equals(connection.getOne()))
+                {
+                    result = deferredRelationalResult.evaluate();
+                }
+                else
+                {
+                    String sql = "WITH " + var.getKey() + " AS (" + deferredRelationalResult.sql() + ")";
+                    this.prepareForSQLExecution(sql, null, connection, databaseTimeZone, databaseTypeName, tempTableList, identity, executionState, shouldLogSQL);
+                    sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", var.getKey());
+                }
+            }
+
+            if (result instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
                 String tableName = relationalDatabaseCommands.processTempTableName(var.getKey());
-                this.prepareTempTable(connection, (StreamingResult) var.getValue(), tableName, databaseTypeName, databaseTimeZone, tempTableList);
-                tempTableList.add(tableName);
+                if (!tempTableList.contains(tableName))
+                {
+                    this.prepareTempTable(connection, (StreamingResult) result, tableName, databaseTypeName, databaseTimeZone, tempTableList);
+                    tempTableList.add(tableName);
+                }
                 sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", tableName);
             }
-            else if (var.getValue() instanceof PreparedTempTableResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            else if (result instanceof PreparedTempTableResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
-                sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", ((PreparedTempTableResult) var.getValue()).getTempTableName());
+                sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", ((PreparedTempTableResult) result).getTempTableName());
             }
-            else if (var.getValue() instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
+            else if (result instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
             {
                 boolean isResultSetClosed = false;
                 try
                 {
-                    isResultSetClosed = ((RelationalResult) var.getValue()).resultSet.isClosed();
+                    isResultSetClosed = ((RelationalResult) result).resultSet.isClosed();
                 }
                 catch (SQLException ignored)
                 {
                 }
 
-                if (((RelationalResult) var.getValue()).columnCount == 1 && !isResultSetClosed)
+                if (((RelationalResult) result).columnCount == 1 && !isResultSetClosed)
                 {
-                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) var.getValue().realizeInMemory();
+                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) result.realizeInMemory();
                     List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(false);
                     executionState.addResult(var.getKey(), new ConstantResult(rowValueMaps.stream().flatMap(map -> map.values().stream()).collect(Collectors.toList())));
                 }
@@ -338,12 +363,12 @@ public class RelationalExecutor
         executionState.activities.add(new RelationalExecutionActivity(sqlQuery, sqlComment));
     }
 
-    private void prepareTempTable(Connection connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTypeName, String databaseTimeZone, List<String> tempTableList)
+    private void prepareTempTable(Pair<ConnectionKey, Connection> connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTypeName, String databaseTimeZone, List<String> tempTableList)
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseTypeName).startActive(true))
         {
-            databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection, res, tempTableName, databaseTimeZone));
+            databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalExecutionConfiguration, connectionManagerConnection.getTwo(), res, tempTableName, databaseTimeZone));
         }
         catch (Exception e)
         {
@@ -351,7 +376,7 @@ public class RelationalExecutor
             {
                 if (!tempTableList.isEmpty())
                 {
-                    try (Statement statement = connectionManagerConnection.createStatement())
+                    try (Statement statement = connectionManagerConnection.getTwo().createStatement())
                     {
                         tempTableList.forEach((Consumer<? super String>) table ->
                         {
@@ -365,7 +390,7 @@ public class RelationalExecutor
                         });
                     }
                 }
-                connectionManagerConnection.close();
+                connectionManagerConnection.getTwo().close();
                 throw new RuntimeException(e);
             }
             catch (Exception ex)
@@ -375,18 +400,19 @@ public class RelationalExecutor
         }
     }
 
-    private Connection getConnection(RelationalExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
+    private Pair<ConnectionKey, Connection> getConnection(RelationalExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
     {
         return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState);
     }
 
-    private Connection getConnection(SQLExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
+    private Pair<ConnectionKey, Connection> getConnection(SQLExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
     {
         return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState);
     }
 
-    private Connection getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, Identity identity, RelationalStoreExecutionState executionState)
+    private Pair<ConnectionKey, Connection> getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, Identity identity, RelationalStoreExecutionState executionState)
     {
+        Connection connection;
         if (executionState.retainConnection())
         {
             BlockConnection blockConnection = executionState.getBlockConnectionContext().getBlockConnection(executionState, databaseConnection, identity);
@@ -398,9 +424,14 @@ public class RelationalExecutor
             {
                 blockConnection.addCommitQuery(onConnectionCloseCommitQuery);
             }
-            return blockConnection;
+            connection = blockConnection;
         }
-        return executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getRuntimeContext());
+        else
+        {
+            connection = executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getRuntimeContext());
+        }
+
+        return Tuples.pair(executionState.getRelationalExecutor().getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection), connection);
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)

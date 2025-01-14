@@ -51,6 +51,7 @@ Class meta::pure::router::store::metamodel::StoreRoutingStrategy extends Routing
 Class meta::pure::router::store::metamodel::StoreMappingRoutingStrategy extends StoreRoutingStrategy
 {
    mapping     : Mapping[1];
+   fromDeprecatedRouting: Boolean[1] = false;
    sets        : PermutationSet[*];
    setsByDepth : Map<String,PermutationSet>[1];
    toChooseSet : SetImplementation[0..1];

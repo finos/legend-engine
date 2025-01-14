@@ -133,7 +133,20 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
          r:NoSetRoutedValueSpecification[1]     | ^$state(value=$r.value)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
          fe:FunctionExpression[1]               | $fe->routeFunctionExpression($state, $executionContext, $vars, $inScopeVars, $extensions, $debug),
          i:InstanceValue[1]                     | if(
-                                                      [
+                                                      [ pair(
+                                                          | $i.values->size() == 1 && $i.values->at(0)->instanceOf(meta::pure::executionPlan::PlanVarPlaceHolder) 
+                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).genericType.rawType->toOne()->subTypeOf(Relation)
+                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routedVs->filter(x | $x->instanceOf(meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification))->isNotEmpty(),
+                                                          |
+                                                            let letVs = $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routedVs;
+                                                            let assignment = $letVs->cast(@meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification).val->cast(@meta::pure::router::RoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->tail()->toOne();
+                                                            let newState = $assignment->filter(x | $x->instanceOf(meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification))
+                                                              ->map(x | $x->cast(@meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification))
+                                                              ->map(x | $x.runtime)
+                                                              ->map(runtime | ^$state(routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromRuntime($runtime)))
+                                                              ->defaultIfEmpty($state)->toOne();
+                                                            $newState;
+                                                        ),
                                                         pair(
                                                           | $i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor) || ($i.values->isEmpty() && $i.multiplicity == PureOne && $i.genericType.rawType->isNotEmpty() && $i.genericType.rawType->toOne()->subTypeOf(Relation)),
                                                           | // We match cast to Relation & RelationStoreAccessor.. However we're only processing the Accessor
@@ -213,7 +226,7 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
                                     c:Column<Nil,Any|*>[1] | print(if($debug.debug,|$debug.space+' Column: '+$c.name->toOne()+'\n',|''));
                                                               $c->routeFunctionExpressionColumn($nfe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
                                     f:Function<Any>[1]       | print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->asString()+'\n',|''));
-                                                                let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($extensions)->filter(e|$e.first->eval($nfe)).second;
+                                                                let specializedFunctionProcessor = specializedFunctionExpressionRouterProcessor($state.routingStrategy, $extensions)->filter(e|$e.first->eval($nfe)).second;
                                                                 if($specializedFunctionProcessor->isNotEmpty(),
                                                                   | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
                                                                     $specializedFunctionProcessor->toOne()->evaluate([list($f), list($nfe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);,
@@ -225,11 +238,12 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
    );
 }
 
-function meta::pure::router::routing::specializedFunctionExpressionRouterProcessor(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+function meta::pure::router::routing::specializedFunctionExpressionRouterProcessor(routingStrategy: RoutingStrategy[1], extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
 {
     meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore($extensions)
     ->concatenate(meta::pure::router::externalFormat::routing::specializedFunctionExpressionRouterProcessorForExternalFormat())
     ->concatenate($extensions.routerExtensions().routeFunctionExpressions)
+    ->concatenate($routingStrategy->filter(x | $x->instanceOf(meta::pure::router::platform::metamodel::PlatformRoutingStrategy))->map(x | $x->cast(@meta::pure::router::platform::metamodel::PlatformRoutingStrategy).specializedRouteFunctionExpressions))
 }
 
 function meta::pure::router::routing::routeFunctionExpressionColumn(c:Column<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
@@ -966,6 +980,7 @@ function <<access.private>> meta::pure::router::routing::checkValueSpecification
       [
          fe:FunctionExpression[1] | let funcRoutingSupported = $fe.func->match([p:Property<Nil,Any|*>[1]    | true,
                                                                                 q:QualifiedProperty<Any>[1] | true,
+                                                                                c:Column<Nil, Any|*>[1]     | true,
                                                                                 f:Function<Any>[1]          | $f->instanceOf(NativeFunction) || $f->shouldStop($extensions) || ($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1)
                                                                         ]);
                                     $funcRoutingSupported && $fe.parametersValues->forAll(param | $param->checkRoutingSupport($extensions));,

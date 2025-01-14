@@ -301,68 +301,57 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             let runtime = $initState.runtime;
 
             // Reprocess the function replacing values with Database elements
-            let reprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
+            let allReprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
 
-            // Add 'from'
-            let returnGenericType = $z.expressionSequence->evaluateAndDeactivate()->last().genericType->toOne();
-            let returnMultiplicity = $z.expressionSequence->evaluateAndDeactivate()->last().multiplicity->toOne();
-            let newFunction =   ^$z
-                                (
-                                  expressionSequence =  ^SimpleFunctionExpression
+            let newExpressionSequence = $allReprocessed->map(reprocessed |
+              if ($reprocessed.replaced->isNotEmpty(),
+                |
+                  // Add 'with'
+                  let returnGenericType = $reprocessed.current->toOne()->cast(@ValueSpecification).genericType->toOne();
+                  let returnMultiplicity = $reprocessed.current->toOne()->cast(@ValueSpecification).multiplicity->toOne();
+                  ^SimpleFunctionExpression
+                  (
+                    importGroup=system::imports::coreImport,
+                    func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
+                    functionName = 'with',
+                    genericType = $returnGenericType,
+                    multiplicity = $returnMultiplicity,
+                    parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
+                                          ->concatenate(if ($reprocessed.mapping->isEmpty(),
+                                                        |[],
+                                                        |^InstanceValue
+                                                          (
+                                                            genericType = ^GenericType(rawType=Mapping),
+                                                            multiplicity = PureOne,
+                                                            values = $reprocessed.mapping
+                                                          )
+                                                        ))
+                                          ->concatenate(^InstanceValue
                                                         (
-                                                          importGroup=system::imports::coreImport,
-                                                          func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
-                                                          functionName = 'with',
-                                                          genericType = $returnGenericType,
-                                                          multiplicity = $returnMultiplicity,                                                        
-                                                          parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
-                                                                                ->concatenate(if ($reprocessed.mapping->isEmpty(),
-                                                                                              |[],
-                                                                                              |^InstanceValue
-                                                                                               (
-                                                                                                  genericType = ^GenericType(rawType=Mapping),
-                                                                                                  multiplicity = PureOne,
-                                                                                                  values = $reprocessed.mapping
-                                                                                               )
-                                                                                             ))
-                                                                                ->concatenate(^InstanceValue
-                                                                                              (
-                                                                                                genericType = ^GenericType(rawType=Runtime),
-                                                                                                multiplicity = PureOne,
-                                                                                                values = $runtime
-                                                                                              )
-                                                                                )
-                                                                            ,
-                                                          resolvedMultiplicityParameters = $returnMultiplicity,
-                                                          resolvedTypeParameters = $returnGenericType
-                                                        )                                                                
-                                );
+                                                          genericType = ^GenericType(rawType=Runtime),
+                                                          multiplicity = PureOne,
+                                                          values = $runtime
+                                                        )
+                                          )
+                                      ,
+                    resolvedMultiplicityParameters = $returnMultiplicity,
+                    resolvedTypeParameters = $returnGenericType
+                  );
+                ,
+                | $reprocessed.current->toOne()->cast(@ValueSpecification)
+              )
+            );
+
+            let newFunction = ^$z(expressionSequence = $newExpressionSequence);
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
 
             // Update the database ------------
-            let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
-            print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
+            let otherFuncs = $allReprocessed.current->cast(@FunctionExpression)->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
 
-            let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
-            (
-                func = |'dummy',
-                mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
-                runtime = $reprocessed.runtime->toOne(),
-                rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
-                                      resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void),
-                                      executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)))
-                                    ),
-                authDependent = false
-            );
+            let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
+            meta::relational::tests::pct::process::setupDatabase($reprocessed.csvs, $db, $reprocessed.runtime->toOne(), $debug);
 
-            let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
-
-            let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
-
-            meta::legend::executePlanAsJSON($planAsJson, []);
-            // Update the database ------------
-            let otherFuncs = $reprocessed.current->cast(@FunctionExpression)->toOne()->meta::relational::tests::pct::extractDependentFunctions();
             let code =  '\n###Relational\n'+
                         $reprocessed.database->toOne()->printDatabase()+
                         if ($reprocessed.mapping->isEmpty(),
@@ -383,9 +372,37 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             //println($alloyCompiled.expressionSequence->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate().parametersValues);
 
             //pair($newFunction, $reprocessed->toOne());
-            pair($alloyCompiled, $reprocessed->toOne());
+            pair($alloyCompiled, $reprocessed);
     ]
   );
+}
+
+
+function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]
+{
+  let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+
+  // Update the database ------------
+  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $dbc.type);
+  print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
+
+  let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
+  (
+      func = |'dummy',
+      mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
+      runtime = $runtime->toOne(),
+      rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
+                            resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)),
+                            executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $dbc))
+                          ),
+      authDependent = false
+  );
+
+  let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
+
+  let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+
+  meta::legend::executePlanAsJSON($planAsJson, []);
 }
 
 Class meta::relational::tests::pct::process::ProcessingState

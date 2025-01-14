@@ -177,7 +177,7 @@ function <<access.private>> meta::external::language::java::transform::processIn
             generateJava(
                ^VariableExpression(
                   name = $v.name,
-                  genericType = ^GenericType(rawType = $v.type),
+                  genericType = $v.genericType,
                   multiplicity = $v.multiplicity->toOne('Multiplicity not available for PlanVarPlaceHolder \'' + $v.name + '\'')
                )->evaluateAndDeactivate(),
                $conventions,

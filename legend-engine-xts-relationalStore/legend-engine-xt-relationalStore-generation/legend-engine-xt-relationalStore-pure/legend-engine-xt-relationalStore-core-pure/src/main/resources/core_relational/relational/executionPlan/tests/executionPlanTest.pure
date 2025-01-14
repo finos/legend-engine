@@ -1420,12 +1420,12 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterWithOpenVaria
 
 Class meta::pure::executionPlan::tests::DummyExecutionOption extends ExecutionOption
 {
-   paramsRequired(){ ^PlanVarPlaceHolder(name = 'dummyOptionParam', type = String, multiplicity = PureOne) }:PlanVarPlaceHolder[1];
+   paramsRequired(){ ^PlanVarPlaceHolder(name = 'dummyOptionParam', genericType = ^GenericType(rawType = String), multiplicity = PureOne) }:PlanVarPlaceHolder[1];
 }
 
 Class meta::pure::executionPlan::tests::OtherDummyExecutionOption extends ExecutionOption
 {
-   paramsRequired(){ ^PlanVarPlaceHolder(name = 'OtherDummyOptionParam', type = String, multiplicity = PureOne) }:PlanVarPlaceHolder[1];
+   paramsRequired(){ ^PlanVarPlaceHolder(name = 'OtherDummyOptionParam', genericType = ^GenericType(rawType = String), multiplicity = PureOne) }:PlanVarPlaceHolder[1];
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOption():Boolean[1]

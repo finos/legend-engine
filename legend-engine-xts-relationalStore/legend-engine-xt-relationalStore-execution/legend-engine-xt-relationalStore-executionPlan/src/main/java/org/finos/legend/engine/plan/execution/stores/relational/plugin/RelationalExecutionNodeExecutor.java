@@ -78,6 +78,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.DatabaseIdentifiersCaseSensitiveVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.result.DeferredRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
@@ -152,7 +153,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -381,11 +381,16 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof RelationalTdsInstantiationExecutionNode)
         {
             RelationalTdsInstantiationExecutionNode relationalTdsInstantiationExecutionNode = (RelationalTdsInstantiationExecutionNode) executionNode;
-            SQLExecutionResult sqlExecutionResult = null;
+            Result sqlExecutionResult = null;
             try
             {
-                sqlExecutionResult = (SQLExecutionResult) this.visit((SQLExecutionNode) relationalTdsInstantiationExecutionNode.executionNodes.get(0));
-                RelationalResult relationalTdsResult = new RelationalResult(sqlExecutionResult, relationalTdsInstantiationExecutionNode);
+                if (this.executionState.inAllocation && !this.executionState.realizeInMemory)
+                {
+                    return new DeferredRelationalResult((RelationalTdsInstantiationExecutionNode) executionNode, this.identity, this.executionState.copy());
+                }
+
+                sqlExecutionResult = this.visit(relationalTdsInstantiationExecutionNode.executionNodes.get(0));
+                RelationalResult relationalTdsResult = new RelationalResult((SQLExecutionResult) sqlExecutionResult, relationalTdsInstantiationExecutionNode);
 
                 if (this.executionState.inAllocation)
                 {
@@ -1980,7 +1985,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     {
                         try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName()).startActive(true))
                         {
-                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
+                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
                             if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                             {
                                 try

@@ -322,7 +322,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
       (
         resultType        = ^PartialClassResultType
         (
-            type = $sourceTreeExtended->typeFromGraphFetchTree(),
+            genericType = $sourceTreeExtended->typeFromGraphFetchTree(),
             propertiesWithParameters = $sourceTreeExtended.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
         ),
         graphFetchTree    = $sourceTreeExtended,
@@ -346,7 +346,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
       requiredVariableInputs =  $sq.inScopeVars->keyValues()->filter(v|$v.second.values->at(0)->instanceOf(PlanVarPlaceHolder))
                                                                      ->map(var | let placeholder =  $var.second.values->at(0)->cast(@PlanVarPlaceHolder);
                                                                                  ^VariableInput(name = $var.first,
-                                                                                                type = $placeholder.type,
+                                                                                                genericType = $placeholder.genericType,
                                                                                                 multiplicity = $placeholder.multiplicity->toOne());
                                                                         )
 
@@ -437,7 +437,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
       (
          resultType        = ^PartialClassResultType
          (
-            type = $sourceTreeExtended->typeFromGraphFetchTree(),
+            genericType = $sourceTreeExtended->typeFromGraphFetchTree(),
             propertiesWithParameters = $sourceTreeExtended.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
          ),
          graphFetchTree    = $sourceTreeExtended,

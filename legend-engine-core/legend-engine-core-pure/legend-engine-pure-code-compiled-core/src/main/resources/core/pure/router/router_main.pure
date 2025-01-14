@@ -113,9 +113,10 @@ function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeV
    ^List<meta::pure::executionPlan::PlanVarPlaceHolder>(
       values = ^meta::pure::executionPlan::PlanVarPlaceHolder(
          name = $varName,
-         type = $vs.genericType.rawType->toOne(), 
+         genericType = $vs.genericType, 
          multiplicity = $vs.multiplicity,
-         supportsStream = $vs.multiplicity->isToMany()
+         supportsStream = $vs.multiplicity->isToMany(),
+         routedVs = $vs
       )
    )
 }

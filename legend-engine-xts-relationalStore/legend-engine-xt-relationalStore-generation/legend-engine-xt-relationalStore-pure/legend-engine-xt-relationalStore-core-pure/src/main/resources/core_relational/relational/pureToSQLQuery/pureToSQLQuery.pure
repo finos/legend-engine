@@ -542,7 +542,30 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                                                                    type = ^meta::relational::metamodel::datatype::Integer())),
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
-                                  v:PlanVarPlaceHolder[1] |^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type, multiplicity = $v.multiplicity))),|^$select(columns = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type,  multiplicity = $v.multiplicity)))));,
+                                  v:PlanVarPlaceHolder[1] | 
+                                     if ($v.genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation),
+                                      |
+                                        let pureToDbMap = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
+                                        let tdsColumns = $v.routedVs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
+                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->cast(@meta::pure::metamodel::type::DataType)->toOne();
+                                                                ^TDSColumn
+                                                                (
+                                                                  name = $p.name->toOne(),
+                                                                  type = $cType,
+                                                                  sourceDataType = $pureToDbMap->get($cType)->toOne()
+                                                                );
+                                                          );
+                                        let newTable = ^VarSetPlaceHolder(varName = $v.name,
+                                            columns=$tdsColumns->map(c|^Column(owner =^VarSetPlaceHolder(varName=$v.name),
+                                                                                  name= $c.name,
+                                                                                  type = ^meta::relational::metamodel::datatype::Integer())),
+                                            paths =  $tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType))))
+                                        );
+                                        ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));
+                                        ,
+                                      | 
+                                        ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))),|^$select(columns = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(),  multiplicity = $v.multiplicity)))));
+                                     );,                                    
                                   v:ValueSpecification[1] | processValueSpecification($v, $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   l:LambdaFunction<Any>[1] | $l.expressionSequence->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   x:meta::pure::store::RelationStoreAccessor<Any>[1] |
@@ -5923,7 +5946,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                           v:VariableExpression[1] | $v->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                                                           i:InstanceValue[1]|$i->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                                                           f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($a, $returnColumnName,$vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type, multiplicity = $v.multiplicity))
+                                                          v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
                                               ]));
                                           if($transformedValues->isNotEmpty(),
                                              | $transformedValues,

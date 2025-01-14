@@ -633,11 +633,11 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
    $singleTemporalStrategyAndParam->map(dp | let d = $dp.second;
                                             $d->byPassRouterInfo()->match([ v: VariableExpression[1] | let resolvedVar = $inScopeVars->get($v.name).values->at(0);
                                                                                             let dateRoe = $resolvedVar->match([d:Date[1]|^Literal(value=$d),
-                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.type));]);
+                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.genericType.rawType->toOne()));]);
                                                                                             ^DateWrapper(date=$dateRoe);,
                                                                  i: InstanceValue[1] | $i.values->at(0)->match([
                                                                                           d: Date[1]               | ^DateWrapper(date=^Literal(value=$d));,
-                                                                                          p: PlanVarPlaceHolder[1] | ^DateWrapper(date=^Literal(value=^VarPlaceHolder(name=$p.name,type=$p.type))),
+                                                                                          p: PlanVarPlaceHolder[1] | ^DateWrapper(date=^Literal(value=^VarPlaceHolder(name=$p.name,type=$p.genericType.rawType->toOne()))),
                                                                                           a: Any[*]                | resolveMilestoningDateParams($temporalStrategy, $i.values->cast(@ValueSpecification), $currentMilestoningContext, $state, $vars, $context, $extensions)
                                                                                        ]),
                                                                  f: FunctionExpression[1] | let singleTemporalStrategy = $dp.first;

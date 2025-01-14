@@ -122,17 +122,17 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
   let allocationNodes = $inputs->map(v | ^AllocationExecutionNode
                                              (
                                                varName        = $v.first.name,
-                                               resultType     = ^DataTypeResultType(type=$v.first.type),
+                                               resultType     = ^DataTypeResultType(genericType=^GenericType(rawType=$v.first.type)),
                                                executionNodes = ^ConstantExecutionNode
                                                                  (
-                                                                    resultType=^DataTypeResultType(type=$v.first.type),
+                                                                    resultType=^DataTypeResultType(genericType=^GenericType(rawType=$v.first.type)),
                                                                     values=$v.second
                                                                  )
                                              ));
 
   let runtime = ^Runtime(connectionStores=$connectionStore);
 
-  let resultType = ^DataTypeResultType(type= $resultTypes->at(0)->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType());
+  let resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = $resultTypes->at(0)->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType()));
 
   let resultColumns = $resultTypes->toIndexed()->map(e|
             ^SQLResultColumn(label='result' + $e.first->toString(), dataType=$e.second));
