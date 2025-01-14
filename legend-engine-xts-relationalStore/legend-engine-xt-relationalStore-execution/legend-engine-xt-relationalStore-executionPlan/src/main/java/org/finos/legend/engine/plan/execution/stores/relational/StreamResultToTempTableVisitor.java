@@ -29,7 +29,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
@@ -37,7 +36,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -49,7 +47,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,27 +74,16 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     @Override
     public Boolean visit(RelationalDatabaseCommands databaseCommands)
     {
-        if (databaseCommands instanceof H2Commands)
+        if (this.ingestionMethod == null)
         {
-            return visitH2((H2Commands) databaseCommands);
+            this.ingestionMethod = databaseCommands.getDefaultIngestionMethod();
         }
-        for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
-        {
-            Boolean result = extension.visit(this, databaseCommands);
-            if (result != null)
-            {
-                return result;
-            }
-        }
-        throw new UnsupportedOperationException("not yet implemented");
+
+        return this.streamResultToTable(databaseCommands);
     }
 
-    private Boolean visitH2(H2Commands h2Commands)
+    public Boolean streamResultToTable(RelationalDatabaseCommands dbCommands)
     {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = h2Commands.getDefaultIngestionMethod();
-        }
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
@@ -110,17 +96,17 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
-                        statement.execute(h2Commands.dropTempTable(tableName));
+                        statement.execute(dbCommands.dropTempTable(tableName));
 
                         RelationalResult relationalResult = (RelationalResult) result;
 
                         if (result.getResultBuilder() instanceof TDSBuilder)
                         {
-                            h2Commands.createAndLoadTempTable(tableName, relationalResult.getTdsColumns().stream().map(c -> new Column(c.name, c.relationalType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                            dbCommands.createAndLoadTempTable(tableName, relationalResult.getTdsColumns().stream().map(c -> new Column(c.name, c.relationalType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                         }
                         else
                         {
-                            h2Commands.createAndLoadTempTable(tableName, relationalResult.getSQLResultColumns().stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                            dbCommands.createAndLoadTempTable(tableName, relationalResult.getSQLResultColumns().stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                         }
                     }
                 }
@@ -130,9 +116,9 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
-                        statement.execute(h2Commands.dropTempTable(tableName));
+                        statement.execute(dbCommands.dropTempTable(tableName));
                         RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) result;
-                        h2Commands.createAndLoadTempTable(tableName, realizedRelationalResult.columns.stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                        dbCommands.createAndLoadTempTable(tableName, realizedRelationalResult.columns.stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                     }
                 }
                 else if (result instanceof StreamingObjectResult)
@@ -141,8 +127,8 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
-                        statement.execute(h2Commands.dropTempTable(tableName));
-                        h2Commands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                        statement.execute(dbCommands.dropTempTable(tableName));
+                        dbCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                     }
                 }
                 else if (result instanceof TempTableStreamingResult)
@@ -151,8 +137,8 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
-                        statement.execute(h2Commands.dropTempTable(tableName));
-                        h2Commands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                        statement.execute(dbCommands.dropTempTable(tableName));
+                        dbCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                     }
                 }
                 else
