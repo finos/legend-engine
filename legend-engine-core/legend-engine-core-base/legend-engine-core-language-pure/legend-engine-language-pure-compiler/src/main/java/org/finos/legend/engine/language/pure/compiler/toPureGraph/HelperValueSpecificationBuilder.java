@@ -101,7 +101,7 @@ public class HelperValueSpecificationBuilder
         return buildLambdaWithContext(lambdaId, expressions, parameters, context, ctx, ValueSpecificationBuilder::new);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
+    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
     {
         ctx.push("new lambda");
         ctx.addVariableLevel();

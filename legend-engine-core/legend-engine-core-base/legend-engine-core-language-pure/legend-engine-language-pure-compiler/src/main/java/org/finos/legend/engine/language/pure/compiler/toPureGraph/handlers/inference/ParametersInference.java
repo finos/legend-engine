@@ -21,5 +21,5 @@ import java.util.List;
 
 public interface ParametersInference
 {
-    List<ValueSpecification> update(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, ValueSpecificationBuilder valueSpecificationBuilder);
+    List<ValueSpecification> update(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, ValueSpecificationBuilder valueSpecificationBuilder);
 }
