@@ -518,12 +518,12 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          // TODO - remove when propertySubTypes are embedded in propertyTrees
          let setClasses = $childSetImpls->map(s | $s.srcClass);
          let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
-
+        
          let withSubTypes        = $inlinedPropertyGraphTrees->concatenate($inlinedPropertyGraphTrees->map(pgft | let appendAtPath = $propertyPaths.current->filter(path| $path.values->size() > 1)->cast(@List<PropertyPathNode>);
                                                                                                             if($appendAtPath->isEmpty(),
                                                                                                                | $setClasses->map(sc | if($sc->getAllTypeGeneralisationsExcluded()->contains($pgft.property.genericType.rawType->toOne()), | ^$pgft(subType=$sc->cast(@Class<Any>)), | [])),
                                                                                                                | let val = list($appendAtPath->map(x|$x.values)->cast(@PropertyPathNode)->tail());
-                                                                                                                 $pgft->getSubTreeNodesAtPath($val, $setClasses->cast(@Class<Any>), $extensions);
+                                                                                                                 $pgft->getSubTreeNodesAtPath($val, $setClasses->filter(t | $t->instanceOf(Class))->cast(@Class<Any>), $extensions);
                                                                                                             );
                                                                                                      ));
          let srcNodeProperties   = $withSubTypes->filter(p | $owner->getAllTypeGeneralisations()->contains($p.property->meta::pure::functions::meta::ownerClass()));
