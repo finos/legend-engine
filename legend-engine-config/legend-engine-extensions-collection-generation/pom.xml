@@ -649,7 +649,13 @@
         <artifactId>legend-engine-xt-ingest-executionPlan</artifactId>
         <version>${project.version}</version>
         <scope>runtime</scope>
-    </dependency>
+        </dependency>
+        <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-ingest-javaPlatformBinding-pure</artifactId>
+        <version>${project.version}</version>
+        <scope>runtime</scope>
+        </dependency>
 
 
         <!-- ECLIPSE COLLECTIONS -->
