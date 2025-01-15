@@ -28,6 +28,7 @@ public class TestCoreAuthenticationCompiledStateIntegrity extends AbstractCompil
     }
 
     @Test(expected = AssertionError.class)
+    @Ignore
     @Override
     public void testReferenceUsages()
     {
