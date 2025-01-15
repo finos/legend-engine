@@ -431,10 +431,23 @@ function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func
 
 function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func:FunctionDefinition<Any>[1], filterBeforeCast:Boolean[1]):Runtime[*]
 {
-  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_T_m__PackageableRuntime_1__T_m_,
+                                                                            from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                            from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
+                                                                            from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
+                                                                            with_T_m__PackageableRuntime_1__T_m_,
+                                                                            with_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                            with_T_m__Runtime_1__T_m_,
+                                                                            with_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                            from_T_m__Runtime_1__T_m_,
+                                                                            from_T_m__Mapping_1__Runtime_1__T_m_,
                                                                             from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-                                                                            from_T_m__Mapping_1__Runtime_1__T_m_]);
-  $fromExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(2)->evaluateAndDeactivate()->filter(p | !$filterBeforeCast || $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)->cast(@Runtime);
+                                                                            from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_]);
+  $fromExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | !$filterBeforeCast || $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
+               ->map(v | $v->match([runtime:Runtime[1] | $runtime;,
+                                    packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue;,
+                                    any:Any[1] | [];
+                                   ]));
 }
 
 function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:ValueSpecification[1]):AbstractProperty<Any>[*]
