@@ -55,6 +55,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
       [
          f:FunctionRoutedValueSpecification[1]|$f.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          e:ExtendedRoutedValueSpecification[1]|$e.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
+         nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          e:ClusteredValueSpecification[1]|$e.val->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          funcExp:FunctionExpression[1]|
                   let fe = meta::pure::milestoning::reverseMilestoningTransforms($funcExp);
