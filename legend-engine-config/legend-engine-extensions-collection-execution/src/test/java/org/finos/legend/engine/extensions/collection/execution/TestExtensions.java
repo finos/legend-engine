@@ -21,16 +21,23 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
+import org.finos.legend.engine.external.format.flatdata.FlatDataJavaCompilerExtension;
 import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.json.JsonJavaCompilerExtension;
 import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
+import org.finos.legend.engine.external.format.xml.XmlJavaCompilerExtension;
 import org.finos.legend.engine.external.format.xml.XsdRuntimeExtension;
+import org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
+import org.finos.legend.engine.plan.execution.ingest.compiler.IngestJavaCompilerExtension;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.mongodb.compiler.MongoDBDocumentFormatJavaCompilerExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
@@ -86,6 +93,23 @@ public class TestExtensions
                 .with(SpannerConnectionExtension.class)
                 .with(SqlServerConnectionExtension.class)
                 .with(TrinoConnectionExtension.class);
+    }
+
+    @Test
+    public void testJavaCompilerExtensions()
+    {
+        assertHasExtensions(expectedJavaCompilerExtensions(), ExecutionPlanJavaCompilerExtension.class);
+    }
+
+    protected MutableList<Class<? extends ExecutionPlanJavaCompilerExtension>> expectedJavaCompilerExtensions()
+    {
+        return Lists.mutable.<Class<? extends ExecutionPlanJavaCompilerExtension>>empty()
+                .with(MongoDBDocumentFormatJavaCompilerExtension.class)
+                .with(IngestJavaCompilerExtension.class)
+                .with(ExternalFormatJavaCompilerExtension.class)
+                .with(FlatDataJavaCompilerExtension.class)
+                .with(JsonJavaCompilerExtension.class)
+                .with(XmlJavaCompilerExtension.class);
     }
 
     @Test

@@ -49,7 +49,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::ingest::tests::test
 
 function <<meta::pure::profiles::test.Test,meta::pure::profiles::test.ToFix>> meta::external::ingest::tests::testAvailabilityForMultipleDatasets() : Boolean[1]
 {
-  fail('Needs fix in plan generation and clustering');
+  //fail('Needs fix in plan generation and clustering');
 
   let prevPublishedWatermark = ^Watermark(watermarkId='watermark1',
                           datasetMarks = [^DatasetMark(datasetName='Dataset1',batchId=1)]);

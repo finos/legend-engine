@@ -473,6 +473,7 @@ public class TestExtensions
                 .with(ServiceLegendPureCoreExtension.class)
                 .with(RelationalJavaBindingLegendPureCoreExtension.class)
                 .with(ArrowLegendPureCoreExtension.class)
+                .with(IngestJavaBindingLegendPureCoreExtension.class)
                 ;
     }
 
@@ -602,6 +603,8 @@ public class TestExtensions
                 .with("core_external_store_relational_sql_dialect_translation")
                 .with("core_external_store_relational_sql_dialect_translation_duckdb")
                 .with("core_external_store_relational_postgres_sql_parser")
+                .with("core_ingest_java_platform_binding")
+                .with("core_ingest")
                 ;
     }
 }

@@ -27,11 +27,7 @@
 
     <artifactId>legend-engine-xt-ingest-executionPlan</artifactId>
     <name>Legend Engine - XT - INGEST - executionPlan</name>
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -48,7 +44,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-ingest-protocol</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>

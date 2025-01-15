@@ -27,11 +27,6 @@
 
     <artifactId>legend-engine-xt-ingest-javaPlatformBinding-pure</artifactId>
     <name>Legend Engine - XT - Ingest-javaPlatformBinding</name>
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <plugins>
@@ -207,7 +202,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-ingest-pure</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
