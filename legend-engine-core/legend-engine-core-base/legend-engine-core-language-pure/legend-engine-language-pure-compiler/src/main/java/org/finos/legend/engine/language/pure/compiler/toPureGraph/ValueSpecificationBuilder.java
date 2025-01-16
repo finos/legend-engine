@@ -94,7 +94,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_BasicColumnSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
@@ -178,17 +177,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             return visit(new UnitType(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation));
         }
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
-
-        if (packageableElement instanceof Root_meta_pure_runtime_PackageableRuntime)
-        {
-            Root_meta_core_runtime_Runtime resolvedRuntime = this.context.resolveRuntime(packageableElementPtr.fullPath);
-            GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
-                    ._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime"));
-            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(packageableElementPtr.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
-                    ._genericType(runtimeGenericType)
-                    ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                    ._values(Lists.mutable.with(resolvedRuntime));
-        }
 
         MutableList<InstanceValue> values = this.context.getCompilerExtensions().getExtraValueSpecificationBuilderForFuncExpr().collect(x -> x.value(packageableElement, this.context, this.processingContext), Lists.mutable.empty());
         values.removeIf(Objects::isNull);

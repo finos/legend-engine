@@ -214,7 +214,8 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
           let childClustersResponse = $f.parametersValues->evaluateAndDeactivate()->map(v | $v->cluster($mapping, $openVariables, $exeCtx,  $debug, $analyticsDecision, $extensions));
           let params = $childClustersResponse.cluster->evaluateAndDeactivate();
 
-          let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->cast(@Runtime)->toOne();
+          // let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->cast(@Runtime)->toOne();
+          let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->map(v | $v->match([runtime:Runtime[1] | $runtime, packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue]))->toOne();
           let store = $runtime.connectionStores.element->cast(@meta::pure::store::Store)->toOne();
           ^ClusterResponse(
             cluster = ^StoreMappingClusteredValueSpecification(

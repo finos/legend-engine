@@ -378,13 +378,15 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
 {
   [
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_T_m__Runtime_1__T_m_,
-                                                  meta::pure::mapping::with_T_m__Runtime_1__T_m_]),
+                                                  meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_,
+                                                  meta::pure::mapping::with_T_m__Runtime_1__T_m_,
+                                                  meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_]),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                 let resolvedParameters     = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
                                                                                                                      f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
-                let fromRuntime            = $resolvedParameters->at(0)->cast(@Runtime);
+                let fromRuntime            = $resolvedParameters->at(0)->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
                 routeValueSpecification(
                   ^$state(value = $fe.parametersValues->at(0), 
                   routingStrategy = getRoutingStrategyFromRuntime($fromRuntime)), 
@@ -397,9 +399,13 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
         }
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+                                                  meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
                                                   meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+                                                  meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
                                                   meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
-                                                  meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_]),
+                                                  meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                  meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_,
+                                                  meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_]),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                 let resolvedParameters     = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
                                                                                                                      f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
@@ -409,6 +415,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let fromRuntime            = $resolvedParameters->at(1)
                                               ->match([
                                                  r:Runtime[1]| $r,
+                                                 pr:PackageableRuntime[1] | $pr.runtimeValue;,
                                                  fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)          
                                               ])->toOne()->cast(@Runtime);
                 let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@meta::pure::runtime::ExecutionContext), | $executionContext);
@@ -461,7 +468,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let prevalFunc = $fe->preval($inScopeVars, $extensions, $debug)->cast(@SimpleFunctionExpression);
 
                 let mapping = $prevalFunc.parametersValues->at(2)->cast(@InstanceValue).values->toOne()->cast(@Mapping);
-                let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->cast(@Runtime);
+                let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->match([runtime:Runtime[1] | $runtime, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue]);
 
                 let currentRoutingStrategy = $state.routingStrategy;
                 let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $mapping, $runtime, $extensions);

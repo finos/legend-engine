@@ -567,6 +567,6 @@ function meta::external::dataquality::buildFromRuntimeExpression(f: FunctionExpr
 
 function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
 {
-  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::pure::mapping::from_T_m__Runtime_1__T_m_]);
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::pure::mapping::from_T_m__Runtime_1__T_m_, meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_]);
   !$getExprList->isEmpty();
 }
