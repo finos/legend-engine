@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::milestoning::*;
 import meta::relational::metamodel::*;
 import meta::pure::extension::*;
@@ -57,7 +58,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 {
 
    meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns();
-   
+
   let runtime = meta::external::store::relational::tests::testRuntime();
 
   let funcPP = {s:SelectSQLQuery[1] | let ff = {ta:TableAlias[1]| if($ta.relationalElement->instanceOf(Table) , | let table = $ta.relationalElement->cast(@Table);
@@ -69,6 +70,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
   let updatedRuntime = $runtime->meta::relational::runtime::addPostProcessors([], $funcPP);
 
   let result = executionPlan(|Product.all(%2015-10-16T00:00:00)->project(~[ID:x|$x.id,'Name':x|$x.name])->filter(row|$row.ID == '1'), milestoningMapWithEmbeddedSimple, $updatedRuntime, meta::relational::extension::relationalExtensions());
-  assertEquals('Relational(type=TDS[(ID,Integer,"",""),(Name,String,"","")]resultColumns=[("ID",""),("Name","")]sql=select"ID"as"ID","Name"as"Name"from(select"root".idas"ID","root".nameas"Name"fromProductTableas"root"where"root".from_z<=TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z>TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z=TIMESTAMP\'9999-12-3100:00:00.000\')as"subselect"where"subselect"."ID"=\'1\'connection=TestDatabaseConnection(type="H2"))', $result -> meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+  assertEqualsH2Compatible('Relational(type=TDS[(ID,Integer,"",""),(Name,String,"","")]resultColumns=[("ID",""),("Name","")]sql=select"ID"as"ID","Name"as"Name"from(select"root".idas"ID","root".nameas"Name"fromProductTableas"root"where"root".from_z<=\'2015-10-1600:00:00\'and"root".thru_z>\'2015-10-1600:00:00\'and"root".thru_z=\'9999-12-3100:00:00.000\')as"subselect"where"subselect"."ID"=\'1\'connection=TestDatabaseConnection(type="H2"))',
+  'Relational(type=TDS[(ID,Integer,"",""),(Name,String,"","")]resultColumns=[("ID",""),("Name","")]sql=select"ID"as"ID","Name"as"Name"from(select"root".idas"ID","root".nameas"Name"fromProductTableas"root"where"root".from_z<=TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z>TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z=TIMESTAMP\'9999-12-3100:00:00.000\')as"subselect"where"subselect"."ID"=\'1\'connection=TestDatabaseConnection(type="H2"))', $result -> meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 
 }
