@@ -43,7 +43,14 @@ class FunctionParametersNormalizer
 {
     static void normalizeParameters(RichIterable<Variable> functionParameters,List<ParameterValidationContext> parameterValidationContexts, ExecutionState executionState)
     {
-        functionParameters.forEach(p -> normalizeParameter(p, parameterValidationContexts.stream().filter(x -> x.varName.equals(p.name)).findAny().orElse(null), executionState));
+        if (parameterValidationContexts == null)
+        {
+            functionParameters.forEach(p -> normalizeParameter(p, null, executionState));
+        }
+        else
+        {
+            functionParameters.forEach(p -> normalizeParameter(p, parameterValidationContexts.stream().filter(x -> x.varName.equals(p.name)).findAny().orElse(null), executionState));
+        }
     }
 
     private static void normalizeParameter(Variable parameter, ParameterValidationContext parameterValidationContext, ExecutionState executionState)

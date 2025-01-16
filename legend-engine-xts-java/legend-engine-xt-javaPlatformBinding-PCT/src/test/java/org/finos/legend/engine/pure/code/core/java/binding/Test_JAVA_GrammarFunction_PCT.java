@@ -35,7 +35,6 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
                 one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
                 one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
                 one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "\"Unsupported type: meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger\""),
-
                 // Equal
                 one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""),
                 one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""),
@@ -62,19 +61,20 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
                 one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
                 one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
-                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Address\""),
 
-                // Minus
+            // Minus
                 one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
-                one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
-            one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:11: error: unexpected type\n            return --1L;\n                     ^\n  required: variable\n  found:    value\n\n/_pure/plan/root/Execute.java\n0001 package _pure.plan.root;\n0002 \n0003 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n0004 \n0005 public class Execute\n0006 {\n0007     public static long execute(IExecutionNodeContext context)\n0008     {\n0009         try\n0010         {\n0011             return --1L;\n0012         }\n0013         catch (Exception e)\n0014         {\n0015             throw new RuntimeException(\"Failed in node: root\", e);\n0016         }\n0017     }"),
+                one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:11: error: unexpected type\n            return --1L;\n                     ^\n  required: variable\n  found:    value\n\n/_pure/plan/root/Execute.java\n0001 package _pure.plan.root;\n0002 \n0003 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n0004 \n0005 public class Execute\n0006 {\n0007     public static long execute(IExecutionNodeContext context)\n0008     {\n0009         try\n0010         {\n0011             return --1L;\n0012         }\n0013         catch (Exception e)\n0014         {\n0015             throw new RuntimeException(\"Failed in node: root\", e);\n0016         }\n0017     }"),
+                one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""),
 
-                // Plus
+            // Plus
                 one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
                 one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
-                one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Match failure: NoSetRoutedValueSpecificationObject instanceOf NoSetRoutedValueSpecification\""),
+                one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""),
 
-                // Times
+
+            // Times
                 one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
                 one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),
                 one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),
