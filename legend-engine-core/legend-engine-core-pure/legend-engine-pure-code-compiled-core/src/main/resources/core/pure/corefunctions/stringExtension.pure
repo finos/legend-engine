@@ -367,3 +367,43 @@ function {doc.doc ='Validates a string is a UUID as per RFC4122'}  meta::pure::f
 {
    $value->makeString()->matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 }
+
+
+
+
+Class meta::pure::functions::string::SplitTextResult {
+   lines: String[*];
+   index: Integer[1];
+}
+
+function meta::pure::functions::string::splitIntoLines(code: String[1]):String[*]
+{
+    let result = range(0, $code->length(), 1)->fold({i, c |
+       if($i < $c.index || ($c.index > $code->length() - 1), | $c, |
+           let endColumn = if($code->indexOf('\n', $c.index) < 0, | $code->length(), | $code->indexOf('\n', $c.index));
+           let line = $code->substring(max($c.index - 1, 0), $endColumn->toOne())->replace('\n', '');
+           ^SplitTextResult(lines=$c.lines->add($line), index=$endColumn->toOne() + 1););
+    }, ^SplitTextResult(lines=[], index=0));
+
+    $result.lines;
+}
+
+
+
+
+Class meta::pure::functions::string::SplitTextResult {
+   lines: String[*];
+   index: Integer[1];
+}
+
+function meta::pure::functions::string::splitIntoLines(code: String[1]):String[*]
+{
+    let result = range(0, $code->length(), 1)->fold({i, c |
+       if($i < $c.index || ($c.index > $code->length() - 1), | $c, |
+           let endColumn = if($code->indexOf('\n', $c.index) < 0, | $code->length(), | $code->indexOf('\n', $c.index));
+           let line = $code->substring(max($c.index - 1, 0), $endColumn->toOne())->replace('\n', '');
+           ^SplitTextResult(lines=$c.lines->add($line), index=$endColumn->toOne() + 1););
+    }, ^SplitTextResult(lines=[], index=0));
+
+    $result.lines;
+}

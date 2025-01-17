@@ -1,0 +1,54 @@
+
+
+
+###Pure
+import meta::pure::fct::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::mapping::groupBy::model::store::*;
+import meta::pure::fct::tests::collection::*;
+import meta::pure::test::fct::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::relational::fct::*;
+
+function <<MappingFeature.simple, FCT.test>> meta::relational::tests::fct::mapping::simple::testSimpleMapping():FCTMappingTest[1] 
+{
+ ^FCTMappingTest(setupData= ^CSVSetupData(database=myDB,path='/core_relational/relational/tests/fct/simple/setup.csv'),
+                 mapping =  meta::relational::tests::mapping::simple::model::mapping::fct::simpleTestMapping,
+                 assertions= [
+                              ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterTDS_Function_1__Boolean_1_,
+                                             expectedLineageResult= expectedLineage(['Lambda', 'db_myDB',  'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]')  ,
+                                             expectedExecutionResult = ^TDSResult(value='gsn\nABC123\n')),
+                              ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterAssociationTDS_Function_1__Boolean_1_,
+                                             expectedLineageResult= expectedLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultPRODUCT', 'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'meta::pure::fct::tests::collection::Product', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]'),
+                                             expectedExecutionResult = ^TDSResult(value='gsn\nABCDEF\n')),
+                             ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterGraphFetch_Function_1__Boolean_1_,
+                                             expectedLineageResult= expectedLineage( ['Lambda', 'db_myDB', 'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[Position.gsn: [TRADE.GSN <TableAliasColumn>]]'),
+                                             expectedExecutionResult = ^JSONResult(value='{"builder":{"_type":"json"},"values":{"gsn":"ABC123"}}'))
+                           ]
+            );
+
+}
+
+###Mapping
+import meta::pure::fct::tests::collection::*;
+import meta::relational::tests::mapping::groupBy::model::store::*;
+Mapping meta::relational::tests::mapping::simple::model::mapping::fct::simpleTestMapping
+(
+    Position: Relational
+    {
+       scope([myDB]TRADE)
+       (
+          acctNum: ACC_NUM,
+          gsn : GSN,
+          quantity : sum(QTY)
+       ),
+       product: [myDB]@product
+    }
+
+
+    Product: Relational
+    {
+       description: [myDB]PRODUCT.DESCRIPTION,
+       positions: [myDB]@product
+    }
+)

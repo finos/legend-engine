@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::lineage::graph::*;
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
 import meta::pure::lineage::scanRelations::*;
@@ -79,6 +80,7 @@ Class meta::analytics::lineage::PropertyElement
    <<equality.Key>> name : String[1];
    type : String[0..1];
 }
+
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {
