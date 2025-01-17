@@ -116,7 +116,7 @@ function meta::relational::functions::database::setUpData(records:List<String>[*
 
 // This function is needed because split does not preserve empty strings
 // We work around by inserting a non-empty value, doing a split, and then removing the non-empty value
-function <<access.private>> meta::alloy::service::execution::splitWithEmptyValue(s:String[1]) : String[*]
+function  meta::alloy::service::execution::splitWithEmptyValue(s:String[1]) : String[*]
 {
    let delimForEmptyCsvField = '|EMPTY|';
 
@@ -417,6 +417,9 @@ function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpec
    let getAllFe = $vs->findExpressionsForFunctionInValueSpecification([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]);
    if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
 }
+
+
+
 
 function meta::relational::mapping::transformRelationFunctionClassMapping(classMapping:RelationFunctionInstanceSetImplementation[1]):RelationFunctionInstanceSetImplementation[1]
 {
