@@ -444,7 +444,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
           $params->at(0),
           joinStrings(['dd', $dateFormat->replace('\'', '')])
         ]),
-      | 'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)'
+      | 'cast( parseDateTime( Substring ('+$params->at(0)+', 1, 10)'+','+$dateFormat +') as date)'
       );
 
 }
