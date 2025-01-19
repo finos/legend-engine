@@ -81,6 +81,7 @@ public class REPLServer
                 .withKeyValue("/repl/", new DataCubeInfrastructure.StaticContent())
                 .withKeyValue("/api/dataCube/infrastructureInfo", new DataCubeInfrastructure.GridLicenseKey())
                 .withKeyValue("/api/dataCube/typeahead", new DataCubeQueryBuilder.QueryTypeahead())
+                .withKeyValue("/api/dataCube/documentation/pct", new DataCubeInfrastructure.Documentation_PCT())
                 .withKeyValue("/api/dataCube/parseValueSpecification", new DataCubeQueryBuilder.ParseValueSpecification())
                 .withKeyValue("/api/dataCube/getValueSpecificationCode", new DataCubeQueryBuilder.GetValueSpecificationCode())
                 .withKeyValue("/api/dataCube/getValueSpecificationCode/batch", new DataCubeQueryBuilder.GetValueSpecificationCodeBatch())
