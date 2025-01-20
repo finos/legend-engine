@@ -20,10 +20,12 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ForkJoinPool;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.pure.m3.execution.ExecutionPlatform;
 import org.finos.legend.pure.m3.statelistener.VoidExecutionActivityListener;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
+@ExecutionPlatform(name = "InterpretedWithDebugSupport")
 public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecutionInterpreted
 {
     private volatile CompletableFuture<CoreInstance> currentExecution;
