@@ -340,6 +340,11 @@ public class Client
         }
     }
 
+    public Documentation getDocumentation()
+    {
+        return this.documentation;
+    }
+
     public MutableList<AdapterKey> getDocumentationAdapterKeys()
     {
         return Lists.mutable.withAll(this.documentation.adapters);
