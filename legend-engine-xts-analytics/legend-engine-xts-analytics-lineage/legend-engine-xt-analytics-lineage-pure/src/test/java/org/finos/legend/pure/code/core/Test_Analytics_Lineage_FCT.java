@@ -22,14 +22,13 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.test.fct.FCTReport;
+import org.finos.legend.engine.test.fct.FCTTestCollection;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
 import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Collection;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 public class Test_Analytics_Lineage_FCT extends FCTReport
 {
@@ -37,10 +36,10 @@ public class Test_Analytics_Lineage_FCT extends FCTReport
     public static Test suite()
     {
 
-        CompiledExecutionSupport support = getClassLoaderExecutionSupport();
+        CompiledExecutionSupport support = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, LINEAGE_FUNCTION, null,null,false, support);
+        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__Function_1_", false, support);
         return wrapSuite(
                 () -> true,
                 () -> suite,
@@ -56,8 +55,9 @@ public class Test_Analytics_Lineage_FCT extends FCTReport
 
 
     @Override
-    public  ImmutableList<TestCollection> getTestCollection()
-    {  return testCollection();
+    public  ImmutableList<FCTTestCollection> getTestCollection()
+    {
+        return testCollection(PureTestBuilderCompiled.getClassLoaderExecutionSupport());
     }
 
     @Override
