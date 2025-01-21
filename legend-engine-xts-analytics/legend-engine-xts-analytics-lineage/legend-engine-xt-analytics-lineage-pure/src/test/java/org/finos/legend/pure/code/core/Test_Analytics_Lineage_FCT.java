@@ -27,9 +27,7 @@ import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Colle
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.LINEAGE_FUNCTION;
-import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.buildFCTTestCollection;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
@@ -51,11 +49,9 @@ public class Test_Analytics_Lineage_FCT extends FCTReport
         );
     }
 
-    private static ImmutableList<TestCollection> testCollection()
-    {  CompiledExecutionSupport support = getClassLoaderExecutionSupport();
-        return Lists.immutable.with(
-                Test_Pure_Relational_FCT_Collection.buildCollection(support),
-                buildFCTTestCollection("meta::analytics::lineage::tests", support.getProcessorSupport()));
+    private static ImmutableList<FCTTestCollection> testCollection(CompiledExecutionSupport support)
+    {      return Lists.immutable.with(
+                Test_Pure_Relational_FCT_Collection.buildCollection(support));
     }
 
 
