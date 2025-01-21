@@ -23,7 +23,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.COLUMN;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.DATA_TYPE;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.DROP;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.SET;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class AlterTable implements DDLStatement
@@ -76,7 +78,13 @@ public class AlterTable implements DDLStatement
                 columnToAlter.genSql(builder);
                 break;
             case CHANGE_DATATYPE:
-                columnToAlter.genSqlWithNameAndTypeOnly(builder);
+                columnToAlter.genSqlWithNameOnly(builder);
+                builder.append(WHITE_SPACE);
+                builder.append(SET.get());
+                builder.append(WHITE_SPACE);
+                builder.append(DATA_TYPE.get());
+                builder.append(WHITE_SPACE);
+                columnToAlter.genSqlWithTypeOnly(builder);
                 break;
             case NULLABLE_COLUMN:
                 columnToAlter.genSqlWithNameOnly(builder);

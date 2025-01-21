@@ -82,7 +82,7 @@ public class AlterStatementTest
         List<String> list = physicalPlan.getSqlList();
 
         String expectedAdd = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" ADD COLUMN \"column\" VARCHAR NOT NULL";
-        String expectedChangeDataType = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" ALTER COLUMN \"column\" VARCHAR";
+        String expectedChangeDataType = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" ALTER COLUMN \"column\" SET DATA TYPE VARCHAR";
         String expectedNullableColumn = "ALTER TABLE \"my_db\".\"my_schema\".\"my_table\" ALTER COLUMN \"column\" DROP NOT NULL";
 
         Assertions.assertEquals(expectedAdd, list.get(0));
@@ -112,7 +112,7 @@ public class AlterStatementTest
         List<String> list = physicalPlan.getSqlList();
 
         String expectedAdd = "ALTER TABLE \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\" ADD COLUMN \"COLUMN\" VARCHAR NOT NULL";
-        String expectedChangeDataType = "ALTER TABLE \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\" ALTER COLUMN \"COLUMN\" VARCHAR";
+        String expectedChangeDataType = "ALTER TABLE \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\" ALTER COLUMN \"COLUMN\" SET DATA TYPE VARCHAR";
         String expectedNullableColumn = "ALTER TABLE \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\" ALTER COLUMN \"COLUMN\" DROP NOT NULL";
 
         Assertions.assertEquals(expectedAdd, list.get(0));
