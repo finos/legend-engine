@@ -16,15 +16,15 @@
 
 package org.finos.legend.pure.code.core.relational;
 
-import org.finos.legend.pure.m3.execution.test.TestCollection;
+import org.finos.legend.engine.test.fct.FCTTestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.buildFCTTestCollection;
 
 public class  Test_Pure_Relational_FCT_Collection
 {
-    public static TestCollection buildCollection(CompiledExecutionSupport support)
+    public static FCTTestCollection buildCollection(CompiledExecutionSupport support)
     {
-        return buildFCTTestCollection("meta::relational::tests::fct::mapping", support.getProcessorSupport());
+        return buildFCTTestCollection("meta::relational::tests::fct::mapping",  "meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_", "meta::relational::fct::relationalTestSetUp_Function_1__Runtime_1_", support.getProcessorSupport());
     }
 
 }

@@ -10,7 +10,7 @@ import meta::pure::test::fct::*;
 import meta::pure::testCoverage::featureMatrix::*;
 import meta::relational::fct::*;
 //need a new tag e.g. fct.MappingTest
-function <<MappingFeature.groupBy, FCT.test >> meta::relational::tests::fct::mapping::groupBy::testGroupByMapping():FCTMappingTest[1] 
+function <<MappingFeature.groupBy, FCT.testCollection >> meta::relational::tests::fct::mapping::groupBy::testGroupByMapping():FCTMappingTest[1] 
 {
   ^FCTMappingTest(setupData= ^CSVSetupData(database=myDB,path='/core_relational/relational/tests/fct/groupBy/setup.csv'),
                  mapping =  meta::relational::tests::mapping::groupBy::model::mapping::fct::groupByTestMapping,

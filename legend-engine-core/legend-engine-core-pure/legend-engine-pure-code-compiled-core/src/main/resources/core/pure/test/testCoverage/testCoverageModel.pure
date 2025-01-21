@@ -35,6 +35,12 @@ Profile meta::pure::testCoverage::featureMatrix::QueryType
   stereotypes: [graphFetch,tds];
 }
 
+function meta::pure::testCoverage::featureMatrix::featureSets():FeatureSet[*]
+{
+  ^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes('union'),QueryFeature]); //Every test should have a version with a union
+}
+
+
 Class meta::pure::testCoverage::featureMatrix::FeatureSet
 [$this.features->map(f|$f->instanceOf(Profile) || $f->instanceOf(Stereotype) || $f->instanceOf(FeatureSet ))->and() ]
 {

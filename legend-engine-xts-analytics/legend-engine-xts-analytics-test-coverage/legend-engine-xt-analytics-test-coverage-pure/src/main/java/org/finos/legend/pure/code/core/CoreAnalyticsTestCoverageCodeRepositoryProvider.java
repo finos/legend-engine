@@ -18,7 +18,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalFunctionAnalysisCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreAnalyticsTestCoverageCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()

@@ -17,23 +17,17 @@
 package org.finos.legend.engine.server.test.pureClient.stores;
 
 import junit.framework.Test;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
-import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Collection;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
+import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCT_UsingPureClientTestSuite extends FCTReport
+public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReport
 {
     public static Test suite()
     {
@@ -41,44 +35,9 @@ public class Test_RelationalFCT_UsingPureClientTestSuite extends FCTReport
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return wrapSuite(
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Function_1_", "meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_", "meta::relational::fct::relationalTestSetUp_Function_1__Runtime_1_",true, executionSupport),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Function_1_", true, executionSupport),
                 PureWithEngineHelper::cleanUp
         );
     }
 
-
-    private static  MutableList<ExclusionSpecification> getExpectedFailures()
-    {
-        return Lists.mutable.empty();
-    }
-
-    private static ImmutableList<TestCollection> testCollection()
-    {  CompiledExecutionSupport support = getClassLoaderExecutionSupport();
-        return Lists.immutable.with(
-                Test_Pure_Relational_FCT_Collection.buildCollection(support));
-    }
-
-    @Override
-    public ImmutableList<TestCollection> getTestCollection()
-    {
-        return testCollection();
-    }
-
-    @Override
-    public String getreportID()
-    {
-        return "RelationalFCTExecution";
-    }
-
-    @Override
-    public String getStoreID()
-    {
-        return "relationalStore";
-    }
-
-    @Override
-    public MutableList<ExclusionSpecification> expectedFailures()
-    {
-        return getExpectedFailures();
-    }
 }

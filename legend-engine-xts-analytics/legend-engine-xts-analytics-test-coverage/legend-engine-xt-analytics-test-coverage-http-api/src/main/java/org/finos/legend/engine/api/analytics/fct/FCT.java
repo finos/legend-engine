@@ -54,7 +54,7 @@ import java.util.Scanner;
 
 public class FCT
 {
-    private MutableList<? extends Root_meta_pure_extension_Extension> extensions;
+    private final MutableList<? extends Root_meta_pure_extension_Extension> extensions;
 
     public FCT(ModelManager modelManager)
     {
