@@ -156,7 +156,6 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
@@ -186,8 +185,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     public void initialize(Bootstrap<T> bootstrap)
     {
         bootstrap.addBundle(new AssetsBundle("/web", "/", "legend_index.html"));
-        bootstrap.addBundle(new AssetsBundle("/web/fct", "/fct", "fct.html"));
-
         bootstrap.addBundle(new SwaggerBundle<T>()
         {
             @Override

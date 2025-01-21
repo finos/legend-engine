@@ -15,17 +15,14 @@
 package org.finos.legend.engine.test.fct;
 
 import org.eclipse.collections.api.list.ImmutableList;
-
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 
 public abstract class FCTReport
 {
-    public abstract ImmutableList<TestCollection> getTestCollection();
+    public abstract ImmutableList<FCTTestCollection> getTestCollection();
 
     public abstract String getreportID();
 

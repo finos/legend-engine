@@ -17,30 +17,18 @@
 package org.finos.legend.engine.server.test.pureClient.stores;
 
 import junit.framework.Test;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
 import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
-import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Collection;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
 public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReport
 {
-    public Test_RelationalFCT_UsingPureClientTestSuite()
-    {
-        super();
-    }
-
     public static Test suite()
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();

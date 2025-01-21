@@ -37,7 +37,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
@@ -50,16 +49,15 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuild
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.junit.Assert;
 import static org.finos.legend.pure.generated.core_pure_test_fct.Root_meta_pure_fct_tests_testRunnerAssertion_Function_1__Function_1__Function_1__AssertionRun_MANY_;
-import static org.finos.legend.pure.m3.execution.test.TestCollection.collectTests;
 import static org.junit.Assert.fail;
 
 public class FCTTestSuitBuilder extends PureTestBuilder
 {
 
-    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<TestCollection> collection, MutableMap<String, String> exclusions, String function,  String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
+    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
     {
         TestSuite suite = new PureTestBuilderCompiled();
-        collection.forEach(c -> suite.addTest(buildFCTSuite(c, null,function,runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport)));
+        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
         return suite;
     }
 
@@ -128,9 +126,10 @@ public class FCTTestSuitBuilder extends PureTestBuilder
     }
 
 
-    public static TestCollection buildFCTTestCollection(String path, ProcessorSupport processorSupport)
+    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction, ProcessorSupport processorSupport)
     {
-            return collectTests(path, processorSupport, (node) -> isFCTTest(node, processorSupport));
+
+        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport);
     }
 
     public static boolean isFCTTest(CoreInstance node, ProcessorSupport processorSupport)
@@ -138,38 +137,40 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "test", processorSupport);
     }
 
+    public static boolean isFCTTestCollection(CoreInstance node, ProcessorSupport processorSupport)
+    {
+        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "testCollection", processorSupport);
+    }
+
     public static boolean isFCTAdaptor(CoreInstance node, ProcessorSupport processorSupport)
     {
         return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "adapter", processorSupport);
     }
 
-    public static TestSuite buildFCTSuite(TestCollection testCollection, F2<CoreInstance, MutableList<Object>, Object> executor,  String toEval, String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
+    public static TestSuite buildFCTSuite(FCTTestCollection testCollection,   String toEval, String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
     {
         MutableList<TestSuite> subSuites = Lists.mutable.empty();
-        for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
+        for (FCTTestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
-            subSuites.add(buildFCTSuite(collection,  executor, toEval, runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport));
+            subSuites.add(buildFCTSuite(collection,  toEval, runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport));
         }
         return buildFCTSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
-                testCollection.getBeforeFunctions(),
-                testCollection.getAfterFunctions(),
                 toEval,
                 runtimeFunction,
                 setupFunction,
-                testCollection.getPureAndAlloyOnlyFunctions(),
+                testCollection.getAllTestFunctions(),
                 subSuites,
-                executor,
                 executionSupport,
                 includeBeforeAndAfter
         );
     }
 
-    private static TestSuite buildFCTSuite(String packageName, RichIterable<CoreInstance> beforeFunctions, RichIterable<CoreInstance> afterFunctions,
+    private static TestSuite buildFCTSuite(String packageName,
                                            String toEval,
                                            String runtimeFunction,
                                            String setupFunction,
                                            RichIterable<CoreInstance> testFunctions,
-                                           ListIterable<TestSuite> subSuites, F2<CoreInstance, MutableList<Object>, Object> executor, ExecutionSupport executionSupport, boolean includeBeforeAndAfter)
+                                           ListIterable<TestSuite> subSuites,  ExecutionSupport executionSupport, boolean includeBeforeAndAfter)
     {
         PureTestBuilderCompiled suite = new PureTestBuilderCompiled();
         suite.setName(packageName);
@@ -204,7 +205,7 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         return suite;
     }
 
-    public static class FCTPureTestCase extends TestCase
+        public static class FCTPureTestCase extends TestCase
     {
 
         CoreInstance coreInstance;

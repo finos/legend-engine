@@ -15,26 +15,20 @@
 package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
-import org.eclipse.collections.api.block.predicate.Predicate;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
-import static org.finos.legend.pure.m3.fct.shared.FCTTools.isFCTTest;
 
 public class Test_Analytics_Lineage
 {
     public static TestSuite suite()
     {
-
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
-        Predicate<? super CoreInstance> filter  = ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport()) && !isFCTTest(ci, executionSupport.getProcessorSupport());
-
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::analytics::lineage::tests", executionSupport.getProcessorSupport(), filter), executionSupport));
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::lineage::scanExecutes::test", executionSupport.getProcessorSupport(), filter), executionSupport));
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::lineage::scanProject::test", executionSupport.getProcessorSupport(), filter), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::analytics::lineage::tests", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::lineage::scanExecutes::test", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::lineage::scanProject::test", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }
