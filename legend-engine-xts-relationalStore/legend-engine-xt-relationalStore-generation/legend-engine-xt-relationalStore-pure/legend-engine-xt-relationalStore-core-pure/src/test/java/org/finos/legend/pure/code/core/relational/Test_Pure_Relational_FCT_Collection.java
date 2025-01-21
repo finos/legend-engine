@@ -24,7 +24,7 @@ public class  Test_Pure_Relational_FCT_Collection
 {
     public static TestCollection buildCollection(CompiledExecutionSupport support)
     {
-        return buildFCTTestCollection("meta::relational::tests::fct::mapping", support.getProcessorSupport());
+        return buildFCTTestCollection("meta::relational::tests::fct::mapping",  "meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_", "meta::relational::fct::relationalTestSetUp_Function_1__Runtime_1_", support.getProcessorSupport());
     }
 
 }
