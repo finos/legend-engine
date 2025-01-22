@@ -253,7 +253,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n");
+            "}\n", null, Lists.fixedSize.with("COMPILATION error at [24:9-28:3]: Single execution test has empty asserts"));
 
         PureModel model = result.getTwo();
 
@@ -432,7 +432,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n");
+                "}\n", null, Lists.fixedSize.with("COMPILATION error at [24:9-28:3]: Single execution test has empty asserts"));
 
         PureModel model = result.getTwo();
 

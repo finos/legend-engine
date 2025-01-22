@@ -221,6 +221,11 @@ public class HelperServiceBuilder
                 throw new EngineException("Test does not match execution type", serviceTest.sourceInformation, EngineErrorType.COMPILATION);
             }
             SingleExecutionTest singleExecutionTest = (SingleExecutionTest) serviceTest;
+
+            if (singleExecutionTest.asserts == null || singleExecutionTest.asserts.isEmpty())
+            {
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(singleExecutionTest.sourceInformation, "Single execution test has empty asserts")));
+            }
             return new Root_meta_legend_service_metamodel_SingleExecutionTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionTest"))
                     ._data(singleExecutionTest.data)
                     ._asserts(ListIterate.collect(singleExecutionTest.asserts, assertion -> processTestContainer(assertion, context)));
@@ -265,6 +270,12 @@ public class HelperServiceBuilder
         {
             throw new EngineException("Service test with key '" + keyedSingleExecutionTest.key + "' already existed", keyedSingleExecutionTest.sourceInformation, EngineErrorType.COMPILATION);
         }
+
+        if (keyedSingleExecutionTest.key != null && (keyedSingleExecutionTest.asserts == null || keyedSingleExecutionTest.asserts.isEmpty()))
+        {
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(keyedSingleExecutionTest.sourceInformation, "Multi execution" + " with test id: " + keyedSingleExecutionTest.key + "test has empty asserts")));
+        }
+
         return new Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::KeyedSingleExecutionTest"))
                 ._key(keyedSingleExecutionTest.key)
                 ._data(keyedSingleExecutionTest.data)
