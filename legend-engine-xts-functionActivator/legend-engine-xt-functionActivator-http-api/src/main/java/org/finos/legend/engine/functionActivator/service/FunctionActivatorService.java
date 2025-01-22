@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;

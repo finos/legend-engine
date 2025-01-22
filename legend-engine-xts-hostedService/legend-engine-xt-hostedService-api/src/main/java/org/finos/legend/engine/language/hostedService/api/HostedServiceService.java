@@ -23,7 +23,7 @@ import org.finos.legend.engine.functionActivator.validation.FunctionActivatorVal
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceDeploymentManager;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
