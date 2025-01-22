@@ -78,12 +78,12 @@
         <version>${project.version}</version>
         <type>test-jar</type>
     </dependency>
-<!--    <dependency>-->
-<!--        <groupId>org.finos.legend.engine</groupId>-->
-<!--        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>-->
-<!--        <version>${project.version}</version>-->
-<!--        <type>test-jar</type>-->
-<!--    </dependency>-->
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+    </dependency>
 
     <!-- test collector-->
 
