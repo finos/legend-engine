@@ -1309,7 +1309,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpre
   let allocNode = ^AllocationExecutionNode(resultType = $platformNode.resultType, varName = $varName, executionNodes = $platformNode);
 
   pair(
-      list(^PlanVarPlaceHolder(type =  $platformNode.resultType.type, name = $varName, multiplicity = $fe.func->functionReturnMultiplicity())),
+      list(^PlanVarPlaceHolder(genericType =  $platformNode.resultType.genericType, name = $varName, multiplicity = $fe.func->functionReturnMultiplicity())),
       ^$req(extraNodes = $req.extraNodes->concatenate($allocNode), counter = $req.counter + 1)
   );
 }
@@ -1345,7 +1345,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
     float: Float[1] | $float->literal(),
     boolean: Boolean[1] | $boolean->literal(),
     date: Date[1] | $date->toString()->literal(),
-    var: VariableExpression[1] | expression(^PlanVarPlaceHolder(name = $var.name, type = $var.genericType.rawType->toOne(), multiplicity = $var.multiplicity), $supportZeroMult),
+    var: VariableExpression[1] | expression(^PlanVarPlaceHolder(name = $var.name, genericType = $var.genericType, multiplicity = $var.multiplicity), $supportZeroMult),
     planVar: PlanVarPlaceHolder[1] | $planVar->expression($supportZeroMult),
     enum: Enum[1] | $enum->toString()->literal(),
     none: Any[0] | [],
@@ -1362,17 +1362,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
 function meta::external::store::elasticsearch::v7::pureToEs::expression(var : PlanVarPlaceHolder[1], supportZeroMult: Boolean[1]): LiteralOrExpression<Any>[1]
 {
   assert($supportZeroMult  || ($var.multiplicity->toOne()->getLowerBound() > 0),
-    |'Operation does not support variable \'%s: %s[%s]\' with 0 lower bound multiplicity'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()])
+    |'Operation does not support variable \'%s: %s[%s]\' with 0 lower bound multiplicity'->format([$var.name, $var.genericType.rawType->toOne()->printType(), $var.multiplicity->toOne()->printMultiplicity()])
   );
 
-  let varType = $var.type;
+  let varType = $var.genericType.rawType;
   if ($varType == String,                                   | ^LiteralOrExpression<String>(expression = $var->varFreemarkerExpression(true)),
   | if ( $varType == Boolean,                               | ^LiteralOrExpression<Boolean>(expression = $var->varFreemarkerExpression(false)),
       | if ( $varType == Integer,                           | ^LiteralOrExpression<Integer>(expression = $var->varFreemarkerExpression(false)),
         | if ( $varType->in([Float, Number, Decimal]),      | ^LiteralOrExpression<Number>(expression = $var->varFreemarkerExpression(false)),
           | if ($varType->in([Date, DateTime, StrictDate]), | ^LiteralOrExpression<String>(expression = $var->varFreemarkerExpression(true)),
             {|
-              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
+              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.genericType.rawType->toOne()->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
               ^LiteralOrExpression<Any>(expression = $var.name);
             }
           )
@@ -1556,7 +1556,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
     {|
       let newValue = $value->match([
         date: Date[1] | $date->toEpochValue(DurationUnit.MILLISECONDS),
-        var: VariableExpression[1] | ^PlanVarPlaceHolder(name = $var.name, type = $var.genericType.rawType->toOne(), multiplicity = $var.multiplicity),
+        var: VariableExpression[1] | ^PlanVarPlaceHolder(name = $var.name, genericType = $var.genericType, multiplicity = $var.multiplicity),
         pv: PlanVarPlaceHolder[1] | $pv, // $pv.type
         any: Any[*] | fail()
       ]);

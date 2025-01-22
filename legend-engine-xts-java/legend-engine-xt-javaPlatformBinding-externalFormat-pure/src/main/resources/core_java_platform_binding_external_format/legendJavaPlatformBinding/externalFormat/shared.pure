@@ -90,7 +90,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 
    let conventions                         = $context.conventions;
 
-   let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
+   let class                               = $node.resultType->cast(@ClassResultType).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
    let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
    let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);

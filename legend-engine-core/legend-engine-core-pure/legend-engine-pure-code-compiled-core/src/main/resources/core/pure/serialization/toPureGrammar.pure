@@ -69,7 +69,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(
    $functionDefinition->match([
       lambda:LambdaFunction<Any>[1]    | let functionParameters = '{'+printLambdaParameters($lambda)+'|';                                       
                                          let multipleLineIndent = repeat(' ', $functionParameters->length())->joinStrings('');
-                                         $functionParameters+($expressions->joinStrings(';\n'+$multipleLineIndent))+'}';,
+                                         $functionParameters+($expressions->joinStrings('', ';\n'+$multipleLineIndent, ';\n'))+'}';,
       other:FunctionDefinition<Any>[1] | $other->printFunctionSignature()+'\n'+
                                          $space+'{\n'+
                                          $expressions->joinStrings($space+'  ', ';\n'+$space, ';\n')+
@@ -194,7 +194,7 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                                                    |$main
                                                 );
                                    $val->elementToPath() + '.all()';),
-          pair(|$name == 'letFunction',|'let '+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString()+ ' = ' +$functionExpression.parametersValues->at(0)->printValueSpecification($space)),
+          pair(|$name == 'letFunction',|'let '+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->toString()+ ' = ' +$functionExpression.parametersValues->at(1)->printValueSpecification($configuration, $space)),
           pair(|$name == 'colSpec', |'~'+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->toString()->printColName()),
           pair(|$name == 'funcColSpec' || $name == 'funcColSpec2', | '~'+printColSpec($functionExpression, $configuration, $space)),
           pair(|$name == 'aggColSpec' || $name == 'aggColSpec2', | '~'+printColSpec($functionExpression, $configuration, $space)),

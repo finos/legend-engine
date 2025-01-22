@@ -64,7 +64,7 @@ Class meta::relational::mapping::PreAndFinallyExecutionSQLQuery
 
 function meta::relational::mapping::generateSQLExecNode(sql:String[1], dbCon:DatabaseConnection[1]) : SQLExecutionNode[1]
 {
-   ^SQLExecutionNode(sqlQuery = $sql, resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void), connection = $dbCon);
+   ^SQLExecutionNode(sqlQuery = $sql, resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)), connection = $dbCon);
 }
 
 function meta::relational::mapping::trimColumnNamePostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1],Runtime[1]->Result<SelectSQLQuery|1>[1]}>[1]

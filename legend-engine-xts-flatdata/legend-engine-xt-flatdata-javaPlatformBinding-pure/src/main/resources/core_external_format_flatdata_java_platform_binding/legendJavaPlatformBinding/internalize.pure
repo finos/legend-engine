@@ -86,7 +86,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
    let bindingDetail    = $context->nodeInfosForPath($path).data->toOne();
    assert($bindingDetail->instanceOf(FlatDataBindingDetail), | 'Detailed binding failed: ' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
-   let pureClass        = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let pureClass        = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    let schemaClass      = $bindingDetail->cast(@FlatDataBindingDetail).schemaBindingDetail.class;
    let dependentClass   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass)->filter(c | $c != $schemaClass);
 
@@ -112,7 +112,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
 function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createInternalizeSpecificsClass(node:ExternalFormatInternalizeExecutionNode[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
-   let rootClass               = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let rootClass               = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    let schemaSet               = $node.binding.schemaSet->toOne();
 
    let conventions             = $context.conventions;

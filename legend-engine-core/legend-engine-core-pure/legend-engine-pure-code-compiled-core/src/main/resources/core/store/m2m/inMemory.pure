@@ -368,7 +368,7 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
 
    let resultType = ^ClassResultType
                      (
-                        type = $class,
+                        genericType=^GenericType(rawType = $class),
                         setImplementations = $setImplementation
                      );
 
