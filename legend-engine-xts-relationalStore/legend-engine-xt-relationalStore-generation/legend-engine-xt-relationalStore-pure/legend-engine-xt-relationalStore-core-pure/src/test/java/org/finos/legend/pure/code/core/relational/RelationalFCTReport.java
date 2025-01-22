@@ -23,7 +23,6 @@ import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestCollection;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 public class RelationalFCTReport extends FCTReport
