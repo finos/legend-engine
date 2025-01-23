@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.memsql.api;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 
 public class MemSqlFunctionError extends FunctionActivatorError
 {

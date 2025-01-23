@@ -15,7 +15,6 @@
 
 package org.finos.legend.engine.functionActivator.validation;
 
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.shared.core.identity.Identity;
