@@ -120,11 +120,6 @@
                         <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
                 </dependencies>
             </plugin>
             <plugin>
@@ -178,8 +173,6 @@
                         <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
-
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
@@ -207,17 +200,6 @@
                         <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
-
                 </dependencies>
             </plugin>
             <plugin>
@@ -295,11 +277,6 @@
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -381,10 +358,6 @@
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-tds</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
@@ -399,11 +372,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--        </dependency>-->
 
         <!-- TEST -->
         <dependency>
