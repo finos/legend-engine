@@ -201,8 +201,8 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
-        Assertions.assertEquals(dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
-        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctDigest(), operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctDigest(), operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -271,5 +271,15 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
     protected String getExpectedMetadataTableCreateQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorsSqlWithBizDateVersion;
     }
 }

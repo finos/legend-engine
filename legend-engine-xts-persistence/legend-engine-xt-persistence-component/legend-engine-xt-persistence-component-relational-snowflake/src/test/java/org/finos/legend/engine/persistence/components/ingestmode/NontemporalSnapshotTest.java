@@ -48,4 +48,14 @@ public class NontemporalSnapshotTest extends org.finos.legend.engine.persistence
     {
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctAmount()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlWithAmount;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctAmount()
+    {
+        return SnowflakeTestArtifacts.dataErrorSqlWithAmount;
+    }
 }

@@ -43,6 +43,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEn
 import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ConcatFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DistinctFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
@@ -77,6 +78,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DistinctFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FunctionalDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
@@ -196,6 +198,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
         logicalPlanVisitorByClass.put(FunctionalDataset.class, new FunctionalDatasetVisitor());
         logicalPlanVisitorByClass.put(ConcatFunction.class, new ConcatFunctionVisitor());
+        logicalPlanVisitorByClass.put(DistinctFunction.class, new DistinctFunctionVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 

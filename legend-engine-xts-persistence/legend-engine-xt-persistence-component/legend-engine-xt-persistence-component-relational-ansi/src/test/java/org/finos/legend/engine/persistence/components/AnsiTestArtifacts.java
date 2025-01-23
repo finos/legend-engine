@@ -666,4 +666,10 @@ public class AnsiTestArtifacts
     public static String dataErrorsSql = "SELECT \"id\",\"name\",\"version\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
             "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"version\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
 
+    public static String dataErrorCheckSqlWithAmount = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+        "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
+        "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
+    public static String dataErrorSqlWithAmount = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"amount\")) as \"legend_persistence_error_count\" FROM " +
+        "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
 }
