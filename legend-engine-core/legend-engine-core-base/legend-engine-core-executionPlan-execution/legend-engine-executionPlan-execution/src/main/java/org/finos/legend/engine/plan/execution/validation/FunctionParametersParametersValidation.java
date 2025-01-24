@@ -38,7 +38,7 @@ public class FunctionParametersParametersValidation
         Map<String, Result> providedParameterValues = executionState.getResults();
         validateNoMissingMandatoryParamaters(functionParameters, providedParameterValues);
         validateParameterValues(functionParameters, parameterValidationContext, providedParameterValues);
-        FunctionParametersNormalizer.normalizeParameters(functionParameters, executionState);
+        FunctionParametersNormalizer.normalizeParameters(functionParameters,parameterValidationContext, executionState);
         FunctionParameterProcessor.processParameters(functionParameters, parameterValidationContext, executionState);
     }
 

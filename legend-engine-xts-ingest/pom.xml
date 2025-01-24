@@ -8,16 +8,13 @@
     </parent>
 
     <artifactId>legend-engine-xts-ingest</artifactId>
+    <name>Legend Engine - XTS - Ingest</name>
     <packaging>pom</packaging>
     <modules>
         <module>legend-engine-xt-ingest-pure</module>
         <module>legend-engine-xt-ingest-protocol</module>
+        <module>legend-engine-xt-ingest-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-ingest-executionPlan</module>
     </modules>
-
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
 </project>

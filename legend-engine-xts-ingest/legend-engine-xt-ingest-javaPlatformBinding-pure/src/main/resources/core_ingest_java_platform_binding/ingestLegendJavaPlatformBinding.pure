@@ -1,0 +1,61 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::ingest::platformBinding::*;
+import meta::pure::extension::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+
+function meta::external::ingest::platformBinding::ingestLegendJavaPlatformBindingExtension(): meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingExtension[1]
+{
+   ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingExtension
+   (
+      platformId = meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(),
+
+      id = 'IngestLegendJavaPlatformBindingExtension',
+
+      // Node based extensions ------------------------------------------------------
+
+      supportedExecutionNodes = [ ],
+      adhocExtensions = [
+         
+         ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformDependencyUpdateExtension(
+                   platformDependencyUpdate = {conventions: meta::external::language::java::transform::Conventions[1], extensions: Extension[*] | extendIngestProtocolsJavaEngineDependencies($conventions)})
+
+      ]
+   );
+}
+
+function  meta::external::ingest::platformBinding::extendIngestProtocolsJavaEngineDependencies(conventions:meta::external::language::java::transform::Conventions[1]):meta::external::language::java::transform::Conventions[1]
+{
+      let jWatermarkProtocolClass = javaClass('public', 'org.finos.legend.engine.protocol.ingest.metamodel.Watermark');
+      let jDatasetMarkProtocolClass = javaClass('public', 'org.finos.legend.engine.protocol.ingest.metamodel.DatasetMark');
+
+   $conventions
+      ->addProvidedType(meta::external::ingest::metamodel::Watermark, $jWatermarkProtocolClass)
+      ->addProvidedType(meta::external::ingest::metamodel::DatasetMark, $jDatasetMarkProtocolClass);
+}
+
+function meta::external::ingest::platformBinding::ingestLegendJavaPlatformBindingExtensions(): Extension[1]
+{
+
+  [
+    meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - Ingest', [
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+       meta::external::ingest::platformBinding::ingestLegendJavaPlatformBindingExtension()
+    ])
+  ])
+   
+  ]
+}

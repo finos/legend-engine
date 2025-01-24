@@ -89,16 +89,31 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public OtherClass getMaybeOther()\n'+
+                '    {\n'+
+                '        return this.maybeOther;\n'+
+                '    }\n'+
+                '\n'+
                 '    public ClassWithClassProperties _other(OtherClass other)\n'+
                 '    {\n'+
                 '        this.other = other;\n'+
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public OtherClass getOther()\n'+
+                '    {\n'+
+                '        return this.other;\n'+
+                '    }\n'+
+                '\n'+
                 '    public ClassWithClassProperties _others(List<OtherClass> others)\n'+
                 '    {\n'+
                 '        this.others = others;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public List<OtherClass> getOthers()\n'+
+                '    {\n'+
+                '        return this.others;\n'+
                 '    }\n'+
                 '\n'+
                 '    public boolean equals(Object obj)\n'+
@@ -148,6 +163,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '    {\n'+
                 '        this.myBoolean = myBoolean;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public List<Boolean> getMyBoolean()\n'+
+                '    {\n'+
+                '        return this.myBoolean;\n'+
                 '    }\n'+
                 '\n'+
                 '    public boolean equals(Object obj)\n'+
@@ -216,16 +236,31 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Long getValue()\n'+
+                '    {\n'+
+                '        return this.value;\n'+
+                '    }\n'+
+                '\n'+
                 '    public ClassWithPrimitiveProperties _otherValue(Long otherValue)\n'+
                 '    {\n'+
                 '        this.otherValue = otherValue;\n'+
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Long getOtherValue()\n'+
+                '    {\n'+
+                '        return this.otherValue;\n'+
+                '    }\n'+
+                '\n'+
                 '    public ClassWithPrimitiveProperties _myBoolean(Boolean myBoolean)\n'+
                 '    {\n'+
                 '        this.myBoolean = myBoolean;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public Boolean getMyBoolean()\n'+
+                '    {\n'+
+                '        return this.myBoolean;\n'+
                 '    }\n'+
                 '\n'+
                 '    public boolean equals(Object obj)\n'+
@@ -276,6 +311,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Long getValue()\n'+
+                '    {\n'+
+                '        return this.value;\n'+
+                '    }\n'+
+                '\n'+
                 '    public boolean equals(Object obj)\n'+
                 '    {\n'+
                 '        if (this == obj)\n'+
@@ -317,6 +357,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '    {\n'+
                 '        this.other = other;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public String getOther()\n'+
+                '    {\n'+
+                '        return this.other;\n'+
                 '    }\n'+
                 '\n'+
                 '    public <T> T accept(SuperTypeVisitor<T> visitor)\n'+
@@ -369,6 +414,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::objectMethodsIm
                 '    {\n'+
                 '        this.prop = prop;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public Long getProp()\n'+
+                '    {\n'+
+                '        return this.prop;\n'+
                 '    }\n'+
                 '\n'+
                 '    public abstract <T> T accept(SuperTypeVisitor<T> visitor);\n'+
