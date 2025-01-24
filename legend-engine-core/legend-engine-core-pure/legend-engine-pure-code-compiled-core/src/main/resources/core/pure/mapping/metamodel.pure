@@ -14,6 +14,7 @@
 
 import meta::pure::data::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::mapping::metamodel::*;
 
 
@@ -32,17 +33,6 @@ Class  meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::Ato
 ###Diagram
 Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, height=0.0)
 {
-    TypeView cview_3(
-        type=meta::pure::test::Test,
-        position=(1463.00000, 296.00000),
-        width=127.38965,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_1(
         type=meta::pure::mapping::Mapping,
@@ -56,17 +46,6 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_2(
-        type=meta::pure::test::Testable,
-        position=(2684.00000, 289.00000),
-        width=87.64893,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_7(
         type=meta::pure::mapping::metamodel::MappingTest,
@@ -128,32 +107,8 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    GeneralizationView gview_0(
-        source=cview_1,
-        target=cview_2,
-        points=[(2722.18066,764.00000),(2727.82446,311.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_1(
-        source=cview_4,
-        target=cview_3,
-        points=[(2079.57983,435.00000),(1526.69483,325.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_2(
-        source=cview_5,
-        target=cview_3,
-        points=[(1358.98096,466.00000),(1526.69483,325.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
         source=cview_6,
@@ -173,19 +128,6 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    PropertyView pview_0(
-        property=meta::pure::test::Testable.tests,
-        source=cview_2,
-        target=cview_3,
-        points=[(2727.82446,311.00000),(1526.69483,325.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_1(
         property=meta::pure::mapping::metamodel::MappingTest.storeTestData,

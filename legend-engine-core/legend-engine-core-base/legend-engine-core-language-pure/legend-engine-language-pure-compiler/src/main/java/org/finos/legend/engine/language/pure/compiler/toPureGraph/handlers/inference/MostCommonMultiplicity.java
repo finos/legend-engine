@@ -31,7 +31,7 @@ public class MostCommonMultiplicity
         {
             return a;
         }
-        org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity();
+        org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity();
         multiplicity.lowerBound = (int) Math.min(a._lowerBound()._value(), b._lowerBound()._value());
         multiplicity.setUpperBound(a._upperBound()._value() == null || b._upperBound()._value() == null ? Integer.MAX_VALUE : (int) Math.max(a._upperBound()._value(), b._upperBound()._value()));
         return pureModel.getMultiplicity(multiplicity);

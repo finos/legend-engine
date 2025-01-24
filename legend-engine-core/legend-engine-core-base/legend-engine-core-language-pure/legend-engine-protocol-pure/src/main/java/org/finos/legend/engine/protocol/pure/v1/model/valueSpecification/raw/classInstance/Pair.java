@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 // Should NOT extend ValueSpecification
 public class Pair

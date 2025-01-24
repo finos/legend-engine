@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
 import java.util.List;
 

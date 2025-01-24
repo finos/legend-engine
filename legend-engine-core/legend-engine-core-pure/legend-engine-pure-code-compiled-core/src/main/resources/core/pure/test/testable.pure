@@ -15,6 +15,7 @@
 import meta::pure::data::*;
 
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::test::assertion::*;
 import meta::pure::test::result::*;
 

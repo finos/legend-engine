@@ -14,6 +14,7 @@
 
 // import meta::pure::executionPlan::platformBinding::legendJava::library::tests::*;
 // import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 // import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 // import meta::pure::executionPlan::platformBinding::legendJava::*;
 // import meta::pure::functions::meta::*;

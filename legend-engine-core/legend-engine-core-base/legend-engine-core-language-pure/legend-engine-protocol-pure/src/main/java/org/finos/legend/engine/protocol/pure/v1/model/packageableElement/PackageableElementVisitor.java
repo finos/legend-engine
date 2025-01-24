@@ -14,15 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement;
 
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Profile;
+import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
+import org.finos.legend.engine.protocol.pure.m3.type.Enumeration;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.type.Measure;
+import org.finos.legend.engine.protocol.pure.m3.extension.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;

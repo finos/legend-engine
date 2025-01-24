@@ -1475,7 +1475,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
 
         // tests
-        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test> persistenceTests = persistence._tests();
         assertNotNull(persistenceTests);
         assertFalse(persistenceTests.isEmpty());
         assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);

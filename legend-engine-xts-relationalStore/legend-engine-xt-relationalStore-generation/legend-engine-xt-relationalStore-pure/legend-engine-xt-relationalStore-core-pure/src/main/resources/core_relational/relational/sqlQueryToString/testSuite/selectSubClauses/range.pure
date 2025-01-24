@@ -20,6 +20,7 @@ import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::core::runtime::*;
 import meta::pure::executionPlan::*;
 

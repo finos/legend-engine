@@ -181,18 +181,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_3(
-        type=meta::pure::metamodel::PropertyOwner,
-        position=(881.60317, 572.38296),
-        width=196.30786,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_30(
         type=meta::pure::metamodel::type::Measure,
         position=(-1219.39826, 576.61751),
@@ -205,45 +193,9 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_29(
-        type=meta::pure::metamodel::type::Class,
-        position=(679.34263, 774.26123),
-        width=328.53333,
-        height=142.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_7(
-        type=meta::pure::metamodel::extension::ElementWithConstraints,
-        position=(670.20339, 663.14791),
-        width=159.23633,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_33(
-        type=meta::pure::metamodel::type::Measure,
-        position=(353.02260, 496.65364),
-        width=161.73333,
-        height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_24(
         type=meta::pure::metamodel::relationship::Association,
-        position=(921.83844, 655.44256),
+        position=(975.22182, 662.25746),
         width=251.43333,
         height=72.00000,
         stereotypesVisible=true,
@@ -385,18 +337,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_32(
-        type=meta::pure::metamodel::type::Unit,
-        position=(574.18940, 563.99207),
-        width=257.00000,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_9(
         type=meta::pure::metamodel::extension::ElementWithTaggedValues,
         position=(213.00000, 94.00000),
@@ -426,30 +366,6 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         position=(886.00000, 143.00000),
         width=40.44336,
         height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_44(
-        type=meta::pure::metamodel::type::Enumeration,
-        position=(527.50797, 493.01450),
-        width=93.34180,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_31(
-        type=meta::pure::metamodel::type::PrimitiveType,
-        position=(631.08672, 494.11933),
-        width=212.93333,
-        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -529,6 +445,90 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_3(
+        type=meta::pure::metamodel::PropertyOwner,
+        position=(934.98655, 579.19786),
+        width=196.30786,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_33(
+        type=meta::pure::metamodel::type::Measure,
+        position=(253.07074, 522.77742),
+        width=161.73333,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_44(
+        type=meta::pure::metamodel::type::Enumeration,
+        position=(424.14866, 491.87868),
+        width=93.34180,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_32(
+        type=meta::pure::metamodel::type::Unit,
+        position=(451.52121, 607.15310),
+        width=257.00000,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_55(
+        type=meta::pure::metamodel::extension::ElementWithConstraints,
+        position=(733.67642, 469.80865),
+        width=159.21666,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_31(
+        type=meta::pure::metamodel::type::PrimitiveType,
+        position=(584.51824, 536.14454),
+        width=212.93333,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::pure::metamodel::type::Class,
+        position=(633.90997, 678.85264),
+        width=328.53333,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     GeneralizationView gview_0(
         source=cview_2,
         target=cview_1,
@@ -541,7 +541,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_1(
         source=cview_3,
         target=cview_2,
-        points=[(979.75711,587.38296),(979.13903,447.78465)],
+        points=[(997.18586,582.25449),(996.05005,451.63559)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -622,7 +622,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_10(
         source=cview_24,
         target=cview_3,
-        points=[(1047.55510,691.44256),(1048.14821,589.16760)],
+        points=[(1100.93848,698.25746),(1101.53159,595.98250)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -631,7 +631,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_11(
         source=cview_29,
         target=cview_2,
-        points=[(853.27240,825.93810),(850.39409,447.78465)],
+        points=[(914.27125,685.61380),(914.27125,450.49977)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -640,40 +640,31 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_12(
         source=cview_29,
         target=cview_3,
-        points=[(906.49898,785.14902),(905.04996,599.60651)],
+        points=[(952.88902,682.20635),(952.88902,598.15592)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_13(
-        source=cview_29,
-        target=cview_7,
-        points=[(757.10626,786.36360),(757.07178,713.59419)],
+        source=cview_31,
+        target=cview_2,
+        points=[(690.98492,565.14454),(690.51539,457.31467)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_14(
-        source=cview_31,
+        source=cview_33,
         target=cview_2,
-        points=[(737.55340,523.11933),(736.11772,455.27311)],
+        points=[(333.93741,558.77742),(333.86899,456.17885)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_15(
-        source=cview_33,
-        target=cview_2,
-        points=[(433.88927,532.65364),(433.79490,447.78465)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_16(
         source=cview_34,
         target=cview_23,
         points=[(-517.66649,625.56618),(-517.57795,505.69348)],
@@ -682,7 +673,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_17(
+    GeneralizationView gview_16(
         source=cview_35,
         target=cview_17,
         points=[(-854.68542,660.41725),(-854.16798,561.56470)],
@@ -691,7 +682,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_18(
+    GeneralizationView gview_17(
         source=cview_36,
         target=cview_37,
         points=[(92.74229,792.31097),(91.97607,640.68533)],
@@ -700,7 +691,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_19(
+    GeneralizationView gview_18(
         source=cview_38,
         target=cview_36,
         points=[(127.32055,850.19356),(126.86578,798.31502)],
@@ -709,7 +700,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_20(
+    GeneralizationView gview_19(
         source=cview_40,
         target=cview_36,
         points=[(222.78270,839.31502),(222.86578,798.31502)],
@@ -718,7 +709,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_21(
+    GeneralizationView gview_20(
         source=cview_43,
         target=cview_36,
         points=[(25.42476,854.17907),(24.72610,789.88182)],
@@ -727,16 +718,16 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_22(
+    GeneralizationView gview_21(
         source=cview_44,
         target=cview_2,
-        points=[(574.17886,508.01450),(573.95491,455.27311)],
+        points=[(470.81955,506.87868),(471.30280,453.90722)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_23(
+    GeneralizationView gview_22(
         source=cview_45,
         target=cview_17,
         points=[(-763.33518,609.38839),(-764.22895,561.56470)],
@@ -745,7 +736,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_24(
+    GeneralizationView gview_23(
         source=cview_47,
         target=cview_23,
         points=[(-1468.12742,639.64719),(-1468.89408,435.07122)],
@@ -754,7 +745,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_25(
+    GeneralizationView gview_24(
         source=cview_49,
         target=cview_17,
         points=[(-701.54416,714.18852),(-702.90688,567.01555)],
@@ -763,7 +754,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_26(
+    GeneralizationView gview_25(
         source=cview_50,
         target=cview_37,
         points=[(-211.28354,832.31502),(-211.37716,631.31502)],
@@ -772,16 +763,16 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_27(
+    GeneralizationView gview_26(
         source=cview_52,
         target=cview_2,
-        points=[(302.62284,690.31502),(300.62284,454.31502)],
+        points=[(235.05295,691.29288),(233.91714,448.22814)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_28(
+    GeneralizationView gview_27(
         source=cview_40,
         target=cview_52,
         points=[(304.94257,852.21233),(305.62284,733.31502)],
@@ -790,7 +781,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_29(
+    GeneralizationView gview_28(
         source=cview_52,
         target=cview_37,
         points=[(190.62284,693.31502),(190.62284,641.31502)],
@@ -799,7 +790,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_30(
+    GeneralizationView gview_29(
         source=cview_51,
         target=cview_52,
         points=[(469.45877,851.81502),(468.62284,734.31502)],
@@ -808,7 +799,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_31(
+    GeneralizationView gview_30(
         source=cview_53,
         target=cview_37,
         points=[(-159.73414,742.31502),(-159.37716,640.31502)],
@@ -817,7 +808,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_32(
+    GeneralizationView gview_31(
         source=cview_43,
         target=cview_53,
         points=[(-45.87716,851.31502),(-45.73414,805.31502)],
@@ -826,7 +817,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_33(
+    GeneralizationView gview_32(
         source=cview_42,
         target=cview_53,
         points=[(-105.72805,899.03028),(-105.73414,801.31502)],
@@ -835,10 +826,28 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_34(
+    GeneralizationView gview_33(
         source=cview_53,
         target=cview_54,
         points=[(-70.73414,747.31502),(-70.80021,690.31502)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_34(
+        source=cview_29,
+        target=cview_55,
+        points=[(838.17154,686.74961),(838.17154,510.69805)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_35(
+        source=cview_31,
+        target=cview_55,
+        points=[(767.75092,537.95765),(767.75092,503.88315)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -1002,7 +1011,7 @@ Diagram meta::pure::Pure_Diagram(width=0.0, height=0.0)
         property=meta::pure::metamodel::type::Measure.nonCanonicalUnits,
         source=cview_33,
         target=cview_32,
-        points=[(468.04910,537.30876),(529.74632,537.66319),(529.62284,591.31502),(578.07784,592.30876)],
+        points=[(368.09724,563.43254),(433.82085,562.94561),(433.82085,635.63787),(455.40965,635.46979)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
