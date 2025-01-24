@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCT Test Report</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>FCT Test Report</h1>
+<table id="reportTable">
+    <thead>
+    <tr>
+        <th>Store</th>
+<!--        <th>Feature Set Name</th>-->
+        <th>Source Type Feature</th>
+        <th>Query Feature</th>
+        <th>Collection Feature</th>
+        <th>Mapping Feature</th>
+        <th>Test Type</th>
+        <th>Function Name</th>
+        <th>Assertion Type</th>
+        <th>Success</th>
+        <th>Error Message</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Rows will be populated here by JavaScript -->
+    </tbody>
+</table>
+
+<script>
+    async function fetchData() {
+        try {
+            const response = await fetch('/api/fct/json');
+            const jsonData = await response.json();
+            populateTable(jsonData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    function populateTable(data) {
+        const tableBody = document.getElementById('reportTable').getElementsByTagName('tbody')[0];
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            Object.keys(item).forEach(key => {
+                const cell = document.createElement('td');
+                cell.textContent = item[key];
+                row.appendChild(cell);
+            });
+            tableBody.appendChild(row);
+        });
+    }
+
+    fetchData();
+</script>
+</body>
+</html>

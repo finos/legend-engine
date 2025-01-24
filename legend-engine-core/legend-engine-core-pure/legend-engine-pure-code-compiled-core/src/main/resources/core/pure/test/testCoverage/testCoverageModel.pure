@@ -1,0 +1,85 @@
+import meta::json::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::extension::*;
+import meta::pure::testCoverage::featureMatrix::*;
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+
+Profile meta::pure::testCoverage::featureMatrix::MappingFeature
+{
+  stereotypes: [modelToModel,union,filter,binding, embedded, groupBy, association, distinct, enumeration, extend, simple];
+}
+
+
+
+Profile meta::pure::testCoverage::featureMatrix::QueryFeature
+{
+  stereotypes: [multiExecution,collection,filter,sort,from, multiFrom, internalize, join, limit]; //map filter // first /sort //groupBy deprecate  head first last 
+}
+
+Profile meta::pure::testCoverage::featureMatrix::QueryType
+{
+  stereotypes: [graphFetch,tds];
+}
+
+function meta::pure::testCoverage::featureMatrix::featureSets():FeatureSet[*]
+{
+  ^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes('union'),QueryFeature]); //Every test should have a version with a union
+}
+
+
+Class meta::pure::testCoverage::featureMatrix::FeatureSet
+[$this.features->map(f|$f->instanceOf(Profile) || $f->instanceOf(Stereotype) || $f->instanceOf(FeatureSet ))->and() ]
+{
+  name:String[0..1];
+  features:Any[*];  //profile or stereotype or FeatureSet
+
+}
+
+Class meta::pure::testCoverage::featureMatrix::FeatureTest
+{
+   <<equality.Key>> assertionType :String[1]; 
+   <<equality.Key>> functionName: String[1];
+   <<equality.Key>> expectedError: String[0..1];
+}
+
+Class meta::pure::testCoverage::featureMatrix::FeatureResult
+{
+   <<equality.Key>> store:String[0..1];
+   <<equality.Key>> testType:String[0..1];
+   <<equality.Key>> sourceTypeFeature:String[*];
+   <<equality.Key>> queryFeature:String[*];
+   <<equality.Key>> mappingFeature:String[*];
+   <<equality.Key>> collectionFeature:String[*];
+   <<equality.Key>> featureTests:FeatureTest[*];
+}
+
+
+
+
+function meta::pure::testCoverage::featureMatrix::profileExceptStereoTypes(profile:Profile[1],remove:String[*]):FeatureSet[1]  
+{
+  let toRemove = $remove->map(r|  $profile->stereotype($r));
+ ^FeatureSet(name = 'subFeature', features= $profile.p_stereotypes->removeAll($toRemove));
+
+}
+
+function meta::pure::testCoverage::featureMatrix::profileSubSet(profile:Profile[1],include:String[*]):FeatureSet[1]  
+{
+  let stereoTypes = $include->map(r|  $profile->stereotype($r));
+ ^FeatureSet(name = 'subFeature', features= $stereoTypes);
+
+}

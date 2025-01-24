@@ -40,3 +40,18 @@ function meta::pure::lineage::analytics::inlineQualifiedProperties(vs: ValueSpec
       v  : ValueSpecification[1] | $v
    ]);
 }
+
+
+function  meta::pure::lineage::analytics::reportLineageToString(report:meta::pure::lineage::result::ReportLineage[1]):String[1]
+{
+  $report.properties->map(c | $c.propertyName  + $c.resultDetail)->sort()->joinStrings('[', ', ', ']');
+}
+
+function meta::pure::lineage::test::assertLineage(storeLineage:String[*], classLineage:String[*], reportLineage:String[1], result:meta::pure::lineage::result::LineageResult[1], sourceDetail:String[1]):Boolean[1]
+{
+ 
+  let equal = ( equal(  $storeLineage->sort(), $result.storeLineage.nodes.data.id->sort()) &&    equal(  $classLineage->sort(), $result.classLineage.nodes.data.id->sort())  && equal ($reportLineage, meta::pure::lineage::analytics::reportLineageToString($result.reportLineage)));
+  assert($equal, $sourceDetail + 'Expected: ' +  $result.storeLineage.nodes.data.id->sort()->map(e | $e->toRepresentation())->joinStrings('[', ', ', ']') +',' +  $result.classLineage.nodes.data.id->sort()->map(e | $e->toRepresentation())->joinStrings('[', ', ', ']')  +',' +  meta::pure::lineage::analytics::reportLineageToString($result.reportLineage) );
+
+}
+
