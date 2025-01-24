@@ -67,18 +67,17 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
   ];
 
 
-assert(  $report->removeAll( $expected  , { a,b | $a.featureTests ==$b.featureTests &&
+assert($report->removeAll($expected,{ a,b | $a.featureTests ==$b.featureTests &&
                                                   $a.mappingFeature == $b.mappingFeature  &&
                                                   $a.queryFeature == $b.queryFeature    &&                     
                                                   $a.testType == $b.testType    &&   
                                                   $a.store == $b.store    &&   
                                                   $a.sourceTypeFeature == $b.sourceTypeFeature  
 
-      })->isEmpty()   )   ;
+      })->isEmpty());
  }
   
   
-
 ###Mapping
 Mapping meta::analytics::testCoverage::featureMatrix::tests::testMapping
 ()
