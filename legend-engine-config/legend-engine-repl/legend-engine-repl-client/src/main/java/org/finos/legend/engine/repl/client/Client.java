@@ -119,6 +119,7 @@ public class Client
                                 new Debug(this),
                                 new Doc(this),
                                 new Graph(this),
+                                new PromoteRelationToModel(this),
                                 new Execute(this)
                         )
                 );
@@ -337,6 +338,11 @@ public class Client
         {
             // ignore
         }
+    }
+
+    public Documentation getDocumentation()
+    {
+        return this.documentation;
     }
 
     public MutableList<AdapterKey> getDocumentationAdapterKeys()

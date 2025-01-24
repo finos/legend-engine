@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
@@ -115,14 +116,10 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .builder()
                 .digestField(applyCase(unitemporalSnapshot.digestField()))
                 .transactionMilestoning(unitemporalSnapshot.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
-                .addAllPartitionFields(applyCase(unitemporalSnapshot.partitionFields()))
-                .putAllPartitionValuesByField(applyCase(unitemporalSnapshot.partitionValuesByField()))
-                .addAllPartitionSpecList(applyCaseForListOfMap(unitemporalSnapshot.partitionSpecList()))
+                .partitioningStrategy(unitemporalSnapshot.partitioningStrategy().accept(new PartitioningStrategyCaseConverter()))
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
                 .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
                 .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
-                .derivePartitionSpec(unitemporalSnapshot.derivePartitionSpec())
-                .maxPartitionSpecFilters(unitemporalSnapshot.maxPartitionSpecFilters())
                 .build();
     }
 
@@ -371,7 +368,30 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         }
     }
 
-    private class VersionStrategyCaseConverter implements VersioningStrategyVisitor<VersioningStrategy>
+    private class PartitioningStrategyCaseConverter implements PartitioningStrategyVisitor<PartitioningStrategy>
+    {
+        @Override
+        public PartitioningStrategy visitPartitioning(PartitioningAbstract partitionStrategy)
+        {
+            return Partitioning.builder()
+                    .addAllPartitionFields(applyCase(partitionStrategy.partitionFields()))
+                    .deleteStrategy(partitionStrategy.deleteStrategy())
+                    .putAllPartitionValuesByField(applyCase(partitionStrategy.partitionValuesByField()))
+                    .addAllPartitionSpecList(applyCaseForListOfMap(partitionStrategy.partitionSpecList()))
+                    .derivePartitionSpec(partitionStrategy.derivePartitionSpec())
+                    .maxPartitionSpecFilters(partitionStrategy.maxPartitionSpecFilters())
+                    .build();
+        }
+
+        @Override
+        public PartitioningStrategy visitNoPartitioning(NoPartitioningAbstract noPartitionStrategy)
+        {
+            return noPartitionStrategy;
+        }
+    }
+
+
+        private class VersionStrategyCaseConverter implements VersioningStrategyVisitor<VersioningStrategy>
     {
         @Override
         public VersioningStrategy visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)

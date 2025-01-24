@@ -1,0 +1,179 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::relation::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    FIRMID INTEGER,
+    SALARY FLOAT
+  )
+
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100)
+  )
+
+  Table groupMembershipTable
+  (
+    GROUPID INTEGER PRIMARY KEY,
+    PERSONID INTEGER,
+    GROUPNAME VARCHAR(30)
+  )
+)
+ 
+###Pure
+Class meta::relational::tests::mapping::relation::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithFirmId extends meta::relational::tests::mapping::relation::Person
+{
+  firmId: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::ExtendedPerson extends meta::relational::tests::mapping::relation::Person
+{
+  rank: Integer[1];
+  groupName: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::Firm
+{
+  legalName: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::Person_Firm
+{
+  employees: meta::relational::tests::mapping::relation::Person[*];
+  firm: meta::relational::tests::mapping::relation::Firm[1];
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+Mapping meta::relational::tests::mapping::relation::simpleMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *Firm[firm]: Relation 
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::mixedMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithProject__Relation_1_
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  *PersonWithFirmId: Relational 
+  {
+    firstName: [meta::relational::tests::mapping::relation::testDB]personTable.FIRSTNAME,
+    age: [meta::relational::tests::mapping::relation::testDB]personTable.AGE,
+    firmId: [meta::relational::tests::mapping::relation::testDB]personTable.FIRMID
+  }
+
+  *Firm[firm]: Relational 
+  {
+    +id: Integer[1]: [meta::relational::tests::mapping::relation::testDB]firmTable.ID,
+    legalName: [meta::relational::tests::mapping::relation::testDB]firmTable.LEGALNAME
+  }
+
+  Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::complexMapping
+(
+  *ExtendedPerson[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::complexPersonFunction__Relation_1_
+    firstName: FIRSTNAME,
+    groupName: GROUPNAME,
+    age: AGE,
+    rank: RANK
+  }
+)
+
+###Pure
+import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::*;
+import meta::pure::mapping::*;
+import meta::legend::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::personFunction(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->filter(x | $x.AGE > 25)
+    ->limit(5)
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithProject(): Relation<Any>[1]
+{
+  PersonWithFirmId.all()
+    ->filter(x|$x.age > 25)
+    ->project(
+      ~[
+        FIRSTNAME:x|$x.firstName,
+        AGE:x|$x.age,
+        FIRMID:x|$x.firmId
+      ]
+    )
+    ->select(~[FIRSTNAME, AGE, FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::firmFunction(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.firmTable}#
+    ->limit(10)
+    ->select(~[ID, LEGALNAME])
+}
+
+function meta::relational::tests::mapping::relation::complexPersonFunction(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {x,y| $x.ID == $y.PERSONID})
+    ->extend(over(~GROUPID, ~SALARY->ascending()), ~[RANK:{p,w,r| $p->rank($w, $r)}]);
+}

@@ -931,4 +931,41 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testRelationFunctionMapping()
+    {
+        // Empty property mappings are allowed
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[my_Person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[p]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: 'first name',\n" +
+                "    firm: 'firm \"name\"',\n" +
+                "    +localProp: String[0..1]: localProp\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

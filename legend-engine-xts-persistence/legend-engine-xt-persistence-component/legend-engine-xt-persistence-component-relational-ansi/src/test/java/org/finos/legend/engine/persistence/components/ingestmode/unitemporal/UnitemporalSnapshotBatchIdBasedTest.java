@@ -28,6 +28,7 @@ import java.util.Map;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.dupRowsSql;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
 import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
 public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBatchIdBasedTestCases
@@ -301,6 +302,174 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     {
         List<String> postActionsSql = operations.postActionsSql();
         Assertions.assertEquals(AnsiTestArtifacts.expectedStagingCleanupQuery, postActionsSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllNoDedupNoVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+                "UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+                "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE sink.\"biz_date\" = stage.\"biz_date\"))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"batch_id_in\", \"batch_id_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+                "UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging\" as stage)";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedWithoutDigestCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionDeleteAllFilterDuplicatesMaxVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+            "UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+            "(EXISTS (SELECT * FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE sink.\"biz_date\" = stage.\"biz_date\"))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+            "UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage)";
+
+        String maxDataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+            "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
+            "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
+        String dataErrorsSql = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"amount\")) as \"legend_persistence_error_count\" FROM " +
+            "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedWithoutDigestCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSql, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionFiltersDeleteAllNoDedupNoVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
+                "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) " +
+                "AND (sink.\"biz_date\" IN ('2000-01-01 00:00:00','2000-01-02 00:00:00'))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_id_in\", \"batch_id_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 " +
+                "FROM \"mydb\".\"staging\" as stage)";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedWithoutDigestCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersion(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET " +
+                "sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) " +
+                "AND (((sink.\"biz_date\" = '2024-01-01') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 2)))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"account_type\", \"biz_date\", \"batch_id_in\", \"batch_id_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"account_type\",stage.\"biz_date\"," +
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 " +
+                "FROM \"mydb\".\"staging\" as stage)";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableWithMultiPartitionsWithoutDigestCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllNoDedupNoVersionInUpperCase(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink " +
+                "SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')-1 " +
+                "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) " +
+                "AND (((sink.\"ACCOUNT_TYPE\" = 1) AND (sink.\"BIZ_DATE\" = '2024-01-01')) " +
+                "OR ((sink.\"ACCOUNT_TYPE\" = 1) AND (sink.\"BIZ_DATE\" = '2024-01-02')) " +
+                "OR ((sink.\"ACCOUNT_TYPE\" = 2) AND (sink.\"BIZ_DATE\" = '2024-01-02')))";
+
+        String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" " +
+                "(\"ID\", \"NAME\", \"AMOUNT\", \"ACCOUNT_TYPE\", \"BIZ_DATE\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\") " +
+                "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"ACCOUNT_TYPE\",stage.\"BIZ_DATE\"," +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')," +
+                "999999999 FROM \"MYDB\".\"STAGING\" as stage)";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableMultiPartitionWithoutDigestCreateQueryWithUpperCase, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionSpecListDeleteAllWithEmptyBatchHandling(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET " +
+                "sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+                "(((sink.\"biz_date\" = '2024-01-01') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 1)) " +
+                "OR ((sink.\"biz_date\" = '2024-01-02') AND (sink.\"account_type\" = 2)))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableWithMultiPartitionsWithoutDigestCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
     }
 
     @Override

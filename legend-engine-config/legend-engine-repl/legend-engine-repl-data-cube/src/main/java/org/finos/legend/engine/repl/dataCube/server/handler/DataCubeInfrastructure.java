@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.dataCube.server.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.repl.dataCube.server.REPLServer;
@@ -106,6 +107,28 @@ public class DataCubeInfrastructure
                             exchange.sendResponseHeaders(200, 0);
                             IOUtils.copy(is, os);
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        handleTextResponse(exchange, 500, e.getMessage(), state);
+                    }
+                }
+            };
+        }
+    }
+
+    public static class Documentation_PCT implements DataCubeServerHandler
+    {
+        @Override
+        public HttpHandler getHandler(REPLServerState state)
+        {
+            return exchange ->
+            {
+                if ("GET".equals(exchange.getRequestMethod()))
+                {
+                    try
+                    {
+                        handleJSONResponse(exchange, 200, new ObjectMapper().writeValueAsString(state.client.getDocumentation()), state);
                     }
                     catch (Exception e)
                     {

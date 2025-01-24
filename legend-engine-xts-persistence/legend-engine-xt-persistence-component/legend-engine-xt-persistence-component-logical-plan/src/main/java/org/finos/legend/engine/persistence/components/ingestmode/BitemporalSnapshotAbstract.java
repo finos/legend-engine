@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
+import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,6 @@ import static org.immutables.value.Value.Style;
 )
 public interface BitemporalSnapshotAbstract extends IngestMode, BitemporalMilestoned
 {
-    String digestField();
 
     @Override
     TransactionMilestoning transactionMilestoning();
@@ -57,5 +57,14 @@ public interface BitemporalSnapshotAbstract extends IngestMode, BitemporalMilest
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
         return visitor.visitBitemporalSnapshot(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        if (!digestField().isPresent())
+        {
+            throw new IllegalStateException("Cannot build BitemporalSnapshot, digestField is mandatory");
+        }
     }
 }

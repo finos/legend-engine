@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
 public class DataCubeExecutionInput
 {
     public Lambda query;
+    public PureModelContextData model;
     public Boolean debug;
 }

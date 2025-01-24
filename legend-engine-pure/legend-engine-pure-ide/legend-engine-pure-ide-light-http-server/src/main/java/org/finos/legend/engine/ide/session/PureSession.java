@@ -72,7 +72,7 @@ public class PureSession
     private final String PURE_OPTION_PREFIX = "pure.option.";
 
 
-    public PureSession(SourceLocationConfiguration sourceLocationConfiguration, MutableList<RepositoryCodeStorage> repos)
+    public PureSession(SourceLocationConfiguration sourceLocationConfiguration, boolean debugMode, MutableList<RepositoryCodeStorage> repos)
     {
         this.sourceLocationConfiguration = sourceLocationConfiguration;
 
@@ -82,7 +82,7 @@ public class PureSession
 
         this.repos = Lists.mutable.withAll(repos).with(new WelcomeCodeStorage(Paths.get(rootPath)));
 
-        this.functionExecution = new FunctionExecutionInterpretedWithDebugSupport();
+        this.functionExecution = debugMode ? new FunctionExecutionInterpretedWithDebugSupport() : new FunctionExecutionInterpreted();
 
         for (String property : System.getProperties().stringPropertyNames())
         {

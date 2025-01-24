@@ -98,7 +98,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                         (configuration.swagger.getContextRoot().endsWith("/") ? "" : "/") + "api")
         );
 
-        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, this.getRepositories(configuration.sourceLocationConfiguration, configuration.requiredRepositories));
+        this.pureSession = new PureSession(configuration.sourceLocationConfiguration, configuration.debugMode != null && configuration.debugMode, this.getRepositories(configuration.sourceLocationConfiguration, configuration.requiredRepositories));
 
         environment.jersey().register(new Concept(pureSession));
         environment.jersey().register(new RenameConcept(pureSession));

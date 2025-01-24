@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 
@@ -28,4 +29,7 @@ public interface PropertyMappingVisitor<T>
     T visit(XStorePropertyMapping propertyMapping);
 
     T visit(AggregationAwarePropertyMapping propertyMapping);
+    
+    T visit(RelationFunctionPropertyMapping propertyMapping);
+    
 }

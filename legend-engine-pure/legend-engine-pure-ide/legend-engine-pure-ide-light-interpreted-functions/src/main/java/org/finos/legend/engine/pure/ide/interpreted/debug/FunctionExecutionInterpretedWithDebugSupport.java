@@ -17,20 +17,27 @@ package org.finos.legend.engine.pure.ide.interpreted.debug;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ForkJoinPool;
+
 import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.pure.m3.execution.ExecutionPlatform;
 import org.finos.legend.pure.m3.statelistener.VoidExecutionActivityListener;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
+@ExecutionPlatform(name = "InterpretedWithDebugSupport")
 public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecutionInterpreted
 {
     private volatile CompletableFuture<CoreInstance> currentExecution;
     private volatile CompletableFuture<CoreInstance> resultHandler;
     private volatile DebugState debugState;
+    private final ForkJoinPool customPool;
 
     public FunctionExecutionInterpretedWithDebugSupport()
     {
         super(VoidExecutionActivityListener.VOID_EXECUTION_ACTIVITY_LISTENER);
+        IDEDebugForkJoinWorkerThreadFactory poolFactory = new IDEDebugForkJoinWorkerThreadFactory();
+        customPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), poolFactory, null, false);
     }
 
     public DebugState getDebugState()
@@ -61,7 +68,7 @@ public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecut
 
         if (this.currentExecution == null)
         {
-            this.currentExecution = CompletableFuture.supplyAsync(() -> this.start(function, arguments));
+            this.currentExecution = CompletableFuture.supplyAsync(() -> this.start(function, arguments), customPool);
             this.currentExecution.whenComplete((v, e) ->
             {
                 if (e != null)

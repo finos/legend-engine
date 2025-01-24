@@ -620,24 +620,24 @@ public class SnowflakeSink extends AnsiSqlSink
                     {
                         case QueryStatsLogicalPlanUtils.EXTERNAL_SCAN_STAGE:
                             Object externalScan = queryStats.get(QueryStatsLogicalPlanUtils.EXTERNAL_BYTES_SCANNED_ALIAS);
-                            if (externalScan != null)
+                            if (externalScan != null && !String.valueOf(externalScan).isEmpty())
                             {
-                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, externalScan);
+                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, Long.parseLong(String.valueOf(externalScan)));
                             }
                             else
                             {
-                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, 0);
+                                stats.put(StatisticName.INPUT_FILES_BYTES_SCANNED, 0L);
                             }
                             break;
                         case QueryStatsLogicalPlanUtils.INSERT_STAGE:
                             Object insert = queryStats.get(QueryStatsLogicalPlanUtils.INPUT_ROWS_ALIAS);
-                            if (insert != null)
+                            if (insert != null && !String.valueOf(insert).isEmpty())
                             {
-                                stats.put(StatisticName.INCOMING_RECORD_COUNT, insert);
+                                stats.put(StatisticName.INCOMING_RECORD_COUNT, Long.parseLong(String.valueOf(insert)));
                             }
                             else
                             {
-                                stats.put(StatisticName.INCOMING_RECORD_COUNT, 0);
+                                stats.put(StatisticName.INCOMING_RECORD_COUNT, 0L);
                             }
                             break;
                     }

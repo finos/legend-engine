@@ -162,6 +162,6 @@ function meta::external::store::relational::sqlPlanning::utils::printDebugQuery(
 
 function meta::external::store::relational::sqlPlanning::utils::printDebugQuery(query: Query[1], config: SqlPlanningConfig[1], pretty: Boolean[1], extensions: Extension[*]): String[1]
 {
-  let sqlDialectTranslationConfig = ^SqlDialectTranslationConfig(dbConfig = ^DbConfig(dbType = $config.dbType), formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true));
+  let sqlDialectTranslationConfig = ^SqlDialectTranslationConfig(dbConfig = ^DbConfig(dbType = $config.dbType), formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true), functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry());
   $query->generateSqlDialectForStatement($sqlDialectTranslationConfig, $extensions);
 }

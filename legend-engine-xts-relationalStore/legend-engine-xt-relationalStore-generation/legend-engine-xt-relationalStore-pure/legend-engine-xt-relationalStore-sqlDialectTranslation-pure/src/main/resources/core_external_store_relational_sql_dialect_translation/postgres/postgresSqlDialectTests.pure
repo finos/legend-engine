@@ -1,0 +1,120 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::postgres::*;
+import meta::external::store::relational::sqlDialectTranslation::postgres::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::tests::testPostgresSqlDialectTranslationConfig(pretty: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(dbType = 'Postgres'),
+    formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+  )
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::postgres::tests::testFunctionCallProcessing(): Boolean[1]
+{
+  let dialect = postgresSqlDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testPostgresSqlDialectTranslationConfig(false);
+
+  let name = ^QualifiedName(parts = ['log']);
+  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c1']));
+  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c2']));
+  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c3']));
+  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
+
+  assertEquals('log(101)', $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = literal(101))->inferTypes($config.functionRegistry), $state, $config));
+  assertEquals(
+    'log(101, 2) OVER (PARTITION BY db.schema.table.c1, db.schema.table.c2 ORDER BY db.schema.table.c3 DESC NULLS FIRST, db.schema.table.c4 ASC NULLS LAST)',
+    $dialect->executeNodeProcessor(
+      ^FunctionCall(
+        name =  $name,
+        arguments = [literal(101), literal(2)],
+        window = ^meta::external::query::sql::metamodel::Window(
+          partitions = [$c1, $c2],
+          orderBy = [
+            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
+            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
+          ]
+        )
+      )->inferTypes($config.functionRegistry),
+      $state, $config
+    )
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::postgres::tests::testFunctionCallPrettyFormatProcessing(): Boolean[1]
+{
+  let dialect = postgresSqlDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testPostgresSqlDialectTranslationConfig(true);
+
+  let name = ^QualifiedName(parts = ['log']);
+  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c1']));
+  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c2']));
+  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c3']));
+  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
+
+  assertEquals('log(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101))->inferTypes($config.functionRegistry), $state, $config));
+  assertEquals(
+    'log(101, 2) OVER (\n' + 
+    '  PARTITION BY\n' +
+    '    db.schema.table.c1,\n' +
+    '    db.schema.table.c2\n' +
+    '  ORDER BY\n' +
+    '    db.schema.table.c3 DESC NULLS FIRST,\n' +
+    '    db.schema.table.c4 ASC NULLS LAST\n' +
+    ')',
+    $dialect->executeNodeProcessor(
+      ^FunctionCall(
+        name =  $name,
+        arguments = [literal(101), literal(2)],
+        window = ^meta::external::query::sql::metamodel::Window(
+          partitions = [$c1, $c2],
+          orderBy = [
+            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
+            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
+          ]
+        )
+      )->inferTypes($config.functionRegistry),
+      $state, $config
+    )
+  );
+
+  let caseExpression = ^SearchedCaseExpression(whenClauses = [^WhenClause(result = literal(101), operand = literal(false)), ^WhenClause(result = literal(102), operand = literal(true))]);
+  assertEquals(
+    'log(\n' +
+    '  101,\n' +
+    '  CASE\n' +
+    '    WHEN\n' +
+    '      FALSE\n' +
+    '    THEN\n' +
+    '      101\n' +
+    '    WHEN\n' +
+    '      TRUE\n' +
+    '    THEN\n' +
+    '      102\n' +
+    '  END\n' +
+    ')',
+    $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = [literal(101), $caseExpression])->inferTypes($config.functionRegistry), $state, $config)
+  );
+}

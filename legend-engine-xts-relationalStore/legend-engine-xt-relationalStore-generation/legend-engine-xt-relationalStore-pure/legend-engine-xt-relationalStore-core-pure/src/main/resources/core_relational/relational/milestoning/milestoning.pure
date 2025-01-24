@@ -138,6 +138,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     f:FreeMarkerOperationHolder[1]| $f,
                     c:TableAliasColumn[1] | $c,
+                    d: TableAliasColumnName[1]| $d,
                     wc: WindowColumn[1] | ^$wc(window = $wc.window , func = $wc.func),
                     w: meta::relational::metamodel::Window[1]| ^$w(partition = $w.partition, sortBy = $w.sortBy),
                     cn:ColumnName[1] | $cn ,

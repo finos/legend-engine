@@ -1292,10 +1292,15 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 
 function <<access.private>> meta::external::language::java::transform::listIfMulti(base: meta::external::language::java::metamodel::Type[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
-   if(!$mult->hasUpperBound() || ($mult->getUpperBound() > 1 || $mult->getUpperBound() == -1),
+   if($mult->isListMultiplicity(),
       | javaList($base),
       | $base
    );
+}
+
+function meta::external::language::java::transform::isListMultiplicity(mult:Multiplicity[1]): Boolean[1]
+{
+  !$mult->hasUpperBound() || ($mult->getUpperBound() > 1 || $mult->getUpperBound() == -1)
 }
 
 function meta::external::language::java::transform::typeConversion(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): TypeConversion[1]

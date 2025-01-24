@@ -66,7 +66,8 @@ Enum meta::protocols::pure::vX_X_X::metamodel::PackageableElementType
    DIAGRAM,
    DATASTORESPEC,
    UNIT,
-   MEASURE
+   MEASURE,
+   FUNCTION
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
@@ -560,6 +561,19 @@ Class meta::protocols::pure::vX_X_X::metamodel::objectReference::AlloyObjectRefe
    operationResolvedSetsId : String[*];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec
+{
+   name: String[1];
+   type: String[0..1];
+   function1: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+   function2: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray
+{
+   colSpecs: meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[*];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::RelationStoreAccessor
 {
    path:String[*];
@@ -751,7 +765,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInsta
    filter : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping extends  meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
    explodeProperty : Boolean[0..1];
    enumMappingId : String[0..1];
@@ -768,11 +782,20 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyM
    crossExpression : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends  meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+  relationFunction: meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[1];
+  propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
+}
 
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+  column: String[1];
+}
 
 Class meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
 {

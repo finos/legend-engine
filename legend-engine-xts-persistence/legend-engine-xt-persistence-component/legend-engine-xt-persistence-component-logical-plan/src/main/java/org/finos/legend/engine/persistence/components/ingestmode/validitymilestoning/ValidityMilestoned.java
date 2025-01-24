@@ -18,7 +18,5 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 
 public interface ValidityMilestoned extends IngestMode
 {
-    String digestField();
-
     ValidityMilestoning validityMilestoning();
 }

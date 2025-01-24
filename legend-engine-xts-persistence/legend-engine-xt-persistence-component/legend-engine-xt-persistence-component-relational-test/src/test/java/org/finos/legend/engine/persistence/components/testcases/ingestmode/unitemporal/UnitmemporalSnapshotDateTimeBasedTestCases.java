@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -161,8 +162,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
                     .transactionMilestoning(TransactionDateTime.builder()
                             .dateTimeOutName(batchTimeOutField)
                             .build())
-                    .addAllPartitionFields(Arrays.asList(partitionKeys))
-                    .putAllPartitionValuesByField(partitionFilter)
+                    .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Arrays.asList(partitionKeys)).putAllPartitionValuesByField(partitionFilter).build())
                     .build();
 
             Assertions.fail("Exception was not thrown");

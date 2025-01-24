@@ -297,7 +297,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
                                                      ->filter(pm| $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
-   let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
+    let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
     let id = if($pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
                 | let pureInstanceSetImplementation = $pm.owner->toOne()->cast(@PureInstanceSetImplementation);
                   let targetClassPath = if($pureInstanceSetImplementation.class->isNotEmpty(),|$pureInstanceSetImplementation.class->toOne()->cast(@Class<Any>)->elementToPath(),|'');
@@ -305,7 +305,8 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
                   $targetClassPath + '_' + $srcClassPath;,
                 |$pm.targetSetImplementationId);
     processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', $isRootEntity, $config, []););
-   let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
+    
+    let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation) && $setImplementation->cast(@PureInstanceSetImplementation).srcClass->isNotEmpty() && $setImplementation->cast(@PureInstanceSetImplementation).srcClass->toOne()->instanceOf(Class),
                                  |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $isRootEntity, $config),
                                  |[]);
      buildEntity(

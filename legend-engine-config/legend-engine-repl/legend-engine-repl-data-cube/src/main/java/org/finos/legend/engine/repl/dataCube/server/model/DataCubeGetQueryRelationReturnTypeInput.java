@@ -14,10 +14,11 @@
 
 package org.finos.legend.engine.repl.dataCube.server.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
 public class DataCubeGetQueryRelationReturnTypeInput
 {
     public Lambda query;
-    public Boolean isolated = false;
+    public PureModelContextData model;
 }

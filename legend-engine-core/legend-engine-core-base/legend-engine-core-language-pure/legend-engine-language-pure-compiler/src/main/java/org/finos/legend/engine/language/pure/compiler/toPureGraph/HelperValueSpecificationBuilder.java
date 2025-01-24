@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -97,9 +98,14 @@ public class HelperValueSpecificationBuilder
 
     public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
+        return buildLambdaWithContext(lambdaId, expressions, parameters, context, ctx, ValueSpecificationBuilder::new);
+    }
+
+    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
+    {
         ctx.push("new lambda");
         ctx.addVariableLevel();
-        MutableList<VariableExpression> pureParameters = ListIterate.collect(parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx)));
+        MutableList<VariableExpression> pureParameters = ListIterate.collect(parameters, p -> (VariableExpression) p.accept(valueSpecificationBuilderFactory.value(context, Lists.mutable.empty(), ctx)));
         if (parameters.size() != 0 && !parameters.get(0).name.equals("v_automap"))
         {
             if (ctx.milestoningDatePropagationContext.size() == 0)
@@ -112,7 +118,7 @@ public class HelperValueSpecificationBuilder
             }
         }
         MutableList<String> openVariables = Lists.mutable.empty();
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(expressions, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(expressions, p -> p.accept(valueSpecificationBuilderFactory.value(context, openVariables, ctx)));
 
         // Remove Lambda parameters from openVariables
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
@@ -274,7 +280,7 @@ public class HelperValueSpecificationBuilder
                 automapLambda.parameters = lambdaParams;
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
-                result = context.buildFunctionExpression("map", null, newParams, openVariables, sourceInformation, processingContext).getOne();
+                result = context.buildFunctionExpression("map", null, newParams, sourceInformation, new ValueSpecificationBuilder(context, openVariables, processingContext)).getOne();
                 processingContext.pop();
             }
             else

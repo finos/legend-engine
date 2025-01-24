@@ -228,6 +228,24 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getBasicMainTableWithVersionWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(version)
+                .addFields(batchId)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
@@ -302,6 +320,18 @@ public class TestUtils
             .addFields(startTime)
             .addFields(expiryDate)
             .addFields(digest)
+            .addFields(versionPk)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithVersionWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
             .addFields(versionPk)
             .build();
     }
@@ -452,6 +482,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithVersionWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersionWithoutDigest())
             .build();
     }
 
@@ -721,6 +760,27 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getUnitemporalMainTableWithVersionWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(version)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(batchTimeIn)
+                .addFields(batchTimeOut)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getUnitemporalIdBasedMainTable()
     {
         return DatasetDefinition.builder()
@@ -797,6 +857,25 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getEntityPriceMainTableWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(entity)
+                        .addFields(price)
+                        .addFields(volume)
+                        .addFields(batchIdIn)
+                        .addFields(batchIdOut)
+                        .addFields(batchTimeIn)
+                        .addFields(batchTimeOut)
+                        .build()
+                )
+                .build();
+    }
+
     public static DatasetDefinition getEntityPriceIdBasedMainTable()
     {
         DatasetDefinition mainTable = DatasetDefinition.builder()
@@ -847,6 +926,21 @@ public class TestUtils
                 .build()
             )
             .build();
+    }
+
+    public static DatasetDefinition getEntityPriceStagingTableWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(date)
+                        .addFields(entity)
+                        .addFields(price)
+                        .addFields(volume)
+                        .build()
+                )
+                .build();
     }
 
     public static DatasetDefinition getEntityPriceWithVersionStagingTable()

@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.client;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
@@ -25,7 +26,7 @@ public class ModelState
 {
     private final LegendInterface legendInterface;
     private final MutableList<ReplExtension> replExtensions;
-    private MutableList<String> state = Lists.mutable.empty();
+    private final MutableList<String> state = Lists.mutable.empty();
 
     public ModelState(LegendInterface legendInterface, MutableList<ReplExtension> replExtensions)
     {
@@ -42,6 +43,16 @@ public class ModelState
     public PureModelContextData parse()
     {
         return this.legendInterface.parse(getText());
+    }
+
+    public PureModel compile()
+    {
+        return this.legendInterface.compile(parse());
+    }
+
+    public PureModel compileWithTransient(String transientCode)
+    {
+        return this.legendInterface.compile(parseWithTransient(transientCode));
     }
 
     public PureModelContextData parseWithTransient(String transientCode)

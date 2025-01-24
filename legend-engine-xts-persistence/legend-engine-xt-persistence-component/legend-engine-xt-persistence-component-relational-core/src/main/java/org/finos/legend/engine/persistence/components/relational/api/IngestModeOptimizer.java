@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -70,20 +71,25 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
     @Override
     public IngestMode visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
     {
-        if (!unitemporalSnapshot.partitionFields().isEmpty() && unitemporalSnapshot.derivePartitionSpec())
+        if (unitemporalSnapshot.partitioningStrategy().isPartitioned())
         {
-            return UnitemporalSnapshot
-                    .builder()
-                    .versioningStrategy(unitemporalSnapshot.versioningStrategy())
-                    .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
-                    .digestField(unitemporalSnapshot.digestField())
-                    .transactionMilestoning(unitemporalSnapshot.transactionMilestoning())
-                    .addAllPartitionFields(unitemporalSnapshot.partitionFields())
-                    .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
-                    .addAllPartitionSpecList(derivePartitionSpecList(unitemporalSnapshot.partitionFields(), unitemporalSnapshot.maxPartitionSpecFilters()))
-                    .derivePartitionSpec(unitemporalSnapshot.derivePartitionSpec())
-                    .maxPartitionSpecFilters(unitemporalSnapshot.maxPartitionSpecFilters())
-                    .build();
+            Partitioning partition = (Partitioning) unitemporalSnapshot.partitioningStrategy();
+            if (!partition.partitionFields().isEmpty() && partition.derivePartitionSpec())
+            {
+                return UnitemporalSnapshot
+                        .builder()
+                        .versioningStrategy(unitemporalSnapshot.versioningStrategy())
+                        .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
+                        .digestField(unitemporalSnapshot.digestField())
+                        .transactionMilestoning(unitemporalSnapshot.transactionMilestoning())
+                        .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
+                        .partitioningStrategy(Partitioning.builder()
+                            .addAllPartitionFields(partition.partitionFields())
+                            .addAllPartitionSpecList(derivePartitionSpecList(partition.partitionFields(), partition.maxPartitionSpecFilters()))
+                            .derivePartitionSpec(partition.derivePartitionSpec())
+                            .maxPartitionSpecFilters(partition.maxPartitionSpecFilters()).build())
+                        .build();
+            }
         }
         return unitemporalSnapshot;
     }

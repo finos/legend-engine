@@ -21,6 +21,9 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -217,6 +220,44 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         catch (Exception e)
         {
             Assertions.assertEquals("Cannot build DateTimeAuditing, some of required attributes are not set [dateTimeField]", e.getMessage());
+        }
+    }
+
+    @Test
+    void testNontemporalDeltaValidationDigestMissingNoVersioning()
+    {
+        try
+        {
+           NontemporalDelta ingestMode = NontemporalDelta.builder()
+               .auditing(NoAuditing.builder().build())
+               .build();
+
+           Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Cannot build NontemporalDelta, digestField is mandatory for NoVersioningStrategy", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUnitemporalDeltaValidationDigestMissingWithVersioning()
+    {
+        try
+        {
+            NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder()
+                    .versioningField(versionField)
+                    .mergeDataVersionResolver(DigestBasedResolver.builder().build())
+                    .build())
+                .build();
+
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("digestField is mandatory for DigestBasedResolver", e.getMessage());
         }
     }
 
