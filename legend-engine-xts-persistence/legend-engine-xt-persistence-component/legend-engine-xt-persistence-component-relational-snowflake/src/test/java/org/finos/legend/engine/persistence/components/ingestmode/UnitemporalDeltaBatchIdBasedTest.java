@@ -95,4 +95,34 @@ public class UnitemporalDeltaBatchIdBasedTest extends org.finos.legend.engine.pe
             String.format("PARSE_JSON('%s'),", stagingFilters) +
             "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
     }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSql;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorsSql;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigestUpperCase()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlUpperCase;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigestUpperCase()
+    {
+        return SnowflakeTestArtifacts.dataErrorsSqlUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigestWithBizDateVersion()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigestWithBizDateVersion()
+    {
+        return SnowflakeTestArtifacts.dataErrorsSqlWithBizDateVersion;
+    }
 }

@@ -255,9 +255,9 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(maxDupsErrorCheckSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DUPLICATES));
-        Assertions.assertEquals(dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctDigest(), operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
         Assertions.assertEquals(dupRowsSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DUPLICATE_ROWS));
-        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctDigest(), operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -514,5 +514,15 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     protected String getExpectedMetadataTableCreateQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorsSqlWithBizDateVersion;
     }
 }
