@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -91,45 +92,91 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         return builder.build();
     }
 
+    // ---------- Private Fields ----------
+    private Executor<SqlGen, TabularData, SqlPlan> executor;
+    private Transformer<SqlGen, SqlPlan> transformer;
+    private Dataset enrichedMainDataset;
+    private SchemaDefinition enrichedStagingSchema;
+    private IngestMode enrichedIngestMode;
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalSchemaEvolutionService.class);
+    private static final String MAIN_TABLE_NAME = "MAIN";
 
     // ------API-----
     public SchemaEvolutionServiceResult evolve(DatasetReference mainDatasetReference, SchemaDefinition stagingSchema, RelationalConnection connection)
     {
-        LOGGER.info("Invoked evolve method, will evolve the target dataset");
+        LOGGER.info("Invoked evolve method, will evolve the target dataset based on derived schema");
 
-        // 1. Initialize executor and transformer
-        LOGGER.info("Initializing executor and transformer");
-        Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
-        executor.setSqlLogging(sqlLogging());
-        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+        // 1. Initialize executor, transformer and datasets etc.
+        init(mainDatasetReference, stagingSchema, connection);
 
-        // 2. Handle case conversion
-        IngestMode ingestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
-        mainDatasetReference = ApiUtils.applyCase(mainDatasetReference, caseConversion());
-        stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
-
-        // 3. Check if main dataset exists
+        // 2. Check if main dataset exists
         LOGGER.info("Checking if target dataset exists");
-        if (!executor.datasetExists(mainDatasetReference))
+        if (!executor.datasetExists(enrichedMainDataset))
         {
             return SchemaEvolutionServiceResult.builder()
                 .status(SchemaEvolutionStatus.FAILED)
-                .message("Dataset is not found: " + mainDatasetReference.datasetReference().name().orElseThrow(IllegalStateException::new))
+                .message("Dataset is not found: " + enrichedMainDataset.datasetReference().name().orElseThrow(IllegalStateException::new))
                 .build();
         }
 
-        // 4. Derive main dataset schema
+        // 3. Derive main dataset schema
         LOGGER.info("Constructing target dataset schema from database");
-        Dataset mainDataset = executor.constructDatasetFromDatabase(mainDatasetReference);
+        enrichedMainDataset = executor.constructDatasetFromDatabase(enrichedMainDataset);
 
-        // 5. Generate schema evolution operations
+        // 4. Perform evolution
+        return performSchemaEvolution();
+    }
+
+    public SchemaEvolutionServiceResult evolve(DatasetDefinition mainDatasetDefinition, SchemaDefinition stagingSchema, RelationalConnection connection)
+    {
+        LOGGER.info("Invoked evolve method, will evolve the target dataset based on given schema");
+
+        // 1. Initialize executor, transformer and datasets etc.
+        init(mainDatasetDefinition, stagingSchema, connection);
+
+        // 2. Check if main dataset exists
+        LOGGER.info("Checking if target dataset exists");
+        if (!executor.datasetExists(enrichedMainDataset))
+        {
+            return SchemaEvolutionServiceResult.builder()
+                .status(SchemaEvolutionStatus.FAILED)
+                .message("Dataset is not found: " + enrichedMainDataset.datasetReference().name().orElseThrow(IllegalStateException::new))
+                .build();
+        }
+
+        // 3. Perform evolution
+        return performSchemaEvolution();
+    }
+
+    // ---------- UTILITY METHODS ----------
+    private void init(Dataset mainDataset, SchemaDefinition stagingSchema, RelationalConnection connection)
+    {
+        LOGGER.info("Invoked init method");
+
+        // 1. Initialize executor and transformer
+        LOGGER.info("Initializing executor and transformer");
+        executor = relationalSink().getRelationalExecutor(connection);
+        executor.setSqlLogging(sqlLogging());
+        transformer = new RelationalTransformer(relationalSink(), transformOptions());
+
+        // 2. Handle case conversion
+        LOGGER.info("Handling case conversion, if any");
+        enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        enrichedMainDataset = performCaseConversionForMainDataset(mainDataset);
+        enrichedStagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
+    }
+
+    private SchemaEvolutionServiceResult performSchemaEvolution()
+    {
+        LOGGER.info("Invoked performSchemaEvolution method");
+
+        // 1. Generate schema evolution operations
         LOGGER.info("Generating schema evolution operations");
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
-        SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDataset, stagingSchema);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), enrichedIngestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
+        SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(enrichedMainDataset, enrichedStagingSchema);
         LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 
-        // 6. Execute schema evolution operations
+        // 2. Execute schema evolution operations
         LOGGER.info("Starting schema evolution execution");
         List<String> executedSqls = new ArrayList<>();
         if (!schemaEvolutionLogicalPlan.ops().isEmpty())
@@ -160,5 +207,34 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
             .status(SchemaEvolutionStatus.SUCCEEDED)
             .addAllExecutedSchemaEvolutionSqls(executedSqls)
             .build();
+    }
+
+    public boolean isSchemaEvolvable(SchemaDefinition mainSchema, SchemaDefinition stagingSchema)
+    {
+        LOGGER.info("Invoked isSchemaEvolvable method, will check if schema evolution is possible");
+
+        // Creates DatasetDefinition from the given schema
+        DatasetDefinition mainDatasetDefinition = DatasetDefinition.builder().name(MAIN_TABLE_NAME).schema(mainSchema).build();
+
+        // Handle case conversion
+        IngestMode ingestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        mainDatasetDefinition = ApiUtils.applyCase(mainDatasetDefinition, caseConversion());
+        stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
+
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
+        return schemaEvolution.isSchemaEvolvable(mainDatasetDefinition, stagingSchema);
+    }
+
+    private Dataset performCaseConversionForMainDataset(Dataset mainDataset)
+    {
+        if (mainDataset instanceof DatasetDefinition)
+        {
+            return ApiUtils.applyCase((DatasetDefinition) mainDataset, caseConversion());
+        }
+        else if (mainDataset instanceof DatasetReference)
+        {
+            return ApiUtils.applyCase((DatasetReference) mainDataset, caseConversion());
+        }
+        throw new IllegalStateException("Unexpected dataset type, only DatasetDefinition and DatasetReference are supported!");
     }
 }

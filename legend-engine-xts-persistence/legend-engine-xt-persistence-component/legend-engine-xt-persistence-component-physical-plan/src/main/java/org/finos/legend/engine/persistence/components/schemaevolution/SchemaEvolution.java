@@ -107,6 +107,19 @@ public class SchemaEvolution
         this.ignoreCase = ignoreCase;
     }
 
+    public boolean isSchemaEvolvable(Dataset mainDataset, SchemaDefinition stagingSchema)
+    {
+        try
+        {
+            buildLogicalPlanForSchemaEvolution(mainDataset, stagingSchema);
+            return true;
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            return false;
+        }
+    }
+
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, SchemaDefinition stagingDataset)
     {
         List<Operation> operations = new ArrayList<>();

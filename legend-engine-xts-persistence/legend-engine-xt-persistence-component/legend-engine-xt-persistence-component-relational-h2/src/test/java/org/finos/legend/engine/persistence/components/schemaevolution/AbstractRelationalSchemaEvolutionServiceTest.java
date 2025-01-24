@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components;
+package org.finos.legend.engine.persistence.components.schemaevolution;
 
+import org.finos.legend.engine.persistence.components.BaseTest;
+import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
@@ -24,8 +26,6 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalS
 import org.finos.legend.engine.persistence.components.relational.api.SchemaEvolutionServiceResult;
 import org.finos.legend.engine.persistence.components.relational.api.SchemaEvolutionStatus;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -51,8 +51,10 @@ import static org.finos.legend.engine.persistence.components.TestUtils.startTime
 import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
 
-class RelationalSchemaEvolutionServiceTest extends BaseTest
+public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseTest
 {
+    protected abstract SchemaEvolutionServiceResult evolve(Dataset mainDataset, Dataset stagingDataset, RelationalSchemaEvolutionService evolutionService);
+
     @Test
     void testAddColumn() throws Exception
     {
@@ -82,7 +84,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -128,7 +131,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTableDatasetReference, stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName.toUpperCase(), mainTableName.toUpperCase());
         List<String> expectedSchema = Arrays.asList(schema);
@@ -167,7 +171,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -207,7 +212,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -249,7 +255,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -288,7 +295,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -328,7 +336,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -368,9 +377,11 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
+        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+
         try
         {
-            evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
             Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
@@ -405,7 +416,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         Assertions.assertEquals(SchemaEvolutionStatus.FAILED, result.status());
         Assertions.assertEquals("Dataset is not found: main", result.message().get());
