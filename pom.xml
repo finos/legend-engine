@@ -47,7 +47,6 @@
         <!-- RelationalAI -->
         <module>legend-engine-xts-relationalai</module>
 
-
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
         <module>legend-engine-xts-protobuf</module>
@@ -1220,13 +1219,7 @@
                 <version>${project.version}</version>
                 <type>test-jar</type>
             </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                <version>${project.version}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
+             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlPlanning-pure</artifactId>
                 <version>${project.version}</version>
@@ -1964,16 +1957,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-http-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-mapping-integration</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-mapping-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

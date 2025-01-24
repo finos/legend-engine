@@ -285,10 +285,6 @@
                     <groupId>org.finos.legend.engine</groupId>
                     <artifactId>legend-engine-language-pure-compiler</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.pac4j</groupId>-->
-<!--                    <artifactId>*</artifactId>-->
-<!--                </exclusion>-->
             </exclusions>
         </dependency>
         <!-- TEST -->
