@@ -23,7 +23,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
-      aliasLimit = 256,
+      aliasLimit = 1000,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -185,11 +185,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),        
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
-    dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, VARCHAR(128))')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
@@ -553,12 +552,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       let opStr =
         if($s.filteringOperation->isEmpty(),
           | '',
-          | $s.filteringOperation->map(s | $s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+          | $s.filteringOperation->map(s | $s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
       );
       let havingStr =
         if($s.havingOperation->isEmpty(),
           | '',
-          | $s.havingOperation->map(s|$s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+          | $s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
       );
 
       $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
@@ -590,46 +589,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
           let shouldWrapWithCase = $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed;
           if($shouldWrapWithCase,
             | 'case when ('
-              + $a.relationalElement->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions)
+              + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions)
               + ') then \'true\' else \'false\' end as ' + $a.name,
-            | $r->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+            | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
           );,
 
-        z: RelationalOperationElement[1] | $z->wrapH2Boolean($extensions)->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+        z: RelationalOperationElement[1] | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
       ]))->joinStrings(', ' + $format.separator);
   );
-}
-
-/*
-TODO:
-- what to do with freemarker placeholder operations? They are also RelationalOpElements
-*/
-// To be used to wrap filter conditions and their arguments to compare boolean to boolean
-function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::wrapH2Boolean(
-  op: RelationalOperationElement[1], extensions: Extension[*]
-): RelationalOperationElement[1]
-{
-  // Base case: at an equals sign whose children are case and a booleanExpr OR we are a solitary case node
-  // Tail recurse: if we are at oneOf ['and', 'or', 'not', 'group'] or a optional placeholder, then recurse left and right
-  $op->match([
-    d: DynaFunction[1]                | if(isCastableDyna($d),
-                                          | ^DynaFunction(name='castBoolean', parameters=[$d]),
-                                          | if(isEqualComparingCastableDynaAndBoolean($d),
-                                              | ^$d(parameters=$d.parameters->map(p| ^DynaFunction(name='castBoolean', parameters=[$p]))),
-                                              | if(atRecursibleOperation($d),
-                                                  | ^$d(parameters=$d.parameters->map(p| $p->wrapH2Boolean($extensions))),
-                                                  | $d
-                                                )
-                                            )
-                                        ),
-    // Casting alias is required for wrapping logic within projections
-    a: Alias[1]                       | ^$a(relationalElement = wrapH2Boolean($a.relationalElement, $extensions)),
-    f: FreeMarkerOperationHolder[1]   | if($f.name->in(['optionalVarPlaceHolderOpSelector']),
-                                          | ^$f(parameters=$f.parameters->map(p| $p->wrapH2Boolean($extensions))),
-                                          | $f
-                                        ),
-    e: RelationalOperationElement[1]  | $e
-  ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::isEqualComparingCastableDynaAndBoolean(
@@ -712,7 +679,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                                                 + $j.alias
                                                     ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                     ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-                                                + ' ' + 'on (' + $j.join.operation->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+                                                + ' ' + 'on (' + $j.join.operation->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';
                                             )),
                                        a:Any[1] | ''
                                     ]
@@ -728,442 +695,3 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
    '%s offset %s rows'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' fetch next %s rows only'->format($size));
 }
 
-
-/* Test:
-  "root".RG_FUNCTION_ID = 2
-  and ((case when "root".MEMBERSHIP_SOURCE = 'CUSTOM' then 'true' else 'false' end = true and
-        case when "root".IS_CATCH_ALL_GROUP = 1 then 'true' else 'false' end = false) and "root".STATUS = 'A')
-  and "root".IN_Z <= DATE '8888-01-01'
-  and "root".OUT_Z > DATE '8888-01-01'
-*/
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testSomeAST_thenIsWrapped(): Boolean[1]
-{
-  let inner = ^DynaFunction(name='group', parameters=[
-    ^DynaFunction(name='and', parameters=[
-      ^DynaFunction(name='group', parameters=[
-        ^DynaFunction(name='and', parameters=[
-          ^DynaFunction(name='equal', parameters=[
-            ^DynaFunction(name='if', parameters=[
-              ^DynaFunction(name='equal', parameters=[^Literal(value='CUSTOM'), ^Literal(value='CUSTOM')]),
-              ^Literal(value='true'),
-              ^Literal(value='false')
-            ]),
-            ^Literal(value=true)
-          ]),
-          ^DynaFunction(name='equal', parameters=[
-            ^DynaFunction(name='if', parameters=[
-              ^DynaFunction(name='equal', parameters=[^Literal(value=1), ^Literal(value=2)]),
-              ^Literal(value='true'),
-              ^Literal(value='false')
-            ]),
-            ^Literal(value=false)
-          ])
-        ])
-      ]),
-      ^DynaFunction(name='equal', parameters=[^Literal(value='A'), ^Literal(value='A')])
-    ])
-  ]);
-
-  let op = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(name='and', parameters=[
-      ^DynaFunction(name='and', parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value=2), ^Literal(value=2)]),
-        $inner
-      ]),
-      ^DynaFunction(name='lessThanEqual', parameters=[^Literal(value='8888-01-01'), ^Literal(value='8888-01-01')])
-    ]),
-    ^DynaFunction(name='greaterThan', parameters=[^Literal(value='8888-01-02'), ^Literal(value='8888-01-01')])
-  ]);
-
-  let castedInner = ^DynaFunction(name='group', parameters=[
-    ^DynaFunction(name='and', parameters=[
-      ^DynaFunction(name='group', parameters=[
-        ^DynaFunction(name='and', parameters=[
-          ^DynaFunction(name='equal', parameters=[
-            ^DynaFunction(name='castBoolean', parameters=[
-              ^DynaFunction(name='if', parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='CUSTOM'), ^Literal(value='CUSTOM')]),
-                ^Literal(value='true'),
-                ^Literal(value='false')
-              ])
-            ]),
-            ^DynaFunction(name='castBoolean', parameters=[^Literal(value=true)])
-          ]),
-          ^DynaFunction(name='equal', parameters=[
-            ^DynaFunction(name='castBoolean', parameters=[
-              ^DynaFunction(name='if', parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value=1), ^Literal(value=2)]),
-                ^Literal(value='true'),
-                ^Literal(value='false')
-              ])
-            ]),
-            ^DynaFunction(name='castBoolean', parameters=[^Literal(value=false)])
-          ])
-        ])
-      ]),
-      ^DynaFunction(name='equal', parameters=[^Literal(value='A'), ^Literal(value='A')])
-    ])
-  ]);
-
-  let expected = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(name='and', parameters=[
-      ^DynaFunction(name='and', parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value=2), ^Literal(value=2)]),
-        $castedInner
-      ]),
-      ^DynaFunction(name='lessThanEqual', parameters=[^Literal(value='8888-01-01'), ^Literal(value='8888-01-01')])
-    ]),
-    ^DynaFunction(name='greaterThan', parameters=[^Literal(value='8888-01-02'), ^Literal(value='8888-01-01')])
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  print($wrappedOp);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenJustCase_thenIsWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(
-    name='case',
-    parameters=[
-      ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-      ^Literal(value='true'),
-      ^Literal(value='false')
-    ]
-  );
-
-  let expected = ^DynaFunction(
-    name= 'castBoolean',
-    parameters=[
-      ^DynaFunction(
-        name='case',
-        parameters=[
-          ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-          ^Literal(value='true'),
-          ^Literal(value='false')
-        ]
-      )
-    ]
-  );
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseNestedByAnd_thenIsWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='case',
-      parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-        ^Literal(value='true'),
-        ^Literal(value='false')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name= 'castBoolean',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        )
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseEqualBooleanLit_thenBothWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value=true)
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name= 'castBoolean',
-          parameters=[
-            ^DynaFunction(
-              name='case',
-              parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-                ^Literal(value='true'),
-                ^Literal(value='false')
-              ]
-            )
-          ]
-        ),
-        ^DynaFunction(name= 'castBoolean', parameters=[^Literal(value=true)])
-      ]
-    ),
-    ^DynaFunction(name='equal', parameters=[^Literal(value=1), ^Literal(value=1)])
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseEqualTrue_thenNoOp(): Boolean[1]
-{
-  let op = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value='true')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value='true')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseEqualYesNoLit_thenNoOp(): Boolean[1]
-{
-  let op = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value='Y')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='and', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value='Y')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseNestedByNot_thenIsWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(name='not', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value=true)
-      ]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='not', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='castBoolean',
-          parameters=[
-            ^DynaFunction(
-              name='case',
-              parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-                ^Literal(value='true'),
-                ^Literal(value='false')
-              ]
-            )
-          ]
-        ),
-        ^DynaFunction(name= 'castBoolean', parameters=[^Literal(value=true)])
-      ]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseNestedByOr_thenIsWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(name='or', parameters=[
-    ^DynaFunction(
-      name='case',
-      parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-        ^Literal(value='true'),
-        ^Literal(value='false')
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='or', parameters=[
-    ^DynaFunction(
-      name= 'castBoolean',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        )
-      ]
-    ),
-    ^DynaFunction(
-      name='equal',
-      parameters=[^Literal(value=1), ^Literal(value=1)]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenCaseNestedByGroup_thenIsWrapped(): Boolean[1]
-{
-  let op = ^DynaFunction(name='group', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='case',
-          parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-            ^Literal(value='true'),
-            ^Literal(value='false')
-          ]
-        ),
-        ^Literal(value=true)
-      ]
-    )
-  ]);
-
-  let expected = ^DynaFunction(name='group', parameters=[
-    ^DynaFunction(
-      name='equal',
-      parameters=[
-        ^DynaFunction(
-          name='castBoolean',
-          parameters=[
-            ^DynaFunction(
-              name='case',
-              parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
-                ^Literal(value='true'),
-                ^Literal(value='false')
-              ]
-            )
-          ]
-        ),
-        ^DynaFunction(name='castBoolean', parameters=[^Literal(value=true)])
-      ]
-    )
-  ]);
-
-  let wrappedOp = wrapH2Boolean($op, []);
-  assertEquals($expected, $wrappedOp);
-}
