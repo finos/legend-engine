@@ -1512,8 +1512,8 @@ public class TestUtils
     // This is to check the actual database table - whether columns have the right nullability
     public static String getIsColumnNullableFromTable(RelationalExecutionHelper sink, String tableName, String columnName)
     {
-        List<Map<String, Object>> result = sink.executeQuery("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
-        return result.get(0).get("IS_NULLABLE").toString();
+        List<Map<String, Object>> result = sink.executeQuery("SELECT is_nullable FROM information_schema.columns WHERE table_name ='" + tableName + "' and column_name  ='" + columnName + "'");
+        return result.get(0).get("is_nullable").toString();
     }
 
     // This is to check the actual database table - the length (precision) of the column data type
