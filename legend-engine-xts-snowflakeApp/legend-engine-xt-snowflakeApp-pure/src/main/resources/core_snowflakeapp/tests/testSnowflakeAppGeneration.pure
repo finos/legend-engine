@@ -71,6 +71,18 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam_Gender_1__TabularDataSet_1_, $expected);
 }
 
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testInputDataTypes():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", "root".dateTime as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::testReturnType_String_1__Integer_1__Boolean_1__DateTime_1__TabularDataSet_1_, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testReturnDataTypes():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION %S.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root"."DATE" as "Date", "root".dateTime as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  assertSnowflakeArtifactForFunction(meta::external::function::activator::snowflakeApp::tests::testDataType__TabularDataSet_1_, $expected);
+}
+
 //function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
 //{
 // let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
@@ -154,3 +166,75 @@ function meta::external::function::activator::snowflakeApp::tests::assertSnowfla
   assertEquals($expected, $generatedQuery);
 }
 
+function meta::external::function::activator::snowflakeApp::tests::testDataType():TabularDataSet[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::DataTypeClass.all()->project(
+    [col(x|$x.bigInt, 'Big Int') ,
+    col(x|$x.boolean,'Boolean'),  
+    col(x|$x.date,'Date') ,
+    col(x|$x.dateTime, 'Date Time'), 
+    col(x|$x.decimal, 'Decimal') ,
+    col(x|$x.integer, 'Integer') , 
+    col(x|$x.string, 'String') ]
+  )
+  ->from(meta::external::function::activator::snowflakeApp::tests::DatatypeDBMapping, testRuntimeWithTimeZone(dbInc));
+}
+
+function meta::external::function::activator::snowflakeApp::tests::testReturnType(str:String[1], int:Integer[1], bool:Boolean[1], dt:DateTime[1]):TabularDataSet[1]
+{
+  meta::external::function::activator::snowflakeApp::tests::DataTypeClass.all()->project(
+    [col(x|$x.bigInt, 'Big Int') ,
+    col(x|$x.boolean,'Boolean'),  
+    col(x|$x.date,'Date') ,
+    col(x|$x.dateTime, 'Date Time'), 
+    col(x|$x.decimal, 'Decimal') ,
+    col(x|$x.integer, 'Integer') , 
+    col(x|$x.string, 'String') ]
+
+)->from(meta::external::function::activator::snowflakeApp::tests::DatatypeDBMapping, testRuntimeWithTimeZone(dbInc));
+}
+
+Class  meta::external::function::activator::snowflakeApp::tests::DataTypeClass
+{
+  string: String[0..1];
+  dateTime: DateTime[0..1];
+  decimal: Float[0..1];
+  boolean: Boolean[0..1];
+  bigInt: Integer[0..1];
+  integer: Integer[0..1];
+  date: StrictDate[0..1];
+  semiStructured: String[0..1];
+}
+
+###Mapping
+Mapping meta::external::function::activator::snowflakeApp::tests::DatatypeDBMapping
+(
+  *meta::external::function::activator::snowflakeApp::tests::DataTypeClass: Relational
+  {
+
+    ~mainTable [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable
+    string: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.string,
+    dateTime: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.dateTime,
+    decimal: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.decimal,
+    boolean: case(isNull([meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.boolean), sqlNull(), case(equal([meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.boolean, 1), sqlTrue(), sqlFalse())),
+    bigInt: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.bigInt,
+    integer: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.integer,
+    date: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.date
+    // semiStructured: [meta::external::function::activator::snowflakeApp::tests::DatatypeDB]dataTypeTable.semiStructured
+  }
+)
+
+###Relational
+Database meta::external::function::activator::snowflakeApp::tests::DatatypeDB
+(
+   Table dataTypeTable
+  (
+    string VARCHAR(250) PRIMARY KEY,
+    dateTime TIMESTAMP,
+    decimal DECIMAL(20, 8),
+    boolean BIT,
+    bigInt BIGINT,
+    integer INTEGER,
+    date DATE
+      )
+)
