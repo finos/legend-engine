@@ -86,7 +86,6 @@ function <<access.private>> meta::pure::router::platform::routing::specializedRo
                                     x:Any[1] | true,
                                     $extensions,
                                     ^$debug(space = $debug.space+'  '));
-          // meta::pure::ide::debug();
           let fullRes = ^$fe(parametersValues = $processed.value->cast(@ValueSpecification));
           let firstRelation = $processed->head()->toOne();
           ^$firstRelation(value=$fullRes);
