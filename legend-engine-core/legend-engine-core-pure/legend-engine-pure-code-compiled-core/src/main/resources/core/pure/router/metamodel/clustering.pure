@@ -60,7 +60,7 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
   ]);
 }
 
-function <<access.private>>  meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], vs:ValueSpecification[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], vs:ValueSpecification[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
     //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
     //the only place where sql is generated for this case.

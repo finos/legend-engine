@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import io.opentracing.Span;
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;

@@ -572,10 +572,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                             ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));                                        
                                           )
                                      ];
-                                     if ($ifs,|
-                                     fail();
-                                      ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))),|^$select(columns = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(),  multiplicity = $v.multiplicity)))));
-                                     );,                                    
+                                     if ($ifs,|^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))),|^$select(columns = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(),  multiplicity = $v.multiplicity))))));,
                                   v:ValueSpecification[1] | processValueSpecification($v, $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   l:LambdaFunction<Any>[1] | $l.expressionSequence->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   x:meta::pure::store::RelationStoreAccessor<Any>[1] |

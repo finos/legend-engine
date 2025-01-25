@@ -116,6 +116,7 @@ Class meta::pure::executionPlan::ExecutionOptionContext extends MultiExecutionCo
 
 // Move to platform
 
+
 Class meta::pure::executionPlan::PlanVarPlaceHolder extends meta::pure::executionPlan::FunctionParameter
 {
     routingStrategy: meta::pure::router::metamodel::RoutingStrategy[0..1];
@@ -158,18 +159,15 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
    let node = if ($clusters->size() == 1,
        | print(if($debugContext.debug,|'Generating plan for cluster: '+$clusters->at(0)->meta::pure::router::printer::asString()+'\n',|''));
          $clusters->at(0)->plan($inScopeVars, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));,
-       | 
-         let allNodes = $clusters->fold({c,a|let x = $a.vars;
+       | let allNodes = $clusters->fold({c,a|let x = $a.vars;
                                              print(if($debugContext.debug,|'Generating plan for cluster: '+$c->meta::pure::router::printer::asString()+'\n',|''));
-                                             
                                              let node = $c->plan($x, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));
                                              let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.genericType.rawType->toOne() == TabularDataSet,
-                                                                                                                          |^PlanSetPlaceHolder(name = $a.varName, tdsColumns = $a.resultType->cast(@TDSResultType).tdsColumns),
-                                                                                                                          |^PlanVarPlaceHolder(name = $a.varName, genericType = $a.resultType.genericType, multiplicity = $a.resultSizeRange);
-                                                                                                                        );
-                                                                                                        $x->put($a.varName, ^List<Any>(values=$varValues));,
-                                                                          a:Any[*]|$x]);
-                                             ^$a(nodes+=$node, vars = $nVars);                                       
+                                                                                                                       |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
+                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,genericType = $a.resultType.genericType, multiplicity=$a.resultSizeRange));
+                                                                                                    $x->put($a.varName, ^List<Any>(values=$varValues));,
+                                                                       a:Any[*]|$x]);
+                                             ^$a(nodes+=$node, vars = $nVars);
                                         }, ^NodeAndVars(vars = $inScopeVars)).nodes;
          ^SequenceExecutionNode
          (
