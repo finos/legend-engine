@@ -127,6 +127,8 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         enableCors(environment);
 
         postInit();
+
+        this.pureSession.getPureRuntime().initialize();
     }
 
     protected void postInit()

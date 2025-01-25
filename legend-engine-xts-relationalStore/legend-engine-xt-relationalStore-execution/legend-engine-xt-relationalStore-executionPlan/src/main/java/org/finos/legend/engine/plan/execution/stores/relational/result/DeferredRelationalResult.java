@@ -63,9 +63,9 @@ public class DeferredRelationalResult extends Result
         return new RelationalResult(sqlResult, this.tdsInstantiationExecutionNode);
     }
 
-    public String sql()
+    @Override
+    public Result realizeInMemory()
     {
-        SQLExecutionNode sqlExecutionNode = (SQLExecutionNode) this.tdsInstantiationExecutionNode.executionNodes.get(0);
-        return sqlExecutionNode.sqlQuery();
+        return this.evaluate().realizeInMemory();
     }
 }

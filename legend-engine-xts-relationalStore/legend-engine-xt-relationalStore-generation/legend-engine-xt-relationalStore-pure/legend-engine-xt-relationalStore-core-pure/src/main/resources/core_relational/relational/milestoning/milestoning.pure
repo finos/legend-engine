@@ -107,7 +107,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
     $e->match([     v:VarSetPlaceHolder[1] | $v,
                     pl:VarPlaceHolder[1]|$pl,
                     c:CommonTableExpressionReference[1] | $c,
-                    c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SQLQuery)),
+                    c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),
                     s:SelectSQLQuery[1] | let rootTable = $s.data.alias;
                                           let sourceFilterOp = $s.filteringOperation->map(f|$f->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions));
                                           let tableFilterOp = $tableToFilterOp->eval($rootTable);
@@ -124,13 +124,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                                               data=$newRoot,
                                               leftSideOfFilter = if($s.leftSideOfFilter->isEmpty(),|[],|$s.leftSideOfFilter->toOne()->findOneNode($s.data->toOne(), $newRoot))
                                            );
-                                          if($newS->instanceOf(SelectSQLQueryWithCommonTableExpressions),
-                                          |
-                                            let selectWithCte = $newS->cast(@SelectSQLQueryWithCommonTableExpressions);
-                                            ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(cte | $cte->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@CommonTableExpression)));,
-                                          |
-                                            $newS;
-                                          );, 
+                                          ^$newS(commonTableExpressions = $newS.commonTableExpressions->map(cte | $cte->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@CommonTableExpression)));,
                     a:Alias[1] | ^$a(relationalElement=$a.relationalElement->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     u:Union[1] | ^$u(queries=$u.queries->map(q|$q->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery))),
                     v:ViewSelectSQLQuery[1] | if($shouldProcessViewSubSelect,|^$v(selectSQLQuery=$v.selectSQLQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),|$v),
@@ -500,11 +494,10 @@ function meta::relational::milestoning::getQueryTableRelationalOperationElements
    $el->match([
      u : Union[1] | $u.queries->getQueryTableRelationalOperationElements(),
      c : CommonTableExpression[1] | $c.sqlQuery->getQueryTableRelationalOperationElements(),
-     s : SelectSQLQueryWithCommonTableExpressions[1] | let tablesInCtes = $s.commonTableExpressions->fold({c, res |
+     s : SelectSQLQuery[1] | let tablesInCtes = $s.commonTableExpressions->fold({c, res |
                                                         $res->concatenate($c->getQueryTableRelationalOperationElements());
                                                        }, []);
                                                        $tablesInCtes->concatenate(getQueryTableAliases($s.data))->concatenate(getQueryTableAliases($s.filteringOperation));,
-     s : SelectSQLQuery[1]|getQueryTableAliases($s.data)->concatenate(getQueryTableAliases($s.filteringOperation)),
      s : ViewSelectSQLQuery[1]|getQueryTableAliases($s.selectSQLQuery),
      a : RootJoinTreeNode[1]|getQueryTableAliases($a.alias)->concatenate(getQueryTableAliases($a->children())),
      b : JoinTreeNode[1]|getQueryTableAliases($b.alias)->concatenate(getQueryTableAliases($b.join.target))->concatenate(getQueryTableAliases($b->children())),

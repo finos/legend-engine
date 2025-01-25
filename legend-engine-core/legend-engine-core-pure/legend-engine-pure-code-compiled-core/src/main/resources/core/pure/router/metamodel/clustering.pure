@@ -60,7 +60,7 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
   ]);
 }
 
-function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], vs:ValueSpecification[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function <<access.private>>  meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], vs:ValueSpecification[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
     //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
     //the only place where sql is generated for this case.
@@ -82,8 +82,8 @@ function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(s
 function meta::pure::router::clustering::areClustersCompatible(cluster1:ClusteredValueSpecification[1], cluster2:ClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   $cluster1->match([
-      sc:StoreMappingClusteredValueSpecification[1] |
-          $cluster2->instanceOf(StoreMappingClusteredValueSpecification) && areStoreMappingClustersCompatible($cluster1->cast(@StoreMappingClusteredValueSpecification), $cluster2->cast(@StoreMappingClusteredValueSpecification), $extensions),
+      sc:StoreClusteredValueSpecification[1] |
+          $cluster2->instanceOf(StoreClusteredValueSpecification) && areStoreClustersCompatible($cluster1->cast(@StoreClusteredValueSpecification), $cluster2->cast(@StoreClusteredValueSpecification), $extensions),
       ef:ExternalFormatClusteredValueSpecification[1] |
           $cluster2->instanceOf(ExternalFormatClusteredValueSpecification) && $cluster1->cast(@ExternalFormatClusteredValueSpecification).binding == $cluster2->cast(@ExternalFormatClusteredValueSpecification).binding,
       pl:PlatformClusteredValueSpecification[1] |

@@ -31,7 +31,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       literalProcessor = $literalProcessor,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
-      selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,

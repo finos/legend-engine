@@ -77,21 +77,8 @@ public class SQLExecutionResult extends SQLResult
         try
         {
             long start = System.currentTimeMillis();
-            List<String> ctes = activities.stream()
-                    .filter(RelationalExecutionActivity.class::isInstance)
-                    .map(RelationalExecutionActivity.class::cast)
-                    .filter(x -> x.sql.startsWith("WITH "))
-                    .map(x -> x.sql.substring(5))
-                    .collect(Collectors.toCollection(Lists.mutable::empty))
-                    .distinct();
-
-            String cte = "";
-            if (!ctes.isEmpty())
-            {
-                cte = "WITH\n\t\t" + String.join(",\n\t\t", ctes) + "\n";
-            }
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
-            String sql = activity.comment != null ? activity.comment.concat("\n").concat(cte).concat(activity.sql) : cte.concat(activity.sql);
+            String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             String logMessage = logSQLWithParamValues ? sql : SQLExecutionNode.sqlQuery();
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             if (this.getRequestContext() != null)

@@ -287,17 +287,7 @@ public class RelationalExecutor
             if (result instanceof DeferredRelationalResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
                 DeferredRelationalResult deferredRelationalResult = (DeferredRelationalResult) result;
-                // cross store - convert to relational result and letting temp table handle it
-                if (!deferredRelationalResult.getConnectionKey().equals(connection.getOne()))
-                {
-                    result = deferredRelationalResult.evaluate();
-                }
-                else
-                {
-                    String sql = "WITH " + var.getKey() + " AS (" + deferredRelationalResult.sql() + ")";
-                    this.prepareForSQLExecution(sql, null, connection, databaseTimeZone, databaseTypeName, tempTableList, identity, executionState, shouldLogSQL);
-                    sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", var.getKey());
-                }
+                result = deferredRelationalResult.evaluate();
             }
 
             if (result instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))

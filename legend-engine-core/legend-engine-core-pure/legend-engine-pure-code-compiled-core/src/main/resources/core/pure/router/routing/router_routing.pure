@@ -136,16 +136,9 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                       [ pair(
                                                           | $i.values->size() == 1 && $i.values->at(0)->instanceOf(meta::pure::executionPlan::PlanVarPlaceHolder) 
                                                               && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).genericType.rawType->toOne()->subTypeOf(Relation)
-                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routedVs->filter(x | $x->instanceOf(meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification))->isNotEmpty(),
+                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routingStrategy->isNotEmpty(),
                                                           |
-                                                            let letVs = $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routedVs;
-                                                            let assignment = $letVs->cast(@meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification).val->cast(@meta::pure::router::RoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->tail()->toOne();
-                                                            let newState = $assignment->filter(x | $x->instanceOf(meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification))
-                                                              ->map(x | $x->cast(@meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification))
-                                                              ->map(x | $x.runtime)
-                                                              ->map(runtime | ^$state(routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromRuntime($runtime)))
-                                                              ->defaultIfEmpty($state)->toOne();
-                                                            $newState;
+                                                            ^$state(routingStrategy = $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routingStrategy->toOne());
                                                         ),
                                                         pair(
                                                           | $i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor) || ($i.values->isEmpty() && $i.multiplicity == PureOne && $i.genericType.rawType->isNotEmpty() && $i.genericType.rawType->toOne()->subTypeOf(Relation)),
