@@ -106,13 +106,11 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
    {
-     $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
-   }: String[1];
-
-   selectSQLQueryWithCTEsProcessor(s:SelectSQLQueryWithCommonTableExpressions[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
-   {
-     assert($this.dbExtension.selectSQLQueryWithCTEsProcessor->isNotEmpty(), '[unsupported-api] Common Table Expressions are not supported for Database Type: ' + $this.dbType->toString());
-     $this.dbExtension.selectSQLQueryWithCTEsProcessor->toOne()->eval($s, $sgc, $isSubSelect);
+     let cte = $s.commonTableExpressions->isNotEmpty()->if(
+             | $this.dbExtension.commonTableExpressionsProcessor->toOne('Common table expression not supported on DB ' + $this.dbType.name)->eval($s.commonTableExpressions, $sgc, $isSubSelect),
+             | ''
+     );
+     $cte + $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
    }: String[1];
 
    upsertSQLQueryProcessor(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1])
@@ -247,7 +245,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    joinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
-   selectSQLQueryWithCTEsProcessor: meta::pure::metamodel::function::Function<{SelectSQLQueryWithCommonTableExpressions[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
+   commonTableExpressionsProcessor: meta::pure::metamodel::function::Function<{CommonTableExpression[*], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    schemaIdentifierToString: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
@@ -498,13 +496,16 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
 
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   if($s->instanceOf(SelectSQLQueryWithCommonTableExpressions),
-   | $sgc.dbConfig.selectSQLQueryWithCTEsProcessor($s->cast(@SelectSQLQueryWithCommonTableExpressions), $sgc, $isSubSelect),
-   | if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
-     | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
+   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
+     | 
+      let cte = $s.commonTableExpressions->isNotEmpty()->if(
+             | $sgc.dbConfig.dbExtension.commonTableExpressionsProcessor->toOne('Common table expression not supported on DB ' + $sgc.dbConfig.dbType.name)->eval($s.commonTableExpressions, $sgc, $isSubSelect),
+             | ''
+      );
+      $cte + $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions);
+     ,
      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
-     )
-   )
+   );
 }
 
 function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]

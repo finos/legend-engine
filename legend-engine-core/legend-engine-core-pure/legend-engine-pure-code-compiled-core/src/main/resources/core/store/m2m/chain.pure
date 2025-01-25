@@ -123,9 +123,9 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
        | $clusters->at(0)->plan($inScopeVars, $exeCtx, $extensions, $debug),
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
                                              let node = $c->plan($x, $exeCtx, $extensions, $debug);
-                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.genericType.rawType->toOne() ==TabularDataSet,
-                                                                                                                       |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
-                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,genericType = $a.resultType.genericType, multiplicity=$a.resultSizeRange));
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.genericType.rawType->toOne() == TabularDataSet,
+                                                                                                                       |^PlanSetPlaceHolder(name = $a.varName, tdsColumns = $a.resultType->cast(@TDSResultType).tdsColumns),
+                                                                                                                       |^PlanVarPlaceHolder(name = $a.varName, genericType = $a.resultType.genericType, multiplicity = $a.resultSizeRange));
                                                                                                     $x->put($a.varName, ^List<Any>(values=$varValues));,
                                                                        a:Any[*]|$x]);
                                              ^$a(nodes+=$node, vars = $nVars);
