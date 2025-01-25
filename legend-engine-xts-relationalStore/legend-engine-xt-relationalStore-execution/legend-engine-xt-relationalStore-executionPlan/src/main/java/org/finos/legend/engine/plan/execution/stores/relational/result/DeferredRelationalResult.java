@@ -31,7 +31,6 @@ public class DeferredRelationalResult extends Result
     private final ExecutionState executionState;
     private final Identity identity;
     private final RelationalTdsInstantiationExecutionNode tdsInstantiationExecutionNode;
-    private final ConnectionKey connectionKey;
 
     public DeferredRelationalResult(RelationalTdsInstantiationExecutionNode tdsInstantiationExecutionNode, Identity identity, ExecutionState executionState)
     {
@@ -39,12 +38,6 @@ public class DeferredRelationalResult extends Result
         this.tdsInstantiationExecutionNode = tdsInstantiationExecutionNode;
         this.identity = identity;
         this.executionState = executionState;
-        this.connectionKey = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getConnectionManager().generateKeyFromDatabaseConnection(((SQLExecutionNode) this.tdsInstantiationExecutionNode.executionNodes.get(0)).connection);
-    }
-
-    public ConnectionKey getConnectionKey()
-    {
-        return this.connectionKey;
     }
 
     @Override
