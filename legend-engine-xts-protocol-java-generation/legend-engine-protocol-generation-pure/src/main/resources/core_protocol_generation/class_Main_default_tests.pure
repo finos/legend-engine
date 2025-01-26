@@ -71,6 +71,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::default::testDe
                 '        this.value = value;\n'+
                 '        return this;\n'+
                 '    }\n'+
+                '\n'+
+                '    public Nested getValue()\n'+
+                '    {\n'+
+                '        return this.value;\n'+
+                '    }\n'+
                 '}', $sources->at(0));
 
   assertEquals( 'package org.finos;\n'+
@@ -87,16 +92,31 @@ function <<test.Test>> meta::protocols::generation::java::tests::default::testDe
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Boolean getBool()\n'+
+                '    {\n'+
+                '        return this.bool;\n'+
+                '    }\n'+
+                '\n'+
                 '    public Nested _ok(Long ok)\n'+
                 '    {\n'+
                 '        this.ok = ok;\n'+
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Long getOk()\n'+
+                '    {\n'+
+                '        return this.ok;\n'+
+                '    }\n'+
+                '\n'+
                 '    public Nested _other(String other)\n'+
                 '    {\n'+
                 '        this.other = other;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public String getOther()\n'+
+                '    {\n'+
+                '        return this.other;\n'+
                 '    }\n'+
                 '}', $sources->at(1));
 
@@ -116,10 +136,20 @@ function <<test.Test>> meta::protocols::generation::java::tests::default::testDe
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public String getValue()\n'+
+                '    {\n'+
+                '        return this.value;\n'+
+                '    }\n'+
+                '\n'+
                 '    public SimpleDefault _myEmnum(SomeEnum myEmnum)\n'+
                 '    {\n'+
                 '        this.myEmnum = myEmnum;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public SomeEnum getMyEmnum()\n'+
+                '    {\n'+
+                '        return this.myEmnum;\n'+
                 '    }\n'+
                 '\n'+
                 '    public SimpleDefault _intV(Long intV)\n'+
@@ -128,16 +158,31 @@ function <<test.Test>> meta::protocols::generation::java::tests::default::testDe
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Long getIntV()\n'+
+                '    {\n'+
+                '        return this.intV;\n'+
+                '    }\n'+
+                '\n'+
                 '    public SimpleDefault _floatV(Double floatV)\n'+
                 '    {\n'+
                 '        this.floatV = floatV;\n'+
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public Double getFloatV()\n'+
+                '    {\n'+
+                '        return this.floatV;\n'+
+                '    }\n'+
+                '\n'+
                 '    public SimpleDefault _bool(Boolean bool)\n'+
                 '    {\n'+
                 '        this.bool = bool;\n'+
                 '        return this;\n'+
+                '    }\n'+
+                '\n'+
+                '    public Boolean getBool()\n'+
+                '    {\n'+
+                '        return this.bool;\n'+
                 '    }\n'+
                 '}', $sources->at(2));
 

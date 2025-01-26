@@ -120,6 +120,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-ingest-executionPlan</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-ide-light-interpreted-functions</artifactId>
             <version>${project.version}</version>
         </dependency>

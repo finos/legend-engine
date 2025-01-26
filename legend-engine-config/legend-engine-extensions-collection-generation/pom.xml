@@ -638,6 +638,21 @@
         <!-- OpenAPI -->
 
         <!-- ENGINE XT -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-ingest-protocol</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-ingest-executionPlan</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-ingest-javaPlatformBinding-pure</artifactId>
+        </dependency>
+
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

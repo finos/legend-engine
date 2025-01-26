@@ -214,10 +214,18 @@ function <<access.private>> meta::pure::executionPlan::addFunctionParametersVali
 {
    let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
    assert($collectionEnumParams->size() == 0, |'Collection of Enums is not supported as service parameter ' + $collectionEnumParams->map(p | $p.name)->makeString('[',', ',']'));
-   let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
+   let parameterValidationContexts = $planVarPlaceHolders->map(p |
+                                          if( 
+                                            [ 
+                                              pair(|$p.type->instanceOf(Enumeration), |^meta::pure::executionPlan::EnumValidationContext(varName = $p.name, validEnumValues = $p.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id()))),
+                                              pair(|$p.type->instanceOf(Class), |^meta::pure::executionPlan::ProtocolObjectValidationContext(varName = $p.name, protocolClassName = $p.type->elementToPath()))      
+                                            ],
+                                            |[]
+                                          )
+                                    );
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
    if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
-                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $enumValidationContext);
+                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $parameterValidationContexts);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);

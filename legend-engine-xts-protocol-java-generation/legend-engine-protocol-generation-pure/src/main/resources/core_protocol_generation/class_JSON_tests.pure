@@ -64,7 +64,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '        this.myProperty = myProperty;\n'+
                 '        return this;\n'+
                 '    }\n'+
-                '\n'+                
+                '\n'+
+                '    public String getMyProperty()\n'+
+                '    {\n'+
+                '        return this.myProperty;\n'+
+                '    }\n'+
+                '\n'+                                
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -152,6 +157,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '        return this;\n'+
                 '    }\n'+
                 '\n'+
+                '    public String getMyProperty()\n'+
+                '    {\n'+
+                '        return this.myProperty;\n'+
+                '    }\n'+
+                '\n'+            
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -232,7 +242,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '        this.myProperty = myProperty;\n'+
                 '        return this;\n'+
                 '    }\n'+
-                '\n'+                
+                '\n'+
+                '    public String getMyProperty()\n'+
+                '    {\n'+
+                '        return this.myProperty;\n'+
+                '    }\n'+
+                '\n'+                    
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
@@ -324,7 +339,12 @@ function <<test.Test>> meta::protocols::generation::java::tests::jsonParams::tes
                 '        this.myProperty = myProperty;\n'+
                 '        return this;\n'+
                 '    }\n'+
-                '\n'+                
+                '\n'+
+                '    public String getMyProperty()\n'+
+                '    {\n'+
+                '        return this.myProperty;\n'+
+                '    }\n'+
+                '\n'+                    
                 '    public <T> T accept(TopClassVisitor<T> visitor)\n'+
                 '    {\n'+
                 '        return visitor.visit(this);\n'+
