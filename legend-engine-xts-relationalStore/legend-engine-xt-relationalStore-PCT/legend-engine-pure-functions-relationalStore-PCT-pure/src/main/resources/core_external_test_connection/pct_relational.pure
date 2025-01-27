@@ -81,7 +81,7 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
-    let debug = noDebug();
+    let debug = debug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -303,43 +303,17 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             // Reprocess the function replacing values with Database elements
             let allReprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
 
-            let newExpressionSequence = $allReprocessed->map(reprocessed |
-              if ($reprocessed.replaced->isNotEmpty(),
-                |
-                  // Add 'with'
-                  let returnGenericType = $reprocessed.current->toOne()->cast(@ValueSpecification).genericType->toOne();
-                  let returnMultiplicity = $reprocessed.current->toOne()->cast(@ValueSpecification).multiplicity->toOne();
-                  ^SimpleFunctionExpression
-                  (
-                    importGroup=system::imports::coreImport,
-                    func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
-                    functionName = 'with',
-                    genericType = $returnGenericType,
-                    multiplicity = $returnMultiplicity,
-                    parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
-                                          ->concatenate(if ($reprocessed.mapping->isEmpty(),
-                                                        |[],
-                                                        |^InstanceValue
-                                                          (
-                                                            genericType = ^GenericType(rawType=Mapping),
-                                                            multiplicity = PureOne,
-                                                            values = $reprocessed.mapping
-                                                          )
-                                                        ))
-                                          ->concatenate(^InstanceValue
-                                                        (
-                                                          genericType = ^GenericType(rawType=Runtime),
-                                                          multiplicity = PureOne,
-                                                          values = $runtime
-                                                        )
-                                          )
-                                      ,
-                    resolvedMultiplicityParameters = $returnMultiplicity,
-                    resolvedTypeParameters = $returnGenericType
-                  );
-                ,
-                | $reprocessed.current->toOne()->cast(@ValueSpecification)
-              )
+            let newExpressionSequence = if($allReprocessed->size() == 1,
+              |
+                $allReprocessed->toOne()->addWith($runtime);
+              ,
+              |
+                $allReprocessed->map(reprocessed |
+                  if ($reprocessed.replaced->isNotEmpty(),
+                    |$reprocessed->addWith($runtime), 
+                    |$reprocessed.current->toOne()->cast(@ValueSpecification)
+                  )
+                );
             );
 
             let newFunction = ^$z(expressionSequence = $newExpressionSequence);
@@ -377,6 +351,39 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
   );
 }
 
+function meta::relational::tests::pct::process::addWith(reprocessed: ProcessingState[1], runtime: Runtime[1]): ValueSpecification[1]
+{
+  let returnGenericType = $reprocessed.current->toOne()->cast(@ValueSpecification).genericType->toOne();
+  let returnMultiplicity = $reprocessed.current->toOne()->cast(@ValueSpecification).multiplicity->toOne();
+  ^SimpleFunctionExpression
+  (
+    importGroup=system::imports::coreImport,
+    func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
+    functionName = 'with',
+    genericType = $returnGenericType,
+    multiplicity = $returnMultiplicity,
+    parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
+                          ->concatenate(if ($reprocessed.mapping->isEmpty(),
+                                        |[],
+                                        |^InstanceValue
+                                          (
+                                            genericType = ^GenericType(rawType=Mapping),
+                                            multiplicity = PureOne,
+                                            values = $reprocessed.mapping
+                                          )
+                                        ))
+                          ->concatenate(^InstanceValue
+                                        (
+                                          genericType = ^GenericType(rawType=Runtime),
+                                          multiplicity = PureOne,
+                                          values = $runtime
+                                        )
+                          )
+                      ,
+    resolvedMultiplicityParameters = $returnMultiplicity,
+    resolvedTypeParameters = $returnGenericType
+  );
+}
 
 function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]
 {

@@ -114,7 +114,7 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
    let updatedRootTree  = ^RoutedRootGraphFetchTree<Any>
                            (
                               subTrees = $rootTree.subTrees,
-                              class = $rootTree->typeFromGraphFetchTree()->cast(@Class<Any>),
+                              class = $rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>),
                               sets = $rootTree.sets,
                               requiredQualifiedProperties = $rootTree.requiredQualifiedProperties
                            );
@@ -135,9 +135,9 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
    let sourceTree            = calculateSourceTree($updatedRootTree, $mapping, $extensions);
    let sourceTreeExtended    = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
 
-   let xStorePropInScope     = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+   let xStorePropInScope     = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>));
    assert($xStorePropInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');
-   let paramMap              = $xStorePropInScope->getParamMapFromXStoreProperties($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+   let paramMap              = $xStorePropInScope->getParamMapFromXStoreProperties($rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>));
    let serviceSetImpl        = $rootTree.sets->toOne()->cast(@RootServiceInstanceSetImplementation);
 
    ^InMemoryCrossStoreGraphFetchExecutionNode

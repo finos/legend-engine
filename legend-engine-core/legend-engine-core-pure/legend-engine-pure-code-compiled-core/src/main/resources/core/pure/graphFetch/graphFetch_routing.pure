@@ -326,7 +326,7 @@ function <<access.private>> meta::pure::graphFetch::routing::ensureXStoreRequire
         | let qp = $st.property->cast(@QualifiedProperty<Any>);
           if ($qp.expressionSequence->evaluateAndDeactivate()->size() == 1,
               | // Only looking inside single expression qualifiers
-                let qualifierTree = $qp.expressionSequence->evaluateAndDeactivate()->toOne()->fetchTreeInExpression($currentTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+                let qualifierTree = $qp.expressionSequence->evaluateAndDeactivate()->toOne()->fetchTreeInExpression($currentTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>));
                 if (!$qualifierTree->allPropertiesInFetchTree()->exists(x | $x->instanceOf(QualifiedProperty)),
                     | // Only looking inside qualifiers not depending on other qualifiers
                       let routedQualifierSubTrees = $qualifierTree.subTrees->cast(@PropertyGraphFetchTree)->map(s | $s->routePropertyGraphFetchTree($currentExpression, $mapping, $extensions));

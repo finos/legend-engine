@@ -548,7 +548,7 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
                         | []);
 
    let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | ($x->instanceOf(PlatformClusteredValueSpecification) && $y->instanceOf(PlatformClusteredValueSpecification))
-                                                                                                                                                                       || ($x->instanceOf(StoreClusteredValueSpecification) && $y->instanceOf(StoreClusteredValueSpecification) && areStoreMappingClustersCompatible($x->cast(@StoreClusteredValueSpecification), $y->cast(@StoreClusteredValueSpecification), $extensions))});
+                                                                                                                                                                       || ($x->instanceOf(StoreClusteredValueSpecification) && $y->instanceOf(StoreClusteredValueSpecification) && areStoreClustersCompatible($x->cast(@StoreClusteredValueSpecification), $y->cast(@StoreClusteredValueSpecification), $extensions))});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
    $n_unique;
 }
