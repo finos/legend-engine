@@ -380,25 +380,21 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
     pair(fe:FunctionExpression[1] | $fe.func == letFunction_String_1__T_m__T_m_,
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
 
-            if($state.routingStrategy->instanceOf(StoreMappingRoutingStrategy) && $state.routingStrategy->cast(@StoreMappingRoutingStrategy).fromDeprecatedRouting,
-              |$f->routeFunctionExpressionFunctionDefinition($fe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug),
-              |
-                let assignmentRouted = routeValueSpecification(
-                  ^$state(value = $fe.parametersValues->at(1)),
-                  $executionContext,
-                  $vars,
-                  $inScopeVars,
-                  $extensions,
-                  $debug
-                );
+          let assignmentRouted = routeValueSpecification(
+            ^$state(value = $fe.parametersValues->at(1)),
+            $executionContext,
+            $vars,
+            $inScopeVars,
+            $extensions,
+            $debug
+          );
 
-                let wrappedValueSpec = $assignmentRouted.value->evaluateAndDeactivate()->match([
-                                                          evs: ExtendedRoutedValueSpecification[1] | $evs,
-                                                          vs: ValueSpecification[1]                | $assignmentRouted.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
-                                                        ]);
-                let processedLet = ^$fe(parametersValues = $fe.parametersValues->at(0)->concatenate($wrappedValueSpec));
-                ^$state(value = $processedLet, routingStrategy = meta::pure::router::platform::routing::getPlatformRoutingStrategy());
-            );
+          let wrappedValueSpec = $assignmentRouted.value->evaluateAndDeactivate()->match([
+                                                    evs: ExtendedRoutedValueSpecification[1] | $evs,
+                                                    vs: ValueSpecification[1]                | $assignmentRouted.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
+                                                  ]);
+          let processedLet = ^$fe(parametersValues = $fe.parametersValues->at(0)->concatenate($wrappedValueSpec));
+          ^$state(value = $processedLet, routingStrategy = meta::pure::router::platform::routing::getPlatformRoutingStrategy());
         }
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_T_m__Runtime_1__T_m_,
@@ -414,6 +410,44 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 routeValueSpecification(
                   ^$state(value = $fe.parametersValues->at(0), 
                   routingStrategy = getRoutingStrategyFromRuntime($fromRuntime)), 
+                  $executionContext,
+                  $vars,
+                  $inScopeVars,
+                  $extensions,
+                  $debug
+                );
+        }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([
+                                                  meta::pure::mapping::with_FunctionDefinition_1__Runtime_1__T_m_,
+                                                  meta::pure::mapping::with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+                                                  meta::pure::mapping::with_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+                                                  meta::pure::mapping::with_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_
+                                                ]),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                let resolvedParameters     = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
+                                                                                                                     f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
+                                                                                                                                              $r->reactivate($inScopeVars);,
+                                          
+                                                                                                                        i:InstanceValue[1]      |$i.values]));
+                let fromRuntime = $resolvedParameters->last()->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
+                
+                let routingStrategy = $resolvedParameters->init()->head()->match([
+                  fromMapping: Mapping[1] | getRoutingStrategyFromMappingAndRuntime($state.routingStrategy, $fromMapping, $fromRuntime, $extensions),
+                  m: Any[0] | getRoutingStrategyFromRuntime($fromRuntime)
+                ]);
+
+                let funcToRoute = $fe.parametersValues->at(0)->cast(@FunctionDefinition<Any>);
+
+                let vsToRoute = ^SimpleFunctionExpression(
+                          func = $funcToRoute,
+                          genericType = $funcToRoute->functionReturnType(),                      
+                          multiplicity = $funcToRoute->functionReturnMultiplicity(),
+                          importGroup=system::imports::coreImport                      
+                        )->evaluateAndDeactivate();
+
+                routeValueSpecification(
+                  ^$state(value = $vsToRoute, routingStrategy = $routingStrategy), 
                   $executionContext,
                   $vars,
                   $inScopeVars,
