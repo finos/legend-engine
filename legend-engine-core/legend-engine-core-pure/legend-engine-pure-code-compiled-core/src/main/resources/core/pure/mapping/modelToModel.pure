@@ -368,7 +368,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
    let updatedRootTree = ^RoutedRootGraphFetchTree<Any>
                                                    (
                                                       subTrees = $rootTree.subTrees,
-                                                      class = $rootTree->typeFromGraphFetchTree()->cast(@Class<Any>),
+                                                      class = $rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>),
                                                       sets = $rootTree.sets,
                                                       requiredQualifiedProperties = $rootTree.requiredQualifiedProperties
                                                    );
@@ -413,7 +413,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
       planModelQueryConnectionGraphFetchExecution($mc, $store, $sourceTreeExtended, $exeCtx, $inScopeVars, $enableConstraints, $checked, $extensions, $debug)
    };
 
-   let populatedXStorePropertiesInScope = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+   let populatedXStorePropertiesInScope = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>));
    let chainConnectionNodeGeneration = {mcc: ModelChainConnection[1] |
       let getAllExpr  = $updatedRootTree->createGetAllApplicationForRootGraphFetchTree();
       let genericType = $getAllExpr.genericType;

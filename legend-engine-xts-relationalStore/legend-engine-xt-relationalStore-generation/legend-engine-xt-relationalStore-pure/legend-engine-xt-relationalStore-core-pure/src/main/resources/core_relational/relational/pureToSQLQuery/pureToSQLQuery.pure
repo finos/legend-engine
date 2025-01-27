@@ -596,7 +596,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
 
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
-  print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->toOne() + '\n'));
+  print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->defaultIfEmpty('LambdaFunction')->toOne() + '\n'));
   let res  = $functionExpression.func->match ([
                                     p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
                                     q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
@@ -604,7 +604,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpression(
                                     a:Any[1]| processFunctionExpressionForNonPropertyFunction($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
                                    ]);
 
-  print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->toOne() + '\n  ' + $context.space + $res.element->cast(@SelectWithCursor).select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', ')));
+  print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->defaultIfEmpty('LambdaFunction')->toOne() + '\n  ' + $context.space + $res.element->cast(@SelectWithCursor).select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', ')));
   $res;
 }
 

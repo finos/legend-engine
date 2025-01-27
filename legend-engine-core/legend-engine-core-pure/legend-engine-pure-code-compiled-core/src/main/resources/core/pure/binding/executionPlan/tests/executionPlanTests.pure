@@ -125,6 +125,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
+                '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -134,6 +135,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
                 '      type = Class[impls=]\n' +
+                '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
@@ -163,6 +165,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
+                '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -172,6 +175,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
                 '      type = Class[impls=]\n' +
+                '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
@@ -202,6 +206,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
         'ExternalFormat_Internalize\n' +
         '(\n' +
         '  type = Class[impls=]\n' +
+        '         as meta::external::format::shared::executionPlan::tests::Person\n' +
         '  resultSizeRange = *\n' +
         '  binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
         '  enableConstraints = true\n' +
@@ -251,6 +256,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected =  'Sequence\n' +
                   '(\n' +
                   '  type = Class[impls=]\n' +
+                  '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                   '  resultSizeRange = *\n' +
                   '  (\n' +
                   '    FunctionParametersValidationNode\n' +
@@ -260,6 +266,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                   '    ExternalFormat_Internalize\n' +
                   '    (\n' +
                   '      type = Class[impls=]\n' +
+                  '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                   '      resultSizeRange = *\n' +
                   '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                   '      enableConstraints = true\n' +
@@ -290,6 +297,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
+                '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -299,6 +307,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
                 '      type = Class[impls=]\n' +
+                '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
@@ -329,6 +338,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
+                '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -338,6 +348,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
                 '      type = Class[impls=]\n' +
+                '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
@@ -368,6 +379,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected =  'Sequence\n' +
                   '(\n' +
                   '  type = Class[impls=]\n' +
+                  '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                   '  resultSizeRange = *\n' +
                   '  (\n' +
                   '    FunctionParametersValidationNode\n' +
@@ -377,6 +389,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                   '    ExternalFormat_Internalize\n' +
                   '    (\n' +
                   '      type = Class[impls=]\n' +
+                  '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                   '      resultSizeRange = *\n' +
                   '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                   '      enableConstraints = true\n' +
@@ -407,6 +420,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
+                '         as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -416,6 +430,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
                 '      type = Class[impls=]\n' +
+                '             as meta::external::format::shared::executionPlan::tests::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
@@ -479,6 +494,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
         '                 ExternalFormat_Internalize\n' +
         '                 (\n' +
         '                   type = Class[impls=]\n' +
+        '                          as meta::external::format::shared::executionPlan::tests::Person\n' +
         '                   resultSizeRange = *\n' +
         '                   binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
         '                   enableConstraints = true\n' +
@@ -577,6 +593,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
         '                          ExternalFormat_Internalize\n' +
         '                          (\n' +
         '                            type = Class[impls=]\n' +
+        '                                   as meta::external::format::shared::executionPlan::tests::_Person\n' +
         '                            resultSizeRange = *\n' +
         '                            binding = meta::external::format::shared::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
         '                            enableConstraints = true\n' +

@@ -622,7 +622,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
                                             ).first;
 
    let srcClass = $setImplementation.srcClass->toOne();
-   let srcNodeOwner = $srcNode->typeFromGraphFetchTree();
+   let srcNodeOwner = $srcNode->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>);
 
    if($srcClass->instanceOf(Class) && $setImplementation.filter->isNotEmpty() && $srcClass == $srcNodeOwner,
       | $subTrees->enrichSourceTreeNodeForExpression($srcClass->cast(@Class<Any>), $setImplementation.filter.expressionSequence->at(0)),
