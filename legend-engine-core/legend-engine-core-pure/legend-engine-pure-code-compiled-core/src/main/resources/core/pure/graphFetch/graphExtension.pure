@@ -82,7 +82,6 @@ function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyG
   );
   $isPropertySame && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
 }
-}
 
 function meta::pure::graphFetch::addSubTypeTrees(onto:GraphFetchTree[1], subTypeTrees:SubTypeGraphFetchTree[*]): GraphFetchTree[1]
 {
