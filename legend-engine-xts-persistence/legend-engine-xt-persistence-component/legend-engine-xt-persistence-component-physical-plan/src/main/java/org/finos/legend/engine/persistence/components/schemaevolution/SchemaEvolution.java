@@ -197,9 +197,7 @@ public class SchemaEvolution
                 FieldType stagingFieldType = stagingField.type();
                 if (!matchedMainField.type().equals(stagingFieldType))
                 {
-                    validateLengthAndScaleChange(matchedMainField, stagingField,
-                        schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY),
-                        schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY));
+                    validateLengthAndScaleChange(matchedMainField, stagingField);
 
                     if (!matchedMainField.type().dataType().equals(stagingFieldType.dataType()))
                     {
@@ -254,9 +252,9 @@ public class SchemaEvolution
         return operations;
     }
 
-    private void validateLengthAndScaleChange(Field mainField, Field stagingField, boolean allowLengthIncrementOnly, boolean allowScaleIncrementOnly)
+    private void validateLengthAndScaleChange(Field mainField, Field stagingField)
     {
-        if (allowLengthIncrementOnly)
+        if (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE))
         {
             if (mainField.type().length().isPresent() && stagingField.type().length().isPresent() &&
                 mainField.type().length().get() > stagingField.type().length().get())
@@ -265,7 +263,7 @@ public class SchemaEvolution
             }
         }
 
-        if (allowScaleIncrementOnly)
+        if (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE))
         {
             if (mainField.type().scale().isPresent() && stagingField.type().scale().isPresent() &&
                 mainField.type().scale().get() > stagingField.type().scale().get())
