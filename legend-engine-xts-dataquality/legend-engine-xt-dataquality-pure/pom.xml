@@ -67,6 +67,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -130,6 +135,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -154,17 +164,13 @@
     </build>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-functions-planExecution-pure</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
