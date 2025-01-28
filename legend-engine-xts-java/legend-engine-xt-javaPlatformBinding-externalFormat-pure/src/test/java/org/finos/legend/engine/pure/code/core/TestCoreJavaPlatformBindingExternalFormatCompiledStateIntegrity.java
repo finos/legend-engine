@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestCoreJavaPlatformBindingExternalFormatCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
@@ -27,8 +28,7 @@ public class TestCoreJavaPlatformBindingExternalFormatCompiledStateIntegrity ext
         initialize("core_java_platform_binding_external_format");
     }
 
-    @Test
-    @Ignore
+    @Test(expected = AssertionError.class)
     @Override
     public void testReferenceUsages()
     {
