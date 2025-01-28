@@ -651,7 +651,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testOrderedCrossStoreGraphFetchWithComplexQualifierExpressionWithMultiplicityIssueFix():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testOrderedCrossStoreGraphFetchWithComplexQualifierExpressionReuse():Boolean[1]
 {
    let tree = #{
       TradeWrapper {
