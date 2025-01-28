@@ -37,6 +37,12 @@ Class meta::pure::graphFetch::tests::XStore::ordered::Product
   productName: String[1];
 }
 
+Class meta::pure::graphFetch::tests::XStore::ordered::Product2
+{
+  productId2: Integer[1];
+  productName2: String[1];
+}
+
 Class meta::pure::graphFetch::tests::XStore::ordered::Synonym
 {
   name: String[1];
@@ -53,6 +59,12 @@ Association meta::pure::graphFetch::tests::XStore::ordered::Trade_Product
 {
   trades: Trade[*];
   product: Product[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::ordered::Trade_Product2
+{
+  trades: Trade[*];
+  product2: Product2[1];
 }
 
 Association meta::pure::graphFetch::tests::XStore::ordered::Trade_Synonym
@@ -87,6 +99,7 @@ Class meta::pure::graphFetch::tests::XStore::ordered::S_Trade
 Database meta::pure::graphFetch::tests::XStore::ordered::DB1
 (
    Table productTable (productId INT PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+   Table productTable2 (productId2 INT PRIMARY KEY, productName2 VARCHAR(100), description2 VARCHAR(1000))
    Table synonymTable (synonymId INT PRIMARY KEY, productId INT, type VARCHAR(200), name VARCHAR(200))
    Table bridgeTable (productId INT PRIMARY KEY, tradeId VARCHAR(1000) PRIMARY KEY)
 )
@@ -288,6 +301,11 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping5
       productName : [DB1]productTable.productName
    }
 
+   Product2[prod_set2] : Relational {
+      productId2 : [DB1]productTable2.productId2,
+      productName2 : [DB1]productTable2.productName2
+   }
+
    Synonym[synonym_set] : Relational {
       +synonymProductIdString : String[1] : toString([DB1]synonymTable.productId),
       name : [DB1]synonymTable.name,
@@ -300,6 +318,10 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping5
 
    Trade_Product : XStore {
       product[trade_set, prod_set] : $this.productIdBridgeComplexExpression() == $that.productId
+   }
+
+   Trade_Product2 : XStore {
+      product2[trade_set, prod_set2] : $this.productIdBridgeComplexExpression() == $that.productId2
    }
 
    Trade_Synonym : XStore {
@@ -330,12 +352,16 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::
    let dbConn1 = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
    dropAndCreateTableInDb(DB1, 'productTable', $dbConn1);
+   dropAndCreateTableInDb(DB1, 'productTable2', $dbConn1);
    dropAndCreateTableInDb(DB1, 'synonymTable', $dbConn1);
    dropAndCreateTableInDb(DB1, 'bridgeTable', $dbConn1);
 
    executeInDb('insert into productTable (productId, productname, description) values (30, \'Prod_1\', \'Product 1 description\');', $dbConn1);
    executeInDb('insert into productTable (productId, productname, description) values (31, \'Prod_2\', \'Product 2 description\');', $dbConn1);
 
+   executeInDb('insert into productTable2 (productId2, productname2, description2) values (30, \'Prod_1_2\', \'Product2 1 description\');', $dbConn1);
+   executeInDb('insert into productTable2 (productId2, productname2, description2) values (31, \'Prod_2_2\', \'Product2 2 description\');', $dbConn1);
+   
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (1, 30, \'CUSIP\', \'Syn_1\');', $dbConn1);
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (2, 30, \'ISIN\', \'Syn_2\');', $dbConn1);
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (3, 31, \'cusip\', \'Syn_3\');', $dbConn1);
@@ -621,6 +647,52 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       '{"trade":{"productSynonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"tradeId":2}},'+
       '{"trade":{"productSynonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"tradeId":3}},'+
       '{"trade":{"productSynonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"tradeId":4}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testOrderedCrossStoreGraphFetchWithComplexQualifierExpressionWithMultiplicityIssueFix():Boolean[1]
+{
+   let tree = #{
+      TradeWrapper {
+         trade {
+            tradeId,
+            productSynonyms {
+               name,
+               type
+            },
+            product {
+              productName
+            },
+            product2 {
+              productName2
+            }
+         }
+      }
+   }#;
+
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
+                         (
+                            class   = S_Trade,
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
+
+   let query = {|TradeWrapper.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping5;
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"trade":{"product":{"productName":"Prod_1"},"product2":{"productName2":"Prod_1_2"},"productSynonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"tradeId":1}},'+
+      '{"trade":{"product":{"productName":"Prod_2"},"product2":{"productName2":"Prod_2_2"},"productSynonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"tradeId":2}},'+
+      '{"trade":{"product":{"productName":"Prod_1"},"product2":{"productName2":"Prod_1_2"},"productSynonyms":[{"name":"Syn_1","type":"CUSIP"},{"name":"Syn_2","type":"ISIN"}],"tradeId":3}},'+
+      '{"trade":{"product":{"productName":"Prod_2"},"product2":{"productName2":"Prod_2_2"},"productSynonyms":[{"name":"Syn_3","type":"CUSIP"},{"name":"Syn_4","type":"ISIN"}],"tradeId":4}}]',
       $result
    );
 }
