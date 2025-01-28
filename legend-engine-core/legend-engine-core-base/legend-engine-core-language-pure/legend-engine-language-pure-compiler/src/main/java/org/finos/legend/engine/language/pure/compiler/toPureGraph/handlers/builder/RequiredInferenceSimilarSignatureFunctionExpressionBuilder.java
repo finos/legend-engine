@@ -63,7 +63,7 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         if (test(handlers.handlers.get(0).getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext()))
         {

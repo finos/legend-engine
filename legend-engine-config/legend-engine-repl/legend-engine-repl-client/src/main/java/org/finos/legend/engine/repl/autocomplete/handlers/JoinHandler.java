@@ -20,9 +20,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 import org.finos.legend.engine.repl.autocomplete.Completer;

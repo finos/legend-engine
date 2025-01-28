@@ -23,11 +23,11 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.MemSqlFunctionP
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
 

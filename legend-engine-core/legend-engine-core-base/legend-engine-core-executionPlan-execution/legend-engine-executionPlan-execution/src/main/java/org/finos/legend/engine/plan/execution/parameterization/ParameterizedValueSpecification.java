@@ -15,12 +15,12 @@
 package org.finos.legend.engine.plan.execution.parameterization;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;

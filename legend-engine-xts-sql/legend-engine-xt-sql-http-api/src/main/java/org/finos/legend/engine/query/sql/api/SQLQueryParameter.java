@@ -15,7 +15,7 @@
 
 package org.finos.legend.engine.query.sql.api;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 
 public class SQLQueryParameter

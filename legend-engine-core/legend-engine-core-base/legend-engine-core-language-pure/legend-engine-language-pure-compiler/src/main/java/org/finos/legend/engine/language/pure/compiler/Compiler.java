@@ -23,7 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -72,7 +72,7 @@ public class Compiler
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) type;
     }
 
-    public static org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
+    public static org.finos.legend.engine.protocol.pure.m3.relation.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
     {
         return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel));
     }

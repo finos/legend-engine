@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -52,7 +52,7 @@ public class FunctionValidator
         {
             PureModel pureModel = compileContext.pureModel;
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = pureModel.getConcreteFunctionDefinition(func);
-            for (org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test test: targetFunc._tests())
+            for (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test test: targetFunc._tests())
             {
                 Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) test;
                 FunctionTestSuite protocolSuite =  ListIterate.detect(func.tests, t -> t.id.equals(metamodelSuite._id()));

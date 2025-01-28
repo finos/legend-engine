@@ -26,9 +26,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.type.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;

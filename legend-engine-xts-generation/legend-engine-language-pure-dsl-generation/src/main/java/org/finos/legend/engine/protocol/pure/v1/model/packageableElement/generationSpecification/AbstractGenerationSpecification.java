@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification;
 
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 
 public abstract class AbstractGenerationSpecification extends PackageableElement
 {
