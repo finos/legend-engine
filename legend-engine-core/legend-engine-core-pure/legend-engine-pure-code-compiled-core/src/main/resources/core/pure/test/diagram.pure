@@ -25,17 +25,6 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_2(
-        type=meta::pure::test::Test,
-        position=(1124.00000, 209.00000),
-        width=127.38965,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_21(
         type=meta::pure::test::AtomicTest,
@@ -157,17 +146,6 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_19(
-        type=meta::pure::test::Testable,
-        position=(864.17143, 221.20356),
-        width=67.79492,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_5(
         type=meta::pure::test::assertion::TestAssertion,
@@ -226,23 +204,7 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_5(
-        source=cview_20,
-        target=cview_2,
-        points=[(1064.95487,385.20356),(1187.69483,238.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_6(
-        source=cview_21,
-        target=cview_2,
-        points=[(1295.95487,382.09795),(1187.69483,238.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_7(
         source=cview_17,
@@ -276,19 +238,6 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_1(
-        property=meta::pure::test::Testable.tests,
-        source=cview_19,
-        target=cview_2,
-        points=[(898.06889,236.20356),(1187.69483,238.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_2(
         property=meta::pure::test::AtomicTest.assertions,

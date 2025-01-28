@@ -43,8 +43,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
@@ -166,7 +166,7 @@ public class DataSpaceAnalyticsHelper
                         executableAnalysisResult.description = executable._description();
                         String executablePath = HelperModelBuilder.getElementFullPath(((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable(), pureModel.getExecutionSupport());
                         executableAnalysisResult.executable = executablePath;
-                        org.finos.legend.engine.protocol.pure.v1.model.PackageableElement _el = ListIterate.detect(pureModelContextData.getElements(), el -> el.getPath().equals(executablePath) && (el instanceof Service || el instanceof Function));
+                        org.finos.legend.engine.protocol.pure.m3.PackageableElement _el = ListIterate.detect(pureModelContextData.getElements(), el -> el.getPath().equals(executablePath) && (el instanceof Service || el instanceof Function));
                         Mapping mapping = null;
                         Root_meta_core_runtime_Runtime runtime = null;
                         FunctionDefinition<?> lambdaFunc = null;
@@ -344,7 +344,7 @@ public class DataSpaceAnalyticsHelper
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
-            Optional<org.finos.legend.engine.protocol.pure.v1.model.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
+            Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
             if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
             {
                 PackageableRuntime runtime = (PackageableRuntime) packageableRuntime.get();
@@ -355,7 +355,7 @@ public class DataSpaceAnalyticsHelper
                     if (connection instanceof ConnectionPointer)
                     {
                         String connectionPath = ((ConnectionPointer) connection).connection;
-                        Optional<org.finos.legend.engine.protocol.pure.v1.model.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
+                        Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
                         DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, connectionPath);
                         if (packageableConnection.isPresent() && packageableConnection.get() instanceof PackageableConnection && ((PackageableConnection) packageableConnection.get()).connectionValue instanceof RelationalDatabaseConnection)
                         {
@@ -447,7 +447,7 @@ public class DataSpaceAnalyticsHelper
             excResult.description = executionContext._description();
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
-            Optional<org.finos.legend.engine.protocol.pure.v1.model.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
+            Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
             if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
             {
                 PackageableRuntime runtime = (PackageableRuntime) packageableRuntime.get();
@@ -458,7 +458,7 @@ public class DataSpaceAnalyticsHelper
                     if (connection instanceof ConnectionPointer)
                     {
                         String connectionPath = ((ConnectionPointer) connection).connection;
-                        Optional<org.finos.legend.engine.protocol.pure.v1.model.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
+                        Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableConnection = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(connectionPath)).findAny();
                         DataSpaceExecutionContextRuntimeMetadata metadata = new DataSpaceExecutionContextRuntimeMetadata(storePath, connectionPath);
                         if (packageableConnection.isPresent() && packageableConnection.get() instanceof PackageableConnection && ((PackageableConnection) packageableConnection.get()).connectionValue instanceof RelationalDatabaseConnection)
                         {

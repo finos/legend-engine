@@ -89,7 +89,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
     {
-        addDigestField(mainSchemaFields, nontemporalDelta.digestField());
+        nontemporalDelta.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         removeDataSplitField(nontemporalDelta.dataSplitField());
         nontemporalDelta.mergeStrategy().accept(new EnrichSchemaWithMergeStrategy(mainSchemaFields));
         nontemporalDelta.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, true));
@@ -100,7 +100,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
     {
-        addDigestField(mainSchemaFields, unitemporalSnapshot.digestField());
+        unitemporalSnapshot.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         unitemporalSnapshot.transactionMilestoning().accept(new EnrichSchemaWithTransactionMilestoning(mainSchemaFields));
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
@@ -108,7 +108,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
     {
-        addDigestField(mainSchemaFields, unitemporalDelta.digestField());
+        unitemporalDelta.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         removeDataSplitField(unitemporalDelta.dataSplitField());
         unitemporalDelta.mergeStrategy().accept(new EnrichSchemaWithMergeStrategy(mainSchemaFields));
         unitemporalDelta.transactionMilestoning().accept(new EnrichSchemaWithTransactionMilestoning(mainSchemaFields));
@@ -118,7 +118,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
     {
-        addDigestField(mainSchemaFields, bitemporalSnapshot.digestField());
+        bitemporalSnapshot.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         bitemporalSnapshot.transactionMilestoning().accept(new EnrichSchemaWithTransactionMilestoning(mainSchemaFields));
         bitemporalSnapshot.validityMilestoning().accept(new EnrichSchemaWithValidityMilestoning(mainSchemaFields));
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
@@ -127,7 +127,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
     {
-        addDigestField(mainSchemaFields, bitemporalDelta.digestField());
+        bitemporalDelta.digestField().ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         removeDataSplitField(bitemporalDelta.dataSplitField());
         bitemporalDelta.mergeStrategy().accept(new EnrichSchemaWithMergeStrategy(mainSchemaFields));
         bitemporalDelta.transactionMilestoning().accept(new EnrichSchemaWithTransactionMilestoning(mainSchemaFields));

@@ -17,10 +17,13 @@ import meta::relational::tests::csv::mapping::*;
 import meta::flatten::metamodel::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelToModel::*;
 import meta::pure::mapping::xStore::*;
+import meta::pure::mapping::relation::*;
 import meta::external::store::model::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::*;
+import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::csv::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::*;
+import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::*;
 import meta::pure::mapping::*;
 
 function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::transformMapping(mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::Mapping[1]
@@ -68,7 +71,8 @@ function <<access.public>> meta::protocols::pure::v1_33_0::transformation::fromP
    $si->match($extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).transfers_mapping_transformSetImplementation->map(f|$f->eval($mapping))->concatenate(
               $extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).transfers_mapping_transformSetImplementation2->map(f|$f->eval($mapping, $extensions)))->concatenate([
       o:OperationSetImplementation[1]| $o->transformOperationSetImplementation($mapping,$extensions),
-      p:PureInstanceSetImplementation[1]| $p->transformPureInstanceSetImplementation($mapping, $extensions)
+      p:PureInstanceSetImplementation[1]| $p->transformPureInstanceSetImplementation($mapping, $extensions),
+      r:RelationFunctionInstanceSetImplementation[1]| $r->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionInstanceSetImplementation($mapping, $extensions)
       ])->toOneMany()
    );
 }
@@ -126,7 +130,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
               )
          )
    );
-   
+
    if($operation == meta::protocols::pure::v1_33_0::metamodel::mapping::MappingOperation.MERGE,
         |   ^meta::protocols::pure::v1_33_0::metamodel::mapping::MergeOperationClassMapping
                (
@@ -178,6 +182,21 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
    );
 }
 
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionInstanceSetImplementation(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionClassMapping[1]
+{
+   ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionClassMapping
+   (
+      id = $r.id,
+      _type = 'relation',
+      class = $r.class->elementToPath(),
+      root = $r.root,
+      extendsClassMappingId = $r.superSetImplementationId,
+      mappingClass = $r.mappingClass->map(mc|$mc->transformMappingClass($mapping, $extensions)),
+      propertyMappings = $r.propertyMappings->map(pm|$pm->transformRelationFunctionPropertyMapping($mapping, $extensions)),
+      relationFunction = ^meta::protocols::pure::v1_33_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_33_0::metamodel::PackageableElementType.FUNCTION, path=$r.relationFunction->elementToPath())
+   );
+}
+
 function <<access.public>> meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelToModel::transformPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[1]
 {
    $pm->match([p:PurePropertyMapping[1]| ^meta::protocols::pure::v1_33_0::metamodel::mapping::modelToModel::PurePropertyMapping
@@ -222,3 +241,26 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
        )
    ]);
 }
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping[1]
+{
+   $pm->match([r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
+      ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping
+       (
+          _type = 'RelationFunctionPropertyMapping',
+          property = ^meta::protocols::pure::v1_33_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          column = $r.column.name->toOne(),
+          source = $r.sourceSetImplementationId,
+          target = $r.targetSetImplementationId,
+          localMappingProperty = if ($r.localMappingProperty->isNotEmpty() && $r.localMappingProperty->toOne(),
+                                    | ^meta::protocols::pure::v1_33_0::metamodel::mapping::LocalMappingPropertyInfo
+                                      (
+                                          type = $r.localMappingPropertyType->toOne()->elementToPath(),
+                                          multiplicity = $r.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::transformMultiplicity()
+                                      ),
+                                    | []
+                                )
+       )
+   ]);
+}
+

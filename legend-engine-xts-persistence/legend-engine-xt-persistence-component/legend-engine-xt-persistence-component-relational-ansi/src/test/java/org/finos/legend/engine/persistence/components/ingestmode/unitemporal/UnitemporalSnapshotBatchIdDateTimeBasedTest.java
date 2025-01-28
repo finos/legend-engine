@@ -97,8 +97,8 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
-        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctDigest(), deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctDigest(), deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -144,8 +144,8 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQueryInUpperCase, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicatesUpperCase, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSqlWithBizDateAsVersionUpperCase, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
-        Assertions.assertEquals(dataErrorsSqlWithBizDateVersionUpperCase, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctDigestUpperCase(), deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctDigestUpperCase(), deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -345,5 +345,25 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     protected String getExpectedMetadataTableCreateQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorsSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigestUpperCase()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithBizDateAsVersionUpperCase;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigestUpperCase()
+    {
+        return AnsiTestArtifacts.dataErrorsSqlWithBizDateVersionUpperCase;
     }
 }

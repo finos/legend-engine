@@ -67,8 +67,16 @@ public class AnsiTestArtifacts
             "\"id\" INTEGER NOT NULL,\"name\" VARCHAR NOT NULL,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER NOT NULL,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
+    public static String expectedMainTableBatchIdBasedWithoutDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER NOT NULL,\"name\" VARCHAR NOT NULL,\"amount\" DOUBLE,\"biz_date\" DATE," +
+            "\"batch_id_in\" INTEGER NOT NULL,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
+
     public static String expectedMainTableWithMultiPartitionsCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL,\"name\" VARCHAR NOT NULL,\"amount\" DOUBLE,\"account_type\" INTEGER,\"biz_date\" DATE,\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER NOT NULL,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
+
+    public static String expectedMainTableWithMultiPartitionsWithoutDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER NOT NULL,\"name\" VARCHAR NOT NULL,\"amount\" DOUBLE,\"account_type\" INTEGER,\"biz_date\" DATE," +
             "\"batch_id_in\" INTEGER NOT NULL,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
     public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
@@ -85,6 +93,10 @@ public class AnsiTestArtifacts
 
     public static String expectedMainTableMultiPartitionCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR NOT NULL,\"AMOUNT\" DOUBLE,\"ACCOUNT_TYPE\" INTEGER,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
+            "\"BATCH_ID_IN\" INTEGER NOT NULL,\"BATCH_ID_OUT\" INTEGER,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\"))";
+
+    public static String expectedMainTableMultiPartitionWithoutDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
+            "(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR NOT NULL,\"AMOUNT\" DOUBLE,\"ACCOUNT_TYPE\" INTEGER,\"BIZ_DATE\" DATE," +
             "\"BATCH_ID_IN\" INTEGER NOT NULL,\"BATCH_ID_OUT\" INTEGER,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\"))";
 
     public static String expectedMainTableTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
@@ -654,4 +666,10 @@ public class AnsiTestArtifacts
     public static String dataErrorsSql = "SELECT \"id\",\"name\",\"version\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
             "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"version\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
 
+    public static String dataErrorCheckSqlWithAmount = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+        "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
+        "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
+    public static String dataErrorSqlWithAmount = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"amount\")) as \"legend_persistence_error_count\" FROM " +
+        "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
 }

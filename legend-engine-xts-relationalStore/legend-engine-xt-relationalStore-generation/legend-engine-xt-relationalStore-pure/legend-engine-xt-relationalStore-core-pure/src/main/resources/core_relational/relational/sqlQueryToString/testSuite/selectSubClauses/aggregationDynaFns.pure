@@ -1,6 +1,7 @@
 import meta::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::tests::model::simple::*;

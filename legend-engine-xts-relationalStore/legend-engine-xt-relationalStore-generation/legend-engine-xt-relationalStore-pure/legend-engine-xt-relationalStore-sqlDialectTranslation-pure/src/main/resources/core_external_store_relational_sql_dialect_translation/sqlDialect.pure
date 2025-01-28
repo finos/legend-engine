@@ -15,6 +15,7 @@
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
 
@@ -33,6 +34,12 @@ Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T>
   nodeType: Class<T>[1];
   processFunction: Function<{SqlDialect[1], T[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1];
   selfDelimiting: Function<{T[1] -> Boolean[1]}>[1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::FunctionProcessor
+{
+  processFunction: Function<{SqlDialect[1], FunctionCall[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1];
+  selfDelimiting: Function<{FunctionCall[1] -> Boolean[1]}>[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::IdentifierProcessor
@@ -86,6 +93,15 @@ function meta::external::store::relational::sqlDialectTranslation::nodeProcessor
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::functionProcessor<T>(processFunction: Function<{SqlDialect[1], FunctionCall[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1], selfDelimiting: Function<{T[1] -> Boolean[1]}>[1]): FunctionProcessor[1]
+{
+  ^FunctionProcessor
+  (
+    processFunction = $processFunction,
+    selfDelimiting = $selfDelimiting
+  )
+}
+
 function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   $sqlDialect->executeNodeProcessor($node, [], $state, $config)
@@ -93,10 +109,12 @@ function meta::external::store::relational::sqlDialectTranslation::executeNodePr
 
 function meta::external::store::relational::sqlDialectTranslation::executeNodeProcessor(sqlDialect: SqlDialect[1], node: Node[1], parentNode: Node[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
-  let nodeProcessor = $sqlDialect.nodeProcessors->get($node->class());
+  let nodeClass = $node->class();
+  let nodeClassNonTyped = if ($nodeClass->_subTypeOf(TypedSqlExpression), | $nodeClass->validGeneralizations()->filter(x | !$x->_subTypeOf(TypedSqlExpression))->toOne(), | $nodeClass);
+  let nodeProcessor = $sqlDialect.nodeProcessors->get($nodeClassNonTyped);
   if ($nodeProcessor->isNotEmpty(),
-      | let processedNode = $nodeProcessor.processFunction->toOne()->eval($sqlDialect, $node, $state, $config);
-        if ($nodeProcessor->toOne().selfDelimiting->eval($node),
+      | let processedNode = $nodeProcessor.processFunction->toOne()->evaluate([list($sqlDialect), list($node), list($state), list($config)])->toOne()->cast(@String);
+        if ($nodeProcessor->toOne().selfDelimiting->evaluate(list($node))->toOne()->cast(@Boolean),
             | $processedNode,
             | // Check precedence of expressions
               if ($node->instanceOf(meta::external::query::sql::metamodel::Expression) && $parentNode->isNotEmpty() && $parentNode->toOne()->instanceOf(meta::external::query::sql::metamodel::Expression),
@@ -106,14 +124,14 @@ function meta::external::store::relational::sqlDialectTranslation::executeNodePr
                     let precedenceResult = $sqlDialect.expressionPrecedenceComparator.compare($e1, $e2);
                     // Though precedence wise its enough to check precedenceResult < 0, better to wrap in parentheses when dealing with different logical operations (to make SQL more readable)
                     // With divide not always floating points, need to wrap
-                    if ($precedenceResult < 0 || differentLogicalBinaryExpressionTypes($e1, $e2),
+                    if ($precedenceResult < 0 || differentLogicalBinaryExpressionTypes($e1, $e2) || doubleNegation($e1, $e2) || $e1->isDivideExpr() || $e2->isDivideExpr(),
                         | '(' + $processedNode + ')',
                         | $processedNode
                     );,
                   | $processedNode 
               );
         );,
-      | fail('Dialect translation for node of type "' + $node->class()->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"'); '';
+      | fail('Dialect translation for node of type "' + $nodeClassNonTyped->elementToPath() + '" not implemented in SqlDialect for database type "' + $config.dbConfig.dbType + '"'); '';
   );
 }
 

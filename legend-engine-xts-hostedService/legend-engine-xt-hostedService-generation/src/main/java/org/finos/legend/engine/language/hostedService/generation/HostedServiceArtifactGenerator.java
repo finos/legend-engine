@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.lineage.Lineage;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -104,11 +104,11 @@ public class HostedServiceArtifactGenerator
     {
         MutableList<PackageableElement> elements = org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements());
         HostedService h = (HostedService)elements.select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(e.getPath())).getFirst();
-        org.finos.legend.engine.protocol.pure.v1.model.domain.Function f = (org.finos.legend.engine.protocol.pure.v1.model.domain.Function)elements.select(e ->
+        org.finos.legend.engine.protocol.pure.m3.function.Function f = (org.finos.legend.engine.protocol.pure.m3.function.Function)elements.select(e ->
         {
             try
             {
-                return e instanceof org.finos.legend.engine.protocol.pure.v1.model.domain.Function && e.getPath().equals(FunctionDescriptor.functionDescriptorToId(h.function.path));
+                return e instanceof org.finos.legend.engine.protocol.pure.m3.function.Function && e.getPath().equals(FunctionDescriptor.functionDescriptorToId(h.function.path));
             }
             catch (InvalidFunctionDescriptorException invalidFunctionDescriptorException)
             {

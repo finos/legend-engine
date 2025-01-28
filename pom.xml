@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.67.13-SNAPSHOT</version>
+    <version>4.68.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -37,9 +37,6 @@
 
         <!-- Core System -->
         <module>legend-engine-core</module>
-
-        <!-- Pure Extension -->
-        <module>legend-engine-pure</module>
 
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
@@ -108,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.28.0</legend.pure.version>
+        <legend.pure.version>5.32.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 

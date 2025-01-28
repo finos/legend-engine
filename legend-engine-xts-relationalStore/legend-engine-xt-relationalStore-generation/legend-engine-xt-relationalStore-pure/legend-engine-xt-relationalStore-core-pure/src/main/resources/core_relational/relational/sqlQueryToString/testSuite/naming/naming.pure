@@ -23,6 +23,7 @@ import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::*;
 
 

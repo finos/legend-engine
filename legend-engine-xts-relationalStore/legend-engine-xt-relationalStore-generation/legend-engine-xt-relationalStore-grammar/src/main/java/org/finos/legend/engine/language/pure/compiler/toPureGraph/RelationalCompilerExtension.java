@@ -46,7 +46,7 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.DatabaseMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
@@ -653,7 +653,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
+    public List<Function4<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
     {
         return Collections.singletonList((valueSpecification, context, openVariables, processingContext) ->
         {

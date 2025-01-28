@@ -264,16 +264,15 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoningWithMaxVersionGreaterThanDoNotPerform() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersionWithoutDigest();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersionWithoutDigest();
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-            .digestField(digestName)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -294,7 +293,7 @@ class UnitemporalDeltaTest extends BaseTest
         String dataPass1 = basePathForInput + "with_max_versioning/greater_than/without_dedup/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass1);
+        loadStagingDataWithVersionWithoutDigest(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
@@ -306,7 +305,7 @@ class UnitemporalDeltaTest extends BaseTest
         String dataPass2 = basePathForInput + "with_max_versioning/greater_than/without_dedup/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass2.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass2);
+        loadStagingDataWithVersionWithoutDigest(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(4, 0, 1, 2, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
@@ -315,7 +314,7 @@ class UnitemporalDeltaTest extends BaseTest
         String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass3.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass3);
+        loadStagingDataWithVersionWithoutDigest(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
@@ -974,16 +973,15 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoningWithMaxVersioningFail() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
-        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersionWithoutDigest();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersionWithoutDigest();
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-            .digestField(digestName)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -1003,7 +1001,7 @@ class UnitemporalDeltaTest extends BaseTest
         String dataPass1 = basePathForInput + "with_max_versioning/greater_than/without_dedup/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataWithVersion(dataPass1);
+        loadStagingDataWithVersionWithoutDigest(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
 

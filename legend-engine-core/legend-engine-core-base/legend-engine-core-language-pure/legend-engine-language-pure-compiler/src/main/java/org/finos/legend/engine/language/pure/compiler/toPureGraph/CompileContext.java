@@ -29,13 +29,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
+import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -456,13 +456,13 @@ public class CompileContext
 
     // ------------------------------------------ FUNCTION EXPRESSION BUILDER -----------------------------------------
 
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, String fControl, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         Pair<SimpleFunctionExpression, List<ValueSpecification>> functionExpression;
-        functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, openVariables, sourceInformation, this, processingContext);
+        functionExpression = this.pureModel.handlers.buildFunctionExpression(functionName, parameters, sourceInformation, valueSpecificationBuilder);
         if (fControl != null)
         {
-            testFunction(fControl, processingContext, functionExpression.getOne());
+            testFunction(fControl, valueSpecificationBuilder.getProcessingContext(), functionExpression.getOne());
         }
         return functionExpression;
     }
@@ -576,9 +576,9 @@ public class CompileContext
         return newGenericType(rawType, this.pureModel)._typeArguments(typeArguments)._multiplicityArguments(multiplicityArguments);
     }
 
-    public static org.finos.legend.engine.protocol.pure.v1.model.type.GenericType convertGenericType(GenericType genericType)
+    public static org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType convertGenericType(GenericType genericType)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.type.Type rType;
+        org.finos.legend.engine.protocol.pure.m3.type.Type rType;
         if (genericType._rawType() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType)
         {
             rType = RelationTypeHelper.convert((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) genericType._rawType());
@@ -587,15 +587,15 @@ public class CompileContext
         {
             rType = new PackageableType(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(genericType._rawType()));
         }
-        return new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
+        return new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
     }
 
-    public GenericType newGenericType(org.finos.legend.engine.protocol.pure.v1.model.type.GenericType genericType)
+    public GenericType newGenericType(org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType genericType)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
         GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType));
         SourceInformation si = null;
-        org.finos.legend.engine.protocol.pure.v1.model.type.Type protocolType = genericType.rawType;
+        org.finos.legend.engine.protocol.pure.m3.type.Type protocolType = genericType.rawType;
         final Type type;
         if (protocolType instanceof PackageableType)
         {
@@ -678,7 +678,7 @@ public class CompileContext
     }
 
 
-    public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue taggedValue)
+    public TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue taggedValue)
     {
         return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass(M3Paths.TaggedValue))
                 ._tag(resolveTag(taggedValue.tag))

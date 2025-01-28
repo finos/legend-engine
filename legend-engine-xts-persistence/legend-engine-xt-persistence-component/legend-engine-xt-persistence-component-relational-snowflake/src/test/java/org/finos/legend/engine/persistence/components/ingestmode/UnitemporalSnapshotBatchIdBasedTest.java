@@ -47,4 +47,14 @@ public class UnitemporalSnapshotBatchIdBasedTest extends org.finos.legend.engine
     {
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctAmount()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlWithAmount;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctAmount()
+    {
+        return SnowflakeTestArtifacts.dataErrorSqlWithAmount;
+    }
 }

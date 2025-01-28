@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBCon
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 

@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 
 import java.util.Map;
 

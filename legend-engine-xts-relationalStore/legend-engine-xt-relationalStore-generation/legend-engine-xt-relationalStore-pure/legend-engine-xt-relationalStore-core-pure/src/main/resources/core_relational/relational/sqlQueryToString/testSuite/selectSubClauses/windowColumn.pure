@@ -18,6 +18,7 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;

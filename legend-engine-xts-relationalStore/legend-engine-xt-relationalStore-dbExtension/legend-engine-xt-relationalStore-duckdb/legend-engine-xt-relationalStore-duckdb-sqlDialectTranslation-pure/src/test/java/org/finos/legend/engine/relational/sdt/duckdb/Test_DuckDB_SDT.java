@@ -17,8 +17,8 @@ package org.finos.legend.engine.relational.sdt.duckdb;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.relational.test.sdt.SdtTestSuiteBuilder;
+import org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect;
 
 import static org.finos.legend.pure.generated.core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect.Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBSqlDialectExtension__Extension_1_;
 
@@ -29,7 +29,7 @@ public class Test_DuckDB_SDT extends TestSuite
         return SdtTestSuiteBuilder.buildSdtTestSuite(
                 "DuckDB",
                 es -> Lists.immutable.of(Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBSqlDialectExtension__Extension_1_(es)),
-                Maps.mutable.empty()
+                core_external_store_relational_sql_dialect_translation_duckdb_duckDBSqlDialect::Root_meta_external_store_relational_sqlDialectTranslation_duckDB_duckDBFunctionTestsExpectedErrors__Map_1_
         );
     }
 }

@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.apache.commons.text.StringEscapeUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -135,4 +136,14 @@ public class PureGrammarParserUtility
         }
         return String.join(PACKAGE_SEPARATOR, parts);
     }
+
+    public static Multiplicity buildMultiplicity(ParserRuleContext fromMultiplicity, ParserRuleContext toMultiplicity)
+    {
+        String star = "*";
+        Multiplicity m = new Multiplicity();
+        m.lowerBound = Integer.parseInt(fromMultiplicity != null ? fromMultiplicity.getText() : star.equals(toMultiplicity.getText()) ? "0" : toMultiplicity.getText());
+        m.setUpperBound(star.equals(toMultiplicity.getText()) ? null : Integer.parseInt(toMultiplicity.getText()));
+        return m;
+    }
+    
 }

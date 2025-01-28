@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
 

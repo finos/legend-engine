@@ -19,9 +19,8 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDatePropagationHelper;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -74,19 +73,19 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         List<ValueSpecification> resolvedParams = null;
         for (FunctionExpressionBuilder b : builders)
         {
-            Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, openVariables, sourceInformation, compileContext, processingContext);
+            Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
             if (res.getOne() != null)
             {
                 return res;
             }
             else
             {
-                MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
+                MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(valueSpecificationBuilder.getProcessingContext());
             }
             if (res.getTwo() != null)
             {

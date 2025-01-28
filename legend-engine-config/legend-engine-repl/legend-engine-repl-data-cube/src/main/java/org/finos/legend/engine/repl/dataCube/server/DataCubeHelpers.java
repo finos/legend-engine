@@ -34,12 +34,12 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.type.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.relationType.RelationType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.autocomplete.Completer;
@@ -48,6 +48,7 @@ import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeExecutionResult;
+import org.finos.legend.engine.repl.dataCube.server.model.DataCubeGetExecutionPlanResult;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
@@ -65,7 +66,6 @@ public class DataCubeHelpers
 {
     public static DataCubeExecutionResult executeQuery(Client client, LegendInterface legendInterface, PlanExecutor planExecutor, PureModelContextData data, boolean debug) throws IOException
     {
-
         Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
         String queryCode = getQueryCode(func.body.get(0), false);
 
@@ -129,24 +129,49 @@ public class DataCubeHelpers
         }
     }
 
-    public static RelationType getRelationReturnType(LegendInterface legendInterface, Lambda lambda, PureModelContextData data)
+    public static DataCubeGetExecutionPlanResult getExecutionPlan(Client client, LegendInterface legendInterface, PureModelContextData data, boolean debug) throws IOException
     {
-        PureModelContextData pmcd;
-        if (data != null)
+        Function func = (Function) ListIterate.select(data.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
+        String queryCode = getQueryCode(func.body.get(0), false);
+
+        if (client != null && debug)
         {
-            pmcd = DataCubeHelpers.injectNewFunction(data, lambda).getOne();
+            client.println("Debugging query execution...");
+            client.printDebug("---------------------------------------- INPUT ----------------------------------------");
+            client.println("Function: " + queryCode);
         }
-        else
+
+        PureModel pureModel = legendInterface.compile(data);
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
+
+        // Plan
+        if (client != null && debug)
         {
-            pmcd = PureModelContextData.newBuilder().withElement(wrapLambda(lambda)).build();
+            client.printDebug("---------------------------------------- PLAN ----------------------------------------");
         }
-        return getRelationReturnType(legendInterface, pmcd);
+        // TODO: Since H2 does not support pivot(), when pivot() is used, the debugger will fail as it defaults to use H2
+        // when we switch out to use DuckDB as the core testing DB, then this issue should be resolved
+        Root_meta_pure_executionPlan_ExecutionPlan _plan = legendInterface.generatePlan(pureModel, false);
+        String planStr = PlanGenerator.serializeToJSON(_plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
+        if (client != null && debug)
+        {
+            client.println("Generated Plan: " + planStr);
+        }
+
+        DataCubeGetExecutionPlanResult result = new DataCubeGetExecutionPlanResult();
+        result.plan = (SingleExecutionPlan) PlanExecutor.readExecutionPlan(planStr);
+        return result;
     }
 
-    public static RelationType getRelationReturnType(LegendInterface legendInterface, PureModelContextData data)
+    public static RelationType getRelationReturnType(LegendInterface legendInterface, Lambda lambda, PureModelContextData model)
     {
-        PureModel pureModel = legendInterface.compile(data);
-        return RelationTypeHelper.convert((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType) pureModel.getConcreteFunctionDefinition(REPL_RUN_FUNCTION_QUALIFIED_PATH, null)._expressionSequence().getLast()._genericType()._typeArguments().getFirst()._rawType());
+        return getRelationReturnType(legendInterface, DataCubeHelpers.injectNewFunction(model, lambda).getOne());
+    }
+
+    public static RelationType getRelationReturnType(LegendInterface legendInterface, PureModelContextData model)
+    {
+        PureModel pureModel = legendInterface.compile(model);
+        return RelationTypeHelper.convert((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) pureModel.getConcreteFunctionDefinition(REPL_RUN_FUNCTION_QUALIFIED_PATH, null)._expressionSequence().getLast()._genericType()._typeArguments().getFirst()._rawType());
     }
 
     public static ValueSpecification parseQuery(String code, Boolean returnSourceInformation)
@@ -159,20 +184,16 @@ public class DataCubeHelpers
         return valueSpecification.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(pretty != null && pretty ? RenderStyle.PRETTY : RenderStyle.STANDARD).build());
     }
 
-    public static CompletionResult getCodeTypeahead(String code, Lambda lambda, PureModelContextData data, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
+    public static CompletionResult getCodeTypeahead(String code, Lambda lambda, PureModelContextData model, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
         try
         {
-            String graphCode = "";
-            if (data != null)
-            {
-                PureModelContextData newData = PureModelContextData.newBuilder()
-                        .withOrigin(data.getOrigin())
-                        .withSerializer(data.getSerializer())
-                        .withElements(ListIterate.select(data.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
-                        .build();
-                graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
-            }
+            PureModelContextData newData = PureModelContextData.newBuilder()
+                    .withOrigin(model.getOrigin())
+                    .withSerializer(model.getSerializer())
+                    .withElements(ListIterate.select(model.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
+                    .build();
+            String graphCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(newData);
             String baseQueryCode = lambda != null ? getQueryCode(lambda.body.get(0), false) : null;
             String queryCode = (baseQueryCode != null ? baseQueryCode : "") + code;
             Completer completer = new Completer(graphCode, extensions, legendInterface);
@@ -189,38 +210,46 @@ public class DataCubeHelpers
         }
     }
 
-    public static Function wrapLambda(Lambda lambda)
-    {
-        Function func = new Function();
-        func.name = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::") + 2);
-        func._package = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(0, REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::"));
-        func.returnGenericType = new GenericType(new PackageableType(M3Paths.Any));
-        func.returnMultiplicity = new Multiplicity(0, null);
-        func.body = lambda.body;
-        return func;
-    }
-
     /**
-     * Replace the magic function in the given graph data by a new function with the body of the specified lambda
+     * Replace the magic function (if exists) in the given graph data by a new function with the body of the specified lambda
      */
-    public static Pair<PureModelContextData, Function> injectNewFunction(PureModelContextData originalData, Lambda lambda)
+    public static Pair<PureModelContextData, Function> injectNewFunction(PureModelContextData model, Lambda lambda)
     {
-        Function originalFunction = (Function) ListIterate.select(originalData.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
-        Function func = new Function();
-        func.name = originalFunction.name;
-        func._package = originalFunction._package;
-        func.parameters = originalFunction.parameters;
-        func.returnGenericType = originalFunction.returnGenericType;
-        func.returnMultiplicity = originalFunction.returnMultiplicity;
-        func.body = lambda != null ? lambda.body : func.body; // if no lambda is specified, we'll just use the original function
+        PureModelContextData newModel;
+        Function func;
+        if (model.getElements().stream().anyMatch(e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
+        {
+            Function originalFunction = (Function) ListIterate.select(model.getElements(), e -> e.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)).getFirst();
+            func = new Function();
+            func.name = originalFunction.name;
+            func._package = originalFunction._package;
+            func.parameters = originalFunction.parameters;
+            func.returnGenericType = originalFunction.returnGenericType;
+            func.returnMultiplicity = originalFunction.returnMultiplicity;
+            func.body = lambda != null ? lambda.body : func.body; // if no lambda is specified, we'll just use the original function
 
-        PureModelContextData data = PureModelContextData.newBuilder()
-                .withOrigin(originalData.getOrigin())
-                .withSerializer(originalData.getSerializer())
-                .withElements(ListIterate.select(originalData.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
-                .withElement(func)
-                .build();
-
-        return Tuples.pair(data, func);
+            newModel = PureModelContextData.newBuilder()
+                    .withOrigin(model.getOrigin())
+                    .withSerializer(model.getSerializer())
+                    .withElements(ListIterate.select(model.getElements(), el -> !el.getPath().equals(REPL_RUN_FUNCTION_QUALIFIED_PATH)))
+                    .withElement(func)
+                    .build();
+        }
+        else
+        {
+            func = new Function();
+            func.name = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::") + 2);
+            func._package = REPL_RUN_FUNCTION_QUALIFIED_PATH.substring(0, REPL_RUN_FUNCTION_QUALIFIED_PATH.lastIndexOf("::"));
+            func.returnGenericType = new GenericType(new PackageableType(M3Paths.Any));
+            func.returnMultiplicity = new Multiplicity(0, null);
+            func.body = lambda.body;
+            newModel = PureModelContextData.newBuilder()
+                    .withOrigin(model.getOrigin())
+                    .withSerializer(model.getSerializer())
+                    .withElements(model.getElements())
+                    .withElement(func)
+                    .build();
+        }
+        return Tuples.pair(newModel, func);
     }
 }

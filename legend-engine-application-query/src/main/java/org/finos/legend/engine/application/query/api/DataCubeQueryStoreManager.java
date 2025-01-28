@@ -81,7 +81,7 @@ public class DataCubeQueryStoreManager
         {
             return this.getQueryDatabase().getCollection(Vault.INSTANCE.getValue("query.mongo.collection.dataCubeEvent"));
         }
-        throw new RuntimeException("Query event MongoDB collection has not been configured properly");
+        throw new RuntimeException("DataCube Query event MongoDB collection has not been configured properly");
     }
 
     private <T> T documentToClass(Document document, Class<T> _class)

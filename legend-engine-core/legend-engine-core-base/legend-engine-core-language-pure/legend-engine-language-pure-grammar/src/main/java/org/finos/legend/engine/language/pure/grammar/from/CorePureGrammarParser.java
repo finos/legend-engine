@@ -34,6 +34,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operati
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.operationClassMapping.OperationClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
@@ -53,12 +55,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
@@ -87,6 +90,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
     public static final String AGGREGATION_AWARE_MAPPING_TYPE = "AggregationAware";
     public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
+    public static final String RELATION_EXPRESSION = "Relation";
 
     private static RelationStoreAccessorPureParser relationStoreAccessorPureParser = new RelationStoreAccessorPureParser();
 
@@ -105,7 +109,9 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping),
                 MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping),
                 MappingElementParser.newParser(AGGREGATION_AWARE_MAPPING_TYPE, CorePureGrammarParser::parseAggregationAwareMapping),
-                MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification));
+                MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification),
+                MappingElementParser.newParser(RELATION_EXPRESSION, CorePureGrammarParser::parseRelationFunctionMapping)
+        );
     }
 
     @Override
@@ -285,6 +291,22 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return aggregateSpecification;
     }
 
+    private static ClassMapping parseRelationFunctionMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getRelationFunctionMappingParserInfo(mappingElementSourceCode);
+        RelationFunctionMappingParseTreeWalker walker = new RelationFunctionMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserContext, mappingElementSourceCode);
+        RelationFunctionClassMapping relationFunctionClassMapping = new RelationFunctionClassMapping();
+        String className = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        relationFunctionClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        relationFunctionClassMapping._class = className;
+        relationFunctionClassMapping.root = ctx.STAR() != null;
+        relationFunctionClassMapping.extendsClassMappingId = ctx.superClassMappingId() != null ? ctx.superClassMappingId().getText() : null;
+        relationFunctionClassMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitRelationFunctionMapping((RelationFunctionMappingParserGrammar.RelationMappingContext) parserInfo.rootContext, relationFunctionClassMapping);
+        return relationFunctionClassMapping;
+    }
+    
     private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
         SourceInformation testInputDataSourceInformation = walkerSourceInformation.getSourceInformation(inputDataContext);
@@ -398,6 +420,20 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.addErrorListener(errorListener);
         SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.aggregateSpecification());
+    }
+
+    private static SourceCodeParserInfo getRelationFunctionMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        RelationFunctionMappingLexerGrammar lexer = new RelationFunctionMappingLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        RelationFunctionMappingParserGrammar parser = new RelationFunctionMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        SourceInformation source = mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, source, mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.relationMapping());
     }
 
     private static Section parseDataSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext pureGrammarParserContext)

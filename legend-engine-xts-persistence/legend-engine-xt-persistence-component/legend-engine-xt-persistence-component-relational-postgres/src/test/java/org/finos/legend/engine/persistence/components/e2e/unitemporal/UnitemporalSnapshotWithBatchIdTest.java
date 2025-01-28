@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -132,7 +133,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .emptyDatasetHandling(DeleteTargetData.builder().build())
             .build();
 
@@ -188,8 +189,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
-            .putAllPartitionValuesByField(partitionFilter)
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).putAllPartitionValuesByField(partitionFilter).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -303,7 +303,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
-            .addAllPartitionFields(Collections.singletonList(dateName))
+            .partitioningStrategy(Partitioning.builder().addAllPartitionFields(Collections.singletonList(dateName)).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();

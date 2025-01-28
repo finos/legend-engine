@@ -302,12 +302,8 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ari
   nodeProcessor(
     ArithmeticExpression,
     {sqlDialect, a, state, config |
-      let isDivide = $a->isDivideExpr();
-      let castAsDecimalIfDivide = {e: meta::external::query::sql::metamodel::Expression[1] |
-        if ($isDivide, | ^Cast(type = ^ColumnType(name = 'decimal'), expression = $e), | $e)
-      };
-      let leftExpr = $sqlDialect->executeNodeProcessor($castAsDecimalIfDivide->eval($a.left), $a, $state, $config);
-      let rightExpr = $sqlDialect->executeNodeProcessor($castAsDecimalIfDivide->eval($a.right), $a, $state, $config);
+      let leftExpr = $sqlDialect->executeNodeProcessor($a.left, $a, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($a.right, $a, $state, $config);
       let operator = if(
         [
           pair(|$a.type == ArithmeticType.ADD, | '+'),
@@ -538,34 +534,6 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::win
             $partitions + $orderBy;
       );
     }
-  )
-}
-
-function meta::external::store::relational::sqlDialectTranslation::defaults::functionCallProcessor_default(): NodeProcessor<FunctionCall>[1]
-{
-  nodeProcessor(
-    FunctionCall,
-    {sqlDialect, f, state, config |
-      assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
-      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
-      assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
-      assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
-
-      let sep0 = $state.separatorIfPretty(0, $config);
-      let sep1 = $state.separatorIfPretty(1, $config);
-      
-      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
-      let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
-
-      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($noArgIsMultiLine, | '', | $sep1) +
-      $args->joinStrings(',' + if($noArgIsMultiLine, | ' ', | $state.separator(1, $config))) +
-      + if($noArgIsMultiLine, | '', | $sep0) + ')' +
-      if ($f.window->isNotEmpty(),
-          | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
-          | ''
-      );
-    },
-    {n | true}
   )
 }
 

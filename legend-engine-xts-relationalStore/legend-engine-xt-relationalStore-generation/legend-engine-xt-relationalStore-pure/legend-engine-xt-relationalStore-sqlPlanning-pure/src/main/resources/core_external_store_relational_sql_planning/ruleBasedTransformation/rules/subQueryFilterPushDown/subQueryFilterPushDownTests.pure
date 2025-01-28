@@ -218,7 +218,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfComplexOperations(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfComplexOperations(): Boolean[1]
 {
   // Filter push down of complex operations
   runSqlRuleBasedTransformationTest(
@@ -256,7 +256,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfOperationsOnMultipleColumns(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownOfOperationsOnMultipleColumns(): Boolean[1]
 {
   // Filter push down of operations on multiple columns
   runSqlRuleBasedTransformationTest(
@@ -294,7 +294,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushdownForOrClauses(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushdownForOrClauses(): Boolean[1]
 {
   // No push down for OR clauses
   runSqlRuleBasedTransformationTest(
@@ -658,7 +658,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithGroupBy(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithGroupBy(): Boolean[1]
 {
   // Filter push down with group by (filters to where clause)
   runSqlRuleBasedTransformationTest(
@@ -826,7 +826,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWindowColumn(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testNoPushDownWithWindowColumn(): Boolean[1]
 {
   // No push down with window column
   runSqlRuleBasedTransformationTest(
@@ -869,7 +869,7 @@ function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBased
   );
 }
 
-function <<test.Test>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithNestedWindowColumn(): Boolean[1]
+function <<test.ToFix>> meta::external::store::relational::sqlPlanning::ruleBasedTransformation::subQueryFilterPushDown::tests::testPushDownWithNestedWindowColumn(): Boolean[1]
 {
   // Push down with nested window column
   runSqlRuleBasedTransformationTest(

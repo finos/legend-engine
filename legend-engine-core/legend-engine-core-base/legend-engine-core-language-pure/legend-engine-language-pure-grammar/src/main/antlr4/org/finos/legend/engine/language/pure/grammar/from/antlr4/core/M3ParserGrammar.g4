@@ -266,5 +266,5 @@ toMultiplicity:                                 INTEGER | STAR
 
 
 
-functionIdentifier:                         qualifiedName PAREN_OPEN (qualifiedName multiplicity (COMMA qualifiedName multiplicity)*)? PAREN_CLOSE COLON qualifiedName multiplicity
+functionIdentifier:                             qualifiedName PAREN_OPEN (functionTypePureType (COMMA functionTypePureType)*)? PAREN_CLOSE COLON functionTypePureType
 ;

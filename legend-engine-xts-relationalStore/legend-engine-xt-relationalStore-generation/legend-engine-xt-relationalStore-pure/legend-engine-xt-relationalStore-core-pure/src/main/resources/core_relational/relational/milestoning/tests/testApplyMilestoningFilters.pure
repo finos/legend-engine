@@ -12,10 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::milestoning::*;
 import meta::relational::metamodel::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::join::*;
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::functions::asserts::*;
+import meta::pure::executionPlan::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFilters::testMilestoningFilterApplicationOnSemiStructuredRelationalOperationElements():Any[*]
 {
@@ -43,4 +52,25 @@ function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFil
    let secondAlias = ^TableAlias(name = 'ssf', relationalElement = $ssf);
    let jtn = ^JoinTreeNode(alias = $secondAlias, database = ^Database(name = 'd', package = ::), joinName = 'flatten_join', join = ^Join(name = 'flatten_join', operation = ^DynaFunction(name = 'not', parameters = ^Literal(value = false)), aliases = [pair($firstAlias, $secondAlias), pair($secondAlias, $firstAlias)]));
    meta::relational::milestoning::applyMilestoningFilters($jtn, {t|[]}, {t|$t}, false, $extensions);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::projection::testMileStoningWithNewTDSFilterAndPostProcessor():Boolean[1]
+{
+
+   meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns();
+
+  let runtime = meta::external::store::relational::tests::testRuntime();
+
+  let funcPP = {s:SelectSQLQuery[1] | let ff = {ta:TableAlias[1]| if($ta.relationalElement->instanceOf(Table) , | let table = $ta.relationalElement->cast(@Table);
+                                                     ^DynaFunction(name='equal', parameters=[^TableAliasColumn(alias=$ta, column=^Column(name='thru_z', type=^meta::relational::metamodel::datatype::Date(), nullable=false)), ^Literal(value=%9999-12-31T00:00:00.000)]);
+                                                                                          ,| []);};
+                          let s2 = applyMilestoningFilters($s, $ff, getTableToTableIdentifyFunction(), true, meta::relational::extension::relationalExtensions())->cast(@SelectSQLQuery);
+                          ^meta::pure::mapping::Result<SelectSQLQuery|1>(values=$s2);};
+
+  let updatedRuntime = $runtime->meta::relational::runtime::addPostProcessors([], $funcPP);
+
+  let result = executionPlan(|Product.all(%2015-10-16T00:00:00)->project(~[ID:x|$x.id,'Name':x|$x.name])->filter(row|$row.ID == '1'), milestoningMapWithEmbeddedSimple, $updatedRuntime, meta::relational::extension::relationalExtensions());
+  assertEqualsH2Compatible('Relational(type=TDS[(ID,Integer,"",""),(Name,String,"","")]resultColumns=[("ID",""),("Name","")]sql=select"ID"as"ID","Name"as"Name"from(select"root".idas"ID","root".nameas"Name"fromProductTableas"root"where"root".from_z<=\'2015-10-1600:00:00\'and"root".thru_z>\'2015-10-1600:00:00\'and"root".thru_z=\'9999-12-3100:00:00.000\')as"subselect"where"subselect"."ID"=\'1\'connection=TestDatabaseConnection(type="H2"))',
+  'Relational(type=TDS[(ID,Integer,"",""),(Name,String,"","")]resultColumns=[("ID",""),("Name","")]sql=select"ID"as"ID","Name"as"Name"from(select"root".idas"ID","root".nameas"Name"fromProductTableas"root"where"root".from_z<=TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z>TIMESTAMP\'2015-10-1600:00:00\'and"root".thru_z=TIMESTAMP\'9999-12-3100:00:00.000\')as"subselect"where"subselect"."ID"=\'1\'connection=TestDatabaseConnection(type="H2"))', $result -> meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+
 }

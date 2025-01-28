@@ -14,14 +14,12 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
 
 public interface ParametersInference
 {
-    List<ValueSpecification> update(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, CompileContext compileContext, ProcessingContext processingContext);
+    List<ValueSpecification> update(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, ValueSpecificationBuilder valueSpecificationBuilder);
 }

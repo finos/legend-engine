@@ -26,19 +26,19 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Profile;
+import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.type.Enumeration;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
+import org.finos.legend.engine.protocol.pure.m3.type.Measure;
+import org.finos.legend.engine.protocol.pure.m3.extension.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -48,6 +48,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
@@ -58,11 +60,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
@@ -520,8 +522,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
-        return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
-                (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(purePropertyMapping) +
                 (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
                 (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
                 (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
@@ -554,11 +555,27 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
+    public String visit(RelationFunctionClassMapping classMapping)
+    {
+        return ": Relation\n" +
+        getTabString(getBaseTabLevel()) + "{\n" +
+        getTabString(getBaseTabLevel() + 1) + "~func " + classMapping.relationFunction.path + "\n" +
+        LazyIterate.collect(classMapping.propertyMappings, pm -> getTabString(getBaseTabLevel() + 1) + pm.accept(this)).makeString(",\n") + (classMapping.propertyMappings.isEmpty() ? "" : "\n") +
+        getTabString(getBaseTabLevel()) + "}";
+    }
+
+    @Override
     public String visit(AggregationAwarePropertyMapping propertyMapping)
     {
         return unsupported(AggregationAwarePropertyMapping.class);
     }
 
+    @Override
+    public String visit(RelationFunctionPropertyMapping propertyMapping)
+    {
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
+                ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, false);
+    }
 
     // ----------------------------------------------- CONNECTION -----------------------------------------------
 

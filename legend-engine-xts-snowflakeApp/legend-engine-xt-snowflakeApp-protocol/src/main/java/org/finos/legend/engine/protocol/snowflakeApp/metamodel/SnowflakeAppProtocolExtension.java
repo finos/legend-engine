@@ -24,7 +24,7 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
 

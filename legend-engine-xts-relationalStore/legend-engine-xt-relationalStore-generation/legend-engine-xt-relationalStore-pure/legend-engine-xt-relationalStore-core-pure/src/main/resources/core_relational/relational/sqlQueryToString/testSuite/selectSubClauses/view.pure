@@ -20,6 +20,7 @@ import meta::external::store::relational::tests::*;
 import meta::core::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testViewAllOneSimpleProperty(config:DbTestConfig[1]):Boolean[1]
 {

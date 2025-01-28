@@ -18,12 +18,12 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
@@ -41,11 +41,11 @@ import java.util.Optional;
 
 public abstract class FunctionExpressionBuilder
 {
-    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, MutableList<String> openVariables, SourceInformation sourceInformation, CompileContext compileContext, ProcessingContext processingContext);
+    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder);
 
     public abstract String getFunctionName();
 
-    public boolean test(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, PureModel pureModel, ProcessingContext processingContext)
+    public boolean test(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, PureModel pureModel, ProcessingContext processingContext)
     {
         RichIterable<? extends VariableExpression> vars = ((FunctionType) func._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters();
 
@@ -61,7 +61,7 @@ public abstract class FunctionExpressionBuilder
         return false;
     }
 
-    private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
+    private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
         boolean isParamFunction = vs instanceof Lambda ||
@@ -73,7 +73,7 @@ public abstract class FunctionExpressionBuilder
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);
     }
 
-    private boolean isPackageableElementSubtypeOfFunction(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
+    private boolean isPackageableElementSubtypeOfFunction(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
     {
         return (valueSpecification instanceof PackageableElementPtr
                     && pureModel.getExecutionSupport().getProcessorSupport().package_getByUserPath(((PackageableElementPtr) valueSpecification).fullPath) != null
@@ -85,7 +85,7 @@ public abstract class FunctionExpressionBuilder
                 );
     }
 
-    private boolean isVariableSubtypeOfFunction(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
+    private boolean isVariableSubtypeOfFunction(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
     {
         return (valueSpecification instanceof Variable
                 && processingContext.getInferredVariable(((Variable) valueSpecification).name) != null
