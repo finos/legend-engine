@@ -183,10 +183,10 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
     }
 
     @Test
-    void testDataTypeSizeChange() throws Exception
+    void testDataTypeSizeChangeIncrementLength() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
-        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeSizeChangeStagingTable();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthIncrementStagingTable();
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -223,6 +223,48 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         Assertions.assertEquals(256, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
         Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
         Assertions.assertEquals(Arrays.asList("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"name\" VARCHAR(256) NOT NULL"), result.executedSchemaEvolutionSqls());
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementLength() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+
+        List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
+        List<String> expectedSchema = Arrays.asList(schema);
+        Assertions.assertTrue(actualSchema.size() == expectedSchema.size() && actualSchema.containsAll(expectedSchema) && expectedSchema.containsAll(actualSchema));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
+        Assertions.assertEquals(64, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
+        Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
+        Assertions.assertEquals(0, result.executedSchemaEvolutionSqls().size());
     }
 
     @Test
@@ -422,5 +464,90 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         Assertions.assertEquals(SchemaEvolutionStatus.FAILED, result.status());
         Assertions.assertEquals("Dataset is not found: main", result.message().get());
         Assertions.assertTrue(result.executedSchemaEvolutionSqls().isEmpty());
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementLengthFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type length is decremented for column \"name\", but user capability does not allow it", e.getMessage());
+        }
+    }
+
+    @Test
+    void testDataTypeSizeChangeValidateCapabilities() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add( SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        schemaEvolutionCapabilitySet.add( SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Invalid schema evolution capabilities. Select either DATA_TYPE_LENGTH_CHANGE or DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY.", e.getMessage());
+        }
     }
 }

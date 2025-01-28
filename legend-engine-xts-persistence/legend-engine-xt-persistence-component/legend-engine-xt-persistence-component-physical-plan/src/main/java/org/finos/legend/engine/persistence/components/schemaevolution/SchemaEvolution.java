@@ -105,6 +105,20 @@ public class SchemaEvolution
         this.ingestMode = ingestMode;
         this.schemaEvolutionCapabilitySet = schemaEvolutionCapabilitySet;
         this.ignoreCase = ignoreCase;
+        this.validateCapabilities();
+    }
+
+    private void validateCapabilities()
+    {
+        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE) && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY))
+        {
+            throw new IllegalArgumentException("Invalid schema evolution capabilities. Select either DATA_TYPE_LENGTH_CHANGE or DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY.");
+        }
+
+        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE) && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY))
+        {
+            throw new IllegalArgumentException("Invalid schema evolution capabilities. Select either DATA_TYPE_SCALE_CHANGE or DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY.");
+        }
     }
 
     public boolean isSchemaEvolvable(Dataset mainDataset, SchemaDefinition stagingSchema)
@@ -183,6 +197,10 @@ public class SchemaEvolution
                 FieldType stagingFieldType = stagingField.type();
                 if (!matchedMainField.type().equals(stagingFieldType))
                 {
+                    validateLengthAndScaleChange(matchedMainField, stagingField,
+                        schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY),
+                        schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY));
+
                     if (!matchedMainField.type().dataType().equals(stagingFieldType.dataType()))
                     {
                         // If the datatype is an implicit change, we let the database handle the change.
@@ -236,6 +254,27 @@ public class SchemaEvolution
         return operations;
     }
 
+    private void validateLengthAndScaleChange(Field mainField, Field stagingField, boolean allowLengthIncrementOnly, boolean allowScaleIncrementOnly)
+    {
+        if (allowLengthIncrementOnly)
+        {
+            if (mainField.type().length().isPresent() && stagingField.type().length().isPresent() &&
+                mainField.type().length().get() > stagingField.type().length().get())
+            {
+                throw new IncompatibleSchemaChangeException(String.format("Data type length is decremented for column \"%s\", but user capability does not allow it", mainField.name()));
+            }
+        }
+
+        if (allowScaleIncrementOnly)
+        {
+            if (mainField.type().scale().isPresent() && stagingField.type().scale().isPresent() &&
+                mainField.type().scale().get() > stagingField.type().scale().get())
+            {
+                throw new IncompatibleSchemaChangeException(String.format("Data type scale is decremented for column \"%s\", but user capability does not allow it", mainField.name()));
+            }
+        }
+    }
+
     //Create alter statements if newField is different from mainDataField
     private void evolveDataType(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
     {
@@ -245,7 +284,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE)))
+                        || (!(schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE) || schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY))))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }
@@ -254,7 +293,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE)))
+                        || (!(schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE) || schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY))))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
                 }

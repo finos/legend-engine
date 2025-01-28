@@ -132,6 +132,7 @@ public class TestUtils
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
+    public static Field nameWithShorterLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 32, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
@@ -1472,7 +1473,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionDataTypeSizeChangeStagingTable()
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthIncrementStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1481,6 +1482,22 @@ public class TestUtils
                 .addFields(id)
                 .addFields(nameWithMoreLength)
                 .addFields(nullableIntIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthDecrementStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nameWithShorterLength)
+                .addFields(income)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)

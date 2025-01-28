@@ -155,7 +155,7 @@ class SchemaEvolutionTest extends BaseTest
     void testDataTypeSizeChange() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
-        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeSizeChangeStagingTable();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthIncrementStagingTable();
 
         // Create staging table
         createStagingTable(stagingTable);
