@@ -76,8 +76,12 @@ function <<access.private>> meta::pure::graphFetch::addSubTree(onto:GraphFetchTr
 
 function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyGraphFetchTree[1], t2:PropertyGraphFetchTree[1]): Boolean[1]
 {
-  let isPropertySame = ($t1.property.name == $t2.property.name) && ($t1.property->functionType() == $t2.property->functionType());
+  let isPropertySame = if($t1.property->instanceOf(QualifiedProperty) && $t2.property->instanceOf(QualifiedProperty),
+    | ($t1.property.name == $t2.property.name) && ($t1.property->functionType() == $t2.property->functionType()),
+    | $t1.property == $t2.property
+  );
   $isPropertySame && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
+}
 }
 
 function meta::pure::graphFetch::addSubTypeTrees(onto:GraphFetchTree[1], subTypeTrees:SubTypeGraphFetchTree[*]): GraphFetchTree[1]
