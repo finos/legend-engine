@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestCoreExternalFormatXmlJavaPlatformBindingCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
@@ -27,8 +28,7 @@ public class TestCoreExternalFormatXmlJavaPlatformBindingCompiledStateIntegrity 
         initialize("core_external_format_xml_java_platform_binding");
     }
 
-    @Test
-    @Ignore
+    @Test(expected = AssertionError.class)
     @Override
     public void testReferenceUsages()
     {

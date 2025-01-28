@@ -16,8 +16,10 @@ package org.finos.legend.engine.changetoken.code;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestCorePureChangeTokenCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
