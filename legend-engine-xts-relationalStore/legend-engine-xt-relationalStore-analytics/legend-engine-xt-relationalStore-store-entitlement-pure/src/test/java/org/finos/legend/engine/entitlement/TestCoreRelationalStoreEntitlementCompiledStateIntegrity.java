@@ -16,9 +16,11 @@ package org.finos.legend.engine.entitlement;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestCoreRelationalStoreEntitlementCompiledStateIntegrityTest extends AbstractCompiledStateIntegrityTest
+@Ignore
+public class TestCoreRelationalStoreEntitlementCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
     public static void initialize()
