@@ -55,7 +55,9 @@ public class FCTTestCollection
 
     public MutableList<CoreInstance> getAllTestFunctions()
     {
-        return this.testFunctions;
+        MutableList<CoreInstance> tests = Lists.mutable.with();
+        collectAllTests(tests);
+        return tests;
     }
 
     public CoreInstance getPackage()
@@ -68,6 +70,18 @@ public class FCTTestCollection
     {
         return this.testFunctions.notEmpty() ||
                 this.subCollections.anySatisfy(FCTTestCollection::hasTestContent);
+    }
+
+    private void collectAllTests(MutableList<CoreInstance> tests)
+    {
+        {
+            tests.addAll(this.testFunctions);
+        }
+
+        for (FCTTestCollection subCollection : this.subCollections)
+        {
+            subCollection.collectAllTests(tests);
+        }
     }
 
     public RichIterable<FCTTestCollection> getSubCollections()

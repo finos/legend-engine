@@ -39,7 +39,7 @@ $result;
 }
 
 
-function meta::analytics::testCoverage::featureMatrix::profileExceptStereoTypes(profile:Profile[1],remove:String[*]):FeatureSet[1]  
+function meta::analytics::testCoverage::featureMatrix::profileExceptStereoTypes(profile:Profile[1],remove:String[*]):FeatureSet[ 1]  
 {
   let toRemove = $remove->map(r|  $profile->stereotype($r));
  ^FeatureSet(name = 'subFeature', features= $profile.p_stereotypes->removeAll($toRemove));
@@ -61,12 +61,13 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
 }
 
 
- function <<access.private>> meta::analytics::testCoverage::featureMatrix::permuteSet(features:FeatureSet[1]):List<Stereotype>[*]
+ function  meta::analytics::testCoverage::featureMatrix::permuteSet(features:FeatureSet[1]):List<Stereotype>[*]
  {
    $features.features->fold({i:Any[1],a:List<Stereotype>[*] |$i->match( [p:Profile[1] | $p.p_stereotypes->map(st |$a->map(l|list($l.values->concatenate($st)))),
-                                                                                 s:Stereotype[1] | $a->map(l|list($l.values->concatenate($s))),
-                                                                                 f:FeatureSet[1] |  $a->map(l|list($l.values->concatenate( $f->meta::analytics::testCoverage::featureMatrix::permuteSet().values)))
-                                                                               ;]);},  ^List<Stereotype>()
+                                                                         s:Stereotype[1] | $a->map(l|list($l.values->concatenate($s))),
+                                                                         f:FeatureSet[1] |  let sets = $f->meta::analytics::testCoverage::featureMatrix::permuteSet()->map(s| $s.values->map(v|list($v)));
+                                                                                            $sets->map(set |$a->map(l|list($l.values->concatenate($set.values))));
+                                                                               ]);},  ^List<Stereotype>()
                                                     );
  }
 
