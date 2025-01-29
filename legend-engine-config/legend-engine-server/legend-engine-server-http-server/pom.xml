@@ -1103,6 +1103,11 @@
             <artifactId>legend-engine-xt-relationalStore-snowflake-PCT</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- PCT -->
 
         <dependency>
