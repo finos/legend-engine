@@ -49,6 +49,7 @@ import org.finos.legend.engine.api.analytics.FunctionAnalytics;
 import org.finos.legend.engine.api.analytics.LineageAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
+import org.finos.legend.engine.api.analytics.fct.FCT;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
@@ -155,7 +156,6 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
@@ -432,7 +432,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
         environment.jersey().register(new TestDataGenerationAPI(modelManager, planExecutor));
-
+        environment.jersey().register(new FCT(modelManager));
         enableCors(environment, serverConfiguration);
     }
 

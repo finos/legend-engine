@@ -37,5 +37,7 @@
         <module>legend-engine-xts-analytics-search</module>
         <module>legend-engine-xts-analytics-store</module>
         <module>legend-engine-xts-analytics-quality</module>
+        <module>legend-engine-xts-analytics-test-coverage</module>
+
     </modules>
 </project>

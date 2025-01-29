@@ -1215,6 +1215,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
+             <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlPlanning-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1990,7 +1996,17 @@
                 <artifactId>legend-engine-xt-analytics-function-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-binding-http-api</artifactId>
@@ -2372,6 +2388,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-testable-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-fct</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
