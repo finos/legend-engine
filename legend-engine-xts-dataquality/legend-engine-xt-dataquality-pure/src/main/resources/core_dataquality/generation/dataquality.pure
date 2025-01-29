@@ -506,6 +506,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   $dqRelationValidation->generateDataqualityRelationValidationLambda($validationName, $resultLimit, true);
 }
 
+
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], resultLimit:Integer[0..1], useFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
   let lambda = $dqRelationValidation.query;
@@ -525,7 +526,39 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
 function meta::external::dataquality::buildRelationFilterExpression(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], relationType:Type[1]):FunctionExpression[1]
 {
-  let assertion = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne().assertion; 
+  let selectedValidation = $dqRelationValidation.validations->filter(val| $val.name == $validationName)->toOne();
+  if($selectedValidation.type == 'ROW_LEVEL',
+     | $dqRelationValidation->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $relationType),
+     | $dqRelationValidation->buildRelationExpressionForAggregateLevelVal($selectedValidation, $relationType));
+}
+
+function meta::external::dataquality::buildRelationExpressionForAggregateLevelVal(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], relationType:Type[1]):FunctionExpression[1]
+{
+  
+  let assertion = $selectedValidation.assertion;
+              
+   ^SimpleFunctionExpression
+   (
+      func = map_T_m__Function_1__V_m_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = Boolean),
+      importGroup  = system::imports::coreImport,
+      parametersValues =
+      [  $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne(),
+         ^InstanceValue (
+            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+            multiplicity = PureOne,
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+                                                          $assertion.expressionSequence->evaluateAndDeactivate()->toOne())
+         )
+     ]
+   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVal(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], selectedValidation: RelationValidation[1], relationType:Type[1]):FunctionExpression[1]
+{
+  
+  let assertion = $selectedValidation.assertion;
               
    ^SimpleFunctionExpression
    (
