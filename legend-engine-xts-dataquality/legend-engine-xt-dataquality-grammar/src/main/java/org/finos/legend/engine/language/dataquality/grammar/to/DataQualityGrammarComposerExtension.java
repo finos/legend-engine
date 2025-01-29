@@ -279,6 +279,8 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                         (Objects.nonNull(relationValidation.description) ?
                 "     description: '" + relationValidation.description + "';\n" : "") +
                 "     assertion: " + renderAssertion(relationValidation, context) + ";\n" +
+                        (Objects.nonNull(relationValidation.type) ?
+                "     type: " + relationValidation.type + ";\n" : "") +
                 "    }";
     }
 
