@@ -28,13 +28,13 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreA
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.junit.Test;

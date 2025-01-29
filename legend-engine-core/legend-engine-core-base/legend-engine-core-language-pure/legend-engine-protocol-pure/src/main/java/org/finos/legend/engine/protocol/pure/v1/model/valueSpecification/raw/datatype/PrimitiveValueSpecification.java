@@ -23,7 +23,7 @@ import java.util.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 
 public abstract class PrimitiveValueSpecification extends DataTypeValueSpecification

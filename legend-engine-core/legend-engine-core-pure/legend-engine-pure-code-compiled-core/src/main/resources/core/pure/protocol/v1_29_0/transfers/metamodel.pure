@@ -193,7 +193,7 @@ function <<access.private>> meta::protocols::pure::v1_29_0::transformation::from
 {
    ^meta::protocols::pure::v1_29_0::metamodel::domain::DefaultValue(
        _type = 'defaultValue',
-       name = $d.name->toOne(),
+       name = '',
        value = $d.functionDefinition.expressionSequence->at(0)->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)),true, $extensions)
    )
 }

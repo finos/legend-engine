@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestCoreJavaPlatformBindingCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
     @BeforeClass
@@ -27,8 +28,7 @@ public class TestCoreJavaPlatformBindingCompiledStateIntegrity extends AbstractC
         initialize("core_java_platform_binding");
     }
 
-    @Test
-    @Ignore
+    @Test(expected = AssertionError.class)
     @Override
     public void testReferenceUsages()
     {

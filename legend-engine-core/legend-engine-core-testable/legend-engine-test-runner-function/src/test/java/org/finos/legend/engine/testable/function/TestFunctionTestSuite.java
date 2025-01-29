@@ -32,7 +32,7 @@ import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.TestAccessor;
 import org.junit.Assert;
 import org.junit.Test;
 

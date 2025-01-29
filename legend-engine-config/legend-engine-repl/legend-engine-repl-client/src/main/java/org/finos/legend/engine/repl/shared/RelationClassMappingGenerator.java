@@ -16,11 +16,12 @@ package org.finos.legend.engine.repl.shared;
 
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Property;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.function.property.Property;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
@@ -77,10 +78,10 @@ public class RelationClassMappingGenerator
         {
             Property property = new Property();
             property.name = getPropertyName(c._name(), es);
-            property.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType();
+            property.genericType = new GenericType();
             property.genericType.rawType = new PackageableType(getColumnPureType(c));
             Multiplicity m = _Column.getColumnMultiplicity(c);
-            property.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(m._lowerBound()._value().intValue(), m. _upperBound()._value().intValue());
+            property.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(m._lowerBound()._value().intValue(), m. _upperBound()._value().intValue());
             return property;
         }).toList();
         return "###Pure\n" + renderElement(clazz);

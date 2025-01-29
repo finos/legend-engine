@@ -43,6 +43,10 @@ function meta::external::function::activator::hostedService::validator::validate
   let params  = $h.function->functionType().parameters->evaluateAndDeactivate();
   let oneParams  = $params->filter(p|$p->deactivate().multiplicity == PureOne);
   let nonOneParams  = $params->filter(p|!$p->deactivate().multiplicity == PureOne);
+
+  //all [1] params names should not contain underscores if they're in pattern
+  $oneParams->map(p| assert(if($pattern->contains('{'+$p.name+'}'), | !$p.name->contains('_'), |true), 'Service pattern violation. Parameter "'+$p.name+'"" contains underscores (_).'));
+
   //all [1] params in pattern TODO
   //$oneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter "'+$p.name+'"" with multiplicty [1] must be in service pattern.'));
   //all non [1] params not in pattern

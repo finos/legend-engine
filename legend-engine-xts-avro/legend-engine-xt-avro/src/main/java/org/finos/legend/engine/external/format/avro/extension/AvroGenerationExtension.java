@@ -24,7 +24,7 @@ import org.finos.legend.engine.external.shared.format.generations.description.Ge
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;

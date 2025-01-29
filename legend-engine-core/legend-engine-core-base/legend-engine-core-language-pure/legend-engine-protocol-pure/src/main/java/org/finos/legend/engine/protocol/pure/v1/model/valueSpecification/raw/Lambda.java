@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 
 import java.util.Collections;
 import java.util.List;

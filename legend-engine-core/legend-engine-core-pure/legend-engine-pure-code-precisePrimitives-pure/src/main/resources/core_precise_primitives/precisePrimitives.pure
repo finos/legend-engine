@@ -46,6 +46,10 @@ Primitive meta::external::catalog::precisePrimitives::Varchar(x:Integer[1]) exte
   $this->length() <= $x
 ]
 
+Primitive meta::external::catalog::precisePrimitives::Time extends StrictTime
+
+Primitive meta::external::catalog::precisePrimitives::Date extends StrictDate
+
 Primitive meta::external::catalog::precisePrimitives::Timestamp extends DateTime
 
 Primitive meta::external::catalog::precisePrimitives::Float4 extends Float

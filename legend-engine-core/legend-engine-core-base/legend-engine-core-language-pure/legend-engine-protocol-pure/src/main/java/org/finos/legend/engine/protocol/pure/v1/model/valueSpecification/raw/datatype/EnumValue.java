@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
 
 import java.util.Objects;
 

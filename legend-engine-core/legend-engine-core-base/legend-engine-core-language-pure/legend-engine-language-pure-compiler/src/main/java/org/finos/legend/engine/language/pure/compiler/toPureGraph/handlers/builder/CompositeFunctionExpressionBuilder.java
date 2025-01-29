@@ -73,7 +73,7 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         List<ValueSpecification> resolvedParams = null;
         for (FunctionExpressionBuilder b : builders)
