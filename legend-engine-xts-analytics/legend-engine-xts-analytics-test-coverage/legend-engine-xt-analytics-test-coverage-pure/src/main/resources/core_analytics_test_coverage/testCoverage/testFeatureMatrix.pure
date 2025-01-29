@@ -41,7 +41,7 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
  
 
   let features = [^FeatureSet(name='testSet',features=[QueryFeature->stereotype('filter'),QueryType->stereotype('tds'),MappingFeature->stereotype('filter')]), //covered should not be in result
-                  ^FeatureSet(name='testSet2',features=[MappingFeature->profileSubSet(['union','filter'])]), //not covered
+                  ^FeatureSet(name='testSet2',features=[MappingFeature->stereotype('filter'),MappingFeature->stereotype('union')]), //not covered
                   ^FeatureSet(name='testSet2',features=[MappingFeature->profileSubSet(['filter'])])  //covered should not be in result
                   ];
   
@@ -65,7 +65,6 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
         store = 'testStore',
         testType='UnTested') 
   ];
-
 
 assert($report->removeAll($expected,{ a,b | $a.featureTests ==$b.featureTests &&
                                                   $a.mappingFeature == $b.mappingFeature  &&
