@@ -27,7 +27,6 @@ import org.finos.legend.engine.test.fct.model.FCTTestReport;
 import org.finos.legend.pure.code.core.Test_Analytics_Lineage_FCT;
 import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-
 import java.util.List;
 
 public class FCTReportCollector
