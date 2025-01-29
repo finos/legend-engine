@@ -66,7 +66,7 @@ function meta::pure::graphFetch::addSubTrees(onto:GraphFetchTree[1], subTrees:Pr
 
 function <<access.private>> meta::pure::graphFetch::addSubTree(onto:GraphFetchTree[1], subTree:PropertyGraphFetchTree[1]): GraphFetchTree[1]
 {
-   let existingSubTrees = $onto.subTrees->filter(st|$st->cast(@PropertyGraphFetchTree).property == $subTree.property && $st->cast(@PropertyGraphFetchTree).subType == $subTree.subType);
+   let existingSubTrees = $onto.subTrees->filter(st|$st->cast(@PropertyGraphFetchTree)->forSameProperty($subTree));
    assert($existingSubTrees->size() < 2, 'Too many existing');
    $existingSubTrees->match([
       stree0: PropertyGraphFetchTree[0] | ^$onto(subTrees=$onto.subTrees->concatenate($subTree)),
@@ -76,7 +76,11 @@ function <<access.private>> meta::pure::graphFetch::addSubTree(onto:GraphFetchTr
 
 function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyGraphFetchTree[1], t2:PropertyGraphFetchTree[1]): Boolean[1]
 {
-   $t1.property == $t2.property && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
+  let isPropertySame = if($t1.property->instanceOf(QualifiedProperty) && $t2.property->instanceOf(QualifiedProperty),
+    | ($t1.property.name == $t2.property.name) && ($t1.property->functionType() == $t2.property->functionType()),
+    | $t1.property == $t2.property
+  );
+  $isPropertySame && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
 }
 
 function meta::pure::graphFetch::addSubTypeTrees(onto:GraphFetchTree[1], subTypeTrees:SubTypeGraphFetchTree[*]): GraphFetchTree[1]
