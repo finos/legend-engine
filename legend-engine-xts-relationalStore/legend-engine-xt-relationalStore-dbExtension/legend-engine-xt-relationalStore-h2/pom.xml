@@ -28,5 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-h2-PCT</module>
+        <module>legend-engine-xt-relationalStore-h2-execution-2.1.214</module>
     </modules>
 </project>
