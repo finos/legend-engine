@@ -54,7 +54,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForDatabricks()
    );
 }
 
@@ -301,4 +302,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateTimeFormatsDatabricks():String[*]
 {
    ['yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd HH:mm:ss.SSS'];
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::getDDLCommandsTranslatorForDatabricks(): RelationalDDLCommandsTranslator[1]
+{
+    ^RelationalDDLCommandsTranslator(
+        createSchema = translateCreateSchemaStatementForDatabricks_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+        dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
+        createTable = translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+        dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+        loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::translateCreateSchemaStatementForDatabricks(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if ($createSchemaSQL.schema.name == 'default',
+       | [],
+       | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
 }

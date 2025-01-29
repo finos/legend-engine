@@ -32,5 +32,6 @@
         <module>legend-engine-xt-relationalStore-databricks-grammar</module>
         <module>legend-engine-xt-relationalStore-databricks-protocol</module>
         <module>legend-engine-xt-relationalStore-databricks-pure</module>
+        <module>legend-engine-xt-relationalStore-databricks-PCT</module>
     </modules>
 </project>
