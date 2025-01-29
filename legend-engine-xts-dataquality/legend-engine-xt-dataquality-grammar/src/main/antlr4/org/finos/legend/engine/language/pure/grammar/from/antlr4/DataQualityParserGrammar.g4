@@ -23,6 +23,9 @@ identifier:                             VALID_STRING | STRING
                                         | VALIDATION_NAME
                                         | VALIDATION_DESCRIPTION
                                         | VALIDATION_ASSERTION
+                                        | VALIDATION_TYPE
+                                        | VALIDATION_TYPE_ROW
+                                        | VALIDATION_TYPE_AGG
                                         | RELATION_RUNTIME
 ;
 
@@ -130,6 +133,7 @@ validation:                            BRACE_OPEN
                                                 validationName
                                                 | validationDesc
                                                 | validationAssertion
+                                                | validationType
                                              )*
                                        BRACE_CLOSE
 ;
@@ -138,6 +142,10 @@ validationName:                        VALIDATION_NAME COLON STRING SEMI_COLON
 validationDesc:                        VALIDATION_DESCRIPTION COLON STRING SEMI_COLON
 ;
 validationAssertion:                   VALIDATION_ASSERTION COLON combinedExpression SEMI_COLON
+;
+validationType:                        VALIDATION_TYPE COLON validationTypeVal SEMI_COLON
+;
+validationTypeVal:                     VALIDATION_TYPE_ROW | VALIDATION_TYPE_AGG
 ;
 relationRuntime:                       RELATION_RUNTIME COLON runtime SEMI_COLON
 ;

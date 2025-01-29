@@ -181,6 +181,25 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}", " at [104:1-114:1]: Error in 'meta::external::dataquality::Validation': Execution error at (resource: lines:104c1-114c1), \"Constraint :[mustHaveOneRuntime] violated in the Class DataQualityRelationValidation\"");
     }
 
+    @Test
+    public void testRelationValidation_aggregate()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#->select(~FIRSTNAME)->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->size()>0;\n" +
+                "         type: AGGREGATE;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+    }
+
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
             "RelationalDatabaseConnection meta::dataquality::H2\n" +

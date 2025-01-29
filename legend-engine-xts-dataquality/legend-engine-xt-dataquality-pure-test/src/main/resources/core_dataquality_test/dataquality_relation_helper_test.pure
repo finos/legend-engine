@@ -1,0 +1,194 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::dataquality::tests::*;
+import meta::external::dataquality::*;
+
+
+
+function <<test.Test>> meta::external::dataquality::tests::testEmptyRelation():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+              #;
+
+   $rel->meta::external::dataquality::relationEmpty()->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testNonEmptyRelation():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::relationNotEmpty()->assert();
+}
+
+
+// row count - 
+function <<test.Test>> meta::external::dataquality::tests::rowCountGreaterThan():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::rowCountGreaterThan(2)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowCountGreaterThanEqual():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::rowCountGreaterThanEqual(3)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowCountLowerThan():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::rowCountLowerThan(4)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowCountLowerThanEqual():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::rowCountGreaterThanEqual(3)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::rowCountEqual():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::rowCountEqual(3)->assert();
+}
+
+// column value -
+function <<test.Test>> meta::external::dataquality::tests::columnValueGreaterThan():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueGreaterThan(~val, 0)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::columnValueGreaterThanEqual():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueGreaterThanEqual(~val, 1)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::columnValueLessThan():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueLessThan(~val, 5)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::columnValueLessThanEqual():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueLessThanEqual(~val, 4)->assert();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::columnValueUnique():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueUnique()->assert();
+    
+    let rel_with_duplicates = #TDS
+                                val, str
+                                1, a
+                                3, ewe
+                                4, aa
+                                4, aa
+                              #;
+
+   $rel_with_duplicates->meta::external::dataquality::columnValueUnique()->assertFalse();
+}
+
+function <<test.Test>> meta::external::dataquality::tests::columnValueUnique_columns():Boolean[1]
+{
+    let rel = #TDS
+                val, str
+                1, a
+                3, ewe
+                4, aa
+              #;
+
+   $rel->meta::external::dataquality::columnValueUnique(~[val])->assert();
+
+    let rel_val_duplicates = #TDS
+                                val, str
+                                1, a
+                                3, ewe
+                                4, aa
+                                4, aab
+                              #;
+
+   $rel_val_duplicates->meta::external::dataquality::columnValueUnique(~[val])->assertFalse();
+}

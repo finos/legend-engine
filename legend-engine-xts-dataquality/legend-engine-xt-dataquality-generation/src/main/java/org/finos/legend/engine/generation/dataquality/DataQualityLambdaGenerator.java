@@ -95,7 +95,7 @@ public class DataQualityLambdaGenerator
 
     public static String transformLambdaAsJson(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
-        Object protocol = transformToVersionedModel(lambda,  PureClientVersions.production, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        Object protocol = transformToVersionedModel(lambda,  "vX_X_X", extensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, pureModel);
     }
 
