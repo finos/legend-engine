@@ -234,9 +234,15 @@ function meta::analytics::search::transformation::getExtensions(): meta::pure::e
 
 function meta::analytics::search::transformation::service::buildDatabaseColumnDocuments(funcDefinition: FunctionDefinition<Any>[1], mapping: meta::pure::mapping::Mapping[1], runtime: meta::core::runtime::Runtime[1]): meta::analytics::search::metamodel::mapping::DatabaseColumn[*]
 {
-  let lineage = $funcDefinition->meta::analytics::lineage::computeLineage($mapping, $runtime, meta::analytics::search::transformation::getExtensions());
-
-  let columnLineage = $lineage.reportLineage->meta::analytics::lineage::transformColumns();
+  let lineageConfig = ^meta::analytics::lineage::FunctionAnalyticsConfig
+  (
+    databaseLineage = false,
+    classLineage = false,
+    relationTree = false,
+    reportLineage = true
+  );
+  let allLineage = $funcDefinition->meta::analytics::lineage::computeLineage($mapping, $runtime, meta::analytics::search::transformation::getExtensions(), $lineageConfig);
+  let columnLineage = $allLineage.reportLineage->meta::analytics::lineage::transformColumns();
   let tables = $columnLineage->map(l|
     $l.columns->map(c|
       ^meta::analytics::search::metamodel::mapping::DatabaseColumn(
