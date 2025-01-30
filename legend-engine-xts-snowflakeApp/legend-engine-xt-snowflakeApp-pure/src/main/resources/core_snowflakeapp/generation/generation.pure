@@ -105,7 +105,7 @@ function <<access.private>>  meta::external::function::activator::snowflakeApp::
     pair(DateTime, {col:TDSColumn[1]|'TIMESTAMP'}),
     pair(StrictDate, {col:TDSColumn[1]|'DATE'}),
     pair(Boolean, {col:TDSColumn[1]|'BOOLEAN'}),
-    pair(Decimal, {col:TDSColumn[1]| fail();if($col.sourceDataType->isNotEmpty(),| $col->meta::external::function::activator::snowflakeApp::generation::matchDBType(),|'DECIMAL');})
+    pair(Decimal, {col:TDSColumn[1]| if($col.sourceDataType->isNotEmpty(),| $col->meta::external::function::activator::snowflakeApp::generation::matchDBType(),|'DECIMAL');})
   ]->newMap()
 }
 
