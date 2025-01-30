@@ -23,12 +23,12 @@ function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(se
   let result = $set->map( t | let p = $t.values->groupBy(v|$v.profile->elementToPath());
                               let sourceFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryType').values.value ;        
                               let queryFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryFeature').values.value ;        
-                              let collectionFeature  = $p->get('meta::pure::fct::tests::collection::CollectionFeatures').values.value ;        
+                              let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value ;        
                               let mappingFeature  = $p->get('meta::pure::testCoverage::featureMatrix::MappingFeature').values.value ;     
                               ^FeatureResult(store= $store,
                                             testType =  'UnTested',
                                             sourceTypeFeature= $sourceFeature->sort(),
-                                            queryFeature =    $queryFeature->sort(),  
+                                            querySubFeature =    $querySubFeature->sort(),  
                                             mappingFeature =    $mappingFeature->sort()  
 
                                       
@@ -81,14 +81,14 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
                              let p =    $fn.stereotypes->groupBy(v|$v.profile->elementToPath());
                               let sourceFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryType').values.value->sort() ;        
                               let queryFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryFeature').values.value->sort() ;        
-                              let collectionFeature  = $p->get('meta::pure::fct::tests::collection::CollectionFeatures').values.value->sort() ;        
+                              let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value->sort() ;        
                                                ^FeatureResult(store= $store,
                                                              testType =  $testType,
                                                               featureTests= ^FeatureTest(functionName=$fn->elementToPath(),assertionType=$assertionType, expectedError=$expectedError),
                                                               sourceTypeFeature= $sourceFeature,
                                                               queryFeature =    $queryFeature,
                                                               mappingFeature =    $mappingFeatures->sort(),
-                                                              collectionFeature = $collectionFeature  
+                                                              querySubFeature = $querySubFeature  
                                   
           
  ); 
@@ -103,7 +103,6 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
   meta::analytics::testCoverage::featureMatrix::buildStoreReport($functions,$testFunctions,$features, $reportType,$store)->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
 
 }
-
 
  function meta::analytics::testCoverage::featureMatrix::buildStoreReport(mappingTests:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*],testFunctions:Map<String,ConcreteFunctionDefinition<Any>>[1], features:FeatureSet[*], reportType:String[1],store:String[1]):FeatureResult[*]
  {
@@ -128,7 +127,7 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
 
   let missingFeatureTests =  $permFeatureResults->removeAll($mappingFeatures,  {a:FeatureResult[1],b:FeatureResult[1]|($b.sourceTypeFeature->containsAll($a.sourceTypeFeature)  || $a.sourceTypeFeature->isEmpty())    && 
                                                                                                                       ($b.mappingFeature->containsAll($a.mappingFeature) || $a.mappingFeature->isEmpty()) &&
-                                                                                                                      ($b.collectionFeature->containsAll($a.collectionFeature)  || $a.collectionFeature->isEmpty())   &&
+                                                                                                                      ($b.querySubFeature->containsAll($a.querySubFeature)  || $a.querySubFeature->isEmpty())   &&
                                                                                                                       ($b.queryFeature->containsAll($a.queryFeature) || $a.queryFeature->isEmpty()   ) });
 
   $mappingFeatures->concatenate($missingFeatureTests);

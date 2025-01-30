@@ -137,11 +137,6 @@ Profile  meta::pure::fct::TestReturnType
 }
 
 
-Profile  meta::pure::fct::tests::collection::CollectionFeatures
-{
-  stereotypes: [filterPrimitive,filterAssociation, filterIsNotEmpty , sortPrimitive, sortAssociation, limit];
-
-}
 
 
 

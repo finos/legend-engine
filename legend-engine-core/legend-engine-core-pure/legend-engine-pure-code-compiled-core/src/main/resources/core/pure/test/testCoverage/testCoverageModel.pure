@@ -23,16 +23,22 @@ Profile meta::pure::testCoverage::featureMatrix::MappingFeature
   stereotypes: [modelToModel,union,filter,binding, embedded, groupBy, association, distinct, enumeration, extend, simple];
 }
 
+Profile meta::pure::testCoverage::featureMatrix::QueryType
+{
+  stereotypes: [graphFetch,tds];
+}
 
 
 Profile meta::pure::testCoverage::featureMatrix::QueryFeature
 {
-  stereotypes: [multiExecution,collection,filter,sort,from, multiFrom, internalize, join, limit]; //map filter // first /sort //groupBy deprecate  head first last 
+  stereotypes: [multiExecution,sort,last,first,filter, head, groupBy]; 
 }
 
-Profile meta::pure::testCoverage::featureMatrix::QueryType
+
+Profile  meta::pure::testCoverage::featureMatrix::QuerySubFeature
 {
-  stereotypes: [graphFetch,tds];
+  stereotypes: [filterPrimitive,filterAssociation, filterIsNotEmpty , sortPrimitive, sortAssociation, limit];
+
 }
 
 function meta::pure::testCoverage::featureMatrix::featureSets():FeatureSet[*]
@@ -63,7 +69,7 @@ Class meta::pure::testCoverage::featureMatrix::FeatureResult
    <<equality.Key>> sourceTypeFeature:String[*];
    <<equality.Key>> queryFeature:String[*];
    <<equality.Key>> mappingFeature:String[*];
-   <<equality.Key>> collectionFeature:String[*];
+   <<equality.Key>> querySubFeature:String[*];
    <<equality.Key>> featureTests:FeatureTest[*];
 }
 

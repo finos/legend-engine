@@ -15,7 +15,6 @@
 package org.finos.legend.engine.test.fct.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 public class FCTTestResult
@@ -36,8 +35,8 @@ public class FCTTestResult
     @JsonProperty("mappingFeature")
     public List<String> mappingFeature;
 
-    @JsonProperty("collectionFeature")
-    public List<String> collectionFeature;
+    @JsonProperty("querySubFeature")
+    public List<String> querySubFeature;
 
     @JsonProperty("featureTests")
     public List<FeatureTest> featureTests;
