@@ -111,40 +111,9 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
   let letStatementsRouted = $initStatements.first.expressionSequence->tail()->cast(@ClusteredValueSpecification)->evaluateAndDeactivate();
   let returnStatementRouted = $routed.expressionSequence->toOne()->cast(@ClusteredValueSpecification)->evaluateAndDeactivate();
 
-  let expressionSequence = meta::pure::router::pushDownLetStatementIfPossible($letStatementsRouted, $returnStatementRouted, $vars, $extensions, $debug);
+  let expressionSequence = $letStatementsRouted->concatenate($returnStatementRouted)->toOneMany();
 
   ^$routed(expressionSequence = $expressionSequence)->cast(@FunctionDefinition<Any>);
-}
-
-function <<access.private>> meta::pure::router::pushDownLetStatementIfPossible(letStatementsRouted: ClusteredValueSpecification[*], returnStatementRouted: ClusteredValueSpecification[1], vars: Map<String, List<Any>>[1], extensions: Extension[*], debug: DebugContext[1]): ClusteredValueSpecification[1..*]
-{
-  // check if compatible clusters among all vars and store support push down all of them
-  let canBePushedDownState = if($letStatementsRouted->isNotEmpty() 
-                                  && $returnStatementRouted->instanceOf(StoreClusteredValueSpecification),
-    |
-      $letStatementsRouted->fold({ c, state | 
-        let letExpression = $c.val->cast(@PlatformRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
-        let varName = $letExpression->extractLetVariableName()->toOne();
-        let letValue = $letExpression.parametersValues->at(1)->cast(@ClusteredValueSpecification);
-        let var = $vars->get($varName).values->filter(x | $x->instanceOf(meta::pure::executionPlan::PlanVarPlaceHolder))->toOne()->cast(@meta::pure::executionPlan::PlanVarPlaceHolder);    
-        let canPush = $state.first && meta::pure::router::clustering::areClustersCompatible($letValue, $returnStatementRouted, $extensions);
-        pair($canPush, $state.second.values->concatenate($letExpression)->list());
-      }, pair(true, list([]->cast(@ValueSpecification))));    
-    ,
-    | 
-      pair(false, list([]->cast(@ValueSpecification)))
-  );
-
-  if ($canBePushedDownState.first,
-    |
-      let expressionSequence = $canBePushedDownState.second.values->concatenate($returnStatementRouted.val)->toOneMany();
-      let newFunc = ^LambdaFunction<{->Any[*]}>(expressionSequence = $expressionSequence);    
-      let newVs = ^FunctionExpression(func = $newFunc, genericType = $returnStatementRouted.genericType, importGroup = system::imports::coreImport, multiplicity = $returnStatementRouted.multiplicity);      
-      ^$returnStatementRouted(val = $newVs);
-    ,
-    | 
-      $letStatementsRouted->concatenate($returnStatementRouted)->toOneMany();
-  );
 }
 
 function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeVar(varName: String[1], vs: ValueSpecification[1]): List<meta::pure::executionPlan::PlanVarPlaceHolder>[1]

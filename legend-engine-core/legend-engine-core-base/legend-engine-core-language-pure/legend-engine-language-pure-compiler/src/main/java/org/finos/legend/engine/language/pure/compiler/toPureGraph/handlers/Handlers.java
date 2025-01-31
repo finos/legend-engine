@@ -1429,10 +1429,20 @@ public class Handlers
 
         register(
                 m(
-                        m(h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::with_FunctionDefinition_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                                h("meta::pure::mapping::with_FunctionDefinition_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))
+                        ),
+                        m(
+                                h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))
                         ),
-                        m(h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                                h("meta::pure::mapping::with_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
+                        ),
+                        m(
+                                h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
                         )
                 )
@@ -2078,6 +2088,12 @@ public class Handlers
         {
             handler.setDispatch(di);
         }
+    }
+
+    private TypeAndMultiplicity res(FunctionDefinition<?> functionDefinition)
+    {
+        FunctionType type = (FunctionType) functionDefinition._classifierGenericType()._typeArguments().getOnly()._rawType();
+        return res(type._returnType(), type._returnMultiplicity());
     }
 
     public TypeAndMultiplicity res(GenericType genericType, Multiplicity mul)

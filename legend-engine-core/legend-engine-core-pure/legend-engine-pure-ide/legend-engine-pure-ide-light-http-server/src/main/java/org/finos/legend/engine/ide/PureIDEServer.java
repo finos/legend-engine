@@ -21,6 +21,7 @@ import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.federecio.dropwizard.swagger.SwaggerResource;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -47,6 +48,8 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 
 import javax.servlet.DispatcherType;
@@ -57,6 +60,8 @@ import java.util.Map;
 
 public abstract class PureIDEServer extends Application<ServerConfiguration>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PureIDEServer.class);
+
     private PureSession pureSession;
 
     @Override
@@ -128,7 +133,17 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
 
         postInit();
 
-        this.pureSession.getPureRuntime().initialize();
+        long ct = System.currentTimeMillis();
+        LOGGER.info("Initializing Pure runtime...");
+        try
+        {
+            this.pureSession.getPureRuntime().initialize();
+            LOGGER.info("Initialization of Pure runtime completed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct));
+        }
+        catch (Exception e)
+        {
+            LOGGER.info("Initialization of Pure runtime failed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct), e);
+        }
     }
 
     protected void postInit()
