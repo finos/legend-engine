@@ -2081,12 +2081,6 @@ public class Handlers
         }
     }
 
-    private TypeAndMultiplicity res(FunctionDefinition<?> functionDefinition)
-    {
-        FunctionType type = (FunctionType) functionDefinition._classifierGenericType()._typeArguments().getOnly()._rawType();
-        return res(type._returnType(), type._returnMultiplicity());
-    }
-
     public TypeAndMultiplicity res(GenericType genericType, Multiplicity mul)
     {
         return new TypeAndMultiplicity(genericType, mul);
