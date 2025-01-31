@@ -53,8 +53,8 @@ function meta::relational::postProcessor::cteExtraction::extractSubqueriesAsCTEs
        | $select,
        | let cteResultHolder = ^CTEExtractionResultHolder(currentSelect = $select, levelIndexMap = $levelCountMap->keyValues()->map(p | pair($p.first, 0))->newMap());
          let processedResult = $cteResultHolder->extractSubqueriesAsCTEsRecursively(1);
-         let transformedSelect = $processedResult.currentSelect->convertToSelectWithCTEs();
-         ^$transformedSelect(commonTableExpressions = $processedResult.extractedCTEs);
+         let transformedSelect = $processedResult.currentSelect;
+         ^$transformedSelect(commonTableExpressions += $processedResult.extractedCTEs);
    );
 }
 
@@ -85,7 +85,7 @@ function <<access.private>> meta::relational::postProcessor::cteExtraction::extr
             let nodeAlias = $node.alias;
             let cteName = 'subquery_cte_' + toString($level) + '_' + toString($agg.levelIndexMap->get($level)->toOne() + 1);
             let processedCteResult  = ^$agg(currentSelect = $nodeAlias.relationalElement->cast(@SelectSQLQuery))->extractSubqueriesAsCTEsRecursively($level + 1);
-            let cte = ^SelectCommonTableExpression(name = $cteName, sqlQuery = $processedCteResult.currentSelect);
+            let cte = ^CommonTableExpression(name = $cteName, sqlQuery = $processedCteResult.currentSelect);
             let cteReference = ^CommonTableExpressionReference(name = $cteName);
             ^$agg
             (
@@ -96,16 +96,6 @@ function <<access.private>> meta::relational::postProcessor::cteExtraction::extr
          }, $input);,
        | $input
    );
-}
-
-function <<access.private>> meta::relational::postProcessor::cteExtraction::convertToSelectWithCTEs(s: SelectSQLQuery[1]): SelectSQLQueryWithCommonTableExpressions[1]
-{
-   $s->match([
-      withCTE: SelectSQLQueryWithCommonTableExpressions[1] | $withCTE,
-      select : SelectSQLQuery[1] | let targetClass = if($s->instanceOf(TdsSelectSqlQuery), | TdsSelectSQLQueryWithCommonTableExpressions, | SelectSQLQueryWithCommonTableExpressions);
-                                   let properties = $select->genericType().rawType->toOne()->cast(@Class<Any>)->hierarchicalAllProperties()->filter(p | $p->instanceOf(Property))->cast(@Property<Nil,Any|*>);
-                                   $targetClass->dynamicNew($properties->map(p | ^KeyValue(key = $p.name->toOne(), value = $p->eval($select))))->cast(@SelectSQLQueryWithCommonTableExpressions);
-   ])
 }
 
 function <<access.private>> meta::relational::postProcessor::cteExtraction::allNodes(r: RelationalTreeNode[1]): RelationalTreeNode[*]

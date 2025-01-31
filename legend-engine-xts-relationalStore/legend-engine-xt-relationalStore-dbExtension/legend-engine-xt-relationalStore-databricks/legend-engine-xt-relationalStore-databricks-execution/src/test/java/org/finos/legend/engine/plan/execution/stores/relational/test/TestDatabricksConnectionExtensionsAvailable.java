@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.test;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.junit.Assert;
@@ -39,10 +38,5 @@ public class TestDatabricksConnectionExtensionsAvailable
                 Lists.mutable.withAll(ServiceLoader.load(StrategicConnectionExtension.class))
                         .collect(Object::getClass);
         Assert.assertTrue(strategicConnectionExtensions.contains(DatabricksConnectionExtension.class));
-
-        MutableList<Class<?>> relationalConnectionExtensions =
-                Lists.mutable.withAll(ServiceLoader.load(RelationalConnectionExtension.class))
-                        .collect(Object::getClass);
-        Assert.assertTrue(relationalConnectionExtensions.contains(DatabricksConnectionExtension.class));
     }
 }

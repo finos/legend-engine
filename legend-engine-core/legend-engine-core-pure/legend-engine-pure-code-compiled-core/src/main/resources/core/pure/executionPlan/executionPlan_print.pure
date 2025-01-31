@@ -54,7 +54,7 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          c:ConstantExecutionNode[1]|'Constant\n'+$space+'('+header($c, $space, $extensions)+'\n'+$space+'  values=['+$c.values->makeString(',')+']\n'+$space+')\n',
          p:MultiResultSequenceExecutionNode[1]|'MultiResultSequence\n'+$space+'('+header($p, $space, $extensions)+$e->childrenToString($space+'  ', $extensions)+'\n'+$space+')\n',
          p:ErrorExecutionNode[1]|'Error\n'+$space+'('+header($p, $space, $extensions)+'\n'+$space+'  message = '+ $p.message->replace('\n', '\\n')->replace('\r','\\r')+$e->childrenToString($space+'  ', $extensions)+'\n'+$space+')\n',
-         e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
+         e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.genericType.rawType->toOne()->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
          i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions),
@@ -97,7 +97,7 @@ function meta::pure::executionPlan::toString::header(e:ExecutionNode[1], space:S
 {
    '\n'+ $space+'  type = '+$e.resultType->typeToString($space, $extensions)+if($e.resultSizeRange->isEmpty(),|'',|'\n'
        + $space+'  resultSizeRange = '+$e.resultSizeRange->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity())
-       + if($e.requiredVariableInputs->isEmpty(), |'', | '\n' + $space+'  requires = '+$e.requiredVariableInputs->map(source | $source.name + '(' + $source.type->elementToPath() + '[' + $source.multiplicity->meta::pure::metamodel::serialization::grammar::printMultiplicity() +'])')->joinStrings('[',', ',']'));
+       + if($e.requiredVariableInputs->isEmpty(), |'', | '\n' + $space+'  requires = '+$e.requiredVariableInputs->map(source | $source.name + '(' + $source.genericType.rawType->toOne()->elementToPath() + '[' + $source.multiplicity->meta::pure::metamodel::serialization::grammar::printMultiplicity() +'])')->joinStrings('[',', ',']'));
 }
 
 function meta::pure::executionPlan::toString::childrenToString(e:ExecutionNode[*], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
@@ -118,7 +118,7 @@ function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:
          partialClassResultType : PartialClassResultType[1]|'PartialClass[impls=['+$partialClassResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+'], propertiesWithParameters = ['+$partialClassResultType.propertiesWithParameters->map(x | if($x.property->instanceOf(Property), | $x.property.name->toOne(), | $x.parameters->map(x | $x->asString())->joinStrings($x.property.name->toOne() + '(', ', ', ')')))->sort()->joinStrings(', ')+']]',
          classResultType : ClassResultType[1]|'Class[impls='+$classResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+']'+if($classResultType.genericType->isEmpty(), |'', |'\n'+$space+'         as '+$classResultType.genericType->toOne()->printGenericType()),
          voidResultType : VoidResultType[1]|'Void',
-         e:ResultType[1] | $e.type->elementToPath()
+         e:ResultType[1] | $e.genericType.rawType->toOne()->elementToPath()
       ])->toOneMany()
    )
 }

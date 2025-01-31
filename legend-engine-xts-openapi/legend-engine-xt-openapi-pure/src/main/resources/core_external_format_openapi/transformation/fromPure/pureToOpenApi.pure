@@ -219,9 +219,9 @@ function <<access.private>> meta::external::function::description::openapi::tran
   $func->meta::pure::executionPlan::stubFuncParameters()
       ->map(p|let val=$paramsExample->get($p.name->toOne());
               let required = $p.multiplicity->toOne()->hasLowerBound() && $p.multiplicity->toOne()->getLowerBound() == 1;
-              let type = ^GenericType(rawType = $p.type)->generateOpenApiType();
+              let type = $p.genericType->generateOpenApiType();
               let isMany = $p.multiplicity->toOne()->isToMany();
-              let enums = ^GenericType(rawType = $p.type).rawType->match([
+              let enums = $p.genericType.rawType->match([
                   p: PrimitiveType[1] | [],
                   e: Enumeration<Enum>[1] | $e->enumValues().name,
                   c: Class<Any>[1] | []

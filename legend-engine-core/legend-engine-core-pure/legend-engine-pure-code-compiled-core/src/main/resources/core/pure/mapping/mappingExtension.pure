@@ -329,6 +329,26 @@ function meta::pure::mapping::with<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1
    $t->from($m, $runtime);
 }
 
+function meta::pure::mapping::with<T|m>(func:FunctionDefinition<{->T[m]}>[1], packageableRuntime:meta::pure::runtime::PackageableRuntime[1]):T[m]
+{
+   $func->with($packageableRuntime.runtimeValue);
+}
+
+function meta::pure::mapping::with<T|m>(func:FunctionDefinition<{->T[m]}>[1], runtime:Runtime[1]):T[m]
+{
+   $func->eval()->with($runtime);
+}
+
+function meta::pure::mapping::with<T|m>(func:FunctionDefinition<{->T[m]}>[1], m:meta::pure::mapping::Mapping[1], packageableRuntime:meta::pure::runtime::PackageableRuntime[1]):T[m]
+{
+   $func->with($m, $packageableRuntime.runtimeValue);
+}
+
+function meta::pure::mapping::with<T|m>(func:FunctionDefinition<{->T[m]}>[1], m:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):T[m]
+{
+   $func->eval()->with($m, $runtime);
+}
+
 function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], runtime:Runtime[1]):T[m]
 {
    $t
