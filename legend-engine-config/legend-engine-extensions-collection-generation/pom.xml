@@ -505,6 +505,13 @@
         </dependency>
         <!-- Dataspace -->
 
+        <!-- Power BI Generation -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-powerbi-generation</artifactId>
+        </dependency>
+        <!-- Power BI Generation -->
+
         <!-- FunctionActivator -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
