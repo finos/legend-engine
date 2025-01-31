@@ -303,20 +303,8 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             // Reprocess the function replacing values with Database elements
             let allReprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
 
-            let newExpressionSequence = if($allReprocessed->size() == 1,
-              |
-                $allReprocessed->toOne()->addWith($runtime);
-              ,
-              |
-                $allReprocessed->map(reprocessed |
-                  if ($reprocessed.replaced->isNotEmpty(),
-                    |$reprocessed->addWith($runtime), 
-                    |$reprocessed.current->toOne()->cast(@ValueSpecification)
-                  )
-                );
-            );
-
-            let newFunction = ^$z(expressionSequence = $newExpressionSequence);
+            let newFunction = ^$z(expressionSequence = $allReprocessed.current->cast(@ValueSpecification)->toOneMany())
+                  ->addWith($allReprocessed.mapping, $runtime);
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
 
@@ -339,7 +327,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
                         '}'
                         ;
-            //println($code);
+            println($code);
 
             let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
 
@@ -351,25 +339,32 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
   );
 }
 
-function meta::relational::tests::pct::process::addWith(reprocessed: ProcessingState[1], runtime: Runtime[1]): ValueSpecification[1]
+function meta::relational::tests::pct::process::addWith(func: FunctionDefinition<Any>[1], mapping: Mapping[*],runtime: Runtime[1]): FunctionDefinition<Any>[1]
 {
-  let returnGenericType = $reprocessed.current->toOne()->cast(@ValueSpecification).genericType->toOne();
-  let returnMultiplicity = $reprocessed.current->toOne()->cast(@ValueSpecification).multiplicity->toOne();
-  ^SimpleFunctionExpression
+  let returnGenericType = $func->functionReturnType();
+  let returnMultiplicity = $func->functionReturnMultiplicity();
+
+  assert($mapping->size() <= 1, 'Only one mapping supported');
+
+  let withWith = ^SimpleFunctionExpression
   (
     importGroup=system::imports::coreImport,
-    func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
+    func = if($mapping->isEmpty(), |with_FunctionDefinition_1__Runtime_1__T_m_, |with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
     functionName = 'with',
     genericType = $returnGenericType,
     multiplicity = $returnMultiplicity,
-    parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
-                          ->concatenate(if ($reprocessed.mapping->isEmpty(),
+    parametersValues =    ^InstanceValue(
+                                          genericType = $func->genericType()->toOne(),
+                                          multiplicity = PureOne,
+                                          values = $func
+                                        )                                        
+                          ->concatenate(if ($mapping->isEmpty(),
                                         |[],
                                         |^InstanceValue
                                           (
                                             genericType = ^GenericType(rawType=Mapping),
                                             multiplicity = PureOne,
-                                            values = $reprocessed.mapping
+                                            values = $mapping->toOne()
                                           )
                                         ))
                           ->concatenate(^InstanceValue
@@ -383,6 +378,8 @@ function meta::relational::tests::pct::process::addWith(reprocessed: ProcessingS
     resolvedMultiplicityParameters = $returnMultiplicity,
     resolvedTypeParameters = $returnGenericType
   );
+
+  ^$func(expressionSequence = $withWith);
 }
 
 function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]
