@@ -48,7 +48,7 @@ public class RelationalFCTReport extends FCTReport
     @Override
     public String getreportID()
     {
-        return "RelationalFCTExecution";
+        return "Execution";
     }
 
     @Override

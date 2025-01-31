@@ -24,7 +24,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTReportBuilder;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
-import org.finos.legend.pure.code.core.Test_Analytics_Lineage_FCT;
+import org.finos.legend.pure.code.core.LineageFCTReport;
 import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import java.util.List;
@@ -42,7 +42,7 @@ public class FCTReportCollector
 
     public static List<FCTTestReport> collectReports(MutableList<? extends Root_meta_pure_extension_Extension> extensions)
     {
-        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new Test_Analytics_Lineage_FCT(), new RelationalFCTReport());
+        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new LineageFCTReport(), new RelationalFCTReport());
         return FCTReportBuilder.generateReport(testAnalytics, extensions);
     }
 

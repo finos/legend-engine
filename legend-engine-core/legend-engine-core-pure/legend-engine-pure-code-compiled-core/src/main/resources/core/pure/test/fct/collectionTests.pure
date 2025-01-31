@@ -59,7 +59,7 @@ function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,Query
 
 }
 
-function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
  { 
    let tree =     #{Position{gsn}}#;
    $toEval->eval({|Position.all()->filter(i|$i.product.description ->in(['Gold']))->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)});

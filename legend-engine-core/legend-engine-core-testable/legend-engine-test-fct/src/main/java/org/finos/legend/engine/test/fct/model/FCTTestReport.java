@@ -21,8 +21,8 @@ public class FCTTestReport
 {
     public FCTTestReport(org.finos.legend.engine.test.fct.model.FCTTestResult testResult)
     {
-           this.store = testResult.store;
-           this.testType = testResult.testType;
+            this.store = testResult.store;
+            this.testType = testResult.testType;
             this.queryFeature = testResult.queryFeature != null ? String.join("_", testResult.queryFeature) : null;
             this.sourceTypeFeature = testResult.sourceTypeFeature != null ? String.join("_", testResult.sourceTypeFeature) : null;
             this.mappingFeature = testResult.mappingFeature != null ? String.join("_", testResult.mappingFeature) : null;
