@@ -145,6 +145,11 @@ function meta::relational::functions::pureToSqlQuery::updateFunctionParamScope(s
    ^$state(functionReferenceScope=$newScope);
 }
 
+function meta::relational::functions::pureToSqlQuery::withFunctionParamScope(state:State[1], newScope: FunctionParamScope[0..1]):State[1]
+{
+   ^$state(functionReferenceScope=$newScope);
+}
+
 function meta::relational::functions::pureToSqlQuery::updateFunctionParamScope(state:State[1], variableExpressions:VariableExpression[*], selectWithCursor: SelectWithCursor[1]):State[1]
 {
    if(!$state.functionReferenceScope->isEmpty(),| let varExpressionToSelect=$variableExpressions->map(v|pair($v,$state.functionReferenceScope->toOne()));
@@ -291,7 +296,8 @@ function  meta::relational::functions::pureToSqlQuery::relationalExecutionContex
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1]):State[1]
 {
-   ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($mapping->toOne()));
+   let map = $mapping->defaultIfEmpty(|^Mapping())->toOne();
+   ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($map->toOne()));
 }
 
 function meta::relational::functions::pureToSqlQuery::getClassMappingById(state: State[1], id: String[1]): SetImplementation[*]
@@ -300,12 +306,6 @@ function meta::relational::functions::pureToSqlQuery::getClassMappingById(state:
 }
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
-{
-  let map = if ($mapping->isEmpty(),|^Mapping(),|$mapping->toOne());
-  meta::relational::functions::pureToSqlQuery::defaultState($map,$inScopeVars, $exeCtx, $extensions);
-}
-
-function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
 {
    let initialState = defaultState($mapping,$inScopeVars);
       let context = if($exeCtx->isEmpty(),
@@ -400,7 +400,8 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
                                                        'Cluster details:\n' + $c->asString());
                                                   ^OperationWithParentPropertyMapping(element=$operation);,
                  n:NoSetRoutedValueSpecification[1]|$n.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-                 t:TDSRoutedValueSpecification[1] |  $t.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
+                 t:TDSRoutedValueSpecification[1] |  $t.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+                 a: Any[1] | fail($a->type()->elementToPath() + ' not supported!')->cast(@OperationWithParentPropertyMapping);
              ]);
     $res.element->map(e|$e->match([c:ClassInstanceHolder[1]|true, s:SelectWithCursor[1]|$s->validate($vs, $extensions)]));
     $res;
@@ -545,10 +546,9 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                   v:PlanVarPlaceHolder[1] | 
                                      let ifs = [
                                       // if we have a CTE for it, this var is a cte reference...
-                                      pair(|$state.inScopeVars->get($v.name)->toOne().values->size() == 1 && $state.inScopeVars->get($v.name)->toOne().values->toOne()->instanceOf(CommonTableExpressionReference),
+                                      pair(|$state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name))->isNotEmpty(),
                                            |
-                                            let newTable = $state.inScopeVars->get($v.name)->toOne().values->cast(@CommonTableExpressionReference)->toOne();
-                                            ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));
+                                            $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));                                            
                                           ),
                                       // if is relation, translate to VarSetPlaceHolder    
                                       pair(|$v.genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation),
@@ -1603,7 +1603,7 @@ function meta::relational::functions::pureToSqlQuery::getUnionPropertyName(union
        | $union->getPropertyName($property, $relationalPropertyMappings, $extensions),
        | let relOps = $union.setImplementations->size()->range()->map(i |
             let propMapping = findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions)->first();
-            $propMapping.relationalOperationElement->defaultIfEmpty(^Literal(value = '__SQLNULL__'));
+            $propMapping.relationalOperationElement->defaultIfEmpty(|^Literal(value = '__SQLNULL__'));
          );
          '"' + $relOps->buildUniqueName(false, $extensions) + '"';
    )
@@ -2107,25 +2107,42 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
           |$functionExpression.func->instanceOf(FunctionDefinition),
           | let expressions = $functionExpression.func->cast(@FunctionDefinition<Any>).expressionSequence;
             
-            let ctes = $expressions->init()->fold({e, ctes |
+            let ctesAndScopes = $expressions->init()->fold({c, ctesAndScopes |
+              let ctes = $ctesAndScopes.first.values;
+              let scopes = $ctesAndScopes.second.values->head();
+              let e = $c->byPassValueSpecificationWrapper();
               let varName = $e->extractLetVariableName()->toOne('Multi expression that are not let statement are not supported!');
               let varValue = $e->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);                          
+              
+              let newTable = ^CommonTableExpressionReference(name = $varName);
+              let select = $operation.select;
+              let referenceSelect = ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));
+
+              let newScope = ^FunctionParamScope(
+                parent = $scopes,
+                varToSelect = newMap(pair($varName, $referenceSelect))
+              );
+
               let sqlQuery = $varValue->match([
                       sc:StoreMappingClusteredValueSpecification[1] |
-                        let varsAsCte = $ctes->fold({cte, var | $var->put($cte.name, list(^CommonTableExpressionReference(name = $cte.name)))}, $sc.openVars);
-                        $sc.val->processQuery(defaultState($sc.mapping, $varsAsCte, $sc.exeCtx, $extensions), $context->shift(), $extensions);,
+                        $sc.val->processQuery(defaultState($sc.mapping, $sc.openVars, $sc.exeCtx, $extensions)->withFunctionParamScope($newScope), $context->shift(), $extensions);,
                       sc:StoreClusteredValueSpecification[1] |
-                        let varsAsCte = $ctes->fold({cte, var | $var->put($cte.name, list(^CommonTableExpressionReference(name = $cte.name)))}, $sc.openVars);
-                        $sc.val->processQuery(defaultState([], $varsAsCte, $sc.exeCtx, $extensions), $context->shift(), $extensions);,
+                        $sc.val->processQuery(defaultState([],  $sc.openVars, $sc.exeCtx, $extensions)->withFunctionParamScope($newScope), $context->shift(), $extensions);,
+                      fe: FunctionExpression[1] |
+                        $fe->processQuery(defaultState([],  newMap([])->cast(@Map<String, List<Any>>))->withFunctionParamScope($newScope), $context->shift(), $extensions);,
                       a: Any[1] | 
                         fail($a->type()->elementToPath() + ' not supported on multi expression')->cast(@SelectWithCursor)->toOne();                         
-              ]);
+              ]);        
+
               let cteSelect = $sqlQuery.select;
-              $ctes->concatenate($sqlQuery.select.commonTableExpressions)->concatenate(^CommonTableExpression(name = $varName, sqlQuery = ^$cteSelect(commonTableExpressions = [])));
-            }, []->cast(@CommonTableExpression));
+              let newCtes = $ctes->concatenate(^CommonTableExpression(name = $varName, sqlQuery = $cteSelect));
+              pair(list($newCtes), list($newScope));
+            }, pair(list([]->cast(@CommonTableExpression)), list($state.functionReferenceScope)));
             let currSelect = $operation.select;
-            let varsAsCte = $ctes->fold({cte, var | $var->put($cte.name, list(^CommonTableExpressionReference(name = $cte.name)))}, $state.inScopeVars);
-            processValueSpecificationReturnPropertyMapping($expressions->last()->toOne(), $currentPropertyMapping, ^$operation(select = ^$currSelect(commonTableExpressions += $ctes)), $functionExpression->mapVariables($vars, $varsAsCte), ^$state(inScopeVars=$varsAsCte), $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
+            let ctes = $ctesAndScopes.first.values;
+            let scopes = $ctesAndScopes.second.values->head(); 
+                     
+            processValueSpecificationReturnPropertyMapping($expressions->last()->toOne(), $currentPropertyMapping, ^$operation(select = ^$currSelect(commonTableExpressions += $ctes)), $functionExpression->mapVariables($vars, $state.inScopeVars), $state->withFunctionParamScope($scopes), $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
          )
        ],
        |fail('No SQL translation exists for the PURE function \''+$functionExpression.func.name->toOne()+'\'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.'); $operation->wrapIfNecessary();
@@ -2221,6 +2238,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
        let newRoot = ^RootJoinTreeNode(alias = $rootTable);
        ^SelectWithCursor(
           select = ^$firstSel(
+                         commonTableExpressions = $operation.select.commonTableExpressions,
                          columns = $transformed.element->cast(@SelectWithCursor).select->at(0).columns
                                       ->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
                                                          t:TableAliasColumn[1]|^$t(alias=$rootTable)

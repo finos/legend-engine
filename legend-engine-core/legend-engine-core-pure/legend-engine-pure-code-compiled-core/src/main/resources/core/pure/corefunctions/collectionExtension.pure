@@ -161,7 +161,12 @@ function meta::pure::functions::collection::dropAt<T>(collection : T[*], index :
 
 function meta::pure::functions::collection::defaultIfEmpty<T>(collection : T[*], default : T[1..*]) : T[1..*]
 { 
-   if($collection->isEmpty(), |$default, |$collection->toOneMany());
+   $collection->defaultIfEmpty(|$default);
+}
+
+function meta::pure::functions::collection::defaultIfEmpty<T>(collection : T[*], default : Function<{->T[1..*]}>[1]) : T[1..*]
+{ 
+   if($collection->isEmpty(), $default, |$collection->toOneMany());
 }
 
 function meta::pure::functions::collection::allButOneAreEmpty(lists:List<Any>[1..*]):Boolean[1]
