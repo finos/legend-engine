@@ -23,7 +23,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
-      aliasLimit = 1000,
+      aliasLimit = 256,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
