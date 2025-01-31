@@ -8729,3 +8729,5 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
    ])
 }
+
+
