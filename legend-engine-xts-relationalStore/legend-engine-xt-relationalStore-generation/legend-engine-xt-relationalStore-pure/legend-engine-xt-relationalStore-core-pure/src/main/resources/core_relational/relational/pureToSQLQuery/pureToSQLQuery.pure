@@ -296,7 +296,7 @@ function  meta::relational::functions::pureToSqlQuery::relationalExecutionContex
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1]):State[1]
 {
-   let map = $mapping->defaultIfEmpty(|^Mapping())->toOne();
+   let map = $mapping->defaultIfEmpty(^Mapping());
    ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=buildClassMappingsById($map->toOne()));
 }
 
@@ -545,7 +545,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
                                   v:PlanVarPlaceHolder[1] | 
                                      let ifs = [
-                                      // if we have a CTE for it, this var is a cte reference...
+                                      // do we have a reference already?
                                       pair(|$state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name))->isNotEmpty(),
                                            |
                                             $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));                                            
@@ -1603,7 +1603,7 @@ function meta::relational::functions::pureToSqlQuery::getUnionPropertyName(union
        | $union->getPropertyName($property, $relationalPropertyMappings, $extensions),
        | let relOps = $union.setImplementations->size()->range()->map(i |
             let propMapping = findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions)->first();
-            $propMapping.relationalOperationElement->defaultIfEmpty(|^Literal(value = '__SQLNULL__'));
+            $propMapping.relationalOperationElement->defaultIfEmpty(^Literal(value = '__SQLNULL__'));
          );
          '"' + $relOps->buildUniqueName(false, $extensions) + '"';
    )
@@ -2140,8 +2140,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
             }, pair(list([]->cast(@CommonTableExpression)), list($state.functionReferenceScope)));
             let currSelect = $operation.select;
             let ctes = $ctesAndScopes.first.values;
-            let scopes = $ctesAndScopes.second.values->head(); 
-                     
+            let scopes = $ctesAndScopes.second.values->head();
             processValueSpecificationReturnPropertyMapping($expressions->last()->toOne(), $currentPropertyMapping, ^$operation(select = ^$currSelect(commonTableExpressions += $ctes)), $functionExpression->mapVariables($vars, $state.inScopeVars), $state->withFunctionParamScope($scopes), $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
          )
        ],

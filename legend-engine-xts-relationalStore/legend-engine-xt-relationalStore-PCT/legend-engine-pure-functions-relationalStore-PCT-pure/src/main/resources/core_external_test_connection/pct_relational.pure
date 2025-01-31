@@ -81,7 +81,7 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
-    let debug = debug();
+    let debug = noDebug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -331,9 +331,6 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
 
             let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
 
-            //println($alloyCompiled.expressionSequence->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate().parametersValues);
-
-            //pair($newFunction, $reprocessed->toOne());
             pair($alloyCompiled, $reprocessed);
     ]
   );

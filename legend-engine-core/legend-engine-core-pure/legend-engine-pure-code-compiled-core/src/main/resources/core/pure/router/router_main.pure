@@ -96,24 +96,17 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
     pair($l->cast(@FunctionDefinition<Any>), $f->openVariableValues())
   );
 
-  let lastVs      = $expressions->last()->toOne();
-  let vs = $lastVs->isLetFunction()->if(
-    | $lastVs->cast(@FunctionExpression).parametersValues->at(1),
-    | $lastVs
-  );
-  let vars    = $initStatements.second;
+  let vs      = $expressions->last()->toOne();
+  let varName = $vs->extractLetVariableName();
+  let vars    = if($varName->isNotEmpty(),
+                   | $initStatements.second->put($varName->toOne(), createPlanVarPlaceHolderInScopeVar($varName->toOne(), $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1))), // Since its a let function, use ->at(1) parameter
+                   | $initStatements.second);
   let newF    = ^$l(expressionSequence    = $vs,
                     openVariables         = $vars->keys(),
                     classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType())));
 
   let routed  = routeFunction($newF, getPlatformRoutingStrategy(), $exeCtx, $vars, $extensions, $debug);
-
-  let letStatementsRouted = $initStatements.first.expressionSequence->tail()->cast(@ClusteredValueSpecification)->evaluateAndDeactivate();
-  let returnStatementRouted = $routed.expressionSequence->toOne()->cast(@ClusteredValueSpecification)->evaluateAndDeactivate();
-
-  let expressionSequence = $letStatementsRouted->concatenate($returnStatementRouted)->toOneMany();
-
-  ^$routed(expressionSequence = $expressionSequence)->cast(@FunctionDefinition<Any>);
+  ^$routed(expressionSequence = $initStatements.first.expressionSequence->tail()->concatenate($routed.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>);
 }
 
 function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeVar(varName: String[1], vs: ValueSpecification[1]): List<meta::pure::executionPlan::PlanVarPlaceHolder>[1]
@@ -126,7 +119,7 @@ function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeV
          supportsStream = $vs.multiplicity->isToMany(),
          routingStrategy = $vs->meta::pure::router::getVariableRoutingStrategy()
       )
-   );
+   )
 }
 
 function <<access.private>> meta::pure::router::getVariableRoutingStrategy(vs: ValueSpecification[1]): RoutingStrategy[0..1]
