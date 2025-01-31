@@ -35,7 +35,7 @@ Class meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X exten
    transfers_mapping_transformSetImplementation2 : Function<{Mapping[1], meta::pure::extension::Extension[*] ->Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping[1]}>[*]}>[0..1];
    transfers_mapping_transformAssociationImplementation : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping[1]}>[*]}>[0..1];
 
-   transfers_valueSpecification_transformAny : Function<{String[*],Map<String,List<Any>>[1], Multiplicity[1], FunctionExpression[0..1], Boolean[1], meta::pure::extension::Extension[*]->Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]}>[*]}>[0..1];
+   transfers_valueSpecification_transformAny : Function<{String[*],Map<String,List<Any>>[1], Multiplicity[1], FunctionExpression[0..1], Boolean[1], meta::pure::extension::Extension[*]->Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]}>[*]}>[0..1];
 
    transfers_executionPlan_transformNode : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode[1]}>[*]}>[0..1];
    transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode : Function<{Nil[1]->meta::protocols::pure::vX_X_X::metamodel::store::Store[1]}>[*];
@@ -51,7 +51,7 @@ Class meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X exten
    scan_buildBasePureModel_buildPureModelFromMapping1 : Function<{Nil[1]->Store[*]}>[*];
    scan_buildBasePureModel_buildPureModelFromMapping2 : Store[*];
 
-   scan_buildBasePureModel_getExtraElementsFromStores : Function<{Store[*], meta::pure::extension::Extension[*]->meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]}>[0..1];
+   scan_buildBasePureModel_getExtraElementsFromStores : Function<{Store[*], meta::pure::extension::Extension[*]->meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]}>[0..1];
 
    scan_buildPureModelAsText_getAllElementsFromMapping : Function<{Store[*]->Store[*]}>[0..1];
    scan_buildPureModelAsText_getAllElementsFromMapping2 : Function<{Store[*]->PackageableElement[*]}>[0..1];

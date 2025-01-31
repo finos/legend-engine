@@ -209,10 +209,10 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    ]);
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::createPropertyPtr(p:AbstractProperty<Any>[1]): meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::createPropertyPtr(p:AbstractProperty<Any>[1]): meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr[1]
 {
    let propertyName = $p->meta::pure::milestoning::reverseMilestoningTransforms()->orElse($p).name->toOne();
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$p->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$propertyName);
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$p->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$propertyName);
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformSchema(schema:meta::relational::metamodel::Schema[1], topDatabase: meta::relational::metamodel::Database[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::Schema[1]

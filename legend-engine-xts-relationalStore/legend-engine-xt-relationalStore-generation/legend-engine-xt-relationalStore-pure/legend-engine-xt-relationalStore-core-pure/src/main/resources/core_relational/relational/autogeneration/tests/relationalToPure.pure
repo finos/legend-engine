@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::transform::autogen::tests::testClassesA
 }
 
 // removes the default native any supertype from protocol class
-function meta::relational::transform::autogen::tests::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+function meta::relational::transform::autogen::tests::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
   let anyClassPath = 'meta::pure::metamodel::type::Any';
   let _class = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass($class, $extensions);

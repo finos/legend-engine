@@ -28,7 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_type_GenericType;
+import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType;
 import org.finos.legend.pure.generated.core_pure_protocol_protocol;
 import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
@@ -86,7 +86,7 @@ public class Compiler
     public static GenericType getLambdaReturnGenericType(Lambda lambda, PureModel pureModel)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel)._genericType();
-        Root_meta_protocols_pure_vX_X_X_metamodel_type_GenericType protocolGenericType = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(genericType, pureModel.getExecutionSupport());
+        Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType protocolGenericType = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(genericType, pureModel.getExecutionSupport());
         String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(protocolGenericType, pureModel.getExecutionSupport());
         try
         {

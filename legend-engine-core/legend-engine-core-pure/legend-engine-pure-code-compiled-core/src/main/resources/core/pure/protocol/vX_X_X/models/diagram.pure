@@ -20,7 +20,7 @@ import meta::protocols::pure::vX_X_X::metamodel::diagram::rendering::*;
 
 // Diagram
 
-Class meta::protocols::pure::vX_X_X::metamodel::diagram::Diagram extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement
+Class meta::protocols::pure::vX_X_X::metamodel::diagram::Diagram extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement
 {
    classViews : ClassView[*];
    propertyViews : PropertyView[*];
@@ -54,7 +54,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::diagram::view::RelationshipView
 
 Class meta::protocols::pure::vX_X_X::metamodel::diagram::view::PropertyView extends meta::protocols::pure::vX_X_X::metamodel::diagram::view::RelationshipView
 {
-   property : meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr[1];
+   property : meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr[1];
    <<doc.deprecated>> visibility : PropertyVisibility[0..1];
 }
 

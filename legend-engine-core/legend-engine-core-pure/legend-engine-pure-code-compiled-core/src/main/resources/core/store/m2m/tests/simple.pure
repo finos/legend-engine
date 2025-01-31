@@ -186,7 +186,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    let domainElements = $theMapping->map(m|$m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping($extensions));
    let transform = $domainElements.classMappings->cast(@meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInstanceClassMapping).propertyMappings->map(m | $m.transform.body);
    assertEmpty($transform->filter(t | $t->instanceOf(UnknownAppliedFunction)));
-   assert($transform->map(t | $t->cast(@AppliedFunction).function)->contains('meta::pure::mapping::modelToModel::test::createInstances::getFullName'), 'meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany');
+   assert($transform->map(t | $t->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction).function)->contains('meta::pure::mapping::modelToModel::test::createInstances::getFullName'), 'meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany');
 }
 
 ###Mapping

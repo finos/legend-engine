@@ -29,7 +29,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
    _type : String[1];
    resultType : ResultType[1];
-   resultSizeRange : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[0..1];
+   resultSizeRange : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[0..1];
    requiredVariableInputs : meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput[*];
    executionNodes : ExecutionNode[*];
    implementation : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
@@ -40,7 +40,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput
 {
    name         : String[1];
    type         : String[1];
-   multiplicity : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1];
+   multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecutionNode extends ExecutionNode
@@ -51,7 +51,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecuti
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPlatformExecutionNode extends ExecutionNode
 {
-   pure : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
+   pure : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode extends ExecutionNode
@@ -106,7 +106,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CompiledClass
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ConstantExecutionNode extends ExecutionNode
 {
-   values : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
+   values : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SequenceExecutionNode extends ExecutionNode
@@ -136,7 +136,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecu
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode extends ExecutionNode
 {
-   functionParameters:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
+   functionParameters:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[*];
    parameterValidationContext : meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext[*];
 }
 
@@ -262,7 +262,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PartialClassResul
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyWithParameters
 {
    property : String[1];
-   parameters : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
+   parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SetImplementationInfo
@@ -306,7 +306,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::SDLC
 Class meta::protocols::pure::vX_X_X::metamodel::PureSDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
 {
    overrideUrl : String[0..1];
-   packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
+   packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::AlloySDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
@@ -317,7 +317,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::AlloySDLC extends meta::protocol
 Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextData extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
 {
    origin : meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer[0..1];
-   elements : meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*];
+   elements : meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextText extends meta::protocols::pure::vX_X_X::metamodel::PureModelContext
