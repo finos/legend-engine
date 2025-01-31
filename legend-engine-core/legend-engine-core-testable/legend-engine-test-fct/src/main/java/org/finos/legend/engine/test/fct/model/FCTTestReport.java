@@ -16,7 +16,6 @@ package org.finos.legend.engine.test.fct.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
 
 public class FCTTestReport
 {
@@ -27,7 +26,7 @@ public class FCTTestReport
             this.queryFeature = testResult.queryFeature != null ? String.join("_", testResult.queryFeature) : null;
             this.sourceTypeFeature = testResult.sourceTypeFeature != null ? String.join("_", testResult.sourceTypeFeature) : null;
             this.mappingFeature = testResult.mappingFeature != null ? String.join("_", testResult.mappingFeature) : null;
-            this.collectionFeature = testResult.collectionFeature != null ? String.join("_", testResult.collectionFeature) : null;
+            this.querySubFeature = testResult.querySubFeature != null ? String.join("_", testResult.querySubFeature) : null;
 
     }
 
@@ -41,8 +40,8 @@ public class FCTTestReport
         @JsonProperty("queryFeature")
         public String  queryFeature;
 
-        @JsonProperty("collectionFeature")
-        public String  collectionFeature;
+        @JsonProperty("querySubFeature")
+        public String  querySubFeature;
 
         @JsonProperty("mappingFeature")
         public String mappingFeature;

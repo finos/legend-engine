@@ -86,35 +86,6 @@ function   meta::relational::fct::relationalTestSetUp(mappingTestFN:Function<{->
           ] );
 
 }
-function   meta::relational::fct::relationalTestRunnerAssertions<T>(toEval:Function<{TestParameters[1]->Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]}>[1], runtime:Runtime[1], mappingTest:meta::pure::test::fct::FCTMappingTest[1]): meta::relational::fct::AssertionRun<Any>[*]
-{
-          $mappingTest->createTestParameters($runtime)->map(p   |   let evalFN = $toEval->eval($p);
-                                                                    ^meta::relational::fct::AssertionRun<Any>(evalFn=$evalFN,testFn=$p.test);
-                                                     );
-}
-
-Class meta::relational::fct::AssertionRun<T>
-{
-  evalFn:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1];
-  testFn:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[1] ;
-  
-}
-
-function  meta::relational::fct::relationalTestRunnerExecuteAssertion<T>(assertion:meta::relational::fct::AssertionRun<T>[1]):Boolean[1]
-{
-    $assertion.testFn->eval($assertion.evalFn);
-}
-
-
-function   meta::relational::fct::relationalTestRunner<T>(toEval:Function<{TestParameters[1]->Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]}>[1], runtime:Runtime[1], mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Boolean[1]
-{
-          $mappingTest->createTestParameters($runtime)->map(p   |   let evelFN = $toEval->eval($p);
-                                                             $p.test->eval($evelFN);
-                                                         )->and();
-
-
-}
-
 
 
 function meta::relational::fct::assertExecute(result:meta::pure::test::fct::TestResult[1],expected:Any[1]):Boolean[1]
