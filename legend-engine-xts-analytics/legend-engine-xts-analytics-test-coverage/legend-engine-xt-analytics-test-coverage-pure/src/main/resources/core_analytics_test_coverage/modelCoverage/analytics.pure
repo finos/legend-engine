@@ -27,6 +27,7 @@ function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(se
                               let mappingFeature  = $p->get('meta::pure::testCoverage::featureMatrix::MappingFeature').values.value ;     
                               ^FeatureResult(store= $store,
                                             testType =  'UnTested',
+                                            queryFeature = $queryFeature->sort(),
                                             sourceTypeFeature= $sourceFeature->sort(),
                                             querySubFeature =    $querySubFeature->sort(),  
                                             mappingFeature =    $mappingFeature->sort()  
@@ -73,7 +74,9 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
 
  function meta::analytics::testCoverage::featureMatrix::collectFCTTestFunctions():Map<String,ConcreteFunctionDefinition<Any>>[1]
 {
- let testFunctions = meta::pure::test::fct::FCT.p_stereotypes->filter(v|$v.value=='test').modelElements->filter(e|$e->instanceOf(ConcreteFunctionDefinition))->cast(@ConcreteFunctionDefinition<Any>)->filter(f |$f ->functionReturnType().rawType.name=='Boolean'; )->map(f|pair($f->elementToPath(),$f ) )->newMap();
+   let fctTestPackage = meta::pure::fct::tests;
+
+  let testFunctions = $fctTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('test',meta::pure::test::fct::FCT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
 }
  function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:String[1],testType:String[1], store:String[1],expectedError:String[0..1]):FeatureResult[*]
 {
