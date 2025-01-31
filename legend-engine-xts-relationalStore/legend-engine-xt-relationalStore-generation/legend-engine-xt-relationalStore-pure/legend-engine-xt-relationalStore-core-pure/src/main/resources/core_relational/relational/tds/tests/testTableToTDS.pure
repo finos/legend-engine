@@ -96,7 +96,7 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    assertEquals('John,Peter',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"',
+   assertEquals('select "subselect"."FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"',
       $result->sqlRemoveFormatting());
 }
 

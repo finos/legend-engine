@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCT
    let result = toSQLString($func, simpleRelationalMapping, DatabaseType.DuckDB, []->cast(@String), $pp, ^Format(newLine='', indent=''), relationalExtensions(), noDebug());
    assertEquals(
       'WITH subquery_cte_1_1 AS (select "root".ID as "TradeID", "root".quantity as "Quantity" from tradeTable as "root" limit 10) \n' +
-      'select "TradeID" as "TradeID", "Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "TradeID" = 100',
+      'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',
       $result
    );
 }
