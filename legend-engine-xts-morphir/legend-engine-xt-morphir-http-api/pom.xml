@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-morphir</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.69.1-SNAPSHOT</version>
+        <version>4.69.1</version>
     </parent>
 
     <artifactId>legend-engine-xt-morphir-http-api</artifactId>
