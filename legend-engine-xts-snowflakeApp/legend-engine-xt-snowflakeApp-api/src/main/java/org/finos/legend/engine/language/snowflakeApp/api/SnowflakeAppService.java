@@ -23,7 +23,7 @@ import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInf
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeGrantInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
