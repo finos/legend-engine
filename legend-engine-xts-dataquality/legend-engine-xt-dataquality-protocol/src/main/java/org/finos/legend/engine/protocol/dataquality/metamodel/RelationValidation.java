@@ -26,4 +26,5 @@ public class RelationValidation
     public String name;
     public String description;
     public Lambda assertion;
+    public String type;
 }

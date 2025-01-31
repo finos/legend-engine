@@ -35,7 +35,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
 
-###Pure 
+###Pure
 import meta::analytics::lineage::*;
 import meta::relational::extension::*;
 import meta::relational::metamodel::join::*;
@@ -45,13 +45,13 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
     let fn= {|testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID'), col(p|$p.managerID, 'managerID')])
                                      ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});};
-                       
-                        
+
+
 
     let lineage = computeLineage($fn,meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabaseWithColumnsMappedViaJoinsAndDynaFunction, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
   meta::analytics::lineage::assertLineage(['Lambda', 'db_database2', 'db_dbInc', 'tb_database2defaultfirmTable', 'tb_dbIncdefaultfirmTable', 'tb_dbIncdefaultpersonTable'],
-                                          ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Firm', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::tds::tdsJoin'],
-                                          '[eID: [firmTable.ID <JoinTreeNode>, firmTable.ID <RelationalOperationElementWithJoin>, personTable.FIRMID <JoinTreeNode>], fID: [firmTable.ID <TableAliasColumn>], firstName: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>], managerID: [personTable.MANAGERID <DynaFunction>]]',
+                                            ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Firm', 'meta::relational::tests::tds::tdsJoin::testJoinTDS_Person', 'pack_meta::pure::tds', 'pack_meta::relational::tests::tds::tdsJoin'],
+                                            '[eID: [firmTable.ID <JoinTreeNode>, firmTable.ID <RelationalOperationElementWithJoin>, personTable.FIRMID <JoinTreeNode>], fID: [firmTable.ID <TableAliasColumn>], firstName: [personTable.FIRSTNAME <TableAliasColumn>], legalName: [firmTable.LEGALNAME <TableAliasColumn>], managerID: [personTable.MANAGERID <DynaFunction>]]',
                                            $lineage);
 }
 
@@ -543,6 +543,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                                            $lineage);
 }
 
+
+
+
 ###Pure
 import meta::analytics::lineage::*;
 import meta::relational::extension::*;
@@ -552,17 +555,18 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 {
    let fn= {businessDate:Date[1], type:String[1]|
              let adjustedType = $type+ 'test';
-               meta::relational::tests::milestoning::Product.all($businessDate)->project(col(p|$p.classification($businessDate).type,'type'))->filter(f|$f.getString('type')=='adjustedType');};  
+               meta::relational::tests::milestoning::Product.all($businessDate)->project(col(p|$p.classification($businessDate).type,'type'))->filter(f|$f.getString('type')=='adjustedType');};
   let mapping = meta::relational::tests::milestoning::milestoningmap;
   let runtime = meta::external::store::relational::tests::testRuntime();
 
   let lineage = computeLineage($fn, $mapping, $runtime, relationalExtensions());
-  
+
   meta::analytics::lineage::assertLineage(['Lambda', 'db_db', 'tb_dbdefaultProductClassificationTable', 'tb_dbdefaultProductTable'],
-                                         ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::milestoning::Product', 'meta::relational::tests::milestoning::ProductClassification', 'pack_meta::pure::tds', 'pack_meta::relational::tests::milestoning'],  
+                                         ['Lambda', 'meta::pure::tds::TDSRow', 'meta::relational::tests::milestoning::Product', 'meta::relational::tests::milestoning::ProductClassification', 'pack_meta::pure::tds', 'pack_meta::relational::tests::milestoning'],
                                         '[type: [ProductClassificationTable.type <JoinTreeNode>, ProductClassificationTable.type <TableAliasColumn>, ProductTable.type <JoinTreeNode>]]',
                                           $lineage);
 }
+
 
 
 ###Pure

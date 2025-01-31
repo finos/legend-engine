@@ -12,24 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.entitlement;
+package org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct;
 
-import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
-import org.junit.BeforeClass;
+import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TestCoreRelationalStoreEntitlementCompiledStateIntegrityTest extends AbstractCompiledStateIntegrityTest
+public class TestPCRReport
 {
-    @BeforeClass
-    public static void initialize()
+    @Test
+    public void canFindPCTReport()
     {
-        initialize("core_relational_store_entitlement");
-    }
-
-    @Test(expected = AssertionError.class)
-    @Override
-    public void testReferenceUsages()
-    {
-        super.testReferenceUsages();
+        Assert.assertEquals("Native, Databricks", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
     }
 }

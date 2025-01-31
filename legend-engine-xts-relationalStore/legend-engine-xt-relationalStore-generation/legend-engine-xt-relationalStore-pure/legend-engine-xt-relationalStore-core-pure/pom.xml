@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
-        <version>4.68.1-SNAPSHOT</version>
+        <version>4.69.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -103,11 +103,6 @@
                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
 
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
@@ -178,12 +173,6 @@
                         <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
-
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
@@ -195,7 +184,11 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-test-fct</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
@@ -207,14 +200,18 @@
                         <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
-
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -280,11 +277,6 @@
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -366,10 +358,6 @@
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-tds</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
@@ -384,7 +372,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-
 
         <!-- TEST -->
         <dependency>
@@ -437,6 +424,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-framework</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-fct</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
             <type>test-jar</type>
@@ -479,7 +476,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
+                   </plugins>
             </build>
         </profile>
     </profiles>

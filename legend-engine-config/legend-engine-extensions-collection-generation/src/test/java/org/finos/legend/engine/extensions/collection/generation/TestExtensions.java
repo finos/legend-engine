@@ -534,6 +534,7 @@ public class TestExtensions
                 .with("core_analytics_binding")
                 .with("core_analytics_class")
                 .with("core_analytics_function")
+                .with("core_analytics_test_coverage")
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
