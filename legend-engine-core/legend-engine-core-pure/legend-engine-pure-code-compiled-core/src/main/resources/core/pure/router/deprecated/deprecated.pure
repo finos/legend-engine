@@ -23,5 +23,5 @@ function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefiniti
 
 function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
-   routeFunction($f, getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions), $exeCtx, [], $extensions, $debug);
+   routeFunction($f, getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions), $exeCtx, [], $extensions, $debug)
 }

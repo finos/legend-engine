@@ -142,7 +142,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 
    ^ExternalFormatExternalizeExecutionNode
    (
-      resultType      = ^ResultType(genericType=^GenericType(rawType = String)),
+      resultType      = ^ResultType(genericType=^GenericType(rawType=String)),
       resultSizeRange = PureOne,
       checked         = $checked,
       binding         = $binding,
@@ -166,7 +166,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
    let contentType      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper()->cast(@InstanceValue).values->at(0)->cast(@String);
    ^ExternalFormatExternalizeTDSExecutionNode
    (
-      resultType      = ^ResultType(genericType=^GenericType(rawType = String)),
+      resultType      = ^ResultType(genericType=^GenericType(rawType=String)),
       resultSizeRange = PureOne,
       contentType         = $contentType,
       executionNodes  = $children
@@ -200,7 +200,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
 
    ^ExternalFormatInternalizeExecutionNode
    (
-      resultType        = ^ClassResultType(genericType=^GenericType(rawType = $class)),
+      resultType        = ^ClassResultType(genericType=^GenericType(rawType=$class)),
       config            = $config,
       resultSizeRange   = ZeroMany,
       binding           = $binding,

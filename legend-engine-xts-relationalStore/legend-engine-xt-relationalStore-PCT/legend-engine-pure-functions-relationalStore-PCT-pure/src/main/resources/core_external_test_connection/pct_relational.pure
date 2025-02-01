@@ -61,6 +61,14 @@ function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='Databricks'} meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.Databricks)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
@@ -73,7 +81,7 @@ function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Funct
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1]):X[o]
 {
-    let debug = debug();
+    let debug = noDebug();
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -349,7 +357,7 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
                                           genericType = $func->genericType()->toOne(),
                                           multiplicity = PureOne,
                                           values = $func
-                                        )                                        
+                                        )
                           ->concatenate(if ($mapping->isEmpty(),
                                         |[],
                                         |^InstanceValue
