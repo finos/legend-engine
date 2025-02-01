@@ -122,17 +122,17 @@ function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeV
    )
 }
 
-function <<access.private>> meta::pure::router::getVariableRoutingStrategy(vs: ValueSpecification[1]): RoutingStrategy[0..1]
+function <<access.private>> meta::pure::router::getVariableRoutingStrategy(vs: ValueSpecification[0..1]): RoutingStrategy[0..1]
 {
   $vs->match([
     smc: StoreMappingClusteredValueSpecification[1] | $smc.runtime->map(r | getRoutingStrategyFromMappingAndRuntime($smc.mapping, $r)),
     sc: StoreClusteredValueSpecification[1] | $sc.runtime->map(r | getRoutingStrategyFromRuntime($r)),
-    c: ClusteredValueSpecification[1] | $c.val
-                ->cast(@RoutedValueSpecification).value
-                ->cast(@SimpleFunctionExpression).parametersValues
-                ->at(1)
-                ->meta::pure::router::getVariableRoutingStrategy(),
-    a: Any[1] | []
+    c: ClusteredValueSpecification[1] | $c.val->byPassRouterInfo()
+                                          ->cast(@SimpleFunctionExpression)
+                                          ->filter(f | $f->isLetFunction()).parametersValues
+                                          ->last()
+                                          ->meta::pure::router::getVariableRoutingStrategy(),
+    a: Any[0..1] | []
   ]);
 }
 
