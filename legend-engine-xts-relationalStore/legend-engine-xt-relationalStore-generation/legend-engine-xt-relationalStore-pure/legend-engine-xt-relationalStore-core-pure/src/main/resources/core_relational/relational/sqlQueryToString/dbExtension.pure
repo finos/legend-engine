@@ -505,7 +505,7 @@ function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:
       $cte + $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions);
      ,
      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
-   );
+   )
 }
 
 function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]

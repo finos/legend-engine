@@ -66,7 +66,7 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
     let  paths = $query.paths;
     ^TDSResultType
         (
-          genericType=^GenericType(rawType=$class),
+          genericType = ^GenericType(rawType = $class),
           tdsColumns = $paths->map(p|
                                       ^TDSColumn
                                       (

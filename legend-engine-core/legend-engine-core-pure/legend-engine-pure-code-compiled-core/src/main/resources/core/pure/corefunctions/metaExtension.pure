@@ -689,7 +689,7 @@ function meta::pure::functions::meta::resolve(v:VariableExpression[1], vars:Map<
                  |let res = $open.values;
                   $res->match([
                     {pv: meta::pure::executionPlan::PlanVarPlaceHolder[1] |
-                      ^InstanceValue(values=$pv, genericType = $pv.genericType, multiplicity=$pv.multiplicity->defaultIfEmpty(ZeroMany)->toOne())->evaluateAndDeactivate();
+                      ^InstanceValue(values=$pv, genericType=$pv.genericType, multiplicity=$pv.multiplicity->defaultIfEmpty(ZeroMany)->toOne())->evaluateAndDeactivate();
                     },
                     {a: Any[*] | 
                       if($res->isEmpty(),
