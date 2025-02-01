@@ -60,7 +60,7 @@ function meta::relational::functions::pureToSqlQuery::union::addMissingColumnToU
                                                                      | ^Alias
                                                                         (
                                                                           name = $propName,
-                                                                          relationalElement = ^TableAliasColumn(alias=$newAlias, column=^Column(name = $propName, type = $newAlias.relationalElement->cast(@Union).queries.columns->filter(x | $x->instanceOf(Alias) && $x->cast(@Alias).relationalElement->instanceOf(TableAliasColumn) && $x->cast(@Alias).name == $propName)->cast(@Alias).relationalElement->cast(@TableAliasColumn).column.type->defaultIfEmpty(^meta::relational::metamodel::datatype::Integer())->at(0)))
+                                                                          relationalElement = ^TableAliasColumn(alias=$newAlias, column=^Column(name = $propName, type = $newAlias.relationalElement->cast(@Union).queries.columns->filter(x | $x->instanceOf(Alias) && $x->cast(@Alias).relationalElement->instanceOf(TableAliasColumn) && $x->cast(@Alias).name == $propName)->cast(@Alias).relationalElement->cast(@TableAliasColumn).column.type->defaultIfEmpty(|^meta::relational::metamodel::datatype::Integer())->at(0)))
                                                                         )
                                                                   )
                                                                 })
