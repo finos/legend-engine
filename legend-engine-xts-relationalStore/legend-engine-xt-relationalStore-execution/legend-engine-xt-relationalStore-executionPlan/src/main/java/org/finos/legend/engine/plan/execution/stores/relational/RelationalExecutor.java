@@ -285,6 +285,7 @@ public class RelationalExecutor
             {
                 DeferredRelationalResult deferredRelationalResult = (DeferredRelationalResult) result;
                 result = deferredRelationalResult.evaluate();
+                executionState.activities.addAll(result.activities);
             }
 
             if (result instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
