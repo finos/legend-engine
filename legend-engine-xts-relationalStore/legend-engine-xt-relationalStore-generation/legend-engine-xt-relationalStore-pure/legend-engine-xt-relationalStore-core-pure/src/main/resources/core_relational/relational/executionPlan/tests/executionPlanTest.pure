@@ -412,6 +412,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expected = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -421,6 +422,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")} = ${varPlaceHolderToString(optionalRight![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -439,6 +441,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expected = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -448,6 +451,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalIntLeft![], optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'${varPlaceHolderToString(optionalIntLeft![] "" "" {} "null")} = ${varPlaceHolderToString(optionalIntRight![] "" "" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -466,6 +470,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -475,6 +480,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalFloatLeft![], optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'${varPlaceHolderToString(optionalFloatLeft![] "" "" {} "null")} = ${varPlaceHolderToString(optionalFloatRight![] "" "" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -485,6 +491,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedNewH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -494,6 +501,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalFloatLeft![], optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'${varPlaceHolderToString(optionalFloatLeft![] "CAST(" " AS FLOAT)" {} "null")} = ${varPlaceHolderToString(optionalFloatRight![] "CAST(" " AS FLOAT)" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -512,6 +520,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -521,6 +530,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalDateLeft![], optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'${varPlaceHolderToString(optionalDateLeft![] "\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalDateRight![] "\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -531,6 +541,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedNewH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -540,6 +551,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalDateLeft![], optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'${varPlaceHolderToString(optionalDateLeft![] "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalDateRight![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -558,6 +570,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -567,6 +580,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalRight![] "\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -577,6 +591,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedNewH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -586,6 +601,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalRight![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -604,6 +620,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -613,6 +630,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalLeft![]) "\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalRight![]) "\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -623,6 +641,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    let expectedNewH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '         as meta::relational::tests::model::simple::Address\n'+
                   '  resultSizeRange = *\n'+
                   '  (\n'+
                   '    FunctionParametersValidationNode\n'+
@@ -632,6 +651,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    Relational\n'+
                   '    (\n'+
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '             as meta::relational::tests::model::simple::Address\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
                   '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalLeft![]) "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalRight![]) "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
@@ -2250,9 +2270,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {name:String[*], name1:String[*]|_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in($name1))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.DB2))), meta::relational::extension::relationalExtensions()
    );
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=SESSION.tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(1024))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_name1as"session.temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=SESSION.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_nameas"session.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
-      'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=SESSION.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(1024))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_nameas"session.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=SESSION.tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_name1as"session.temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
-   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=SESSION.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(1024))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_nameas"session.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=SESSION.tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(1024))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_name1as"session.temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))';
+   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithVarAndConstantInputs():Boolean[1]

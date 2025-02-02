@@ -2135,8 +2135,8 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
 
                   let cteColumns = $cteSelect.columns->map(c |
                         $c->match([
-                          a: Alias[1] | ^Column(name = $a.name->stripMatchingQuotes(), type = ^meta::relational::metamodel::datatype::CoreDataType()),
-                          tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->defaultIfEmpty($tac.column.name)->toOne()->stripMatchingQuotes(), type = $tac.column.type)
+                          a: Alias[1] | ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::CoreDataType()),
+                          tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->defaultIfEmpty($tac.column.name)->toOne(), type = $tac.column.type)
                         ]);
                   );
                   let cteReference = ^CommonTableExpressionReference(name = $varName, columns = $cteColumns);
@@ -2456,7 +2456,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
                   let colName = $c.name->toOne();
                   let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
                   ^Alias(name='"' + $colName + '"',relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$colName, type=$types->get($colType)->toOne())));
-              )
+              );
 }
 
 function meta::relational::functions::pureToSqlQuery::processSplitPart(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
