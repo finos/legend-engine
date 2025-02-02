@@ -18,7 +18,7 @@ import meta::pure::testCoverage::featureMatrix::*;
 // limitations under the License.
 
 
-function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(set:List<Stereotype>[*],store:String[1]):FeatureResult[*]
+function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(set:List<Stereotype>[*], testType:String[1], store:String[1]):FeatureResult[*]
 {
   let result = $set->map( t | let p = $t.values->groupBy(v|$v.profile->elementToPath());
                               let sourceFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryType').values.value ;        
@@ -26,7 +26,8 @@ function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(se
                               let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value ;        
                               let mappingFeature  = $p->get('meta::pure::testCoverage::featureMatrix::MappingFeature').values.value ;     
                               ^FeatureResult(store= $store,
-                                            testType =  'UnTested',
+                                            testType =  $testType,
+                                            queryFeature = $queryFeature->sort(),
                                             sourceTypeFeature= $sourceFeature->sort(),
                                             querySubFeature =    $querySubFeature->sort(),  
                                             mappingFeature =    $mappingFeature->sort()  
@@ -73,7 +74,9 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
 
  function meta::analytics::testCoverage::featureMatrix::collectFCTTestFunctions():Map<String,ConcreteFunctionDefinition<Any>>[1]
 {
- let testFunctions = meta::pure::test::fct::FCT.p_stereotypes->filter(v|$v.value=='test').modelElements->filter(e|$e->instanceOf(ConcreteFunctionDefinition))->cast(@ConcreteFunctionDefinition<Any>)->filter(f |$f ->functionReturnType().rawType.name=='Boolean'; )->map(f|pair($f->elementToPath(),$f ) )->newMap();
+   let fctTestPackage = meta::pure::fct::tests;
+
+  let testFunctions = $fctTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('test',meta::pure::test::fct::FCT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
 }
  function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:String[1],testType:String[1], store:String[1],expectedError:String[0..1]):FeatureResult[*]
 {
@@ -107,7 +110,7 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
  function meta::analytics::testCoverage::featureMatrix::buildStoreReport(mappingTests:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*],testFunctions:Map<String,ConcreteFunctionDefinition<Any>>[1], features:FeatureSet[*], reportType:String[1],store:String[1]):FeatureResult[*]
  {
  
-  let permFeatureResults =  $features->map(f|$f->meta::analytics::testCoverage::featureMatrix::permuteSet()->buildPermutationResult($store));
+  let permFeatureResults =  $features->map(f|$f->meta::analytics::testCoverage::featureMatrix::permuteSet()->buildPermutationResult($reportType,$store));
   let mappingFeatures= $mappingTests->map(mappingTest|
                                           let mappingFeatures =  $mappingTest.stereotypes->filter(s|$s.profile->elementToPath()=='meta::pure::testCoverage::featureMatrix::MappingFeature').value;
                                           let instance =  $mappingTest->eval();
@@ -119,7 +122,7 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
                                                                                                   
                                                                                                       $assert->match([ t:TestAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'assertion',$reportType,$store,[]),
                                                                                                                       t:TestErrorAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'error',$reportType,$store,$t.expectedErrorMessage)   
-                                                                                                                    ]);,
+                                                                                                                    ]);,  
                                                                                                   |   $fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, 'UnTested',$reportType,$store,[])
                                                                                                 );
                                                                         );             

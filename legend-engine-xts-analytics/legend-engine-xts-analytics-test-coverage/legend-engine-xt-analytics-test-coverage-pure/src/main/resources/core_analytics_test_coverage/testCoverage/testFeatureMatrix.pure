@@ -63,7 +63,7 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
        ^FeatureResult(
         mappingFeature=['filter','union'],
         store = 'testStore',
-        testType='UnTested') 
+        testType='test') 
   ];
 
 assert($report->removeAll($expected,{ a,b | $a.featureTests ==$b.featureTests &&
