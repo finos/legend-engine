@@ -84,7 +84,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select distinct "firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "subselect"', $res1->sqlRemoveFormatting());
+   assertEquals('select distinct "subselect"."firstName" as "firstName" from (select top 1000 "root".FIRSTNAME as "firstName", "firmtable_0".LEGALNAME as "firmName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "subselect"', $res1->sqlRemoveFormatting());
 
    let res2 = execute(
       |Person.all()
@@ -130,7 +130,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
 
    assertSize($res1.values.columns, 1);
    assertEquals('6', $res1.values.rows.values->sort()->makeString(','));
-   assertEquals('select count(*) as "cnt" from (select "firstName" as "firstName" from (select top 1000 distinct "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect" order by "firstName") as "persontable_0"', $res1->sqlRemoveFormatting());
+   assertEquals('select count(*) as "cnt" from (select "subselect"."firstName" as "firstName" from (select top 1000 distinct "root".FIRSTNAME as "firstName" from personTable as "root") as "subselect" order by "firstName") as "persontable_0"', $res1->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRestrictDistinct_NoJoinCutDown():Boolean[1]
