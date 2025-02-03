@@ -857,7 +857,6 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : meta::external::format::shared::ExternalFormatExternalizeConfig[1] | true,
             p : meta::external::format::shared::ExternalFormatInternalizeConfig[1] | true,
             f : SimpleFunctionExpression[1]| $f.func->in([letFunction_String_1__T_m__T_m_]),
-            //p: meta::pure::executionPlan::PlanVarPlaceHolder[*] | true, // todo move to a better place?
             a : Any[*]| $a->type()
                           ->match([
                               c:Class<Any>[1]|$c->isSimpleType(),

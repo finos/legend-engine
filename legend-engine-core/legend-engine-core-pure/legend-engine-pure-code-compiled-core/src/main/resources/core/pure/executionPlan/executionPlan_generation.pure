@@ -119,7 +119,6 @@ Class meta::pure::executionPlan::ExecutionOptionContext extends MultiExecutionCo
 
 Class meta::pure::executionPlan::PlanVarPlaceHolder extends meta::pure::executionPlan::FunctionParameter
 {
-    routingStrategy: meta::pure::router::metamodel::RoutingStrategy[0..1];
 }
 
 Class meta::pure::executionPlan::PlanSetPlaceHolder
