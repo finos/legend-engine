@@ -134,7 +134,10 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         postInit();
 
         long ct = System.currentTimeMillis();
-        LOGGER.info("Initializing Pure runtime...");
+        LOGGER.info("**************************************\n" +
+                    "**** Initializing Pure runtime... ****\n" +
+                    "**************************************"
+        );
         try
         {
             this.pureSession.getPureRuntime().initialize();
@@ -142,7 +145,7 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
         }
         catch (Exception e)
         {
-            LOGGER.info("Initialization of Pure runtime failed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct), e);
+            LOGGER.warn("Initialization of Pure runtime failed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct), e);
         }
     }
 

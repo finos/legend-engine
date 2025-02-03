@@ -544,12 +544,10 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
                                   v:PlanVarPlaceHolder[1] |
+                                     let resolvedPlanVar = $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
                                      let ifs = [
                                       // do we have a reference already?
-                                      pair(|$state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name))->isNotEmpty(),
-                                           |
-                                            $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
-                                          ),
+                                      pair(|$resolvedPlanVar->isNotEmpty(), |$resolvedPlanVar->toOne()),
                                       // if is relation, translate to VarSetPlaceHolder
                                       pair(|$v.genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation),
                                            |

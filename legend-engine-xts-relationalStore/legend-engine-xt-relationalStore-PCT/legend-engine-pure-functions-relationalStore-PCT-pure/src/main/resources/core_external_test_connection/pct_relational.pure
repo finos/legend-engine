@@ -346,40 +346,78 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
 
   assert($mapping->size() <= 1, 'Only one mapping supported');
 
-  let withWith = ^SimpleFunctionExpression
-  (
-    importGroup=system::imports::coreImport,
-    func = if($mapping->isEmpty(), |with_FunctionDefinition_1__Runtime_1__T_m_, |with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
-    functionName = 'with',
-    genericType = $returnGenericType,
-    multiplicity = $returnMultiplicity,
-    parametersValues =    ^InstanceValue(
-                                          genericType = $func->genericType()->toOne(),
-                                          multiplicity = PureOne,
-                                          values = $func
-                                        )
-                          ->concatenate(if ($mapping->isEmpty(),
-                                        |[],
-                                        |^InstanceValue
-                                          (
-                                            genericType = ^GenericType(rawType=Mapping),
-                                            multiplicity = PureOne,
-                                            values = $mapping->toOne()
-                                          )
-                                        ))
-                          ->concatenate(^InstanceValue
-                                        (
-                                          genericType = ^GenericType(rawType=Runtime),
-                                          multiplicity = PureOne,
-                                          values = $runtime
-                                        )
-                          )
-                      ,
-    resolvedMultiplicityParameters = $returnMultiplicity,
-    resolvedTypeParameters = $returnGenericType
-  );
+  // for single expression keep in-line behavior of with
+  // for multi, use the with that takes the whole function definition
+  // the reason for this is that the latter preeval, invalidating many PCT test as preeval will evaluate constant values that PCT aims to push to DB
+  $func.expressionSequence->evaluateAndDeactivate()->match([
+    vs: ValueSpecification[1] |
+      let withWith = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = if($mapping->isEmpty(), |with_T_m__Runtime_1__T_m_, |with_T_m__Mapping_1__Runtime_1__T_m_),
+        functionName = 'with',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    $vs
+                              ->concatenate(if ($mapping->isEmpty(),
+                                            |[],
+                                            |^InstanceValue
+                                              (
+                                                genericType = ^GenericType(rawType=Mapping),
+                                                multiplicity = PureOne,
+                                                values = $mapping->toOne()
+                                              )
+                                            ))
+                              ->concatenate(^InstanceValue
+                                            (
+                                              genericType = ^GenericType(rawType=Runtime),
+                                              multiplicity = PureOne,
+                                              values = $runtime
+                                            )
+                              )
+                          ,
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+      ^$func(expressionSequence = $withWith);
+    ,
+    multi: ValueSpecification[1..*] |
+      let withWith = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = if($mapping->isEmpty(), |with_FunctionDefinition_1__Runtime_1__T_m_, |with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
+        functionName = 'with',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    ^InstanceValue(
+                                              genericType = $func->genericType()->toOne(),
+                                              multiplicity = PureOne,
+                                              values = $func
+                                            )
+                              ->concatenate(if ($mapping->isEmpty(),
+                                            |[],
+                                            |^InstanceValue
+                                              (
+                                                genericType = ^GenericType(rawType=Mapping),
+                                                multiplicity = PureOne,
+                                                values = $mapping->toOne()
+                                              )
+                                            ))
+                              ->concatenate(^InstanceValue
+                                            (
+                                              genericType = ^GenericType(rawType=Runtime),
+                                              multiplicity = PureOne,
+                                              values = $runtime
+                                            )
+                              )
+                          ,
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
 
-  ^$func(expressionSequence = $withWith);
+      ^$func(expressionSequence = $withWith);,
+      a: Any[*] | fail('not supported: ' + $a->type()->elementToPath() + ': ' + $a->size()->toString()); $func;
+  ]);
 }
 
 function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]

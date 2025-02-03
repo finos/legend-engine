@@ -133,19 +133,13 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
          r:NoSetRoutedValueSpecification[1]     | ^$state(value=$r.value)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
          fe:FunctionExpression[1]               | $fe->routeFunctionExpression($state, $executionContext, $vars, $inScopeVars, $extensions, $debug),
          i:InstanceValue[1]                     | if(
-                                                      [ pair(
-                                                          | $i.values->size() == 1 && $i.values->at(0)->instanceOf(meta::pure::executionPlan::PlanVarPlaceHolder) 
-                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).genericType.rawType->toOne()->subTypeOf(Relation)
-                                                              && $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routingStrategy->isNotEmpty(),
-                                                          |
-                                                            ^$state(routingStrategy = $i.values->at(0)->cast(@meta::pure::executionPlan::PlanVarPlaceHolder).routingStrategy->toOne());
-                                                        ),
+                                                      [ 
                                                         pair(
                                                           | $i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor) || ($i.values->isEmpty() && $i.multiplicity == PureOne && $i.genericType.rawType->isNotEmpty() && $i.genericType.rawType->toOne()->subTypeOf(Relation)),
                                                           | // We match cast to Relation & RelationStoreAccessor.. However we're only processing the Accessor
                                                             if($i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor),
                                                               | if($state.routingStrategy.processRelationStoreAccessor->isEmpty(),
-                                                                  | fail('RelationStoreAccessor should be used with a from(Rumtime) expression.'); $state;,
+                                                                  | fail('RelationStoreAccessor should be used with a from(Runtime) expression.'); $state;,
                                                                   | $state.routingStrategy.processRelationStoreAccessor($i.values->at(0)->cast(@RelationStoreAccessor<Any>), $i, $state, $executionContext, $debug)
                                                                 ),
                                                               | $state

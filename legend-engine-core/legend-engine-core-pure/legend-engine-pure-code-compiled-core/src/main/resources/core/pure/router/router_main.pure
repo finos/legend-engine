@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::extension::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::externalFormat::metamodel::*;
@@ -116,24 +115,9 @@ function <<access.private>> meta::pure::router::createPlanVarPlaceHolderInScopeV
          name = $varName,
          genericType = $vs.genericType, 
          multiplicity = $vs.multiplicity,
-         supportsStream = $vs.multiplicity->isToMany(),
-         routingStrategy = $vs->meta::pure::router::getVariableRoutingStrategy()
+         supportsStream = $vs.multiplicity->isToMany()
       )
    )
-}
-
-function <<access.private>> meta::pure::router::getVariableRoutingStrategy(vs: ValueSpecification[0..1]): RoutingStrategy[0..1]
-{
-  $vs->match([
-    smc: StoreMappingClusteredValueSpecification[1] | $smc.runtime->map(r | getRoutingStrategyFromMappingAndRuntime($smc.mapping, $r)),
-    sc: StoreClusteredValueSpecification[1] | $sc.runtime->map(r | getRoutingStrategyFromRuntime($r)),
-    c: ClusteredValueSpecification[1] | $c.val->byPassRouterInfo()
-                                          ->cast(@SimpleFunctionExpression)
-                                          ->filter(f | $f->isLetFunction()).parametersValues
-                                          ->last()
-                                          ->meta::pure::router::getVariableRoutingStrategy(),
-    a: Any[0..1] | []
-  ]);
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
