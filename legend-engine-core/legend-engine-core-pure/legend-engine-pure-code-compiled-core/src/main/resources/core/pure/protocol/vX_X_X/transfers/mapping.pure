@@ -193,7 +193,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::re
       extendsClassMappingId = $r.superSetImplementationId,
       mappingClass = $r.mappingClass->map(mc|$mc->transformMappingClass($mapping, $extensions)),
       propertyMappings = $r.propertyMappings->map(pm|$pm->transformRelationFunctionPropertyMapping($mapping, $extensions)),
-      relationFunction = ^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.FUNCTION, path=$r.relationFunction->elementToPath())
+      relationFunction = ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.FUNCTION, path=$r.relationFunction->elementToPath())
    );
 }
 
@@ -203,7 +203,7 @@ function <<access.public>> meta::protocols::pure::vX_X_X::transformation::fromPu
                                             (
                                                _type = 'purePropertyMapping',
                                                explodeProperty = $p.explodeProperty,
-                                               property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                                               property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
                                                source = $p.sourceSetImplementationId,
                                                target = $p.targetSetImplementationId,
                                                enumMappingId = $p.transformer->cast(@EnumerationMapping<Any>).name,
@@ -220,7 +220,7 @@ function <<access.public>> meta::protocols::pure::vX_X_X::transformation::fromPu
                a:meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1]| ^meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping
                                                       (
                                                          _type = 'AggregationAwarePropertyMapping',
-                                                         property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$a.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$a.property.name->toOne()),
+                                                         property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$a.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$a.property.name->toOne()),
                                                          source = $a.sourceSetImplementationId,
                                                          target = $a.targetSetImplementationId
                                              )
@@ -233,7 +233,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       ^meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping
        (
           _type = 'xStorePropertyMapping',
-          property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
           source = $p.sourceSetImplementationId,
           target = $p.targetSetImplementationId,
           crossExpression = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($p.crossExpression, $extensions)
@@ -247,7 +247,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       ^meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping
        (
           _type = 'xStorePropertyMapping',
-          property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
           source = $p.sourceSetImplementationId,
           target = $p.targetSetImplementationId,
           crossExpression = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($p.crossExpression, $extensions)
@@ -261,7 +261,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping
        (
           _type = 'relationFunctionPropertyMapping',
-          property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
           column = $r.column.name->toOne(),
           source = $r.sourceSetImplementationId,
           target = $r.targetSetImplementationId,

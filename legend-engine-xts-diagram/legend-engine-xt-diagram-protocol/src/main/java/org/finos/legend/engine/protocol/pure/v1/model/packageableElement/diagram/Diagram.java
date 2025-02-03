@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 
 import java.util.List;

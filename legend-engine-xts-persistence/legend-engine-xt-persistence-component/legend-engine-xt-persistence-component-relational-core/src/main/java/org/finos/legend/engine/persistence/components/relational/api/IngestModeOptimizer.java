@@ -87,7 +87,9 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
                             .addAllPartitionFields(partition.partitionFields())
                             .addAllPartitionSpecList(derivePartitionSpecList(partition.partitionFields(), partition.maxPartitionSpecFilters()))
                             .derivePartitionSpec(partition.derivePartitionSpec())
-                            .maxPartitionSpecFilters(partition.maxPartitionSpecFilters()).build())
+                            .maxPartitionSpecFilters(partition.maxPartitionSpecFilters())
+                            .deleteStrategy(partition.deleteStrategy())
+                            .build())
                         .build();
             }
         }

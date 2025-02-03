@@ -57,3 +57,19 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
 
     assertEquals(6, $res);
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->size() > 0;
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}

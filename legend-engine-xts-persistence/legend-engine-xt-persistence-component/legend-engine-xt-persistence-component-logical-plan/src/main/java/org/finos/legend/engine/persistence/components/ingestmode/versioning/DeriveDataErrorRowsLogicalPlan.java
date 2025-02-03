@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Gre
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DistinctFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +93,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
 
         FunctionImpl countDistinct = FunctionImpl.builder()
                 .functionName(FunctionName.COUNT)
-                .addValue(FunctionImpl.builder().functionName(FunctionName.DISTINCT).addAllValue(distinctValueFields).build())
+                .addValue(DistinctFunction.builder().addAllValues(distinctValueFields).build())
                 .alias(DATA_VERSION_ERROR_COUNT)
                 .build();
 

@@ -21,11 +21,11 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TagPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
 import java.util.Collections;

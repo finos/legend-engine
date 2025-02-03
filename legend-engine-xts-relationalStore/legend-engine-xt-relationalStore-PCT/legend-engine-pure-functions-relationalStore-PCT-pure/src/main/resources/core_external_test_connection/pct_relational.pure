@@ -61,6 +61,14 @@ function <<PCT.adapter>> {PCT.adapterName='Snowflake'} meta::relational::tests::
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='Databricks'} meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.Databricks)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([

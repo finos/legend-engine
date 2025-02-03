@@ -47,7 +47,7 @@ Class meta::external::function::activator::postDeploymentAction::PostDeploymentA
 }
 
 // This section needs to be code generated from the section above 
-Class meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::m3::extension::AnnotatedElement
 {
   {doc.doc = 'The function that needs to be activated. Needs to provide the path to the function using its signature.'} function : String[1];
 }

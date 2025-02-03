@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;

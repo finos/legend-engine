@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Store
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
@@ -52,7 +52,7 @@ public class HelperFunctionBuilder
         }
     }
 
-    static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test buildFunctionTestSuites(ConcreteFunctionDefinition<?> metamodelFunction, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext compileContext, ProcessingContext processingContext
+    static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test buildFunctionTestSuites(ConcreteFunctionDefinition<?> metamodelFunction, org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext compileContext, ProcessingContext processingContext
     )
     {
         if (test instanceof FunctionTestSuite)

@@ -349,20 +349,13 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE " +
             "UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage)";
 
-        String maxDataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
-            "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" " +
-            "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
-
-        String dataErrorsSql = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"amount\")) as \"legend_persistence_error_count\" FROM " +
-            "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
-
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedWithoutDigestCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
-        Assertions.assertEquals(dataErrorsSql, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctAmount(), deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctAmount(), deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -496,5 +489,15 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     protected String getExpectedMetadataTableCreateQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctAmount()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithAmount;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctAmount()
+    {
+        return AnsiTestArtifacts.dataErrorSqlWithAmount;
     }
 }

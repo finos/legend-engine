@@ -34,8 +34,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -78,7 +78,7 @@ public class Handlers
 
     private Set<String> registeredMetaPackages = Sets.mutable.empty();
 
-    private static Collection toCollection(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs)
+    private static Collection toCollection(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs)
     {
         if (vs instanceof Collection)
         {
@@ -87,7 +87,7 @@ public class Handlers
         return new Collection(Lists.mutable.with(vs));
     }
 
-    private static void updateTwoParamsLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity m)
+    private static void updateTwoParamsLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity m)
     {
         if (lambda instanceof Lambda)
         {
@@ -101,7 +101,7 @@ public class Handlers
         }
     }
 
-    private static void updateTwoParamsLambdaDiffTypes(Object lambda, GenericType newGenericType, GenericType newGenericType2, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity m, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity m2)
+    private static void updateTwoParamsLambdaDiffTypes(Object lambda, GenericType newGenericType, GenericType newGenericType2, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity m, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity m2)
     {
         if (lambda instanceof Lambda)
         {
@@ -115,7 +115,7 @@ public class Handlers
         }
     }
 
-    private static void updateSimpleLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity m, CompileContext cc)
+    private static void updateSimpleLambda(Object lambda, GenericType newGenericType, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity m, CompileContext cc)
     {
         if (lambda instanceof Lambda)
         {
@@ -124,10 +124,10 @@ public class Handlers
             {
                 Variable p = params.get(0);
                 updateVariableType(p, cc.newGenericType(cc.pureModel.getType(M3Paths.Relation), Lists.fixedSize.of(newGenericType)));
-                p.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+                p.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
                 Variable f = params.get(1);
                 updateVariableType(f, cc.newGenericType(cc.pureModel.getType("meta::pure::functions::relation::_Window"), Lists.mutable.with(cc.pureModel.getGenericType(cc.pureModel.getType("meta::pure::metamodel::type::Any")))));
-                f.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+                f.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
             }
             Variable variable = params.get(params.size() - 1);
             updateVariableType(variable, newGenericType);
@@ -141,27 +141,27 @@ public class Handlers
     }
 
 
-    private static void updateLambdaCollection(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, GenericType gt, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity mul, int offset, CompileContext cc)
+    private static void updateLambdaCollection(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, GenericType gt, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity mul, int offset, CompileContext cc)
     {
         toCollection(parameters.get(offset)).values.forEach(l -> updateSimpleLambda(l, gt, mul, cc));
     }
 
-    private static void updateLambdaWithCol(GenericType gt2, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification l, CompileContext cc)
+    private static void updateLambdaWithCol(GenericType gt2, org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification l, CompileContext cc)
     {
         if (l instanceof AppliedFunction)
         {
-            updateSimpleLambda(((AppliedFunction) l).parameters.get(0), gt2, new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+            updateSimpleLambda(((AppliedFunction) l).parameters.get(0), gt2, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
         }
     }
 
     private static void updateTDSRowLambda(List<Variable> vars)
     {
         Variable variable = vars.get(0);
-        variable.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
-        variable.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+        variable.genericType = new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
+        variable.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
         Variable variable2 = vars.get(1);
-        variable2.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
-        variable2.multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+        variable2.genericType = new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(new PackageableType("meta::pure::tds::TDSRow"));
+        variable2.multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
     }
 
     public static void aggInference(Object obj, GenericType gt, int mapOffset, int aggOffset, ValueSpecificationBuilder valueSpecificationBuilder)
@@ -187,13 +187,13 @@ public class Handlers
         if (aggFirstLambda != null && aggSecondLambda != null)
         {
             CompileContext cc = valueSpecificationBuilder.getContext();
-            updateSimpleLambda(aggFirstLambda, gt, org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity.PURE_ONE, cc);
+            updateSimpleLambda(aggFirstLambda, gt, org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity.PURE_ONE, cc);
             ValueSpecification processLambda = aggFirstLambda.accept(valueSpecificationBuilder);
-            updateSimpleLambda(aggSecondLambda, funcReturnType(processLambda, cc.pureModel), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+            updateSimpleLambda(aggSecondLambda, funcReturnType(processLambda, cc.pureModel), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
         }
     }
 
-    private static void aggInferenceAll(List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, GenericType gt, int mapOffset, int aggOffset, ValueSpecificationBuilder valueSpecificationBuilder)
+    private static void aggInferenceAll(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, GenericType gt, int mapOffset, int aggOffset, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         if (parameters.get(2) instanceof Collection)
         {
@@ -239,7 +239,7 @@ public class Handlers
                 {
                     if (col.function2 == null)
                     {
-                        updateSimpleLambda(col.function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+                        updateSimpleLambda(col.function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
                     }
                     else
                     {
@@ -251,7 +251,7 @@ public class Handlers
             {
                 if (((ColSpec) funcCol).function2 == null)
                 {
-                    updateSimpleLambda(((ColSpec) funcCol).function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+                    updateSimpleLambda(((ColSpec) funcCol).function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
                 }
                 else
                 {
@@ -396,14 +396,14 @@ public class Handlers
     public static final ParametersInference LambdaCollectionInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
-        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
     public static final ParametersInference TDSContainsInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
-        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
         updateTDSRowLambda(((Lambda) parameters.get(4)).parameters);
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
@@ -411,7 +411,7 @@ public class Handlers
     public static final ParametersInference EvalInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-        updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), 0, valueSpecificationBuilder.getContext());
+        updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 0, valueSpecificationBuilder.getContext());
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter), parameters.stream().skip(2).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
@@ -420,7 +420,7 @@ public class Handlers
     {
         ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
         ValueSpecification thirdProcessedParameter = parameters.get(2).accept(valueSpecificationBuilder);
-        updateTwoParamsLambdaDiffTypes(parameters.get(0), secondProcessedParameter._genericType(), thirdProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1));
+        updateTwoParamsLambdaDiffTypes(parameters.get(0), secondProcessedParameter._genericType(), thirdProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter, thirdProcessedParameter), parameters.stream().skip(3).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
@@ -510,7 +510,7 @@ public class Handlers
         GenericType gt = firstProcessedParameter._genericType();
         if (parameters.get(1) instanceof ClassInstance)
         {
-            ((ColSpecArray) ((ClassInstance) parameters.get(1)).value).colSpecs.forEach(col -> updateSimpleLambda(col.function1, gt, new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc));
+            ((ColSpecArray) ((ClassInstance) parameters.get(1)).value).colSpecs.forEach(col -> updateSimpleLambda(col.function1, gt, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc));
         }
         else
         {
@@ -533,7 +533,7 @@ public class Handlers
         return Lists.mutable.with(firstProcessedParameter, parameters.get(1).accept(valueSpecificationBuilder));
     };
 
-    private static void processSort(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification parameter, GenericType gt, CompileContext cc, ProcessorSupport processorSupport)
+    private static void processSort(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification parameter, GenericType gt, CompileContext cc, ProcessorSupport processorSupport)
     {
         RelationType<?> type = (RelationType<?>) gt._typeArguments().getFirst()._rawType();
 
@@ -570,14 +570,14 @@ public class Handlers
     public static final ParametersInference LambdaInference = (parameters, valueSpecificationBuilder) ->
     {
         List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
-        updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
+        updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
     };
 
     public static final ParametersInference TwoParameterLambdaInference = (parameters, valueSpecificationBuilder) ->
     {
         List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
-        updateTwoParamsLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1));
+        updateTwoParamsLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
     };
 
@@ -586,14 +586,14 @@ public class Handlers
         List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof Lambda ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
 
         Multiplicity mul = firstPassProcessed.get(2)._multiplicity();
-        org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity m2 = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity();
+        org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity m2 = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity();
         m2.lowerBound = mul._lowerBound()._value().intValue();
         if (mul._upperBound()._value() != null)
         {
             m2.setUpperBound(mul._upperBound()._value().intValue());
         }
 
-        updateTwoParamsLambdaDiffTypes(parameters.get(1), firstPassProcessed.get(0)._genericType(), firstPassProcessed.get(2)._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), m2);
+        updateTwoParamsLambdaDiffTypes(parameters.get(1), firstPassProcessed.get(0)._genericType(), firstPassProcessed.get(2)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), m2);
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
     };
 
@@ -605,18 +605,18 @@ public class Handlers
         GenericType gt = firstProcessedParameter._genericType();
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
-            updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+            updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
             parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
         }
         else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
-            updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+            updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
             parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
         }
         else
         {
             List<ValueSpecification> firstPassProcessed = parameters.stream().skip(1).map(p -> p instanceof Lambda ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
-            updateSimpleLambda(parameters.get(1), parameters.size() != 0 && parameters.get(0) instanceof Lambda ? firstPassProcessed.get(0)._genericType() : firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+            updateSimpleLambda(parameters.get(1), parameters.size() != 0 && parameters.get(0) instanceof Lambda ? firstPassProcessed.get(0)._genericType() : firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
             return LazyIterate.zip(LazyIterate.concatenate(Lists.fixedSize.of(firstProcessedParameter), firstPassProcessed), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder)).toList();
         }
         return result;
@@ -626,7 +626,7 @@ public class Handlers
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-        org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity one = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+        org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
         updateTwoParamsLambdaDiffTypes(parameters.get(2), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
         if (parameters.size() == 4)
         {
@@ -651,7 +651,7 @@ public class Handlers
         else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
             ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-            org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity one = new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1);
+            org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
             updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
             result.with(secondProcessedParameter).with(parameters.get(2).accept(valueSpecificationBuilder)).with(parameters.get(3).accept(valueSpecificationBuilder));
         }
@@ -763,9 +763,9 @@ public class Handlers
     private static void processSingleAggColSpec(ColSpec colSpec, ValueSpecification firstProcessedParameter, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
-        updateSimpleLambda(colSpec.function1, firstProcessedParameter._genericType()._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), cc);
+        updateSimpleLambda(colSpec.function1, firstProcessedParameter._genericType()._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
         FunctionDefinition<?> lambda = (FunctionDefinition<?>) ((InstanceValue) colSpec.function1.accept(valueSpecificationBuilder))._values().getFirst();
-        updateSimpleLambda(colSpec.function2, lambda._expressionSequence().getLast()._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(0, null), cc);
+        updateSimpleLambda(colSpec.function2, lambda._expressionSequence().getLast()._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(0, null), cc);
     }
 
     public static final ParametersInference TDSOLAPInference = (parameters, valueSpecificationBuilder) ->
@@ -776,15 +776,15 @@ public class Handlers
             Object param = parameter instanceof ClassInstance ? ((ClassInstance) parameter).value : parameter;
             if (param instanceof TdsOlapRank)
             {
-                updateSimpleLambda(((TdsOlapRank) param).function, cc.pureModel.getGenericType("meta::pure::metamodel::type::Any"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+                updateSimpleLambda(((TdsOlapRank) param).function, cc.pureModel.getGenericType("meta::pure::metamodel::type::Any"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
             }
             else if (param instanceof TdsOlapAggregation)
             {
-                updateSimpleLambda(((TdsOlapAggregation) param).function, cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+                updateSimpleLambda(((TdsOlapAggregation) param).function, cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
             }
             if (parameter instanceof Lambda)
             {
-                updateSimpleLambda(parameter, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+                updateSimpleLambda(parameter, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
             }
         });
 
@@ -794,14 +794,14 @@ public class Handlers
     public static final ParametersInference OLAPFuncTDSInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
-        updateSimpleLambda(parameters.get(0), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+        updateSimpleLambda(parameters.get(0), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
         return parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
     };
 
     public static final ParametersInference OLAPFuncNumInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
-        updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(), cc);
+        updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(), cc);
         return parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
     };
 
@@ -810,7 +810,7 @@ public class Handlers
         // Main Lambda
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         GenericType gt = firstProcessedParameter._genericType();
-        updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
+        updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
         aggInferenceAll(parameters, gt, 0, 1, valueSpecificationBuilder);
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
@@ -1940,7 +1940,7 @@ public class Handlers
         register("meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_", false, ps -> res("Number", "zeroOne"));
     }
 
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(String functionName, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
         FunctionExpressionBuilder builder = valueSpecificationBuilder.getContext().resolveFunctionBuilder(functionName, this.registeredMetaPackages, this.map, sourceInformation, valueSpecificationBuilder.getProcessingContext());
         return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);

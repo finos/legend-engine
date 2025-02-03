@@ -21,7 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.pure.generated.Root_meta_external_function_description_openapi_metamodel_Server_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;

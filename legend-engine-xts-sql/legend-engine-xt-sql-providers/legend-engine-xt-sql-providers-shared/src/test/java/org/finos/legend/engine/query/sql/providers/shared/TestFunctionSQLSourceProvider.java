@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;

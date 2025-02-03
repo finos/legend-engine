@@ -17,6 +17,8 @@ package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DistinctFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
@@ -90,7 +92,7 @@ public class DeriveMaxDataErrorLogicalPlan implements VersioningStrategyVisitor<
 
         FunctionImpl countDistinct = FunctionImpl.builder()
                 .functionName(FunctionName.COUNT)
-                .addValue(FunctionImpl.builder().functionName(FunctionName.DISTINCT).addAllValue(distinctValueFields).build())
+                .addValue(DistinctFunction.builder().addAllValues(distinctValueFields).build())
                 .alias(distinctRowCount)
                 .build();
 

@@ -15,8 +15,8 @@
 package org.finos.legend.engine.application.query.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.TaggedValue;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 
 import java.util.List;
 import java.util.Map;

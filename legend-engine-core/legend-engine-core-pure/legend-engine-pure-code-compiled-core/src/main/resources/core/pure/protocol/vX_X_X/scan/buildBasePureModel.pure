@@ -30,7 +30,7 @@ Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPure
    measures : Measure[*];
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildPureModelContextPointer(pointers:meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*], baseVersion:String[1], protocol:Protocol[1]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildPureModelContextPointer(pointers:meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[*], baseVersion:String[1], protocol:Protocol[1]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer
    (
@@ -211,12 +211,12 @@ function  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::findType
   )
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]
 {
    buildDomain($found, $associations, {p:Profile[1]|!$p->elementToPath()->startsWith('meta')}, $extensions)
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], profileFilter:Function<{Profile[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], profileFilter:Function<{Profile[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]
 {
    let profiles = $found.classes->map(c | $c.stereotypes.profile->concatenate($c.taggedValues.tag.profile)
                                                                 ->concatenate($c.properties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
@@ -342,7 +342,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
    (
       _type = 'data',
       serializer = $protocol,
-      origin = buildPureModelContextPointer($ps->map(p|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.PACKAGE, path=$p->elementToPath())), $baseVersion, $protocol),
+      origin = buildPureModelContextPointer($ps->map(p|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.PACKAGE, path=$p->elementToPath())), $baseVersion, $protocol),
       elements = buildDomain($found, $associations, $extensions)
    );
 }
@@ -355,7 +355,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
    (
       _type = 'data',
       serializer = $protocol,
-      origin = buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.STORE, path=$store->elementToPath()), $baseVersion, $protocol),
+      origin = buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.STORE, path=$store->elementToPath()), $baseVersion, $protocol),
       elements = $stores
    );
 }
@@ -363,7 +363,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMapping(gm:Mapping[*], extensions:meta::pure::extension::Extension[*]):meta::pure::functions::collection::Pair<meta::pure::functions::collection::List<Store>, meta::protocols::pure::vX_X_X::metamodel::PureModelContextData>[1]
 {
-   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), '-1', $p)};
+   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING, path=$m->elementToPath()), '-1', $p)};
    buildBasePureModelFromMapping($gm, $toOrigin, $extensions);
 }
 
@@ -374,7 +374,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr(mappingStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let gm = $mappingStr->pathToElement()->cast(@Mapping);
-   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING, path=$gm->elementToPath()), '-1', $p)};
+   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING, path=$gm->elementToPath()), '-1', $p)};
    buildBasePureModelFromMapping($gm, $toOrigin, $extensions).second->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
 }
 
@@ -400,7 +400,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildPure
    (
       _type = 'data',
       serializer = $protocol,
-      origin = buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.CLASS, path=$type->elementToPath()), '-1', $protocol),
+      origin = buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.CLASS, path=$type->elementToPath()), '-1', $protocol),
       elements = buildDomain($found, $associations, $extensions)
    );
 }

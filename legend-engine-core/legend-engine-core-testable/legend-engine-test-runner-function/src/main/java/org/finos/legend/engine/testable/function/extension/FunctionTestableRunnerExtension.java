@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 public class FunctionTestableRunnerExtension implements TestableRunnerExtension
 {

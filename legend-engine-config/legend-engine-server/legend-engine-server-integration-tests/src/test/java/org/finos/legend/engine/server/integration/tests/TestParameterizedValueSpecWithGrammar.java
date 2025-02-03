@@ -19,7 +19,7 @@ package org.finos.legend.engine.server.integration.tests;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.parameterization.ParameterizedValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;

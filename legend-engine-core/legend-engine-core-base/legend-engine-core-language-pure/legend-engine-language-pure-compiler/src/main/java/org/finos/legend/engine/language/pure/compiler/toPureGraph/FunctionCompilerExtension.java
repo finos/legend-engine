@@ -22,9 +22,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Association;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Function;
+import org.finos.legend.engine.protocol.pure.m3.relationship.Association;
+import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.identity.Identity;

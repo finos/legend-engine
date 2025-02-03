@@ -72,33 +72,49 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
 {  
   let params = $f->functionType().parameters->evaluateAndDeactivate();   
   assertEmpty($params->filter(p | $p.multiplicity != PureOne), 'not implemented, only multiplicity PureOne for snowflake app params is supported: ' + $params->filter(p | $p.multiplicity != PureOne)->map(p|$p.name)->joinStrings(', '));
-  let typeMap = typeMap();
+  let typeMap = inputTypeMap();
   
   '(' + $params->map(p|if($includeParamName,|'"' + $p.name + '" ',|'') + if($p.genericType.rawType->toOne()->instanceOf(Enumeration), | 'VARCHAR', | $typeMap->get($p.genericType.rawType->toOne())->toOne('Relational type missing for type: ' + $p.genericType.rawType->toOne()->toString()))
   )->joinStrings(',') + ')';    
 }
 
 
-function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::typeMap():Map<PrimitiveType, String>[1]
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::inputTypeMap():Map<PrimitiveType, String>[1]
 {
   [
-  pair(Integer, 'INTEGER'),
-  pair(Float, 'FLOAT'),
-  pair(Number, 'NUMBER'),
-  pair(String, 'VARCHAR'),
-  pair(Date, 'DATE'),
-  pair(DateTime, 'TIMESTAMP'),
-  pair(StrictDate, 'DATE'),
-  pair(Boolean, 'BOOLEAN'),
-  pair(Decimal, 'DECIMAL')
+    pair(Integer, 'INTEGER'),
+    pair(Float, 'FLOAT'),
+    pair(Number, 'NUMBER'),
+    pair(String, 'VARCHAR'),
+    pair(Date, 'DATE'),
+    pair(DateTime, 'TIMESTAMP'),
+    pair(StrictDate, 'DATE'),
+    pair(Boolean, 'BOOLEAN'),
+    pair(Decimal, 'DECIMAL')
+  ]->newMap()
+}
+
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::returnTypeMap():Map<PrimitiveType, Function<{TDSColumn[1] ->String[1]}>>[1]
+{
+  [
+    pair(Integer, {col:TDSColumn[1]|'INTEGER'}),
+    pair(Float, {col:TDSColumn[1]| if($col.sourceDataType->isNotEmpty(),| $col->meta::external::function::activator::snowflakeApp::generation::matchDBType(),|'DECIMAL');}),
+    pair(Number, {col:TDSColumn[1]|'NUMBER'}),
+    pair(String, {col:TDSColumn[1]|'VARCHAR'}),
+    pair(Date, {col:TDSColumn[1]|'DATE'}),
+    pair(DateTime, {col:TDSColumn[1]|'TIMESTAMP'}),
+    pair(StrictDate, {col:TDSColumn[1]|'DATE'}),
+    pair(Boolean, {col:TDSColumn[1]|'BOOLEAN'}),
+    pair(Decimal, {col:TDSColumn[1]| if($col.sourceDataType->isNotEmpty(),| $col->meta::external::function::activator::snowflakeApp::generation::matchDBType(),|'DECIMAL');})
   ]->newMap()
 }
 
 function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::pureTypeToSnowflakeTypeMatcher(c:meta::pure::tds::TDSColumn[1]):String[1]
 {
-  let tdsTypeToRelationalTypeMap = typeMap();
+  let tdsTypeToRelationalTypeMap = returnTypeMap();
   if($c.type->isNotEmpty(),
-    | $tdsTypeToRelationalTypeMap->get($c.type->toOne())->toOne('Relational type missing for type: '+ $c.type->toOne()->toString()),
+    | 
+     $tdsTypeToRelationalTypeMap->get($c.type->toOne())->toOne('Relational type missing for type: '+ $c.type->toOne()->toString())->eval($c);,
     | $c.sourceDataType->toOne('Source Data Type Missing for column: '+ +$c.name)
       ->match(
         [
@@ -107,6 +123,17 @@ function <<access.private>>  meta::external::function::activator::snowflakeApp::
           all:meta::relational::metamodel::datatype::DataType[1]| $all->meta::relational::metamodel::datatype::dataTypeToSqlText()
         ])
   );
+ 
+}
+
+function <<access.private>>  meta::external::function::activator::snowflakeApp::generation::matchDBType(c:meta::pure::tds::TDSColumn[1]):String[1]
+{
+  $c.sourceDataType->toOne()->match(
+        [
+          v:meta::relational::metamodel::datatype::Varchar[1] | 'VARCHAR',
+          b:meta::relational::metamodel::datatype::Bit[1]|'BOOLEAN',
+          all:meta::relational::metamodel::datatype::DataType[1]| $all->meta::relational::metamodel::datatype::dataTypeToSqlText()
+        ]);
 }
 
 function meta::external::function::activator::snowflakeApp::generation::computeLineage(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]): String[1]

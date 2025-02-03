@@ -46,7 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
@@ -104,7 +104,7 @@ public class CompilerExtensions
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerRegistrationInfo>>> extraFunctionHandlerRegistrationInfoCollectors;
-    private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
+    private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
     private final ImmutableList<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> extraLambdaPostProcessors;
     private final ImmutableList<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
     private final ImmutableList<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> extraExecutionContextProcessors;
@@ -113,7 +113,7 @@ public class CompilerExtensions
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
     private final ImmutableList<Function2<ExecutionOption, CompileContext, Root_meta_pure_executionPlan_ExecutionOption>> extraExecutionOptionProcessors;
     private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
-    private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> extraTestProcessors;
+    private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> extraTestProcessors;
     private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
@@ -269,7 +269,7 @@ public class CompilerExtensions
         return this.extraFunctionHandlerRegistrationInfoCollectors.castToList();
     }
 
-    public List<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
+    public List<Function4<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> getExtraValueSpecificationProcessors()
     {
         return this.extraValueSpecificationProcessors.castToList();
     }
@@ -299,7 +299,7 @@ public class CompilerExtensions
         return this.extraEmbeddedDataProcessors.castToList();
     }
 
-    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return this.extraTestProcessors.castToList();
     }

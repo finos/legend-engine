@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.68.1-SNAPSHOT</version>
+        <version>4.69.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,5 +32,6 @@
         <module>legend-engine-xt-relationalStore-databricks-grammar</module>
         <module>legend-engine-xt-relationalStore-databricks-protocol</module>
         <module>legend-engine-xt-relationalStore-databricks-pure</module>
+        <module>legend-engine-xt-relationalStore-databricks-PCT</module>
     </modules>
 </project>
