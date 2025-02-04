@@ -294,28 +294,18 @@ function meta::relational::functions::sqlQueryToString::default::processWindowCo
         |')') ;
 }
 
-function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryWithCTEsDefault(s:SelectSQLQueryWithCommonTableExpressions[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
-{
-   if($s.commonTableExpressions->isNotEmpty(),
-   | 'WITH ' + $s.commonTableExpressions->processCommonTableExpressionsDefault($sgc, $isSubSelect),
-   | '') + $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect);
-}
-
-
 function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsDefault(
-  ctes:CommonTableExpression[*],
-  sgc:SqlGenerationContext[1],
-  isSubSelect:Boolean[1]
-): String[1]
+function meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   $ctes->map(cte |
-     $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
-   )->joinStrings(', \n') + ' \n';
+   if($ctes->isNotEmpty(),
+   | 'WITH ' + $ctes->map(cte |
+                    $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte.sqlQuery, ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
+                  )->joinStrings(', \n') + ' \n',
+   | '');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.duckdb;
 
+import java.nio.file.Paths;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.collections.impl.factory.Lists;
@@ -66,7 +67,7 @@ public class TestDuckDBCommands
                 Statement statement = connection.createStatement()
         )
         {
-            String loadSql = DUCK_DB_COMMANDS.load("load_command_test_table", Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).getFile());
+            String loadSql = DUCK_DB_COMMANDS.load("load_command_test_table", Paths.get(Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).toURI()).toString());
             statement.execute(loadSql);
             try (ResultSet rs = statement.executeQuery("select * from load_command_test_table"))
             {
@@ -99,7 +100,7 @@ public class TestDuckDBCommands
                     new Column("lastName", "VARCHAR(32)"),
                     new Column("age", "DOUBLE")
             );
-            String loadSql = DUCK_DB_COMMANDS.load("load_command_with_types_test_table", Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).getFile(), columns);
+            String loadSql = DUCK_DB_COMMANDS.load("load_command_with_types_test_table", Paths.get(Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).toURI()).toString(), columns);
             statement.execute(loadSql);
             try (ResultSet rs = statement.executeQuery("select * from load_command_with_types_test_table"))
             {
@@ -130,7 +131,7 @@ public class TestDuckDBCommands
                     Statement statement = connection.createStatement()
             )
             {
-                statement.execute(DUCK_DB_COMMANDS.load("load_command_with_types_test_table_1", Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).getFile()));
+                statement.execute(DUCK_DB_COMMANDS.load("load_command_with_types_test_table_1", Paths.get(Objects.requireNonNull(TestDuckDBCommands.class.getClassLoader().getResource("personTable.csv")).toURI()).toString()));
                 SQLExecutionNode sqlExecutionNode = new SQLExecutionNode();
                 sqlExecutionNode.isResultColumnsDynamic = true;
                 sqlExecutionNode.connection = duckDbConnection;

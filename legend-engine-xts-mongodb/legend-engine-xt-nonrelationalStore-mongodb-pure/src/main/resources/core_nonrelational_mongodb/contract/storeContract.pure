@@ -80,7 +80,7 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
         let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
         ^MongoDBExecutionNode(
-            resultType = ^meta::pure::executionPlan::ResultType(type = Any),
+            resultType = ^meta::pure::executionPlan::ResultType(genericType = ^GenericType(rawType = Any)),
             databaseCommand = $databaseCommand,
             connection = $connection
           );

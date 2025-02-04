@@ -322,7 +322,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
       (
         resultType        = ^PartialClassResultType
         (
-            type = $sourceTreeExtended->typeFromGraphFetchTree(),
+            genericType = $sourceTreeExtended->typeFromGraphFetchTree(),
             propertiesWithParameters = $sourceTreeExtended.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
         ),
         graphFetchTree    = $sourceTreeExtended,
@@ -346,7 +346,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
       requiredVariableInputs =  $sq.inScopeVars->keyValues()->filter(v|$v.second.values->at(0)->instanceOf(PlanVarPlaceHolder))
                                                                      ->map(var | let placeholder =  $var.second.values->at(0)->cast(@PlanVarPlaceHolder);
                                                                                  ^VariableInput(name = $var.first,
-                                                                                                type = $placeholder.type,
+                                                                                                genericType = $placeholder.genericType,
                                                                                                 multiplicity = $placeholder.multiplicity->toOne());
                                                                         )
 
@@ -368,7 +368,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
    let updatedRootTree = ^RoutedRootGraphFetchTree<Any>
                                                    (
                                                       subTrees = $rootTree.subTrees,
-                                                      class = $rootTree->typeFromGraphFetchTree()->cast(@Class<Any>),
+                                                      class = $rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>),
                                                       sets = $rootTree.sets,
                                                       requiredQualifiedProperties = $rootTree.requiredQualifiedProperties
                                                    );
@@ -413,7 +413,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
       planModelQueryConnectionGraphFetchExecution($mc, $store, $sourceTreeExtended, $exeCtx, $inScopeVars, $enableConstraints, $checked, $extensions, $debug)
    };
 
-   let populatedXStorePropertiesInScope = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+   let populatedXStorePropertiesInScope = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>));
    let chainConnectionNodeGeneration = {mcc: ModelChainConnection[1] |
       let getAllExpr  = $updatedRootTree->createGetAllApplicationForRootGraphFetchTree();
       let genericType = $getAllExpr.genericType;
@@ -437,7 +437,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
       (
          resultType        = ^PartialClassResultType
          (
-            type = $sourceTreeExtended->typeFromGraphFetchTree(),
+            genericType = $sourceTreeExtended->typeFromGraphFetchTree(),
             propertiesWithParameters = $sourceTreeExtended.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
          ),
          graphFetchTree    = $sourceTreeExtended,

@@ -67,7 +67,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for XSD\n', |''));
 
    let stream             = j_parameter(javaInputStream(), 'stream');
-   let rootClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let rootClass          = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    let dependentClasses   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($rootClass);
    let readableClasses    = $rootClass->concatenate($dependentClasses);
 
@@ -87,7 +87,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
 function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::createReaderClass(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
-   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let rootClass   = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    let ctxParam    = j_parameter(javaParameterizedType($conventions->className(_DeserializeContext), javaWildcard()), 'context');
 
    $context.conventions->readerClass($path, $rootClass)
@@ -98,7 +98,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
 function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::addReadNoSchemaMethod(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
-   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let rootClass   = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
 
    $jc->addMethod(cls|
            javaMethod('public', javaVoid(), 'read', $ctxParam,

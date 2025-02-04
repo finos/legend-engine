@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational;
+package org.finos.legend.engine.pure.runtime.external.relational.postgresSql.parser.compiled;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import junit.framework.Test;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public interface RelationalConnectionExtension extends ConnectionExtension
+
+public class TestPostgresSqlParserFunctionsCompiled
 {
-    Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands);
+    public static Test suite()
+    {
+        return PureTestBuilderCompiled.buildSuite("meta::external::store::relational::postgresSql::parser");
+    }
 }

@@ -66,7 +66,7 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
     let  paths = $query.paths;
     ^TDSResultType
         (
-          type = $class,
+          genericType = ^GenericType(rawType = $class),
           tdsColumns = $paths->map(p|
                                       ^TDSColumn
                                       (
@@ -111,14 +111,18 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                           ),
                           pair(
                               |$class->_subTypeOf(meta::pure::metamodel::relation::Relation),
-                              |^TDSResultType
+                              |
+                               let pureToDbMap = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
+                               ^TDSResultType
                                (
-                                    type = $class,
+                                    genericType=^GenericType(rawType=$class),
                                     tdsColumns = $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(p|
+                                                                let cType = $p.classifierGenericType.typeArguments->at(1).rawType->cast(@meta::pure::metamodel::type::DataType)->toOne();
                                                                 ^TDSColumn
                                                                 (
                                                                   name = $p.name->toOne(),
-                                                                  type = $p.classifierGenericType.typeArguments->at(1).rawType->cast(@meta::pure::metamodel::type::DataType)
+                                                                  type = $cType,
+                                                                  sourceDataType = $pureToDbMap->get($cType)->toOne()
                                                                 );
                                                           )
                                   );
@@ -133,16 +137,16 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                     schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
                                     database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
                                     columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->cast(@TableAliasColumn).column.type)),
-                                    type = $class
+                                    genericType=^GenericType(rawType=$class)
                                 );
                           )
                        ],
                        |$class->match([
-                                  e : Enumeration<Any>[1] | ^DataTypeResultType(type=$class),
-                                  p : PrimitiveType[1] | ^DataTypeResultType(type=$class),
+                                  e : Enumeration<Any>[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
+                                  p : PrimitiveType[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
                                   c : Class<Any>[1] | ^ClassResultType
                                                       (
-                                                         type=$class,
+                                                         genericType=^GenericType(rawType=$class),
                                                          setImplementations = if($ext->isEmpty(),
                                                                                  | $m->toOne()->rootClassMappingByClass($c)->toOne(),
                                                                                  | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
@@ -178,7 +182,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       sqlComment = $query.comment,
       sqlQuery = $sql,
       resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
-      resultType = ^ResultType(type = Any),
+      resultType = ^ResultType(genericType=^GenericType(rawType=Any)),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
       supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions),
       metadata = ^meta::relational::mapping::TableInfo(info  = $query->meta::relational::milestoning::getQueryTableAliases()->map(a|$a.relationalElement)->cast(@Table)->removeDuplicatesBy(t|$t.schema.name+'.'+$t.name)->map(tab| ^meta::relational::mapping::TableIdentifier(schema=$tab.schema.name, table=$tab.name))),
@@ -218,7 +222,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
 
 function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[0..1]):String[*]
 {
-   let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).type)->filter(e | $e->instanceOf(Enumeration));
+   let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).genericType.rawType->toOne())->filter(e | $e->instanceOf(Enumeration));
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
                                       |$m->toOne()->allEnumerationMappings()->filter(e | $e.enumeration->in($enumParam))->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
                                                                                                                             let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');

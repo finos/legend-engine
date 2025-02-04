@@ -99,7 +99,7 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"; SQL statement:\nselect (-9223372036854775718 - 132) [22003-214]\n"),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"; SQL statement:\nselect (-9223372036854775718 - 132) [22003-214]"),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"1\" for parameter \"columnIndex\" [90008-214]"),
 
@@ -119,7 +119,6 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification\""),
 
             // Let
-            one("meta::pure::functions::lang::tests::letFn::testAssignLiteralToVariable_Function_1__Boolean_1_", "\"Cannot cast a collection of size 2 to multiplicity [1]\""),
             one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),

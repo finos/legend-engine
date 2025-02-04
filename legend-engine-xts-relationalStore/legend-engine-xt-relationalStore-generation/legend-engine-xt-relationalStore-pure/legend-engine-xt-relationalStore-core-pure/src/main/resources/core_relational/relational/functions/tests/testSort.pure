@@ -115,6 +115,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda_Qu
    assertEquals('Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n' +
+                '         as meta::relational::tests::model::simple::Person\n' +
                 '  resultSizeRange = *\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
@@ -124,6 +125,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda_Qu
                 '    Relational\n' +
                 '    (\n' +
                 '      type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n' +
+                '             as meta::relational::tests::model::simple::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("age", INT), ("lastName", VARCHAR(200))]\n' +
                 '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\') order by case when ("root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' and "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\') then 0 else case when ("root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\') then 10 else 20 end end\n' +

@@ -48,14 +48,14 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::def
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->recursivelyFetchClusteredValueSpecification(false))->map(v|$v->processValueSpecification($state, $extensions, $debug));
    let variableExpressions = $fe->findVariableExpressionsInValueSpecification(false)->removeDuplicatesBy(v | $v.name);
-   let variableExpressionInputs = $variableExpressions->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+   let variableExpressionInputs = $variableExpressions->map(v | ^VariableInput(name = $v.name->toOne(), genericType = $v.genericType, multiplicity = $v.multiplicity->toOne()));
    let varPlaceHolders = $fe->findPlanVarPlaceHoldersInValueSpecification()->removeDuplicatesBy(v | $v.name);
-   let varPlaceHolderInputs = $varPlaceHolders->map(v | ^VariableInput(name = $v.name, type = $v.type, multiplicity = $v.multiplicity->toOne('Multiplicity not available for PlanVarPlaceHolder - \'' + $v.name + '\'')));
+   let varPlaceHolderInputs = $varPlaceHolders->map(v | ^VariableInput(name = $v.name, genericType = $v.genericType, multiplicity = $v.multiplicity->toOne('Multiplicity not available for PlanVarPlaceHolder - \'' + $v.name + '\'')));
 
    ^PureExpressionPlatformExecutionNode
    (
       expression = $fe,
-      resultType = ^ResultType(type=if($fe.genericType.rawType->isEmpty(),|Any,|$fe.genericType.rawType->toOne())),
+      resultType = ^ResultType(genericType=$fe.genericType),
       requiredVariableInputs = $variableExpressionInputs->concatenate($varPlaceHolderInputs),
       resultSizeRange = $fe.multiplicity,
       executionNodes = $children,
@@ -68,7 +68,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::pro
    ^VariableResolutionExecutionNode
    (
       varName = $var.name->toOne(),
-      resultType = ^ResultType(type=if($var.genericType.rawType->isEmpty(),|Any,|$var.genericType.rawType->toOne())),      
+      resultType = ^ResultType(genericType=$var.genericType),      
       resultSizeRange = $var.multiplicity,      
       fromCluster = generatePlatformCluster($var, $state.inScopeVars)
    );
@@ -79,7 +79,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::pro
    ^PureExpressionPlatformExecutionNode
    (
       expression = $iv,
-      resultType = ^ResultType(type=if($iv.genericType.rawType->isEmpty(),|Any,|$iv.genericType.rawType->toOne())),      
+      resultType = ^ResultType(genericType=$iv.genericType),      
       resultSizeRange = $iv.multiplicity,      
       fromCluster = generatePlatformCluster($iv, $state.inScopeVars)
    );
@@ -97,7 +97,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::ser
    ^PureExpressionPlatformExecutionNode
    (
       expression = ^$fe(parametersValues=$substitute->concatenate($params->tail())),
-      resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
+      resultType = ^ResultType(genericType=$fe.genericType),
       executionNodes = $children,
       fromCluster = generatePlatformCluster($fe, $state.inScopeVars)
    );
@@ -112,7 +112,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::uni
 
    ^PlatformUnionExecutionNode
    (
-      resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
+      resultType = ^ResultType(genericType=$fe.genericType),
       isChildrenExecutionParallelizable = true,
       executionNodes = $updatedChildren,
       fromCluster = generatePlatformCluster($fe, $state.inScopeVars)
@@ -125,7 +125,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::let
                       [
                         i:InstanceValue[1]      | ^ConstantExecutionNode
                                                   (
-                                                      resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
+                                                      resultType = ^ResultType(genericType = $i.genericType),
                                                       resultSizeRange = $i.multiplicity,
                                                       values = $i.values->toOne()
                                                   );,

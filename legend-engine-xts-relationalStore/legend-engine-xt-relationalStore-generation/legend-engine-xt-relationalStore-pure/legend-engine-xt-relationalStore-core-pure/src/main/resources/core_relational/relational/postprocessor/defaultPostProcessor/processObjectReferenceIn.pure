@@ -85,8 +85,8 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
                                                                                 varName        = $nameForAllocationNodeStoringPkValues,
                                                                                 executionNodes = ^PureExpressionPlatformExecutionNode(
                                                                                                      expression = $expressionSeqWithInputVarName,
-                                                                                                     resultType = ^ResultType(type = List)),
-                                                                                resultType     = ^ResultType(type = List)
+                                                                                                     resultType = ^ResultType(genericType=^GenericType(rawType=List))),
+                                                                                resultType     = ^ResultType(genericType=^GenericType(rawType=List))
                                                                              );
 
                           let createAndPopulateTempTableNode        = ^CreateAndPopulateTempTableExecutionNode(
@@ -97,7 +97,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
                                                                                                                                   dataType = pureTypeToDataType(String, $translationContext)->toOne())
                                                                                                      ),
                                                                           connection              = $connection,
-                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void)
+                                                                          resultType              = ^VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void))
                                                                        );
 
                            let executionNodesToBeAdded              = $allocationNodeForPkValues->concatenate($createAndPopulateTempTableNode);

@@ -265,7 +265,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "  type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(1024), \"\")]\n" +
                 "  resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
                 "  sql = select `root`.FIRM_DETAILS::address::$name as `Address`, group_concat(`root`.FIRSTNAME separator ';') as `Names` from PERSON_SCHEMA.PERSON_TABLE as `root` group by `Address`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
@@ -612,7 +612,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(1024), \"\")]\n" +
                 "  resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
                 "  sql = select `root`.FIRM_DETAILS::$entityType as `Address`, group_concat(`root`.FIRSTNAME separator ';') as `Names` from PERSON_SCHEMA.PERSON_TABLE as `root` group by `Address`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +

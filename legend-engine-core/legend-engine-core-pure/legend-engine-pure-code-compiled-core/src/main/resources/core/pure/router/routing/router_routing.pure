@@ -139,7 +139,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                           | // We match cast to Relation & RelationStoreAccessor.. However we're only processing the Accessor
                                                             if($i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor),
                                                               | if($state.routingStrategy.processRelationStoreAccessor->isEmpty(),
-                                                                  | fail('RelationStoreAccessor should be used with a from(Rumtime) expression.'); $state;,
+                                                                  | fail('RelationStoreAccessor should be used with a from(Runtime) expression.'); $state;,
                                                                   | $state.routingStrategy.processRelationStoreAccessor($i.values->at(0)->cast(@RelationStoreAccessor<Any>), $i, $state, $executionContext, $debug)
                                                                 ),
                                                               | $state
@@ -966,6 +966,7 @@ function <<access.private>> meta::pure::router::routing::checkValueSpecification
       [
          fe:FunctionExpression[1] | let funcRoutingSupported = $fe.func->match([p:Property<Nil,Any|*>[1]    | true,
                                                                                 q:QualifiedProperty<Any>[1] | true,
+                                                                                c:Column<Nil, Any|*>[1]     | true,
                                                                                 f:Function<Any>[1]          | $f->instanceOf(NativeFunction) || $f->shouldStop($extensions) || ($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1)
                                                                         ]);
                                     $funcRoutingSupported && $fe.parametersValues->forAll(param | $param->checkRoutingSupport($extensions));,

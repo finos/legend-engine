@@ -45,6 +45,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.relational.result.DeferredRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -278,31 +279,43 @@ public class RelationalExecutor
         RelationalDatabaseCommands relationalDatabaseCommands = databaseManager.relationalDatabaseSupport();
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
         {
-            if (var.getValue() instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            Result result = var.getValue();
+
+            if (result instanceof DeferredRelationalResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            {
+                DeferredRelationalResult deferredRelationalResult = (DeferredRelationalResult) result;
+                result = deferredRelationalResult.evaluate();
+                executionState.activities.addAll(result.activities);
+            }
+
+            if (result instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
                 String tableName = relationalDatabaseCommands.processTempTableName(var.getKey());
-                this.prepareTempTable(connection, (StreamingResult) var.getValue(), tableName, databaseTypeName, databaseTimeZone, tempTableList);
-                tempTableList.add(tableName);
+                if (!tempTableList.contains(tableName))
+                {
+                    this.prepareTempTable(connection, (StreamingResult) result, tableName, databaseTypeName, databaseTimeZone, tempTableList);
+                    tempTableList.add(tableName);
+                }
                 sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", tableName);
             }
-            else if (var.getValue() instanceof PreparedTempTableResult && sqlQuery.contains("(${" + var.getKey() + "})"))
+            else if (result instanceof PreparedTempTableResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
-                sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", ((PreparedTempTableResult) var.getValue()).getTempTableName());
+                sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", ((PreparedTempTableResult) result).getTempTableName());
             }
-            else if (var.getValue() instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
+            else if (result instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
             {
                 boolean isResultSetClosed = false;
                 try
                 {
-                    isResultSetClosed = ((RelationalResult) var.getValue()).resultSet.isClosed();
+                    isResultSetClosed = ((RelationalResult) result).resultSet.isClosed();
                 }
                 catch (SQLException ignored)
                 {
                 }
 
-                if (((RelationalResult) var.getValue()).columnCount == 1 && !isResultSetClosed)
+                if (((RelationalResult) result).columnCount == 1 && !isResultSetClosed)
                 {
-                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) var.getValue().realizeInMemory();
+                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) result.realizeInMemory();
                     List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(false);
                     executionState.addResult(var.getKey(), new ConstantResult(rowValueMaps.stream().flatMap(map -> map.values().stream()).collect(Collectors.toList())));
                 }

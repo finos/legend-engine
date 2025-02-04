@@ -47,7 +47,7 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
 
   ^InMemoryRootGraphFetchExecutionNode(
-    resultType = ^ClassResultType(type=$rootTree.class->toOne()),
+    resultType = ^ClassResultType(genericType = ^GenericType(rawType = $rootTree.class->toOne())),
     nodeIndex = 0,
     graphFetchTree = $rootTree,
     checked = $checked,
@@ -56,7 +56,7 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
       //^ExternalFormatInternalizeExecutionNode(
       ^MongoDBDocumentInternalizeExecutionNode(
         resultType = ^PartialClassResultType(
-                            type = $rootTree.class->toOne(),
+                            genericType = ^GenericType(rawType = $rootTree.class->toOne()),
                             propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
                           ),
         //config = $internalizeConfig,
@@ -66,7 +66,7 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
         binding = $binding,
         executionNodes = [
           ^MongoDBExecutionNode(
-            resultType = ^meta::pure::executionPlan::ResultType(type = Any),
+            resultType = ^meta::pure::executionPlan::ResultType(genericType = ^GenericType(rawType = Any)),
             databaseCommand = $databaseCommand,
             connection = $connection
           )

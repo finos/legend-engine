@@ -299,10 +299,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Engine extensions -->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

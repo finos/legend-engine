@@ -99,7 +99,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
   assert($bindingDetail->instanceOf(FlatDataBindingDetail), | 'Detailed binding failed: ' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
   
   let classIn         = $node.executionNodes.resultType->match([
-                          c:ClassResultType[1] | $c.type->cast(@meta::pure::metamodel::type::Class<Any>)
+                          c:ClassResultType[1] | $c.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne()
                         ]);
   let externalizeData = ^ExternalizeData(
                           bindingDetail = $bindingDetail->cast(@FlatDataBindingDetail),

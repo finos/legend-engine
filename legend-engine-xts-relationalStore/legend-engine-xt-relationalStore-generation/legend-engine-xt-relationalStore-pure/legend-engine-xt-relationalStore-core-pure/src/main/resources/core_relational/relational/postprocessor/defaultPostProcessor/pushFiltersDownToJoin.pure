@@ -34,13 +34,7 @@ function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins
                                                               |^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),
                                                               | $newS);,
                                                            | $s);
-                                                        if($transformedS->instanceOf(SelectSQLQueryWithCommonTableExpressions),
-                                                        |
-                                                          let selectWithCte = $transformedS->cast(@SelectSQLQueryWithCommonTableExpressions);
-                                                          ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(c | ^$c(sqlQuery = $c->cast(@SelectCommonTableExpression).selectSQLQuery->pushFiltersDownToJoins($extensions).values)));,
-                                                        |
-                                                          $transformedS;
-                                                        );,
+                                                          ^$transformedS(commonTableExpressions = $transformedS.commonTableExpressions->map(c | ^$c(sqlQuery = $c.sqlQuery->pushFiltersDownToJoins($extensions).values)));,
                                  rel: RelationalOperationElement[1] | $rel;
                               ]);
                            };
@@ -247,7 +241,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
         ->concatenate($s.orderBy.column)
         ->concatenate($s.fromRow)
         ->concatenate($s.toRow)
-        ->concatenate($s->match([c:SelectSQLQueryWithCommonTableExpressions[1]|$c.commonTableExpressions, a:Any[*]|[]]))
+        ->concatenate($s.commonTableExpressions)
         ->extractRelationalElements($recurseSubQueries);
         $fromData->concatenate($fromOtherElements);
     },
