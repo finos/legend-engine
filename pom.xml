@@ -2633,17 +2633,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSql-pure-functions-parser</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSql-pure-functions-compiled</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSql-pure-functions-interpreted</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.runtime.external.relational.postgresSql.par
 import junit.framework.Test;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
+
 public class TestPostgresSqlParserFunctionsCompiled
 {
     public static Test suite()
