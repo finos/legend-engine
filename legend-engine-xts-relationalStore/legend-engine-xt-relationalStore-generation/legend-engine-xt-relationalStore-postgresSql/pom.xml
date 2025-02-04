@@ -30,8 +30,8 @@
         <module>legend-engine-xt-relationalStore-postgresSqlModel-pure</module>
         <module>legend-engine-xt-relationalStore-postgresSql-protocol</module>
         <module>legend-engine-xt-relationalStore-postgresSql-grammar</module>
-        <module>legend-engine-pure-functions-relationalStore-postgresSql-parser</module>
-        <module>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</module>
-        <module>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</module>
+        <module>legend-engine-xt-relationalStore-postgresSql-pure-functions-parser</module>
+        <module>legend-engine-xt-relationalStore-postgresSql-pure-functions-compiled</module>
+        <module>legend-engine-xt-relationalStore-postgresSql-pure-functions-interpreted</module>
     </modules>
 </project>
