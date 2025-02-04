@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-postgresSql-pure-functions-parser</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - Pure - Functions - Relational Store - Postgres SQL - Parser</name>
 

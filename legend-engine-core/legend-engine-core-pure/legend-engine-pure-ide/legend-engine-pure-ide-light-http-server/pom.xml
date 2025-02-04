@@ -299,7 +299,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-postgresSql-pure-functions-interpreted</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Engine extensions -->
