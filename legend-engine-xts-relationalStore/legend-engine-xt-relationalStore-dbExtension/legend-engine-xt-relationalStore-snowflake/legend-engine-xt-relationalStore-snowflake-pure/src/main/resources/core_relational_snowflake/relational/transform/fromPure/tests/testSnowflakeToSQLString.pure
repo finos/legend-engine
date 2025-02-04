@@ -197,7 +197,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
    let result = toSQLStringPretty(|Product.all()->project([#/Product/name!prodName#])->sort(asc('prodName'))->drop(2)->limit(5),
                                    simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select 	"prodName" as "prodName" from (		select 			"root"."NAME" as "prodName" 		from "productSchema"."productTable" as "root" 		order by "prodName"		 limit \'\' offset 2) as "subselect" limit 5', $result->replace('\n', ''));
+   assertEquals('select 	"subselect"."prodName" as "prodName" from (		select 			"root"."NAME" as "prodName" 		from "productSchema"."productTable" as "root" 		order by "prodName"		 limit \'\' offset 2) as "subselect" limit 5', $result->replace('\n', ''));
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJoinStringsSnowflake():Boolean[1]

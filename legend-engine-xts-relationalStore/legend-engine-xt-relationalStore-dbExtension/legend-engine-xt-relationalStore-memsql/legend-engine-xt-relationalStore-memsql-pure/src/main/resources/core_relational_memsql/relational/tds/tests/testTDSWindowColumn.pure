@@ -27,5 +27,5 @@ function <<test.Test>> meta::relational::memsql::tests::tds::tdsWindow::testSing
                              ->sort('rank')
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions(),debug());
-   assertEquals('select `firstName` as `firstName`, `lastName` as `lastName`, `age` as `age`, `rank` as `rank` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age`, dense_rank() OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME DESC) as `rank` from personTable as `root`) as `subselect` order by `rank`', $result);
+   assertEquals('select `subselect`.`firstName` as `firstName`, `subselect`.`lastName` as `lastName`, `subselect`.`age` as `age`, `subselect`.`rank` as `rank` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age`, dense_rank() OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME DESC) as `rank` from personTable as `root`) as `subselect` order by `rank`', $result);
 }

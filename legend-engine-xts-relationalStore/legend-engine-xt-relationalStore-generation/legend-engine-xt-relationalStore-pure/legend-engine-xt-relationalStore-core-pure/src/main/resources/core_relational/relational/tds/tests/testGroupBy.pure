@@ -510,7 +510,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmpt
       meta::relational::extension::relationalExtensions());
 
    assertEquals([], $result.values.rows->map(r|$r.values->makeString('|')));
-   meta::relational::functions::asserts::assertSameSQL('select "Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
+   meta::relational::functions::asserts::assertSameSQL('select "subselect"."Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "subselect"."Firm Count" > 10', $result);
 }
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testTDSGroupByWithEnumArgumentFunctionCall():Boolean[1]
