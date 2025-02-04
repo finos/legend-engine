@@ -620,7 +620,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let tableAlias = $leftSelect.data->toOne().alias;
   let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
   let foundColumn = if($foundColumnInSelect->isEmpty(), |$tableAlias.relation()->findColumn($colFuncName), |$foundColumnInSelect);
-  let colAlias = $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1]|$a.relationalElement]);
+  let colAlias = $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias)]);
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
   ^$leftSide(element = ^$operation(select=$newSelect));
 }
@@ -629,10 +629,11 @@ function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relati
 {
   $relation.columns->filter(c | let colName = $c->match([
                                                     col:Column[1]|$col.name,
-                                                    a:Alias[1]|$a.name
+                                                    a:Alias[1]|$a.name,
+                                                    tcn: TableAliasColumn[1]|$tcn.columnName
                                                   ]
                                                 );
-                                $colName->stripMatchingQuotes() == $name->stripMatchingQuotes();
+                                $colName->map(x | $x->stripMatchingQuotes()) == $name->stripMatchingQuotes();
                      )->first();
 }
 
@@ -2862,29 +2863,18 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateTdsSelect(select:SelectSQLQuery[1], query:SelectWithCursor[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-// todo todo
-  // ---- master branch
   let alias = ^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions));
   let newNode = ^RootJoinTreeNode(alias = $alias);
-  ^$query(select = ^TdsSelectSqlQuery(data = $newNode,
-                                      columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^TableAliasColumnName(alias = $alias, columnName = $c->cast(@Alias).name))),
-                                      paths = $select.paths
-                  ),
+  let columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^TableAliasColumnName(alias = $alias, columnName = $c->cast(@Alias).name)));
+
+  let newSelect = $select->match([
+    tds: TdsSelectSqlQuery[1] | ^TdsSelectSqlQuery(data = $newNode, columns = $columns, paths = $tds.paths),
+    sel: SelectSQLQuery[1] | ^SelectSQLQuery(data = $newNode, columns = $columns)
+  ]);
+
+  ^$query(select = $newSelect,
           currentTreeNode = if($query.currentTreeNode->isEmpty(),| $query.currentTreeNode,| $query.currentTreeNode->toOne()->findOneNode($select.data->toOne(), $newNode))
-   );
-
-   // ---- my branch
-     let newNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions)));
-     let columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^ColumnName(name=$c->cast(@Alias).name)));
-
-     let newSelect = $select->match([
-       tds: TdsSelectSqlQuery[1] | ^TdsSelectSqlQuery(data = $newNode, columns = $columns, paths = $tds.paths),
-       sel: SelectSQLQuery[1] | ^SelectSQLQuery(data = $newNode, columns = $columns)
-     ]);
-
-     ^$query(select = $newSelect,
-             currentTreeNode = if($query.currentTreeNode->isEmpty(),| $query.currentTreeNode,| $query.currentTreeNode->toOne()->findOneNode($select.data->toOne(), $newNode))
-     );
+  );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateSubSelectIfNotLastOperation(select:SelectSQLQuery[1], query:SelectWithCursor[1], f:FunctionExpression[1], parents:FunctionExpression[*], extensions:Extension[*]):SelectWithCursor[1]

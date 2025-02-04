@@ -425,9 +425,11 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
 
                 let routedFunc = routeFunction($preEvalFuncToRoute, $routingStrategy, $exCtx, [], $extensions, $debug->indent());
 
-                // todo rafael bey | validate routed func is one cluster...
-                let clusterValues = $routedFunc.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val;              
-                let unclusteredRoutedFunc = ^$routedFunc(expressionSequence = $clusterValues);
+                let clusters = $routedFunc.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+                let uniqueClusters = $clusters->removeDuplicates({x, y | meta::pure::router::clustering::areClustersCompatible($x, $y, $extensions)});
+                assert($uniqueClusters->size() == 1, |'Function definition on ->with(..) accesses multiple stores and runtimes, and this is not supported:\n' + $uniqueClusters->map(c | $c->asString())->joinStrings(',\n'));
+                
+                let unclusteredRoutedFunc = ^$routedFunc(expressionSequence = $clusters.val);
 
                 let routedVs = ^SimpleFunctionExpression(
                           func = $unclusteredRoutedFunc,
