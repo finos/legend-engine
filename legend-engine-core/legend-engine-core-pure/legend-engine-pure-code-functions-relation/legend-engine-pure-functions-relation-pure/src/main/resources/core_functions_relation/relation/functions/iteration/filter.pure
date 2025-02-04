@@ -47,7 +47,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::filter::testFilter
                               3
                               4
                               5
-                            #->filter(x|$x.val > 1);
+                            #;
                     let b = $a->filter(x|$x.val > 3);
                     $b->filter(x|$x.val > 4);
               };

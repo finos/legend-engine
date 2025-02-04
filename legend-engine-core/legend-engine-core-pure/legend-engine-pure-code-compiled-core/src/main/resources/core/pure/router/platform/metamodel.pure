@@ -23,7 +23,7 @@ Class meta::pure::router::platform::metamodel::PlatformRoutedValueSpecification 
 
 Class meta::pure::router::platform::metamodel::PlatformRoutingStrategy extends RoutingStrategy
 {
-   specializedRouteFunctionExpressions: Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], meta::pure::router::routing::RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->meta::pure::router::routing::RoutingState[1]}>>[*];
+  
 }
 
 Class meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification extends ClusteredValueSpecification
