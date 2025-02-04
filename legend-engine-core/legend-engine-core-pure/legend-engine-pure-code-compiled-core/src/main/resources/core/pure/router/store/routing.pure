@@ -258,7 +258,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
 
                             let classMappings = $classes->map( c | $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c->cast(@Class<Any>)));
-
+                            
                             let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
                                                       | //look for direct mapping of base class, as none of the sub types have mappings
                                                         //Ideally (per Pierre) these mappings should not be allowed
