@@ -308,10 +308,10 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
 
             print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
 
-            // Update the database ------------
-            let otherFuncs = $allReprocessed.current->cast(@FunctionExpression)->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
-
+            let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
             let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
+
+            // Update the database ------------
             meta::relational::tests::pct::process::setupDatabase($reprocessed.csvs, $db, $reprocessed.runtime->toOne(), $debug);
 
             let code =  '\n###Relational\n'+
@@ -327,7 +327,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                         '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
                         '}'
                         ;
-            println($code);
+            //println($code);
 
             let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
 

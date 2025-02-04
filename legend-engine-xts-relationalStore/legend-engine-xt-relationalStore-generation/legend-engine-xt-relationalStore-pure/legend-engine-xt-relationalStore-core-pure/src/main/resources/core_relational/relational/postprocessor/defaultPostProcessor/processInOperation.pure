@@ -101,7 +101,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
       let changedFunctionsNotRequiringConditionNode = $transformedQueryNotRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
       let changedFunctionsRequiringConditionNode    = $transformedQueryRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
 
-      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $dbSpecificTempTableCreationLogicSupplier, $runtime, $store->toOne(), $exeCtx, $extensions);
+      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->sortBy(p | $p.first->buildUniqueName(true, $extensions))->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $dbSpecificTempTableCreationLogicSupplier, $runtime, $store->toOne(), $exeCtx, $extensions);
    );
 }
 
