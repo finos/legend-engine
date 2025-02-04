@@ -30,7 +30,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 
-public class Test_Relational_Databricks_GrammerFunctions_PCT extends PCTReportConfiguration
+public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.grammarFunctions;
     private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.databricksAdapter;
