@@ -1028,6 +1028,31 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         realizedRelationalResult.addRow(pkRowNormalized, pkRowTransformed);
     }
 
+    private int addXStoreKeyRowToRealizedRelationalResult(Object obj, List<Method> keyGetters, RealizedRelationalResult realizedRelationalResult, boolean isMultiEqualXStoreExpression) throws InvocationTargetException, IllegalAccessException
+    {
+        int keyCount = keyGetters.size();
+        List<Object> pkRowTransformed = FastList.newList(keyCount);
+        List<Object> pkRowNormalized = FastList.newList(keyCount);
+
+        boolean shouldAddRow = !isMultiEqualXStoreExpression;
+
+        for (Method keyGetter : keyGetters)
+        {
+            Object key = keyGetter.invoke(RelationalGraphFetchUtils.resolveValueIfIChecked(obj));
+            if (key != null)
+            {
+                shouldAddRow = true;
+            }
+            pkRowTransformed.add(key);
+            pkRowNormalized.add(key);
+        }
+        if (shouldAddRow)
+        {
+            realizedRelationalResult.addRow(pkRowNormalized, pkRowTransformed);
+        }
+        return shouldAddRow ? 1 : 0;
+    }
+
     private Class<?> getExecuteClass(ExecutionNode node)
     {
         if (!(node.implementation instanceof JavaPlatformImplementation))
@@ -1929,10 +1954,26 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     RealizedRelationalResult parentRealizedRelationalResult = RealizedRelationalResult.emptyRealizedRelationalResult(node.parentTempTableColumns);
                     List<Method> crossKeyGetters = nodeSpecifics.parentCrossKeyGetters();
 
+                    long rowCount = 0;
                     for (Object parentObject : parentsToDeepFetch)
                     {
-                        this.addKeyRowToRealizedRelationalResult(parentObject, crossKeyGetters, parentRealizedRelationalResult);
+                        rowCount += this.addXStoreKeyRowToRealizedRelationalResult(parentObject, crossKeyGetters, parentRealizedRelationalResult, nodeSpecifics.supportsCrossCaching());
                         parentToChildMap.put(parentObject, new ArrayList<>());
+                    }
+                    if (rowCount == 0)
+                    {
+                        if (cachingEnabled)
+                        {
+                            List<Method> getters = parentCrossKeyGettersOrderedPerTargetProperties;
+                            parentToChildMap.forEach((p, cs) ->
+                            {
+                                crossCache.put(
+                                        new RelationalGraphFetchUtils.RelationalCrossObjectGraphFetchCacheKey(p, getters),
+                                        cs
+                                );
+                            });
+                        }
+                        return new ConstantResult(childObjects);
                     }
 
                     if (node.parentTempTableStrategy != null)
