@@ -15,7 +15,7 @@
 package org.finos.legend.engine.testable.extension;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
 
 import java.util.List;
 import java.util.Map;

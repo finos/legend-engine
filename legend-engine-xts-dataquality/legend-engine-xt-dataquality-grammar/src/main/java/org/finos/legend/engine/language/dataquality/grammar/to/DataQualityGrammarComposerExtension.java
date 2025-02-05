@@ -32,7 +32,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQuali
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
-import org.finos.legend.engine.protocol.pure.v1.model.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -279,6 +279,8 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                         (Objects.nonNull(relationValidation.description) ?
                 "     description: '" + relationValidation.description + "';\n" : "") +
                 "     assertion: " + renderAssertion(relationValidation, context) + ";\n" +
+                        (Objects.nonNull(relationValidation.type) ?
+                "     type: " + relationValidation.type + ";\n" : "") +
                 "    }";
     }
 

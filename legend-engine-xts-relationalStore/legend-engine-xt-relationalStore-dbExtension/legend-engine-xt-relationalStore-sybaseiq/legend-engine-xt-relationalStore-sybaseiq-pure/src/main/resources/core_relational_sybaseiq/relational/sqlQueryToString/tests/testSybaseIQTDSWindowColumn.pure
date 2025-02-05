@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testSingleWindowW
                              ->sort('rank')
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions(),debug());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "rank" as "rank" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "rank" from personTable as "root") as "subselect" order by "rank"',$result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."rank" as "rank" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "rank" from personTable as "root") as "subselect" order by "rank"',$result);
 }
 
 
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFilterAfterWi
                             ->filter(row | $row.getInteger('testCol') ==1)
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", "testCol" as "testCol" from (select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", dense_rank() OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect") as "subselect" where "testCol" = 1', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol7" as "testCol7", "subselect"."testCol" as "testCol" from (select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol7" as "testCol7", dense_rank() OVER (Partition By "subselect"."firstName" Order By "subselect"."lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect") as "subselect" where "subselect"."testCol" = 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testChainedAggregation(): Any[*]
@@ -104,7 +104,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testChainedAggreg
                             ->filter(row | $row.getInteger('minOlapAgg') == 1 || $row.getInteger('maxOlapAgg') == 1)
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "minOlapAgg" as "minOlapAgg", "maxOlapAgg" as "maxOlapAgg" from (select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "minOlapAgg" as "minOlapAgg", max("age") OVER () as "maxOlapAgg" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "minOlapAgg" from personTable as "root") as "subselect") as "subselect" where ("minOlapAgg" = 1 or "maxOlapAgg" = 1)', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."minOlapAgg" as "minOlapAgg", "subselect"."maxOlapAgg" as "maxOlapAgg" from (select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."minOlapAgg" as "minOlapAgg", max("subselect"."age") OVER () as "maxOlapAgg" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "minOlapAgg" from personTable as "root") as "subselect") as "subselect" where ("subselect"."minOlapAgg" = 1 or "subselect"."maxOlapAgg" = 1)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFilterBeforeWindow(): Any[*]
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFilterBeforeA
                             ->olapGroupBy(['firstName'],asc('lastName'), y|$y->denseRank(),'testCol')
          };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", dense_rank() OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect" where "testCol7" >= 17', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol7" as "testCol7", dense_rank() OVER (Partition By "subselect"."firstName" Order By "subselect"."lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect" where "subselect"."testCol7" >= 17', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnWithGroupBy():Boolean[1]
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnW
 
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", count(*) as "cnt" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", sum("root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root") as "subselect" group by "firstName"', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", count(*) as "cnt" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", sum("root".AGE) OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME ASC) as "testCol1" from personTable as "root") as "subselect" group by "firstName"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testSingleWindowAfterGroupBy():Boolean[1]
@@ -156,7 +156,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowWithout
                             ->sort('testCol1', SortDirection.DESC)->sort('firstName', SortDirection.ASC)
    };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol1" as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root") as "subselect" order by "firstName","testCol1" desc', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."testCol1" as "testCol1" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME,"root".LASTNAME ) as "testCol1" from personTable as "root") as "subselect" order by "firstName","testCol1" desc', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testDynaFunctionInWindow():Boolean[1]
@@ -179,7 +179,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnR
                             ->filter(r|$r.getInteger('rowNumber') > 10)
                };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect" where "rowNumber" > 10', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age", "subselect"."rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect" where "subselect"."rowNumber" > 10', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testJoinAfterOlap():Boolean[1]
@@ -193,7 +193,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testJoinAfterOlap
                               )
                };
    let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "tdsJoined__d"."firstName" as "firstName", "tdsJoined__d"."lastName" as "lastName", "tdsJoined__d"."rowNumber" as "rowNumber", "tdsJoined__d"."age" as "age" from (select "joinleft__d"."firstName" as "firstName", "joinleft__d"."lastName" as "lastName", "joinleft__d"."rowNumber" as "rowNumber", "joinright__d"."age" as "age" from (select "firstName" as "firstName", "lastName" as "lastName", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect") as "joinleft__d" inner join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "joinright__d" on ("joinleft__d"."firstName" = "joinright__d"."firstName" and "joinleft__d"."lastName" = "joinright__d"."lastName")) as "tdsJoined__d"', $result);
+   assertEquals('select "tdsJoined__d"."firstName" as "firstName", "tdsJoined__d"."lastName" as "lastName", "tdsJoined__d"."rowNumber" as "rowNumber", "tdsJoined__d"."age" as "age" from (select "joinleft__d"."firstName" as "firstName", "joinleft__d"."lastName" as "lastName", "joinleft__d"."rowNumber" as "rowNumber", "joinright__d"."age" as "age" from (select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from personTable as "root") as "subselect") as "joinleft__d" inner join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "joinright__d" on ("joinleft__d"."firstName" = "joinright__d"."firstName" and "joinleft__d"."lastName" = "joinright__d"."lastName")) as "tdsJoined__d"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnRowNumberWithStoreFilter():Boolean[1]
@@ -205,7 +205,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testWindowColumnR
                 ->filter(r|$r.getInteger('rowNumber') > 10)
                };
    let result =  toSQLString($func, simpleRelationalMappingIncWithStoreFilter, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "ageSum" as "ageSum", "rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect" where "rowNumber" > 10', $result);
+   assertEquals('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."ageSum" as "ageSum", "subselect"."rowNumber" as "rowNumber" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", sum("root".AGE) as "ageSum", row_number() OVER (Order By "root".FIRSTNAME ASC) as "rowNumber" from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, "root".AGE as AGE from personTable as "root" where "root".AGE > 110) as "root" where "root".AGE < 200 and "root".LASTNAME like \'David%\' group by "firstName","lastName") as "subselect" where "subselect"."rowNumber" > 10', $result);
 }
 
 function <<test.Test, test.AlloyOnly>>

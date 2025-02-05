@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.68.1-SNAPSHOT</version>
+        <version>4.69.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -111,6 +111,16 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-fct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+            <type>test-jar</type>
+
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -1103,6 +1113,11 @@
             <artifactId>legend-engine-xt-relationalStore-snowflake-PCT</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- PCT -->
 
         <dependency>
@@ -1145,7 +1160,10 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
+        </dependency>
         <!-- TEST -->
     </dependencies>
     <profiles>

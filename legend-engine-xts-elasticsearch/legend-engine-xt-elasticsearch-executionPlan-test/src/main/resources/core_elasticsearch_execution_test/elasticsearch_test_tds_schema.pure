@@ -14,6 +14,7 @@
 
 import meta::external::store::elasticsearch::executionTest::testCase::tds::schema::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::extension::*;
 import meta::external::store::elasticsearch::executionTest::test::*;
 

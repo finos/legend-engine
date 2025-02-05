@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::lineage::graph::*;
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
 import meta::pure::lineage::scanRelations::*;
@@ -41,6 +42,14 @@ Class meta::analytics::lineage::FunctionAnalytics
    classLineage : Graph[1];
    functionTrees : PropertyPathTree[*];
    reportLineage : ReportLineage[1];
+}
+
+Class meta::analytics::lineage::FunctionAnalyticsConfig
+{
+  databaseLineage: Boolean[1];
+  classLineage: Boolean[1];
+  relationTree: Boolean[1];
+  reportLineage: Boolean[1];
 }
 
 Class meta::analytics::lineage::ReportLineage
@@ -80,7 +89,18 @@ Class meta::analytics::lineage::PropertyElement
    type : String[0..1];
 }
 
-function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
+function meta::analytics::lineage::buildDefaultAnalyticsConfig(): FunctionAnalyticsConfig[1]
+{
+  ^FunctionAnalyticsConfig
+  (
+    databaseLineage = true,
+    classLineage = true,
+    relationTree = true,
+    reportLineage = true
+  )
+}
+
+function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*], config: FunctionAnalyticsConfig[1]):FunctionAnalytics[1]
 {
    let mappings = if($r->isEmpty(), |$m, |$m->concatenate(getMappingsFromRuntime($r->toOne())));
    let modelToModelMappings = $mappings->init();
@@ -97,23 +117,32 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
                                 |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
 
    let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
-   let relationTree = if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $r->isNotEmpty() && $modelToModelMappings->isEmpty(),
-                            | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
-                            | scanRelations($combinedTrees->last()->toOne(), $sourceMapping));
    let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
    ^FunctionAnalytics
    (
-      databaseLineage = $f->toFlowDatabase($sourceMapping, $combinedTrees, $r)->toGraph(),
-      classLineage = $f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(),
+      databaseLineage = if($config.databaseLineage, |$f->toFlowDatabase($sourceMapping, $combinedTrees, $r)->toGraph(), |^Graph()),
+      classLineage = if($config.classLineage, |$f->toFlowClass($combinedTrees, $classLineageMapping)->toGraph(), |^Graph()),
       functionTrees = $combinedTrees,
-      relationTree = $relationTree,
-      reportLineage = buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap())
+      relationTree = if($config.relationTree, |if($f->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) && $r->isNotEmpty() && $modelToModelMappings->isEmpty(),
+                                                    | scanRelations(^LambdaFunction<{->Any[*]}>(expressionSequence = $funcBody), $sourceMapping, $r->toOne(), $vars, noDebug(), $extensions),
+                                                    | scanRelations($combinedTrees->last()->toOne(), $sourceMapping)), |^RelationTree()),
+      reportLineage = if($config.reportLineage, |buildReportLineage($reprocessedFuncBody->last()->toOne(), $sourceMapping,$vars->newMap()), |^ReportLineage())
    );
+}
+
+function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*], config: FunctionAnalyticsConfig[1]):FunctionAnalytics[1]
+{
+   computeLineage($f, $m, [], $extensions, $config);
+}
+
+function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[0..1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
+{
+   computeLineage($f, $m, $r, $extensions, buildDefaultAnalyticsConfig());
 }
 
 function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):FunctionAnalytics[1]
 {
-   computeLineage($f, $m, [], $extensions);
+   computeLineage($f, $m, [], $extensions, buildDefaultAnalyticsConfig());
 }
 
 function meta::analytics::lineage::buildReportLineage(e:Execute[1]):ReportLineage[1]

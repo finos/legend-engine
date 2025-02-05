@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
 
 @Deprecated

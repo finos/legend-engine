@@ -239,7 +239,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
     }
 
     @Override
-    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
     {
         return Collections.singletonList((test, context, processingContext) ->
         {

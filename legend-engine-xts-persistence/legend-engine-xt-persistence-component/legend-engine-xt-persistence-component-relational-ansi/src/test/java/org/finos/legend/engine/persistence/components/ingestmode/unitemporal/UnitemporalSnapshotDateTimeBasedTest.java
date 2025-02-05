@@ -104,9 +104,9 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithFilterDupsAndMaxVersion, deduplicationAndVersioningSql.get(1));
 
         Assertions.assertEquals(AnsiTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DUPLICATES));
-        Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(getExpectedMaxDataErrorQueryWithDistinctDigest(), deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
         Assertions.assertEquals(dupRowsSql, deduplicationAndVersioningErrorChecksSql.get(DUPLICATE_ROWS));
-        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
+        Assertions.assertEquals(getExpectedDataErrorQueryWithDistinctDigest(), deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -252,5 +252,15 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     protected String getExpectedMetadataTableCreateQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return AnsiTestArtifacts.dataErrorsSqlWithBizDateVersion;
     }
 }

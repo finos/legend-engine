@@ -49,4 +49,13 @@ public class UnitemporalDeltaDateTimeBasedTest extends org.finos.legend.engine.p
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
 
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorsSqlWithBizDateVersion;
+    }
 }

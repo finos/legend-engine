@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.snowflakeApp.api;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 
 public class SnowflakeAppError extends FunctionActivatorError
 {

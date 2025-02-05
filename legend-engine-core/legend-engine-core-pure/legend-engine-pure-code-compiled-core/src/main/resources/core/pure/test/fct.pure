@@ -1,0 +1,185 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::configuration::*;
+import meta::pure::runtime::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::pure::fct::tests::collection::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::test::fct::*;
+import meta::pure::fct::*;
+
+Class meta::pure::test::fct::TestResult
+{
+}
+
+ Class meta::pure::test::fct::LineageResult extends  meta::pure::test::fct::TestResult
+{
+    result:meta::pure::lineage::result::LineageResult[1];
+}
+Class meta::pure::test::fct::ExpectedLineage
+{
+    storeLineage:String[*];
+    classLineage:String[*];
+    reportLineage:String[1];
+}
+
+Class meta::pure::test::fct::ExecuteResult<T> extends meta::pure::test::fct::TestResult
+{
+  result:meta::pure::mapping::Result<T|*>[1];
+  
+}
+
+Class meta::pure::test::fct::StringResult extends meta::pure::test::fct::TestResult
+{
+  result:String[1];
+}
+
+Class  meta::pure::test::fct::SetupData
+{
+}
+
+Class  meta::pure::test::fct::FCTMappingTest
+{
+   setupData:SetupData[1];
+   mapping:meta::pure::mapping::Mapping[1];
+   assertions:meta::pure::test::fct::Test[*];
+
+}
+
+ function meta::pure::test::fct::createTestParameters(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping, 
+                                                                                                          expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                          expectedLineageResult = $t.expectedLineageResult,
+                                                                                                          test = $test)), 
+                                                                                                                              
+                                              e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping, 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+
+Class  meta::pure::test::fct::Test
+{
+  tests:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[*]  ;
+}
+
+Class  meta::pure::test::fct::CSVResult extends ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::fct::TDSResult extends ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::fct::JSONResult extends  ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::fct::ExecutionResult
+{
+}
+
+Class  meta::pure::test::fct::TestAssertion extends meta::pure::test::fct::Test
+
+{
+  expectedExecutionResult:ExecutionResult[0..1];
+  expectedLineageResult:ExpectedLineage[0..1];
+}
+
+Class  meta::pure::test::fct::TestErrorAssertion extends meta::pure::test::fct::Test
+{
+  expectedErrorMessage:String[1];
+}
+
+Class  meta::pure::test::fct::TestParameters
+{
+  expectedExecutionResult:Any[0..1];
+  expectedErrorMessage : String[0..1];
+  expectedLineageResult:ExpectedLineage[0..1];
+  runtime:meta::core::runtime::Runtime[1];
+  mapping:meta::pure::mapping::Mapping[1];
+  test:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[1]  ;
+
+}
+
+Class  meta::pure::test::fct::TestConfig<T>
+{
+  parameters:meta::pure::test::fct::TestParameters[1];
+  toEval: Function<{FunctionDefinition<T>[1],TestParameters[1]->TestResult[1]}>[1];
+}
+
+Profile  meta::pure::fct::TestReturnType
+{
+  stereotypes: [String,ClassInstance, TabularDataSet];
+
+}
+
+
+
+
+
+function   meta::pure::fct::tests::testRunnerAssertion<T>(toEval:Function<{TestParameters[1]->Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]}>[1], runtimeFn:Function<{FCTMappingTest[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+{
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $runtimeFn->eval($mappingTest);
+          $mappingTest->createTestParameters($runtime)->map(p   |   let evalFN = $toEval->eval($p);
+                                                                    ^meta::pure::fct::AssertionRun(evalFn=$evalFN,testFn=$p.test);
+                                                     );
+}
+
+
+Class meta::pure::fct::AssertionRun
+{
+  evalFn:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1];
+  testFn:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[1] ;
+  
+}
+function  meta::pure::fct::tests::execute::AssertionRunExecute(assertion:meta::pure::fct::AssertionRun[1]):Boolean[1]
+{
+    $assertion.testFn->eval($assertion.evalFn);
+}
+
+function meta::pure::test::fct::expectedLineage( storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):ExpectedLineage[1]
+{
+^ExpectedLineage(storeLineage= $storeLineage, classLineage =$classLineage, reportLineage =$reportLineage);
+  
+}
+
+
+function meta::pure::test::fct::assertLineageResult( result:meta::pure::test::fct::TestResult[1],expected:ExpectedLineage[0..1],sourceDetail:String[1]):Boolean[1]
+{
+   
+   $expected->isNotEmpty() &&  meta::pure::test::fct::assertLineageResult($expected->toOne().storeLineage,$expected->toOne().classLineage,$expected->toOne().reportLineage,$result,$sourceDetail);
+}
+
+function meta::pure::test::fct::assertLineageResult( storeLineage:String[*], classLineage:String[*], reportLineage:String[1],result:meta::pure::test::fct::TestResult[1], sourceDetail:String[1]):Boolean[1]
+{
+
+  if($result->instanceOf(meta::pure::test::fct::LineageResult),  
+           | let lineage = $result->cast(@meta::pure::test::fct::LineageResult).result;
+            meta::pure::lineage::test::assertLineage($storeLineage,$classLineage,$reportLineage,$lineage,$sourceDetail);,
+           | true);
+}
+

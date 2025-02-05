@@ -16,6 +16,7 @@ import meta::relational::dbTestRunner::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::metamodel::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 
 //TODO: Add test for collection values & other types of placeHolders
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::literals::varPlaceHolder::testApostropheInParameterValue(config:DbTestConfig[1]):Boolean[1]

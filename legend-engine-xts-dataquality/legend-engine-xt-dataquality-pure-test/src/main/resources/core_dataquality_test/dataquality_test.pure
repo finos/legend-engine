@@ -228,3 +228,24 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           100
     )
 }
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_relationValidation_aggregate():Boolean[1]
+{
+  doRelationTest('###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME]);' +
+    '        runtime: meta::external::dataquality::tests::domain::DataQualityRuntime;' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nonEmptyDataset\';' +
+    '             description: \'dataset should not be empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::relationNotEmpty();' +
+    '             type: AGGREGATE;' +
+    '          }' +
+    '         ];' +
+    '      }',
+          'nonEmptyDataset',
+          {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->meta::pure::functions::collection::map(rel| $rel->meta::external::dataquality::relationNotEmpty())}
+    )
+}

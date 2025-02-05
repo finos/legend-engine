@@ -17,6 +17,7 @@ import meta::pure::router::store::routing::*;
 import meta::core::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
+import meta::pure::functions::collection::*;
 import meta::relational::extension::*;
 import meta::alloy::objectReference::*;
 import meta::external::store::relational::runtime::*;
@@ -588,21 +589,12 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
   let leftSelect = $leftSide.element->cast(@SelectWithCursor).select->cast(@TdsSelectSqlQuery);
   let colFuncName = $fe.func.name->toOne();
-  let tableAlias = $leftSelect.data->toOne().alias;  
-  let foundColumn = $tableAlias.relation()->findColumn($colFuncName);
-  if ($foundColumn->isEmpty(),
-    | let nestedQuery = isolateTdsSelect($leftSelect, $operation, $extensions);
-      let nestedSelect = $nestedQuery.select;
-      let tAlias = $nestedSelect.data.alias->toOne();
-      let fColumn = $tAlias.relation()->findColumn($colFuncName);
-      let colAlias = ^TableAliasColumnName(columnName = $fColumn->cast(@Alias).name->toOne(), alias=$tAlias);
-      let newSelect = $state.inFilter->if(|^$nestedSelect(filteringOperation=$colAlias),|^$nestedSelect(columns=$colAlias));
-      ^$leftSide(element = ^$nestedQuery(select=$newSelect));,
-    | let colAlias = $foundColumn->toOne()->match([c:Column[1] | ^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1] | ^TableAliasColumnName(columnName = $a.name->toOne(), alias = $tableAlias)]);
-      let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
-      ^$leftSide(element = ^$operation(select=$newSelect));
-  );
-  
+  let tableAlias = $leftSelect.data->toOne().alias;
+  let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
+  let foundColumn = if($foundColumnInSelect->isEmpty(), |$tableAlias.relation()->findColumn($colFuncName), |$foundColumnInSelect);
+  let colAlias = $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias, column = $c), a:Alias[1]|$a.relationalElement]);
+  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
+  ^$leftSide(element = ^$operation(select=$newSelect)); 
 }
 
 function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relation[1], name:String[1]):RelationalOperationElement[0..1]
@@ -612,7 +604,7 @@ function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relati
                                                     a:Alias[1]|$a.name
                                                   ]
                                                 );
-                                $colName == $name || $colName == '"'+$name+'"';
+                                $colName->stripMatchingQuotes() == $name->stripMatchingQuotes();
                      )->first();
 }
 
@@ -2768,9 +2760,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateTdsSelect(select:TdsSelectSqlQuery[1], query:SelectWithCursor[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  let newNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions)));
+  let alias = ^TableAlias(name = 'subselect', relationalElement=$select->pushExtraFilteringOperation($extensions));
+  let newNode = ^RootJoinTreeNode(alias = $alias);
   ^$query(select = ^TdsSelectSqlQuery(data = $newNode,
-                                      columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^ColumnName(name=$c->cast(@Alias).name))),
+                                      columns = $select.columns->map(c|^Alias(name=$c->cast(@Alias).name, relationalElement=^TableAliasColumnName(alias = $alias, columnName = $c->cast(@Alias).name))),
                                       paths = $select.paths
                   ),
           currentTreeNode = if($query.currentTreeNode->isEmpty(),| $query.currentTreeNode,| $query.currentTreeNode->toOne()->findOneNode($select.data->toOne(), $newNode))
@@ -3014,7 +3007,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsOlapOperation(o:
    $o->extractOperation().expressionSequence->at(0)->processAggFn(
       $o->match([
       t: TdsOlapAggregation<Any>[1]| let col = findAliasOrFail($t.colName->toString(), $operation.select).relationalElement;
-                                     assert($col->instanceOf(ColumnName) || $col->instanceOf(TableAliasColumn) || $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
+                                     assert($col->instanceOf(TableAliasColumnName) || $col->instanceOf(ColumnName) || $col->instanceOf(TableAliasColumn) || $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
                                      $col;,
       r:TdsOlapRank<Any>[1]|[]
       ]), $state
@@ -5659,12 +5652,13 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::switchA
    $columns->map(cl|
       let als = $cl->cast(@Alias);
       $als.relationalElement->match([
-            tac : TableAliasColumn[1] | let col = $tac.column; ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^$col(name=$als.name)));,
-            cn : ColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())));,
-            l: Literal[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer())));,
+            tac:TableAliasColumn[1] | let col = $tac.column; ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^$col(name=$als.name)));,
+            tacn:TableAliasColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^Column(name = $tacn.columnName, type = ^meta::relational::metamodel::datatype::Integer())));,
+            cn:ColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())));,
+            l:Literal[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer())));,
             o:Operation[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))),
             o:WindowColumn[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))),
-            df: DynaFunction[1] |
+            df:DynaFunction[1] |
                ^Alias(
                   name=$als.name,
                   relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))
@@ -7168,7 +7162,7 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
    let query = $nested->extractSelectWithCursor($operation);
    let mergedQuery = if($query.select.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
    let mergedSelect = $mergedQuery.select;
-   ^$mergedQuery(select=^$mergedSelect(columns = ^Alias(name = 'count', relationalElement = newDynaFunction('count', $mergedSelect.columns->at(0)->cast(@Alias).relationalElement))));
+   ^$mergedQuery(select=^$mergedSelect(columns = newDynaFunction('count', if ($mergedSelect.columns->isNotEmpty(), | $mergedSelect.columns->at(0)->cast(@Alias).relationalElement, | []))));
 }
 
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -8033,6 +8027,12 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                                                   ),
                                                  |^$c(alias = $new->toOne().second, column = $column);
                                               );,
+                        c:TableAliasColumnName[1]|let newByName = $map->filter(o| $o.first == $c.alias.name);
+                                                  let new = if($newByName->size() > 1, |findAliasMappingBySchemaName($c.alias.relation(), $newByName), |$newByName);
+                                                  if($new->isEmpty(),
+                                                    |$c,
+                                                    |^$c(alias = $new->toOne().second);
+                                                  );,
                         l:Literal[1]|$l,
                         ll:LiteralList[1]|$ll,
                         j:JoinStrings[1]|^$j(strings=$j.strings->map(s | reprocessAliases($s, $map, $oldColumnToNewColumn)));,

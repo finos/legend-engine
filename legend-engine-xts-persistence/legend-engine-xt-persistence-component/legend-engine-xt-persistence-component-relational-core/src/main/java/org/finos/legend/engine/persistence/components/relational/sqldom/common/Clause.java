@@ -69,7 +69,8 @@ public enum Clause
     OVERWRITE("OVERWRITE"),
     FILES("FILES"),
     EXTERNAL("EXTERNAL"),
-    OPTIONS("OPTIONS");
+    OPTIONS("OPTIONS"),
+    DISTINCT("DISTINCT");
 
     private final String clause;
 

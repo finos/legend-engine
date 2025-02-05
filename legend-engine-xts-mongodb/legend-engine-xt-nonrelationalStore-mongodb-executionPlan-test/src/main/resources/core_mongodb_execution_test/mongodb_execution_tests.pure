@@ -18,6 +18,7 @@ import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
 import meta::external::store::mongodb::executionTest::utils::*;

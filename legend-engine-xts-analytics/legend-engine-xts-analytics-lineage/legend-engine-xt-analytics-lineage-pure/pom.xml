@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-analytics-lineage</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.68.1-SNAPSHOT</version>
+        <version>4.69.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -153,6 +153,7 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
@@ -164,6 +165,17 @@
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -239,6 +251,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+            <type>test-jar</type>
+        </dependency>
         <!-- ENGINE -->
 
         <dependency>
@@ -254,6 +271,21 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-fct</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.engine</groupId>
+                    <artifactId>legend-engine-language-pure-compiler</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- TEST -->
     </dependencies>

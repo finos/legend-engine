@@ -131,6 +131,21 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "     name: 'testValidation';\n" +
                 "     description: 'test validation';\n" +
                 "     assertion: row|$row.name != 'error';\n" +
+                "     type: ROW_LEVEL;\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: rel|$rel->size() > 0;\n" +
+                "     type: AGGREGATE;\n" +
                 "    }\n" +
                 "   ];\n" +
                 "}\n");

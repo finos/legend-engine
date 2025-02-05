@@ -48,4 +48,14 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends org.finos.legend.e
     {
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
+
+    protected String getExpectedMaxDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
+    }
+
+    protected String getExpectedDataErrorQueryWithDistinctDigest()
+    {
+        return SnowflakeTestArtifacts.dataErrorsSqlWithBizDateVersion;
+    }
 }

@@ -16,6 +16,7 @@ import meta::relational::metamodel::*;
 import meta::relational::dbTestRunner::*;
 import meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::*;
 import meta::pure::test::*;
+import meta::pure::metamodel::testable::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::adjust::testAdjust(config:DbTestConfig[1]):Boolean[1]
 {

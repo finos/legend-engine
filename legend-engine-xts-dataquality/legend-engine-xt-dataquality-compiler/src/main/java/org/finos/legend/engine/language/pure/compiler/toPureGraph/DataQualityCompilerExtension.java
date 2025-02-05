@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -23,6 +25,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
@@ -33,11 +37,11 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.v1.model.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -64,7 +68,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -73,6 +76,7 @@ import org.finos.legend.pure.m3.navigation._class._Class;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -82,6 +86,8 @@ import java.util.stream.Collectors;
 
 public class DataQualityCompilerExtension implements CompilerExtension
 {
+
+    private static final String RELATION_ROW_LEVEL_VAL_TYPE = "ROW_LEVEL";
 
     @Override
     public MutableList<String> group()
@@ -118,7 +124,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataQuality.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
                 (dataquality, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQuality<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
@@ -147,7 +153,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataqualityRelationValidation.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.v1.model.domain.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
                 (dataqualityRelationValidation, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = new Root_meta_external_dataquality_DataQualityRelationValidation_Impl(
@@ -200,19 +206,24 @@ public class DataQualityCompilerExtension implements CompilerExtension
         }
         relationValidation._name(relationalValidation.name);
         relationValidation._description(relationalValidation.description);
+        relationValidation._type(relationalValidation.type);
         Variable assertionInputParam = relationalValidation.assertion.parameters.get(0);
         assertionInputParam.multiplicity = Multiplicity.PURE_ONE;
-        assertionInputParam.genericType = new org.finos.legend.engine.protocol.pure.v1.model.type.GenericType(RelationTypeHelper.convert(fetchQueryRelationType(relationQuery)));
+        assertionInputParam.genericType = getAssertionInputParamGenericType(relationQuery, relationalValidation.type);
 
         LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
         relationValidation._assertion(assertion);
         return relationValidation;
     }
 
-    private RelationType<?> fetchQueryRelationType(LambdaFunction<?> relationQuery)
+    private org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getAssertionInputParamGenericType(LambdaFunction<?> relationQuery, String relationValidationType)
     {
-         FunctionType functionType = (FunctionType) relationQuery._classifierGenericType()._typeArguments().getLast()._rawType();
-         return (RelationType<?>) functionType._returnType()._typeArguments().getLast()._rawType();
+        FunctionType functionType = (FunctionType) relationQuery._classifierGenericType()._typeArguments().getLast()._rawType();
+        if (Objects.isNull(relationValidationType) || RELATION_ROW_LEVEL_VAL_TYPE.equals(relationValidationType))
+        {
+            return CompileContext.convertGenericType(functionType._returnType()._typeArguments().getLast());
+        }
+        return CompileContext.convertGenericType(functionType._returnType());
     }
 
     private LambdaFunction<?> getFilterLambda(DataQuality app, CompileContext compileContext)
@@ -355,4 +366,29 @@ public class DataQualityCompilerExtension implements CompilerExtension
         }
         return Lists.immutable.of(compileContext.resolveRuntime(runtime.path, runtime.sourceInformation));
     }
+
+    @Override
+    public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                Lists.mutable.with(
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::relationNotEmpty_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1 && handlers.typeOne(ps.get(0), "Relation")))),
+                        // row count
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThan_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountGreaterThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountLowerThan_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountLowerThanEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::rowCountEqual_Relation_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+
+                        // column value
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueGreaterThan_Relation_1__ColSpec_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), "ColSpec") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueGreaterThanEqual_Relation_1__ColSpec_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), "ColSpec") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueLessThan_Relation_1__ColSpec_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), "ColSpec") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueLessThanEqual_Relation_1__ColSpec_1__Number_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), "ColSpec") && handlers.typeOne(ps.get(1), Sets.immutable.with("Number", "Integer", "Float", "Decimal"))))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueUnique_Relation_1__ColSpecArray_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 2 && handlers.typeOne(ps.get(0), "Relation") && handlers.typeOne(ps.get(1), "ColSpec")))),
+                        new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(handlers.h("meta::external::dataquality::columnValueUnique_Relation_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 1)))
+                ));
+    }
+
 }

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.68.1-SNAPSHOT</version>
+    <version>4.69.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -37,9 +37,6 @@
 
         <!-- Core System -->
         <module>legend-engine-core</module>
-
-        <!-- Pure Extension -->
-        <module>legend-engine-pure</module>
 
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
@@ -108,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.31.1</legend.pure.version>
+        <legend.pure.version>5.32.1</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -1218,6 +1215,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
+             <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlPlanning-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1387,6 +1390,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1993,7 +2001,17 @@
                 <artifactId>legend-engine-xt-analytics-function-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-binding-http-api</artifactId>
@@ -2375,6 +2393,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-testable-http-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-fct</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

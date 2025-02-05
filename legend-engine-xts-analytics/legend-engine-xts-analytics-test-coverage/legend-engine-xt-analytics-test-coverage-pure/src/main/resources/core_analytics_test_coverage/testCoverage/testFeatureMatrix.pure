@@ -1,0 +1,82 @@
+import meta::pure::test::fct::*;
+import meta::pure::testCoverage::featureMatrix::*;
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+function <<QueryType.tds,QueryFeature.sort,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN(toEval:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+{ 
+     true;
+}
+
+function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2(toEval:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+{ 
+     true;
+}
+
+function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest():FCTMappingTest[1]
+{ 
+    ^FCTMappingTest(setupData = ^meta::pure::test::fct::SetupData(),
+                    mapping=meta::analytics::testCoverage::featureMatrix::tests::testMapping,
+                    assertions = ^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_))
+} 
+
+
+ function <<test.Test>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrix():Boolean[1]
+ {
+  let featureTests =[pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_ ),
+                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_ )
+            ]->newMap();
+ 
+
+  let features = [^FeatureSet(name='testSet',features=[QueryFeature->stereotype('filter'),QueryType->stereotype('tds'),MappingFeature->stereotype('filter')]), //covered should not be in result
+                  ^FeatureSet(name='testSet2',features=[MappingFeature->stereotype('filter'),MappingFeature->stereotype('union')]), //not covered
+                  ^FeatureSet(name='testSet2',features=[MappingFeature->profileSubSet(['filter'])])  //covered should not be in result
+                  ];
+  
+
+  let report = meta::analytics::testCoverage::featureMatrix::buildStoreReport( meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_,$featureTests,$features,'test','testStore');
+  let expected  = [
+         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_', assertionType='assertion'),
+                                mappingFeature='filter',
+                                queryFeature='filter',
+                                sourceTypeFeature = 'tds',
+                                store = 'testStore',
+                                testType= 'test'),
+        ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_', assertionType='UnTested'),
+        mappingFeature='filter',
+        queryFeature='sort',
+        sourceTypeFeature = 'tds',
+        store = 'testStore',
+        testType= 'test'),
+       ^FeatureResult(
+        mappingFeature=['filter','union'],
+        store = 'testStore',
+        testType='test') 
+  ];
+
+assert($report->removeAll($expected,{ a,b | $a.featureTests ==$b.featureTests &&
+                                                  $a.mappingFeature == $b.mappingFeature  &&
+                                                  $a.queryFeature == $b.queryFeature    &&                     
+                                                  $a.testType == $b.testType    &&   
+                                                  $a.store == $b.store    &&   
+                                                  $a.sourceTypeFeature == $b.sourceTypeFeature  
+
+      })->isEmpty());
+ }
+  
+  
+###Mapping
+Mapping meta::analytics::testCoverage::featureMatrix::tests::testMapping
+()

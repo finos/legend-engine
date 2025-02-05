@@ -66,6 +66,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoa
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DistinctFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
@@ -106,6 +107,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DerivedDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DiffBinaryValueOperatorVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DistinctFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DistinctQuantifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.EqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
@@ -235,6 +237,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(NumericalValue.class, new NumericalValueVisitor());
         logicalPlanVisitorByClass.put(ObjectValue.class, new ObjectValueVisitor());
         logicalPlanVisitorByClass.put(Case.class, new CaseVisitor());
+        logicalPlanVisitorByClass.put(DistinctFunction.class, new DistinctFunctionVisitor());
 
         logicalPlanVisitorByClass.put(All.class, new AllVisitor());
         logicalPlanVisitorByClass.put(Pair.class, new PairVisitor());

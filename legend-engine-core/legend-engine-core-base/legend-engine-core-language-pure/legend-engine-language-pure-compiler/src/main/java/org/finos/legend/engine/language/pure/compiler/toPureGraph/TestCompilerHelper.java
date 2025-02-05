@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTest;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTest_Impl;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 
 
 public class TestCompilerHelper

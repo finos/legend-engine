@@ -34,6 +34,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
@@ -50,6 +51,7 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalC
 import org.finos.legend.engine.persistence.components.relational.duckdb.jdbc.DuckDBJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBJdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.ConcatFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CopyVisitor;
@@ -113,6 +115,7 @@ public class DuckDBSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
+        logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
         logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());
         logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());

@@ -1,0 +1,141 @@
+import meta::analytics::testCoverage::featureMatrix::*;
+import meta::pure::test::fct::*;
+import meta::json::*;
+import meta::pure::extension::*;
+import meta::pure::testCoverage::featureMatrix::*;
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+function meta::analytics::testCoverage::featureMatrix::buildPermutationResult(set:List<Stereotype>[*], testType:String[1], store:String[1]):FeatureResult[*]
+{
+  let result = $set->map( t | let p = $t.values->groupBy(v|$v.profile->elementToPath());
+                              let sourceFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryType').values.value ;        
+                              let queryFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryFeature').values.value ;        
+                              let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value ;        
+                              let mappingFeature  = $p->get('meta::pure::testCoverage::featureMatrix::MappingFeature').values.value ;     
+                              ^FeatureResult(store= $store,
+                                            testType =  $testType,
+                                            queryFeature = $queryFeature->sort(),
+                                            sourceTypeFeature= $sourceFeature->sort(),
+                                            querySubFeature =    $querySubFeature->sort(),  
+                                            mappingFeature =    $mappingFeature->sort()  
+
+                                      
+          ) ;  
+ );     
+
+$result; 
+}
+
+
+function meta::analytics::testCoverage::featureMatrix::profileExceptStereoTypes(profile:Profile[1],remove:String[*]):FeatureSet[ 1]  
+{
+  let toRemove = $remove->map(r|  $profile->stereotype($r));
+ ^FeatureSet(name = 'subFeature', features= $profile.p_stereotypes->removeAll($toRemove));
+
+}
+
+function meta::analytics::testCoverage::featureMatrix::profileSubSet(profile:Profile[1],include:String[*]):FeatureSet[1]  
+{
+  let stereoTypes = $include->map(r|  $profile->stereotype($r));
+ ^FeatureSet(name = 'subFeature', features= $stereoTypes);
+
+}
+
+function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:ConcreteFunctionDefinition<Any>[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
+{
+    let functionSt= $f.stereotypes;
+    $functionSt->filter(s | $s.value == $stereotype  && $profile == $s.profile)->isNotEmpty();
+
+}
+
+
+ function  meta::analytics::testCoverage::featureMatrix::permuteSet(features:FeatureSet[1]):List<Stereotype>[*]
+ {
+   $features.features->fold({i:Any[1],a:List<Stereotype>[*] |$i->match( [p:Profile[1] | $p.p_stereotypes->map(st |$a->map(l|list($l.values->concatenate($st)))),
+                                                                         s:Stereotype[1] | $a->map(l|list($l.values->concatenate($s))),
+                                                                         f:FeatureSet[1] |  let sets = $f->meta::analytics::testCoverage::featureMatrix::permuteSet()->map(s| $s.values->map(v|list($v)));
+                                                                                            $sets->map(set |$a->map(l|list($l.values->concatenate($set.values))));
+                                                                               ]);},  ^List<Stereotype>()
+                                                    );
+ }
+
+ function meta::analytics::testCoverage::featureMatrix::collectFCTTestFunctions():Map<String,ConcreteFunctionDefinition<Any>>[1]
+{
+   let fctTestPackage = meta::pure::fct::tests;
+
+  let testFunctions = $fctTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('test',meta::pure::test::fct::FCT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
+}
+ function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:String[1],testType:String[1], store:String[1],expectedError:String[0..1]):FeatureResult[*]
+{
+
+                             let p =    $fn.stereotypes->groupBy(v|$v.profile->elementToPath());
+                              let sourceFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryType').values.value->sort() ;        
+                              let queryFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QueryFeature').values.value->sort() ;        
+                              let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value->sort() ;        
+                                               ^FeatureResult(store= $store,
+                                                             testType =  $testType,
+                                                              featureTests= ^FeatureTest(functionName=$fn->elementToPath(),assertionType=$assertionType, expectedError=$expectedError),
+                                                              sourceTypeFeature= $sourceFeature,
+                                                              queryFeature =    $queryFeature,
+                                                              mappingFeature =    $mappingFeatures->sort(),
+                                                              querySubFeature = $querySubFeature  
+                                  
+          
+ ); 
+
+}
+
+
+function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(functions:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*], reportType:String[1],   store:String[1]):String[1]
+{
+  let testFunctions = meta::analytics::testCoverage::featureMatrix::collectFCTTestFunctions();
+  let features = meta::pure::testCoverage::featureMatrix::featureSets();
+  meta::analytics::testCoverage::featureMatrix::buildStoreReport($functions,$testFunctions,$features, $reportType,$store)->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
+
+}
+
+ function meta::analytics::testCoverage::featureMatrix::buildStoreReport(mappingTests:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*],testFunctions:Map<String,ConcreteFunctionDefinition<Any>>[1], features:FeatureSet[*], reportType:String[1],store:String[1]):FeatureResult[*]
+ {
+ 
+  let permFeatureResults =  $features->map(f|$f->meta::analytics::testCoverage::featureMatrix::permuteSet()->buildPermutationResult($reportType,$store));
+  let mappingFeatures= $mappingTests->map(mappingTest|
+                                          let mappingFeatures =  $mappingTest.stereotypes->filter(s|$s.profile->elementToPath()=='meta::pure::testCoverage::featureMatrix::MappingFeature').value;
+                                          let instance =  $mappingTest->eval();
+                                          let assertionTestsMap = $instance.assertions->map(a|  $a.tests->map( test| pair( $test->elementToPath(),  $a  )))->newMap();
+                                          $testFunctions->keyValues()->map(fctTest |let assert = $assertionTestsMap->get($fctTest.first);
+                                                                                              if(  $assert->isNotEmpty(), 
+                                                                                                  |  
+                                                                                                      
+                                                                                                  
+                                                                                                      $assert->match([ t:TestAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'assertion',$reportType,$store,[]),
+                                                                                                                      t:TestErrorAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'error',$reportType,$store,$t.expectedErrorMessage)   
+                                                                                                                    ]);,  
+                                                                                                  |   $fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, 'UnTested',$reportType,$store,[])
+                                                                                                );
+                                                                        );             
+                                          );
+
+  let missingFeatureTests =  $permFeatureResults->removeAll($mappingFeatures,  {a:FeatureResult[1],b:FeatureResult[1]|($b.sourceTypeFeature->containsAll($a.sourceTypeFeature)  || $a.sourceTypeFeature->isEmpty())    && 
+                                                                                                                      ($b.mappingFeature->containsAll($a.mappingFeature) || $a.mappingFeature->isEmpty()) &&
+                                                                                                                      ($b.querySubFeature->containsAll($a.querySubFeature)  || $a.querySubFeature->isEmpty())   &&
+                                                                                                                      ($b.queryFeature->containsAll($a.queryFeature) || $a.queryFeature->isEmpty()   ) });
+
+  $mappingFeatures->concatenate($missingFeatureTests);
+      
+ }
+
+
+

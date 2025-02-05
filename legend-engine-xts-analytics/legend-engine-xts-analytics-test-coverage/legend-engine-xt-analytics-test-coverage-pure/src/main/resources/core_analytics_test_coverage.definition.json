@@ -1,0 +1,12 @@
+{
+  "name": "core_analytics_test_coverage",
+  "pattern": "(meta::analytics::testCoverage)(::.*)?|meta::pure(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_tds",
+    "core_functions_relation",
+    "core_functions_unclassified",
+    "core_functions_json",
+    "core"
+  ]
+}
