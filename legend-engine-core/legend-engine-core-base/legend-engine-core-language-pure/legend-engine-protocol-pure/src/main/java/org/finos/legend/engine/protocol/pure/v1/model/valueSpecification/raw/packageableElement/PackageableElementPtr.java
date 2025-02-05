@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.One;
 
 import java.io.IOException;
 import java.util.Objects;

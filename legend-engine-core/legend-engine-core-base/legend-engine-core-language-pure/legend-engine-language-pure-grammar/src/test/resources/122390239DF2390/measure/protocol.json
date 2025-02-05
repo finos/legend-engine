@@ -1,0 +1,220 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "measure",
+      "canonicalUnit": {
+        "conversionFunction": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "var",
+              "name": "x",
+              "sourceInformation": {
+                "endColumn": 17,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 16,
+                "startLine": 3
+              }
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "name": "x"
+            }
+          ]
+        },
+        "measure": "protocol::Mass",
+        "name": "Gram",
+        "sourceInformation": {
+          "endColumn": 18,
+          "endLine": 3,
+          "sourceId": "",
+          "startColumn": 5,
+          "startLine": 3
+        }
+      },
+      "name": "Mass",
+      "nonCanonicalUnits": [
+        {
+          "conversionFunction": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "times",
+                "parameters": [
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "sourceInformation": {
+                      "endColumn": 27,
+                      "endLine": 4,
+                      "sourceId": "",
+                      "startColumn": 22,
+                      "startLine": 4
+                    },
+                    "values": [
+                      {
+                        "_type": "var",
+                        "name": "x",
+                        "sourceInformation": {
+                          "endColumn": 20,
+                          "endLine": 4,
+                          "sourceId": "",
+                          "startColumn": 19,
+                          "startLine": 4
+                        }
+                      },
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 27,
+                          "endLine": 4,
+                          "sourceId": "",
+                          "startColumn": 24,
+                          "startLine": 4
+                        },
+                        "value": 1000
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 27,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 22,
+                  "startLine": 4
+                }
+              }
+            ],
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "x"
+              }
+            ]
+          },
+          "measure": "protocol::Mass",
+          "name": "Kilogram",
+          "sourceInformation": {
+            "endColumn": 28,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 4
+          }
+        },
+        {
+          "conversionFunction": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "times",
+                "parameters": [
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "sourceInformation": {
+                      "endColumn": 26,
+                      "endLine": 5,
+                      "sourceId": "",
+                      "startColumn": 19,
+                      "startLine": 5
+                    },
+                    "values": [
+                      {
+                        "_type": "var",
+                        "name": "x",
+                        "sourceInformation": {
+                          "endColumn": 17,
+                          "endLine": 5,
+                          "sourceId": "",
+                          "startColumn": 16,
+                          "startLine": 5
+                        }
+                      },
+                      {
+                        "_type": "float",
+                        "sourceInformation": {
+                          "endColumn": 26,
+                          "endLine": 5,
+                          "sourceId": "",
+                          "startColumn": 21,
+                          "startLine": 5
+                        },
+                        "value": 453.59
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 26,
+                  "endLine": 5,
+                  "sourceId": "",
+                  "startColumn": 19,
+                  "startLine": 5
+                }
+              }
+            ],
+            "parameters": [
+              {
+                "_type": "var",
+                "name": "x"
+              }
+            ]
+          },
+          "measure": "protocol::Mass",
+          "name": "Pound",
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 5
+          }
+        }
+      ],
+      "package": "protocol",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::Mass"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

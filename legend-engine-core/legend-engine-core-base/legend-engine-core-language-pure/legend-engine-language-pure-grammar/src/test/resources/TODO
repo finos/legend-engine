@@ -1,0 +1,10 @@
+1. Generics: Type and Multiplicity parameters for Classes
+             Type variables for Classes
+             Type and Multiplicity parameters for Functions
+2. Copy ^$a()
+3. native functions
+4. Function types -> function protocol::f3(f: Function<{String[1],Integer[1]->String[*]}>[1]): protocol::Light[*]
+5. Advanced TDS type arithmetic function protocol::relationTypeAlgebra<T,Z,K,V>(r:Relation<T>[1], old:ColSpec<Z=(?:K)⊆T>[1], new:ColSpec<V=(?:K)>[1]):Relation<T-Z+V>[1]
+6. ExtendedPrimitive
+7. Stereotype and tagged value on Measure
+8. Unit Instance

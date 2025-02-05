@@ -1,0 +1,1693 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 3
+              },
+              "values": [
+                {
+                  "_type": "func",
+                  "function": "times",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 3,
+                        "sourceId": "",
+                        "startColumn": 5,
+                        "startLine": 3
+                      },
+                      "values": [
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 3,
+                            "endLine": 3,
+                            "sourceId": "",
+                            "startColumn": 3,
+                            "startLine": 3
+                          },
+                          "value": 2
+                        },
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 7,
+                            "endLine": 3,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 3
+                          },
+                          "value": 4
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 7,
+                    "endLine": 3,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 3
+                  }
+                },
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 3,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 3
+                  },
+                  "value": 2
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 11,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 9,
+            "startLine": 3
+          }
+        },
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 4
+              },
+              "values": [
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 3,
+                    "endLine": 4,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 4
+                  },
+                  "value": 2
+                },
+                {
+                  "_type": "func",
+                  "function": "times",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "sourceInformation": {
+                        "endColumn": 11,
+                        "endLine": 4,
+                        "sourceId": "",
+                        "startColumn": 9,
+                        "startLine": 4
+                      },
+                      "values": [
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 7,
+                            "endLine": 4,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 4
+                          },
+                          "value": 2
+                        },
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 11,
+                            "endLine": 4,
+                            "sourceId": "",
+                            "startColumn": 11,
+                            "startLine": 4
+                          },
+                          "value": 4
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 4,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 4
+                  }
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 4
+          }
+        },
+        {
+          "_type": "func",
+          "function": "plus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 5
+              },
+              "values": [
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 3,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 5
+                  },
+                  "value": 2
+                },
+                {
+                  "_type": "func",
+                  "function": "divide",
+                  "parameters": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 5
+                      },
+                      "value": 2
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 11,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 11,
+                        "startLine": 5
+                      },
+                      "value": 4
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 5
+                  }
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 7,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 5
+          }
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 6,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 6
+              },
+              "values": [
+                {
+                  "_type": "func",
+                  "function": "divide",
+                  "parameters": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 3,
+                        "endLine": 6,
+                        "sourceId": "",
+                        "startColumn": 3,
+                        "startLine": 6
+                      },
+                      "value": 2
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 6,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 6
+                      },
+                      "value": 4
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 7,
+                    "endLine": 6,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 6
+                  }
+                },
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 6,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 6
+                  },
+                  "value": 4
+                }
+              ]
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 11,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 9,
+            "startLine": 6
+          }
+        }
+      ],
+      "name": "precedenceArithmetic__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 46,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 44,
+            "startLine": 1
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 7,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "or",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 11,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 11
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 15,
+                    "endLine": 11,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 11
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 11
+              }
+            },
+            {
+              "_type": "boolean",
+              "sourceInformation": {
+                "endColumn": 23,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 11
+              },
+              "value": true
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 11,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 11
+          }
+        },
+        {
+          "_type": "func",
+          "function": "or",
+          "parameters": [
+            {
+              "_type": "boolean",
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 12
+              },
+              "value": true
+            },
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 14,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 12
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 23,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 19,
+                    "startLine": 12
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 17,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 16,
+                "startLine": 12
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 12
+          }
+        }
+      ],
+      "name": "precedenceBoolean__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 43,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 41,
+            "startLine": 9
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 13,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 9
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "and",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 17
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 15,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 17
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 17
+              }
+            },
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 23,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 20,
+                    "startLine": 17
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 32,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 28,
+                    "startLine": 17
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 26,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 25,
+                "startLine": 17
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 17
+          }
+        },
+        {
+          "_type": "func",
+          "function": "or",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 6,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 3,
+                        "startLine": 18
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 15,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 11,
+                        "startLine": 18
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 9,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 8,
+                    "startLine": 18
+                  }
+                },
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 23,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 20,
+                        "startLine": 18
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 32,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 28,
+                        "startLine": 18
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 26,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 25,
+                    "startLine": 18
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 18,
+                "endLine": 18,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 18
+              }
+            },
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 37,
+                    "startLine": 18
+                  },
+                  "value": false
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 50,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 46,
+                    "startLine": 18
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 44,
+                "endLine": 18,
+                "sourceId": "",
+                "startColumn": 43,
+                "startLine": 18
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 35,
+            "endLine": 18,
+            "sourceId": "",
+            "startColumn": 34,
+            "startLine": 18
+          }
+        },
+        {
+          "_type": "func",
+          "function": "or",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 19
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 15,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 19
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 19,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 19
+              }
+            },
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 23,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 20,
+                        "startLine": 19
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 32,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 28,
+                        "startLine": 19
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 26,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 25,
+                    "startLine": 19
+                  }
+                },
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 41,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 37,
+                        "startLine": 19
+                      },
+                      "value": false
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 50,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 46,
+                        "startLine": 19
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 44,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 43,
+                    "startLine": 19
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 35,
+                "endLine": 19,
+                "sourceId": "",
+                "startColumn": 34,
+                "startLine": 19
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 19
+          }
+        },
+        {
+          "_type": "func",
+          "function": "or",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 20
+                  },
+                  "value": true
+                },
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 16,
+                        "endLine": 20,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 20
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 16,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 20
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 20,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 20
+              }
+            },
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "equal",
+                      "parameters": [
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 26,
+                            "endLine": 20,
+                            "sourceId": "",
+                            "startColumn": 23,
+                            "startLine": 20
+                          },
+                          "value": true
+                        },
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 35,
+                            "endLine": 20,
+                            "sourceId": "",
+                            "startColumn": 31,
+                            "startLine": 20
+                          },
+                          "value": false
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 29,
+                        "endLine": 20,
+                        "sourceId": "",
+                        "startColumn": 28,
+                        "startLine": 20
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 36,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 20
+                  }
+                },
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 45,
+                        "endLine": 20,
+                        "sourceId": "",
+                        "startColumn": 41,
+                        "startLine": 20
+                      },
+                      "value": false
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 54,
+                        "endLine": 20,
+                        "sourceId": "",
+                        "startColumn": 50,
+                        "startLine": 20
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 48,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 47,
+                    "startLine": 20
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 39,
+                "endLine": 20,
+                "sourceId": "",
+                "startColumn": 38,
+                "startLine": 20
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 18,
+            "startLine": 20
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "equal",
+                      "parameters": [
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 10,
+                            "endLine": 21,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 21
+                          },
+                          "value": true
+                        },
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 19,
+                            "endLine": 21,
+                            "sourceId": "",
+                            "startColumn": 15,
+                            "startLine": 21
+                          },
+                          "value": false
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 13,
+                        "endLine": 21,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 21
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 13,
+                    "endLine": 21,
+                    "sourceId": "",
+                    "startColumn": 12,
+                    "startLine": 21
+                  }
+                },
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 27,
+                        "endLine": 21,
+                        "sourceId": "",
+                        "startColumn": 24,
+                        "startLine": 21
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "func",
+                      "function": "not",
+                      "parameters": [
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 37,
+                            "endLine": 21,
+                            "sourceId": "",
+                            "startColumn": 33,
+                            "startLine": 21
+                          },
+                          "value": false
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 37,
+                        "endLine": 21,
+                        "sourceId": "",
+                        "startColumn": 32,
+                        "startLine": 21
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 30,
+                    "endLine": 21,
+                    "sourceId": "",
+                    "startColumn": 29,
+                    "startLine": 21
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 22,
+                "endLine": 21,
+                "sourceId": "",
+                "startColumn": 21,
+                "startLine": 21
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 21,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 21
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "or",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "and",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "not",
+                      "parameters": [
+                        {
+                          "_type": "func",
+                          "function": "equal",
+                          "parameters": [
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 10,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 7,
+                                "startLine": 22
+                              },
+                              "value": true
+                            },
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 19,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 15,
+                                "startLine": 22
+                              },
+                              "value": false
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 13,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 12,
+                            "startLine": 22
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 13,
+                        "endLine": 22,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 22
+                      }
+                    },
+                    {
+                      "_type": "func",
+                      "function": "equal",
+                      "parameters": [
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 27,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 24,
+                            "startLine": 22
+                          },
+                          "value": true
+                        },
+                        {
+                          "_type": "func",
+                          "function": "not",
+                          "parameters": [
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 37,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 33,
+                                "startLine": 22
+                              },
+                              "value": false
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 37,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 32,
+                            "startLine": 22
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 30,
+                        "endLine": 22,
+                        "sourceId": "",
+                        "startColumn": 29,
+                        "startLine": 22
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 22,
+                    "endLine": 22,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 22
+                  }
+                },
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "and",
+                      "parameters": [
+                        {
+                          "_type": "func",
+                          "function": "and",
+                          "parameters": [
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 47,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 44,
+                                "startLine": 22
+                              },
+                              "value": true
+                            },
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 56,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 52,
+                                "startLine": 22
+                              },
+                              "value": false
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 50,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 49,
+                            "startLine": 22
+                          }
+                        },
+                        {
+                          "_type": "func",
+                          "function": "equal",
+                          "parameters": [
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 64,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 61,
+                                "startLine": 22
+                              },
+                              "value": true
+                            },
+                            {
+                              "_type": "func",
+                              "function": "not",
+                              "parameters": [
+                                {
+                                  "_type": "boolean",
+                                  "sourceInformation": {
+                                    "endColumn": 74,
+                                    "endLine": 22,
+                                    "sourceId": "",
+                                    "startColumn": 70,
+                                    "startLine": 22
+                                  },
+                                  "value": false
+                                }
+                              ],
+                              "sourceInformation": {
+                                "endColumn": 74,
+                                "endLine": 22,
+                                "sourceId": "",
+                                "startColumn": 69,
+                                "startLine": 22
+                              }
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 67,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 66,
+                            "startLine": 22
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 59,
+                        "endLine": 22,
+                        "sourceId": "",
+                        "startColumn": 58,
+                        "startLine": 22
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 75,
+                    "endLine": 22,
+                    "sourceId": "",
+                    "startColumn": 42,
+                    "startLine": 22
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 40,
+                "endLine": 22,
+                "sourceId": "",
+                "startColumn": 39,
+                "startLine": 22
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 22,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 22
+          }
+        },
+        {
+          "_type": "func",
+          "function": "and",
+          "parameters": [
+            {
+              "_type": "boolean",
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 23,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 23
+              },
+              "value": true
+            },
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 15,
+                    "endLine": 23,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 23
+                  },
+                  "value": false
+                },
+                {
+                  "_type": "func",
+                  "function": "isNumber",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x",
+                      "sourceInformation": {
+                        "endColumn": 21,
+                        "endLine": 23,
+                        "sourceId": "",
+                        "startColumn": 20,
+                        "startLine": 23
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 31,
+                    "endLine": 23,
+                    "sourceId": "",
+                    "startColumn": 24,
+                    "startLine": 23
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 18,
+                "endLine": 23,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 23
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 23,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 23
+          }
+        },
+        {
+          "_type": "func",
+          "function": "and",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "isNumber",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "x",
+                  "sourceInformation": {
+                    "endColumn": 4,
+                    "endLine": 24,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 24
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 14,
+                "endLine": 24,
+                "sourceId": "",
+                "startColumn": 7,
+                "startLine": 24
+              }
+            },
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 25,
+                    "endLine": 24,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 24
+                  },
+                  "value": false
+                },
+                {
+                  "_type": "func",
+                  "function": "isNumber",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x",
+                      "sourceInformation": {
+                        "endColumn": 31,
+                        "endLine": 24,
+                        "sourceId": "",
+                        "startColumn": 30,
+                        "startLine": 24
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 41,
+                    "endLine": 24,
+                    "sourceId": "",
+                    "startColumn": 34,
+                    "startLine": 24
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 28,
+                "endLine": 24,
+                "sourceId": "",
+                "startColumn": 27,
+                "startLine": 24
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 24,
+            "sourceId": "",
+            "startColumn": 18,
+            "startLine": 24
+          }
+        },
+        {
+          "_type": "func",
+          "function": "and",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "isNumber",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "x",
+                  "sourceInformation": {
+                    "endColumn": 4,
+                    "endLine": 25,
+                    "sourceId": "",
+                    "startColumn": 3,
+                    "startLine": 25
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 14,
+                "endLine": 25,
+                "sourceId": "",
+                "startColumn": 7,
+                "startLine": 25
+              }
+            },
+            {
+              "_type": "func",
+              "function": "equal",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 25,
+                    "endLine": 25,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 25
+                  },
+                  "value": false
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 33,
+                    "endLine": 25,
+                    "sourceId": "",
+                    "startColumn": 30,
+                    "startLine": 25
+                  },
+                  "value": true
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 28,
+                "endLine": 25,
+                "sourceId": "",
+                "startColumn": 27,
+                "startLine": 25
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 25,
+            "sourceId": "",
+            "startColumn": 18,
+            "startLine": 25
+          }
+        }
+      ],
+      "name": "precedenceBooleanWithEqual__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 52,
+            "endLine": 15,
+            "sourceId": "",
+            "startColumn": 50,
+            "startLine": 15
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 26,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 15
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::precedenceArithmetic__Any_MANY_",
+            "protocol::precedenceBoolean__Any_MANY_",
+            "protocol::precedenceBooleanWithEqual__Any_MANY_"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 28,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}
