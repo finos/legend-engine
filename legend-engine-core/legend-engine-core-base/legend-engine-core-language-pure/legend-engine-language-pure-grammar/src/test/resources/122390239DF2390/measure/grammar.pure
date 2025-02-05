@@ -1,0 +1,6 @@
+Measure protocol::Mass
+{
+  *Gram: x -> $x;
+  Kilogram: x -> $x * 1000;
+  Pound: x -> $x * 453.59;
+}

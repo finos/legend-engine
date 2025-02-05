@@ -1,0 +1,21 @@
+Class protocol::SuperClass
+[
+  $this.other->startsWith('x'),
+  id: $this.other->endsWith('z'),
+  other
+  (
+    ~owner: theOwner
+    ~externalId: 'someId'
+    ~function: $this.other->length() > 2
+    ~enforcementLevel: Error
+    ~message: $this.other + ' has issues'
+  ),
+  other2
+  (
+    ~externalId: 'ok'
+    ~function: $this.other->length() < 4
+  )
+]
+{
+  other: String[1];
+}

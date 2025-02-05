@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.m3.valuespecification;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
-
 public abstract class AbstractAppliedFunction extends One
 {
 }

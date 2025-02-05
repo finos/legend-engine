@@ -1,0 +1,83 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 3
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 3
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 4
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 4
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AProfile"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.One;
+
 public abstract class CoreClassInstances extends One
 {
 }

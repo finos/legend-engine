@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.api;
 
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 
 public class LambdaReturnTypeInput
 {

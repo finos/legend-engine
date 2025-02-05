@@ -1,0 +1,45 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::protocols::pure::vX_X_X::metamodel::domain::Domain
+{
+   classes : meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[*];
+   associations : meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[*];
+   enums : meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration[*];
+   profiles : meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile[*];
+   measures : meta::protocols::pure::vX_X_X::metamodel::m3::type::Measure[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer
+{
+    type : meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType[0..1];
+    path : String[1];
+}
+
+Enum meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType
+{
+   CLASS,
+   PACKAGE,
+   STORE,
+   MAPPING,
+   SERVICE,
+   CACHE,
+   PIPELINE,
+   FLATTEN,
+   DIAGRAM,
+   DATASTORESPEC,
+   UNIT,
+   MEASURE,
+   FUNCTION
+}

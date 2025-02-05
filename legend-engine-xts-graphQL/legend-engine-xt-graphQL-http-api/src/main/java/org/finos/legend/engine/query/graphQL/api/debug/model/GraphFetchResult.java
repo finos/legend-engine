@@ -15,7 +15,7 @@
 package org.finos.legend.engine.query.graphQL.api.debug.model;
 
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree;
 
 import java.util.Collections;
 import java.util.List;

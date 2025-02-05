@@ -245,8 +245,8 @@ Class {meta::pure::profiles::doc.doc = 'A type to define automatic exercise of a
 >>>test::gen::AverageDailyTradingVolumeLimit
 Class {meta::pure::profiles::doc.doc = 'To indicate the limitation percentage and limitation period.'} test::gen::AverageDailyTradingVolumeLimit
 [
-  c1_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage >= 0,
-  c2_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage <= 1
+  c1_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage >= 0d,
+  c2_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage <= 1d
 ]
 {
   {meta::pure::profiles::doc.doc = 'Specifies the limitation percentage in Average Daily trading volume.'} limitationPercentage: Decimal[1];
@@ -2225,7 +2225,7 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::MultipleExercise
 Class {meta::pure::profiles::doc.doc = 'A type defining multiple exercises. As defining in the 2000 ISDA Definitions, Section 12.4. Multiple Exercise, the buyer of the option has the right to exercise all or less than all the unexercised notional amount of the underlying swap on one or more days in the exercise period, but on any such day may not exercise less than the minimum notional amount or more than the maximum notional amount, and if an integral multiple amount is specified, the notional exercised must be equal to or, be an integral multiple of, the integral multiple amount.'} test::gen::MultipleExercise
 [
-  c1_range_MultipleExercise: $this.maximumNumberOfOptions->forAll(x: Decimal[1]|$x >= 0),
+  c1_range_MultipleExercise: $this.maximumNumberOfOptions->forAll(x: Decimal[1]|$x >= 0d),
   c2_choice_MultipleExercise: ($this.minimumNotionalAmount->isNotEmpty() && $this.minimumNumberOfOptions->isEmpty()) || ($this.minimumNotionalAmount->isEmpty() && $this.minimumNumberOfOptions->isNotEmpty()),
   c3_choice_MultipleExercise: ($this.maximumNotionalAmount->isNotEmpty() && $this.maximumNumberOfOptions->isEmpty()) || ($this.maximumNotionalAmount->isEmpty() && $this.maximumNumberOfOptions->isNotEmpty())
 ]
@@ -2268,7 +2268,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a currency amount or a c
 >>>test::gen::NonNegativeMoney
 Class {meta::pure::profiles::doc.doc = 'A type defining a non negative money amount.'} test::gen::NonNegativeMoney extends test::gen::MoneyBase
 [
-  c1_range_NonNegativeMoney: $this.amount >= 0
+  c1_range_NonNegativeMoney: $this.amount >= 0d
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non negative monetary quantity in currency units.'} amount: Decimal[1];
@@ -2283,7 +2283,7 @@ Class {meta::pure::profiles::doc.doc = 'A complex type to specify non negative p
 >>>test::gen::NonNegativeSchedule
 Class {meta::pure::profiles::doc.doc = 'A type defining a schedule of non-negative rates or amounts in terms of an initial value and then a series of step date and value pairs. On each step date the rate or amount changes to the new step value. The series of step date and value pairs are optional. If not specified, this implies that the initial value remains unchanged over time.'} test::gen::NonNegativeSchedule
 [
-  c1_range_NonNegativeSchedule: $this.initialValue >= 0
+  c1_range_NonNegativeSchedule: $this.initialValue >= 0d
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non-negative initial rate or amount, as the case may be. An initial rate of 5% would be represented as 0.05.'} initialValue: Decimal[1];
@@ -2294,7 +2294,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a schedule of non-negati
 >>>test::gen::NonNegativeStep
 Class {meta::pure::profiles::doc.doc = 'A type defining a step date and non-negative step value pair. This step definitions are used to define varying rate or amount schedules, e.g. a notional amortization or a step-up coupon schedule.'} test::gen::NonNegativeStep extends test::gen::StepBase
 [
-  c1_range_NonNegativeStep: $this.stepValue >= 0
+  c1_range_NonNegativeStep: $this.stepValue >= 0d
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non-negative rate or amount which becomes effective on the associated stepDate. A rate of 5% would be represented as 0.05.'} stepValue: Decimal[1];
@@ -2758,7 +2758,7 @@ Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a per
 >>>test::gen::PositiveMoney
 Class {meta::pure::profiles::doc.doc = 'A type defining a positive money amount'} test::gen::PositiveMoney extends test::gen::MoneyBase
 [
-  c1_range_PositiveMoney: $this.amount > 0
+  c1_range_PositiveMoney: $this.amount > 0d
 ]
 {
   {meta::pure::profiles::doc.doc = 'The positive monetary quantity in currency units.'} amount: Decimal[1];

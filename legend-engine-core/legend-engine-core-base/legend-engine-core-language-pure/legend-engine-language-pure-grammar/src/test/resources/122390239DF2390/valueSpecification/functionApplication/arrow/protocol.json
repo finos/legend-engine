@@ -1,0 +1,1393 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "integer",
+              "sourceInformation": {
+                "endColumn": 5,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 3
+              },
+              "value": 1
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 3
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "integer",
+              "sourceInformation": {
+                "endColumn": 7,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 7,
+                "startLine": 4
+              },
+              "value": 1
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 4
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 10,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 5
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 19,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 15,
+                        "startLine": 5
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 13,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 12,
+                    "startLine": 5
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 23,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 23,
+                "startLine": 5
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 25,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 5
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 11,
+                        "endLine": 6,
+                        "sourceId": "",
+                        "startColumn": 8,
+                        "startLine": 6
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 20,
+                        "endLine": 6,
+                        "sourceId": "",
+                        "startColumn": 16,
+                        "startLine": 6
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 14,
+                    "endLine": 6,
+                    "sourceId": "",
+                    "startColumn": 13,
+                    "startLine": 6
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 21,
+                "endLine": 6,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 6
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 25,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 25,
+            "startLine": 6
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 9,
+                        "endLine": 7,
+                        "sourceId": "",
+                        "startColumn": 6,
+                        "startLine": 7
+                      },
+                      "value": true
+                    },
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 18,
+                        "endLine": 7,
+                        "sourceId": "",
+                        "startColumn": 14,
+                        "startLine": 7
+                      },
+                      "value": false
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 7,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 7
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 12,
+                "endLine": 7,
+                "sourceId": "",
+                "startColumn": 11,
+                "startLine": 7
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 22,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 22,
+            "startLine": 7
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "equal",
+                      "parameters": [
+                        {
+                          "_type": "boolean",
+                          "sourceInformation": {
+                            "endColumn": 11,
+                            "endLine": 8,
+                            "sourceId": "",
+                            "startColumn": 8,
+                            "startLine": 8
+                          },
+                          "value": true
+                        },
+                        {
+                          "_type": "func",
+                          "function": "not",
+                          "parameters": [
+                            {
+                              "_type": "boolean",
+                              "sourceInformation": {
+                                "endColumn": 21,
+                                "endLine": 8,
+                                "sourceId": "",
+                                "startColumn": 17,
+                                "startLine": 8
+                              },
+                              "value": false
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 21,
+                            "endLine": 8,
+                            "sourceId": "",
+                            "startColumn": 16,
+                            "startLine": 8
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 14,
+                        "endLine": 8,
+                        "sourceId": "",
+                        "startColumn": 13,
+                        "startLine": 8
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 14,
+                    "endLine": 8,
+                    "sourceId": "",
+                    "startColumn": 13,
+                    "startLine": 8
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 22,
+                "endLine": 8,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 8
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 26,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 26,
+            "startLine": 8
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "greaterThan",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 9,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 9
+                      },
+                      "value": 1
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 7,
+                    "endLine": 9,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 9
+                  }
+                },
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 9,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 9
+                  },
+                  "value": 2
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 9,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 9
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 15,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 15,
+            "startLine": 9
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "greaterThan",
+                  "parameters": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 8,
+                        "endLine": 10,
+                        "sourceId": "",
+                        "startColumn": 8,
+                        "startLine": 10
+                      },
+                      "value": 1
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 12,
+                        "endLine": 10,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 10
+                      },
+                      "value": 2
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 10,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 10
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 13,
+                "endLine": 10,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 10
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 17,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 10
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "lessThan",
+                  "parameters": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 8,
+                        "endLine": 11,
+                        "sourceId": "",
+                        "startColumn": 8,
+                        "startLine": 11
+                      },
+                      "value": 1
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 12,
+                        "endLine": 11,
+                        "sourceId": "",
+                        "startColumn": 12,
+                        "startLine": 11
+                      },
+                      "value": 2
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 11,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 11
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 13,
+                "endLine": 11,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 11
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 17,
+            "endLine": 11,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 11
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "and",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "not",
+                  "parameters": [
+                    {
+                      "_type": "boolean",
+                      "sourceInformation": {
+                        "endColumn": 10,
+                        "endLine": 12,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 12
+                      },
+                      "value": true
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 10,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 12
+                  }
+                },
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 19,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 15,
+                    "startLine": 12
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 13,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 12,
+                "startLine": 12
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 23,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 12
+          }
+        },
+        {
+          "_type": "func",
+          "function": "and",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 9,
+                    "endLine": 13,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 13
+                  },
+                  "value": true
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 13,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 13
+              }
+            },
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 13,
+                    "sourceId": "",
+                    "startColumn": 14,
+                    "startLine": 13
+                  },
+                  "value": false
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 21,
+                "endLine": 13,
+                "sourceId": "",
+                "startColumn": 21,
+                "startLine": 13
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 12,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 11,
+            "startLine": 13
+          }
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 14,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 14
+                  },
+                  "value": 1
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 14
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 14,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 14
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 7,
+                    "endLine": 15,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 15
+                  },
+                  "value": 1
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 15,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 15
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 11,
+            "endLine": 15,
+            "sourceId": "",
+            "startColumn": 11,
+            "startLine": 15
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 2,
+                    "upperBound": 2
+                  },
+                  "sourceInformation": {
+                    "endColumn": 10,
+                    "endLine": 16,
+                    "sourceId": "",
+                    "startColumn": 8,
+                    "startLine": 16
+                  },
+                  "values": [
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 6,
+                        "endLine": 16,
+                        "sourceId": "",
+                        "startColumn": 6,
+                        "startLine": 16
+                      },
+                      "value": 2
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 10,
+                        "endLine": 16,
+                        "sourceId": "",
+                        "startColumn": 10,
+                        "startLine": 16
+                      },
+                      "value": 1
+                    }
+                  ]
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 10,
+                "endLine": 16,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 16
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 14,
+            "endLine": 16,
+            "sourceId": "",
+            "startColumn": 14,
+            "startLine": 16
+          }
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "minus",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "sourceInformation": {
+                        "endColumn": 11,
+                        "endLine": 17,
+                        "sourceId": "",
+                        "startColumn": 9,
+                        "startLine": 17
+                      },
+                      "values": [
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 7,
+                            "endLine": 17,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 17
+                          },
+                          "value": 2
+                        },
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 11,
+                            "endLine": 17,
+                            "sourceId": "",
+                            "startColumn": 11,
+                            "startLine": 17
+                          },
+                          "value": 1
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 11,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 17
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 17,
+                "sourceId": "",
+                "startColumn": 15,
+                "startLine": 17
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 17
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "minus",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "sourceInformation": {
+                        "endColumn": 12,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 10,
+                        "startLine": 18
+                      },
+                      "values": [
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 8,
+                            "endLine": 18,
+                            "sourceId": "",
+                            "startColumn": 8,
+                            "startLine": 18
+                          },
+                          "value": 2
+                        },
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 12,
+                            "endLine": 18,
+                            "sourceId": "",
+                            "startColumn": 12,
+                            "startLine": 18
+                          },
+                          "value": 1
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 12,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 18
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 18,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 18
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 17,
+            "endLine": 18,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 18
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "times",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "sourceInformation": {
+                        "endColumn": 13,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 10,
+                        "startLine": 19
+                      },
+                      "values": [
+                        {
+                          "_type": "integer",
+                          "sourceInformation": {
+                            "endColumn": 8,
+                            "endLine": 19,
+                            "sourceId": "",
+                            "startColumn": 8,
+                            "startLine": 19
+                          },
+                          "value": 2
+                        },
+                        {
+                          "_type": "func",
+                          "function": "minus",
+                          "parameters": [
+                            {
+                              "_type": "integer",
+                              "sourceInformation": {
+                                "endColumn": 13,
+                                "endLine": 19,
+                                "sourceId": "",
+                                "startColumn": 13,
+                                "startLine": 19
+                              },
+                              "value": 1
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 12,
+                            "endLine": 19,
+                            "sourceId": "",
+                            "startColumn": 12,
+                            "startLine": 19
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 13,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 19
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 19,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 19
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 18,
+            "startLine": 19
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 10,
+                    "endLine": 20,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 20
+                  },
+                  "value": true
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 10,
+                "endLine": 20,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 20
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 14,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 14,
+            "startLine": 20
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "boolean",
+                  "sourceInformation": {
+                    "endColumn": 9,
+                    "endLine": 21,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 21
+                  },
+                  "value": true
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 12,
+                "endLine": 21,
+                "sourceId": "",
+                "startColumn": 12,
+                "startLine": 21
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 14,
+            "endLine": 21,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 21
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "in",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "c",
+                          "sourceInformation": {
+                            "endColumn": 7,
+                            "endLine": 22,
+                            "sourceId": "",
+                            "startColumn": 6,
+                            "startLine": 22
+                          }
+                        }
+                      ],
+                      "property": "salesPerson",
+                      "sourceInformation": {
+                        "endColumn": 19,
+                        "endLine": 22,
+                        "sourceId": "",
+                        "startColumn": 9,
+                        "startLine": 22
+                      }
+                    }
+                  ],
+                  "property": "lastName",
+                  "sourceInformation": {
+                    "endColumn": 28,
+                    "endLine": 22,
+                    "sourceId": "",
+                    "startColumn": 21,
+                    "startLine": 22
+                  }
+                },
+                {
+                  "_type": "var",
+                  "name": "names",
+                  "sourceInformation": {
+                    "endColumn": 39,
+                    "endLine": 22,
+                    "sourceId": "",
+                    "startColumn": 34,
+                    "startLine": 22
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 32,
+                "endLine": 22,
+                "sourceId": "",
+                "startColumn": 31,
+                "startLine": 22
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 40,
+            "endLine": 22,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 22
+          }
+        },
+        {
+          "_type": "func",
+          "function": "in",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "c",
+                          "sourceInformation": {
+                            "endColumn": 8,
+                            "endLine": 23,
+                            "sourceId": "",
+                            "startColumn": 7,
+                            "startLine": 23
+                          }
+                        }
+                      ],
+                      "property": "salesPerson",
+                      "sourceInformation": {
+                        "endColumn": 20,
+                        "endLine": 23,
+                        "sourceId": "",
+                        "startColumn": 10,
+                        "startLine": 23
+                      }
+                    }
+                  ],
+                  "property": "lastName",
+                  "sourceInformation": {
+                    "endColumn": 29,
+                    "endLine": 23,
+                    "sourceId": "",
+                    "startColumn": 22,
+                    "startLine": 23
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 29,
+                "endLine": 23,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 23
+              }
+            },
+            {
+              "_type": "var",
+              "name": "names",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 23,
+                "sourceId": "",
+                "startColumn": 36,
+                "startLine": 23
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 34,
+            "endLine": 23,
+            "sourceId": "",
+            "startColumn": 33,
+            "startLine": 23
+          }
+        },
+        {
+          "_type": "func",
+          "function": "f",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "isNumber",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x",
+                      "sourceInformation": {
+                        "endColumn": 8,
+                        "endLine": 24,
+                        "sourceId": "",
+                        "startColumn": 7,
+                        "startLine": 24
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 24,
+                    "sourceId": "",
+                    "startColumn": 11,
+                    "startLine": 24
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 20,
+                "endLine": 24,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 24
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 24,
+            "endLine": 24,
+            "sourceId": "",
+            "startColumn": 24,
+            "startLine": 24
+          }
+        },
+        {
+          "_type": "func",
+          "function": "not",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "f",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "isNumber",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "x",
+                      "sourceInformation": {
+                        "endColumn": 7,
+                        "endLine": 25,
+                        "sourceId": "",
+                        "startColumn": 6,
+                        "startLine": 25
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 25,
+                    "sourceId": "",
+                    "startColumn": 10,
+                    "startLine": 25
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 22,
+                "endLine": 25,
+                "sourceId": "",
+                "startColumn": 22,
+                "startLine": 25
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 24,
+            "endLine": 25,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 25
+          }
+        }
+      ],
+      "name": "f__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 25,
+            "startLine": 1
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 26,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::f__Any_MANY_"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 28,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}
