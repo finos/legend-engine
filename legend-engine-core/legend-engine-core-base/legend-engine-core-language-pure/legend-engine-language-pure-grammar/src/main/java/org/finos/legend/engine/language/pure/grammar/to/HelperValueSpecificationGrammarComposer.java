@@ -24,26 +24,26 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWa
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.type.Type;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CBoolean;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDateTime;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CFloat;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CLatestDate;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictTime;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.PathElement;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -212,7 +212,7 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String renderDecimal(BigDecimal b, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "</span>" : String.valueOf(b);
+        return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "d</span>" : b + "d";
     }
 
     public static String renderString(String s, DEPRECATED_PureGrammarComposerCore transformer)

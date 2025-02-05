@@ -1,0 +1,14 @@
+Class <<Profile.flag, protocol::_class::Profile.newFlag>> protocol::LightProfileStereotypes
+{
+  value: Integer[1];
+}
+
+Class {protocol::_class::Profile.tag1 = 'yeah', Profile.tag2 = 'ok'} protocol::LightProfileTaggedValues
+{
+  value: Integer[1];
+}
+
+Class <<Profile.flag, protocol::_class::Profile.newFlag>> {protocol::_class::Profile.tag1 = 'yeah', Profile.tag2 = 'ok'} protocol::LightProfileStereotypesTaggedValues
+{
+  value: Integer[1];
+}

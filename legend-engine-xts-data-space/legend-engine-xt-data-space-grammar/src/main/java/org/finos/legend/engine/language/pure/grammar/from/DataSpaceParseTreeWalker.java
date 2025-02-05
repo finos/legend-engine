@@ -44,7 +44,7 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 
 import java.util.ArrayList;
 import java.util.Collections;

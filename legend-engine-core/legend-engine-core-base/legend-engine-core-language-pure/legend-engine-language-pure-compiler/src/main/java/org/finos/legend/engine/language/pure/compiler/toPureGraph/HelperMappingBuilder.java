@@ -50,7 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData;

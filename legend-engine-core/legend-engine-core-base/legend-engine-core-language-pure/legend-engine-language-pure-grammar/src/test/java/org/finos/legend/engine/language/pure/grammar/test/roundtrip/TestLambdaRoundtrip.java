@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;

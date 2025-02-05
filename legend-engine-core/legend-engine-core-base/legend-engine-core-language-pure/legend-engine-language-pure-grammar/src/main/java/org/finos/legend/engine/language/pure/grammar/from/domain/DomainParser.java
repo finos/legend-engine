@@ -32,8 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -51,7 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;

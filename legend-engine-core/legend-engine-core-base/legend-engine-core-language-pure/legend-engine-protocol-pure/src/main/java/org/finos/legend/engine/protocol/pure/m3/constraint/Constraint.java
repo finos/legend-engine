@@ -15,11 +15,12 @@
 package org.finos.legend.engine.protocol.pure.m3.constraint;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 
 public class Constraint
 {
     public String name;
+    public String owner;
     public Lambda functionDefinition;
     public SourceInformation sourceInformation;
     public String externalId;

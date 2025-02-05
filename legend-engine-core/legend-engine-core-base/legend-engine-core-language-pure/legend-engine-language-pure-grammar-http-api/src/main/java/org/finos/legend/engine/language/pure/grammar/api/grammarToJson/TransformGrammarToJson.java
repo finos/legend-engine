@@ -26,7 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.LambdaInp
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;

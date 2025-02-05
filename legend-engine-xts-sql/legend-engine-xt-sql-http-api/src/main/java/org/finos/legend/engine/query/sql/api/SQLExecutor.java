@@ -50,9 +50,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;

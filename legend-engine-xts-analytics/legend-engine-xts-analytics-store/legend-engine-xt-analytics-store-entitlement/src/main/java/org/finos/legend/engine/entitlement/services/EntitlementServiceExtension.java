@@ -20,7 +20,7 @@ import org.finos.legend.engine.entitlement.model.specification.DatasetSpecificat
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;

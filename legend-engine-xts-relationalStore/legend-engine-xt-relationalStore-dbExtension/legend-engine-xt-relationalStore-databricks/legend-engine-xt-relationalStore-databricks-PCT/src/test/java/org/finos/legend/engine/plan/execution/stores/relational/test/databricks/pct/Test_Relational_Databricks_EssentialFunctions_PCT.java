@@ -242,6 +242,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\nexpected: 3\nactual:   -2"),
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\nexpected: 9.0\nactual:   27.0"),
+            one("meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_", "\"\nexpected: 3.0D\nactual:   3D\""),
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "Unused format args. [3] arguments provided to expression \"mod(%s,%s)\""),
             one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "Unused format args. [3] arguments provided to expression \"mod(%s,%s)\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\nexpected: 0.14D\nactual:   0.14"),

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test;
 
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
 
 import java.util.List;
 

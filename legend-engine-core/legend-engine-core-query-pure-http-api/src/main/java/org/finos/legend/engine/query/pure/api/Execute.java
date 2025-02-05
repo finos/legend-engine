@@ -56,7 +56,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.query.pure.cache.PureExecutionCacheKey;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;

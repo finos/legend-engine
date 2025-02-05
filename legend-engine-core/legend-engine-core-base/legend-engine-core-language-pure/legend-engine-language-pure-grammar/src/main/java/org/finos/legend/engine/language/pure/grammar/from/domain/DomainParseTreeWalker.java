@@ -39,6 +39,7 @@ import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEm
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -74,7 +75,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.type.Type;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
@@ -82,23 +83,24 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecific
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CByteArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CBoolean;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CByteArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CFloat;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CLatestDate;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -338,6 +340,7 @@ public class DomainParseTreeWalker
             DomainParserGrammar.ComplexConstraintContext complexConstraintContext = ctx.complexConstraint();
             constraint.name = PureGrammarParserUtility.fromIdentifier(complexConstraintContext.identifier());
             constraint.enforcementLevel = complexConstraintContext.constraintEnforcementLevel() != null ? complexConstraintContext.constraintEnforcementLevel().constraintEnforcementLevelType().getText() : null;
+            constraint.owner = complexConstraintContext.constraintOwner() != null ? complexConstraintContext.constraintOwner().identifier().getText() : null;
             constraint.externalId = complexConstraintContext.constraintExternalId() != null ? PureGrammarParserUtility.fromGrammarString(complexConstraintContext.constraintExternalId().STRING().getText(), true) : null;
             DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext(constraint.name.replace("::", "_"));
             constraint.functionDefinition.body = Collections.singletonList(this.combinedExpression(complexConstraintContext.constraintFunction().combinedExpression(), "constraint", typeParametersNames, lambdaContext, "", true, false));
@@ -846,7 +849,7 @@ public class DomainParseTreeWalker
 
     private ValueSpecification enumReference(DomainParserGrammar.EnumReferenceContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue result = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue();
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue();
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         result.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         result.value = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
@@ -1087,6 +1090,11 @@ public class DomainParseTreeWalker
         return new CFloat(Double.parseDouble(floatString));
     }
 
+    private CDecimal getInstanceDecimal(String text)
+    {
+        return new CDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
+    }
+
     private boolean isLowerPrecedenceBoolean(String boolop1, String boolop2)
     {
         return boolop1.equals("or") && boolop2.equals("and");
@@ -1237,7 +1245,7 @@ public class DomainParseTreeWalker
         }
         if (ctx.DECIMAL() != null)
         {
-            CFloat instance = getInstanceFloat(ctx.getText());
+            CDecimal instance = getInstanceDecimal(ctx.getText());
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             return instance;
         }
@@ -1257,6 +1265,7 @@ public class DomainParseTreeWalker
         }
         throw new EngineException(ctx.getText() + " is not supported", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
+
 
     private ValueSpecification atomicExpression(DomainParserGrammar.AtomicExpressionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
@@ -1317,6 +1326,10 @@ public class DomainParseTreeWalker
                 return DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, this.walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
             }
             throw new RuntimeException("Not Possible");
+        }
+        if (ctx.unitInstance() != null)
+        {
+            throw new RuntimeException("Unit instance not supported");
         }
         return null;
     }

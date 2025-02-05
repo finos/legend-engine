@@ -27,7 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.pure.generated.Root_meta_analytics_store_entitlements_TableWithType;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_relational_store_entitlement_relational_relationalAnalyzer;

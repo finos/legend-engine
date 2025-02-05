@@ -16,7 +16,7 @@ package org.finos.legend.engine.repl.dataCube.server.handler;
 
 import com.sun.net.httpserver.HttpHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.repl.dataCube.server.DataCubeHelpers;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeExecutionInput;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeExecutionResult;

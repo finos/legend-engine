@@ -46,7 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;

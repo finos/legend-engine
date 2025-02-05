@@ -21,8 +21,8 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
 
 import java.util.List;
 import java.util.Map;

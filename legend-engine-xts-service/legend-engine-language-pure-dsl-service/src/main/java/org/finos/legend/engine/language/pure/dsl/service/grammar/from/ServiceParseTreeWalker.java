@@ -64,7 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 

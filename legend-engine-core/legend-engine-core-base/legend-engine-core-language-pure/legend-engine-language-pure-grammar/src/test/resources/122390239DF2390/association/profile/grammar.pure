@@ -1,0 +1,5 @@
+Association <<AProfile.flag, protocol::AProfile.newFlag>> {protocol::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::AnAssociation1
+{
+  a: protocol::AssociationClassA[1];
+  b: protocol::AssociationClassB[1..*];
+}

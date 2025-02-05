@@ -24,10 +24,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;

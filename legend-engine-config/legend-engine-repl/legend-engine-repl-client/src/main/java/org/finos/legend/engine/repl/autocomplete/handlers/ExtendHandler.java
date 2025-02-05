@@ -23,10 +23,10 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecific
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;

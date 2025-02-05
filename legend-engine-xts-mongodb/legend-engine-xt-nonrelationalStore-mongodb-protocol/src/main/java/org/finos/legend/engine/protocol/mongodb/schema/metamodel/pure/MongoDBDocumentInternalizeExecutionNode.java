@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
 
 public class MongoDBDocumentInternalizeExecutionNode extends ExecutionNode
 {

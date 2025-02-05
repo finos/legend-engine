@@ -1,0 +1,109 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "association",
+      "name": "AnAssociation3",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::AssociationClassA",
+              "sourceInformation": {
+                "endColumn": 32,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 3
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "a",
+          "sourceInformation": {
+            "endColumn": 36,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "aggregation": "COMPOSITE",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::AssociationClassB",
+              "sourceInformation": {
+                "endColumn": 44,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 18,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "b",
+          "sourceInformation": {
+            "endColumn": 51,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AnAssociation3"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

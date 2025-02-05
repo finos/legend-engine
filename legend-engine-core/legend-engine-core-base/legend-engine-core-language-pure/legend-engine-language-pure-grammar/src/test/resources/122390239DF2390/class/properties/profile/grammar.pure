@@ -1,0 +1,4 @@
+Class protocol::ClassWithPropertiesWithStereotypesAndTaggedValues
+{
+  <<Profile.flag, protocol::_class::Profile.newFlag>> {protocol::_class::Profile.tag1 = 'yeah', Profile.tag2 = 'ok'} value: Integer[1];
+}

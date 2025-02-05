@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
 import org.finos.legend.engine.query.sql.api.SQLExecutor;

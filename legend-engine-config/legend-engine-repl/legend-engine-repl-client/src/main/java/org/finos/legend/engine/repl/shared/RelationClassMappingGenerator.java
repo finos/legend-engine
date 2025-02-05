@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.pure.generated.core_pure_corefunctions_stringExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;

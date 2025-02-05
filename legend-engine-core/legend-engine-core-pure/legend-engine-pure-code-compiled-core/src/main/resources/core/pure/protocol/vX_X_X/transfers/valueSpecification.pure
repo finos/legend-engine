@@ -422,9 +422,9 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         fullPath = $e->elementToPath()
                      ),
                   u:Unit[1]|
-                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::UnitType
+                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
                     (
-                       _type = 'unitType',
+                       _type = 'packageableElementPtr',
                        fullPath = $u->elementToPath()
                     ),
                   v:ValueSpecification[1]|$v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
@@ -548,9 +548,10 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                 )
                       ),
                  l:List<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::List
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection
                      (
                         _type = 'collection',
+                        multiplicity = ^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=$l.values->size(), upperBound=$l.values->size()),
                         values = $l.values->map(la|$la->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions))
                      ),
                   a:AlloySerializationConfig[1] |
@@ -1028,7 +1029,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                         '^TdsOlapRank<TDSRow>(func = %s)'->format($state->toPure($or.function)),
                      oa : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1]|
                         '^TdsOlapAggregation<TDSRow>(colName = \'%s\', func = %s)'->format([$oa.columnName, $state->toPure($oa.function)]),
-                     a :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Whatever[1]|fail('Unsupported type in alloy protocol ' + $a.class);'';,
                      r : RuntimeInstance[1]|'',
                      e : ExecutionContextInstance[1]|'',
                      c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(',')),

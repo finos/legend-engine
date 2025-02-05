@@ -80,15 +80,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
