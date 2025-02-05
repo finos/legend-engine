@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.One;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecific
 import java.io.IOException;
 
 @JsonDeserialize(using = UnitType.UnitTypeDeserializer.class)
+@Deprecated
 public class UnitType extends One
 {
     public String fullPath;

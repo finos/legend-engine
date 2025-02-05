@@ -1,0 +1,255 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement
+{
+   includedMappings:  meta::protocols::pure::vX_X_X::metamodel::mapping::MappingInclude[*];
+   classMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping[*];
+   associationMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping[*];
+   enumerationMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::EnumerationMapping[*];
+   tests: meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTest[0..*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::domain::MappingClass extends meta::protocols::pure::vX_X_X::metamodel::m3::type::Class
+{
+  setImplementation : 	meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping[0..1];
+  rootClass : meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[0..1];
+  localProperties : meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTest
+{
+   name: String[1];
+   query: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   inputData: meta::protocols::pure::vX_X_X::metamodel::mapping::InputData[*];
+   assert: meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTestAssert[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::InputData
+{
+   _type: String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::ObjectInputData extends meta::protocols::pure::vX_X_X::metamodel::mapping::InputData
+{
+   sourceClass: String[1];
+   data: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTestAssert
+{
+   _type: String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::ExpectedOutputMappingTestAssert extends meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTestAssert
+{
+   expectedOutput: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::MappingInclude
+{
+   includedMapping: String[1];
+   sourceDatabasePath: String[0..1];
+   targetDatabasePath: String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+   id : String[1];
+   _type : String[1];
+   class : String[1];
+   root : Boolean[1];
+   extendsClassMappingId : String[0..1];
+   mappingClass: meta::protocols::pure::vX_X_X::metamodel::domain::MappingClass[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping
+{
+   id : String[1];
+   _type : String[1];
+   association : String[1];
+   stores : String[*];
+}
+
+Enum meta::protocols::pure::vX_X_X::metamodel::mapping::MappingOperation
+{
+   STORE_UNION, ROUTER_UNION, INHERITANCE, MERGE
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::OperationClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+   parameters : String[*];
+   operation : meta::protocols::pure::vX_X_X::metamodel::mapping::MappingOperation[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::MergeOperationClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::OperationClassMapping
+{
+
+   validationFunction : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::AggregationAwareClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+   mainSetImplementation:meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping[1];
+   propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
+   aggregateSetImplementations: meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateSetImplementationContainer[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateSetImplementationContainer
+{
+   index : Integer[1];
+   setImplementation: meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping[1];
+   aggregateSpecification: meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateSpecification[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateSpecification
+{
+   canAggregate: Boolean[1];
+   groupByFunctions: meta::protocols::pure::vX_X_X::metamodel::mapping::GroupByFunctions[*];
+   aggregateValues: meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateFunctions[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+   _type : String[1];
+   property : meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr[1];
+   source : String[0..1];
+   target : String[1];
+   localMappingProperty : meta::protocols::pure::vX_X_X::metamodel::mapping::LocalMappingPropertyInfo[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::LocalMappingPropertyInfo
+{
+    type : String[1];
+    multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::InlineEmbeddedPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+   id : String[1];
+   setImplementationId : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumerationMapping
+{
+   id : String[1];
+   sourceType: String[0..1];
+   enumeration : String[1];
+   enumValueMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMapping[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMapping
+{
+   enumValue : String[1];
+   sourceValues: meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingSourceValue[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingSourceValue
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingStringSourceValue extends meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingSourceValue
+{
+   value: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingIntegerSourceValue extends meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingSourceValue
+{
+   value: Integer[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingEnumSourceValue extends meta::protocols::pure::vX_X_X::metamodel::mapping::EnumValueMappingSourceValue
+{
+   enumeration: String[1];
+   value: String[1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInstanceClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+   srcClass : String[0..1];
+   propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping[*];
+   filter : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+   explodeProperty : Boolean[0..1];
+   enumMappingId : String[0..1];
+   transform : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStoreAssociationMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping
+{
+   propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+   crossExpression : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
+{
+  relationFunction: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[1];
+  propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
+{
+  column: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+   input : meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelInput[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::JsonModelConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+   class : String[1];
+   url   : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::XmlModelConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+   class : String[1];
+   url   : String[1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelChainConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+     mappings : String[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelInput
+{
+    _type: String[1];
+   class : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelStringInput extends meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::ModelInput
+{
+   instances : String[*];
+}

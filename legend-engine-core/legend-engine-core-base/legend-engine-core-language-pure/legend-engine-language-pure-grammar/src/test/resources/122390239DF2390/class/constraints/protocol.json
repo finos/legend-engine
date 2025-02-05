@@ -1,0 +1,436 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "startsWith",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this",
+                        "sourceInformation": {
+                          "endColumn": 7,
+                          "endLine": 3,
+                          "sourceId": "",
+                          "startColumn": 3,
+                          "startLine": 3
+                        }
+                      }
+                    ],
+                    "property": "other",
+                    "sourceInformation": {
+                      "endColumn": 13,
+                      "endLine": 3,
+                      "sourceId": "",
+                      "startColumn": 9,
+                      "startLine": 3
+                    }
+                  },
+                  {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 29,
+                      "endLine": 3,
+                      "sourceId": "",
+                      "startColumn": 27,
+                      "startLine": 3
+                    },
+                    "value": "x"
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 25,
+                  "endLine": 3,
+                  "sourceId": "",
+                  "startColumn": 16,
+                  "startLine": 3
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "0",
+          "sourceInformation": {
+            "endColumn": 30,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          }
+        },
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "endsWith",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this",
+                        "sourceInformation": {
+                          "endColumn": 11,
+                          "endLine": 4,
+                          "sourceId": "",
+                          "startColumn": 7,
+                          "startLine": 4
+                        }
+                      }
+                    ],
+                    "property": "other",
+                    "sourceInformation": {
+                      "endColumn": 17,
+                      "endLine": 4,
+                      "sourceId": "",
+                      "startColumn": 13,
+                      "startLine": 4
+                    }
+                  },
+                  {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 31,
+                      "endLine": 4,
+                      "sourceId": "",
+                      "startColumn": 29,
+                      "startLine": 4
+                    },
+                    "value": "z"
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 27,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 20,
+                  "startLine": 4
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "id",
+          "sourceInformation": {
+            "endColumn": 32,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          }
+        },
+        {
+          "enforcementLevel": "Error",
+          "externalId": "someId",
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "greaterThan",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "length",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this",
+                            "sourceInformation": {
+                              "endColumn": 20,
+                              "endLine": 9,
+                              "sourceId": "",
+                              "startColumn": 16,
+                              "startLine": 9
+                            }
+                          }
+                        ],
+                        "property": "other",
+                        "sourceInformation": {
+                          "endColumn": 26,
+                          "endLine": 9,
+                          "sourceId": "",
+                          "startColumn": 22,
+                          "startLine": 9
+                        }
+                      }
+                    ],
+                    "sourceInformation": {
+                      "endColumn": 34,
+                      "endLine": 9,
+                      "sourceId": "",
+                      "startColumn": 29,
+                      "startLine": 9
+                    }
+                  },
+                  {
+                    "_type": "integer",
+                    "sourceInformation": {
+                      "endColumn": 40,
+                      "endLine": 9,
+                      "sourceId": "",
+                      "startColumn": 40,
+                      "startLine": 9
+                    },
+                    "value": 2
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 40,
+                  "endLine": 9,
+                  "sourceId": "",
+                  "startColumn": 38,
+                  "startLine": 9
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "messageFunction": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "plus",
+                "parameters": [
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "sourceInformation": {
+                      "endColumn": 41,
+                      "endLine": 11,
+                      "sourceId": "",
+                      "startColumn": 27,
+                      "startLine": 11
+                    },
+                    "values": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this",
+                            "sourceInformation": {
+                              "endColumn": 19,
+                              "endLine": 11,
+                              "sourceId": "",
+                              "startColumn": 15,
+                              "startLine": 11
+                            }
+                          }
+                        ],
+                        "property": "other",
+                        "sourceInformation": {
+                          "endColumn": 25,
+                          "endLine": 11,
+                          "sourceId": "",
+                          "startColumn": 21,
+                          "startLine": 11
+                        }
+                      },
+                      {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 41,
+                          "endLine": 11,
+                          "sourceId": "",
+                          "startColumn": 29,
+                          "startLine": 11
+                        },
+                        "value": " has issues"
+                      }
+                    ]
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 41,
+                  "endLine": 11,
+                  "sourceId": "",
+                  "startColumn": 27,
+                  "startLine": 11
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "other",
+          "owner": "theOwner",
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          }
+        },
+        {
+          "externalId": "ok",
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "lessThan",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "length",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this",
+                            "sourceInformation": {
+                              "endColumn": 20,
+                              "endLine": 16,
+                              "sourceId": "",
+                              "startColumn": 16,
+                              "startLine": 16
+                            }
+                          }
+                        ],
+                        "property": "other",
+                        "sourceInformation": {
+                          "endColumn": 26,
+                          "endLine": 16,
+                          "sourceId": "",
+                          "startColumn": 22,
+                          "startLine": 16
+                        }
+                      }
+                    ],
+                    "sourceInformation": {
+                      "endColumn": 34,
+                      "endLine": 16,
+                      "sourceId": "",
+                      "startColumn": 29,
+                      "startLine": 16
+                    }
+                  },
+                  {
+                    "_type": "integer",
+                    "sourceInformation": {
+                      "endColumn": 40,
+                      "endLine": 16,
+                      "sourceId": "",
+                      "startColumn": 40,
+                      "startLine": 16
+                    },
+                    "value": 4
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 40,
+                  "endLine": 16,
+                  "sourceId": "",
+                  "startColumn": 38,
+                  "startLine": 16
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "other2",
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 13
+          }
+        }
+      ],
+      "name": "SuperClass",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 20,
+                "sourceId": "",
+                "startColumn": 10,
+                "startLine": 20
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "other",
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 20
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 21,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::SuperClass"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 23,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

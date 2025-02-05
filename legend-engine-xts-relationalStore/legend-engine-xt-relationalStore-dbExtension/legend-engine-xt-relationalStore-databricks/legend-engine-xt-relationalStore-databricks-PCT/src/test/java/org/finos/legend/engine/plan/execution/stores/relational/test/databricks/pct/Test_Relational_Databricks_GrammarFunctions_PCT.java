@@ -110,13 +110,13 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_", "\nexpected: 0.010416666666666666\nactual:   0.010417"),
 
             //minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\nexpected: -4.0D\nactual:   -4.0"),
+            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\nexpected: -4.0D\nactual:   -4D"),
             one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [ARITHMETIC_OVERFLOW] org.apache.spark.SparkArithmeticException: [ARITHMETIC_OVERFLOW] long overflow. Use 'try_subtract' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error. SQLSTATE: 22003"),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy"),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [PARSE_SYNTAX_ERROR] org.apache.spark.sql.catalyst.parser.ParseException: \n[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 1, pos 10)"),
 
             //plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\nexpected: 6.0D\nactual:   6.0"),
+            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\nexpected: 6.0D\nactual:   6D"),
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [ARITHMETIC_OVERFLOW] org.apache.spark.SparkArithmeticException: [ARITHMETIC_OVERFLOW] long overflow. Use 'try_add' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error. SQLSTATE: 22003"),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy"),
 

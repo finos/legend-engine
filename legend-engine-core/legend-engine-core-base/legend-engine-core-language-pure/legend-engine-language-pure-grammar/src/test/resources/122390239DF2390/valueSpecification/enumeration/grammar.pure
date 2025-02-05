@@ -1,0 +1,6 @@
+function protocol::f(): Any[*]
+{
+  myEnum.A;
+  myEnum.B;
+  [myEnum.A, myEnum.B];
+}

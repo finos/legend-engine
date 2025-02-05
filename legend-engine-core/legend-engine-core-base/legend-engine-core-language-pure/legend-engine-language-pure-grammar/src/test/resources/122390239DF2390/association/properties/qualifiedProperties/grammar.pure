@@ -1,0 +1,6 @@
+Association protocol::AnAssociation1
+{
+  a: protocol::AssociationClassA[1];
+  b: protocol::AssociationClassB[1..*] = ^AssociationClassB();
+  q() {$this.b->filter(x|true)}: protocol::AssociationClassB[*];
+}
