@@ -218,7 +218,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testInOnColumnIn
    ->olapGroupBy('name', desc('age'), x | $x->meta::pure::functions::math::olap::rank(), 'rank')
    ->filter({r | $r.getString('name')->in(['John', 'Peter'])}), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "name" as "name", "age" as "age", "rank" as "rank" from (select "root".FIRSTNAME as "name", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME Order By "root".AGE DESC) as "rank" from personTable as "root") as "subselect" where "name" in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
+   assertEquals('select "subselect"."name" as "name", "subselect"."age" as "age", "subselect"."rank" as "rank" from (select "root".FIRSTNAME as "name", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME Order By "root".AGE DESC) as "rank" from personTable as "root") as "subselect" where "subselect"."name" in (\'John\', \'Peter\')', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 3);
    assertEquals(['John', 22, 1, 'John', 12, 2, 'Peter', 23, 1], $result.values.rows->map(r|$r.values));
 }

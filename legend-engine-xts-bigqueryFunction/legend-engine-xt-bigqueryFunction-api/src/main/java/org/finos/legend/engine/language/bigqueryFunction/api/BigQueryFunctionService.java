@@ -24,7 +24,7 @@ import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunc
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.bigqueryFunction.deployment.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;

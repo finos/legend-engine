@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.hostedService.api;
 
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 
 public class HostedServiceError extends FunctionActivatorError
 {
