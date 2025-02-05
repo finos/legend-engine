@@ -353,7 +353,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',
-                                                         dataType=$rt.genericType.rawType->toOne()->elementToPath()
+                                                         dataType=$rt.genericType.rawType->defaultIfEmpty(Any)->toOne()->elementToPath()
                                                       )
       ])->toOneMany()
    );
