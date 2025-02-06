@@ -3086,6 +3086,11 @@
                 <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xts-deployment-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- LEGEND SHARED -->
             <dependency>
