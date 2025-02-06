@@ -105,7 +105,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
               resultType = $exp.resultType->transformResultType($extensions),
               functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, genericType=^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath=$p.type->elementToPath())), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
               parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
-                                                                              e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext')
+                                                                              e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext'),
+                                                                              p:meta::pure::executionPlan::ProtocolObjectValidationContext<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ProtocolObjectValidationContext(varName = $p.varName, parameterClassName = $p.parameterClass->elementToPath(), _type = 'protocolObjectValidationContext')
                                                                             ]))
 
             ),
