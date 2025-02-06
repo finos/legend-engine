@@ -270,8 +270,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_", "\nexpected: 4\nactual:   5"),
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'tail_T_MANY__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."),
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "The database type 'Databricks' is not supported yet!"),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'"),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\nexpected: '[a,b,c]'\nactual:   '[,a,b,c,]'"),
             one("meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_", "[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_", "[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "[unsupported-api] The function 'toTimestamp' (state: [Select, false]) is not supported yet"),
