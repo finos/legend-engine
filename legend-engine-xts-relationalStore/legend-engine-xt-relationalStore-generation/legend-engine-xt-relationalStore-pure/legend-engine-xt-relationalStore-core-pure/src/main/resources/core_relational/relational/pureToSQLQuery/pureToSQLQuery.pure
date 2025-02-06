@@ -1270,12 +1270,13 @@ function meta::relational::functions::pureToSqlQuery::buildNameFromDeactivatedQu
              ]);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::extractColumnName(col:RelationalOperationElement[1]):String[0..1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::extractColumnName(col:RelationalOperationElement[1]):String[1]
 {
    $col->match([a:Alias[1]|$a.name,
+                c:ColumnName[1]|$c.name,
                 w:WindowColumn[1]| $w.columnName,
-                tac:TableAliasColumn[1] | $tac.column.name,
-                r: RelationalOperationElement[1]|[]]);
+                tac:TableAliasColumn[1] | $tac.columnName->defaultIfEmpty($tac.column.name)->toOne()
+              ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::processColumnsInRelationalOperationElements(z:RelationalOperationElement[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
@@ -2094,7 +2095,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
                   let varValue = $e->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);
 
                   let returnType = $e->cast(@SimpleFunctionExpression).genericType;
-                  assert($returnType.typeArguments->head().rawType->isNotEmpty() && $returnType.typeArguments->at(0).rawType->toOne()->instanceOf(meta::pure::metamodel::relation::RelationType), |'Multi expression only supported on expressions that return Relation');
+                  // assert($returnType.typeArguments->head().rawType->isNotEmpty() && $returnType.typeArguments->at(0).rawType->toOne()->instanceOf(meta::pure::metamodel::relation::RelationType), |'Multi expression only supported on expressions that return Relation');
 
                   let sqlQuery = $varValue->match([
                           sc:StoreMappingClusteredValueSpecification[1] |
@@ -2685,15 +2686,18 @@ function meta::relational::functions::pureToSqlQuery::processDynafuncWithRename(
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], select:SelectSQLQuery[1]):Alias[1]
 {
-   findAliasOrFail($columnName, $select.columns->filter(c|$c->instanceOf(Alias))->cast(@Alias));
+   findAliasOrFail($columnName, $select.columns);
 }
 
-function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], aliases:Alias[*]):Alias[1]
+function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], columns:RelationalOperationElement[*]):Alias[1]
 {
-   let ps = $columnName-> meta::relational::functions::pureToSqlQuery::addQuotesIfNecessary();
-   let alias = $aliases->filter(a|$a.name->addQuotesIfNoQuotes() == $ps);
-   assertNotEmpty($alias,{|'The column \''+$columnName+'\' can\'t be found ('+$aliases.name->joinStrings(',')+')'});
-   $alias->toOne();
+   let ps = $columnName->addQuotesIfNecessary();  
+   let column = $columns->filter(c|$c->extractColumnName()->addQuotesIfNoQuotes() == $ps);
+   assertNotEmpty($column,{|'The column \''+$columnName+'\' can\'t be found ('+ $columns->map(c|$c->extractColumnName())->joinStrings(',')+')'});
+   $column->toOne()->match([
+    a: Alias[1] | $a,
+    op: RelationalOperationElement[1] | ^Alias(name = $op->extractColumnName(), relationalElement = $op)
+   ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(f:FunctionExpression[1], select:SelectSQLQuery[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):Alias[*]
@@ -3696,7 +3700,9 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
                                                                  ,| ^$mergedSQL(filteringOperation = newDynaFunction($name, if($parameterSQL->isEmpty(), | [], |$mergedSQL.filteringOperation))));,
                            | ^$mergedSQL
                              (
-                                columns = newDynaFunction($name, $mergedSQL.columns)
+                                columns = ^Alias(name = $name, 
+                                                 relationalElement = newDynaFunction($name, $mergedSQL.columns->map(c|$c->match([ a:Alias[1]| $a.relationalElement,r:RelationalOperationElement[1]|$r])))
+                                                )
                              )
                         ),
                         currentTreeNode = [],
@@ -4887,18 +4893,21 @@ function meta::relational::functions::pureToSqlQuery::processTDSMap(a:AggContain
     // in the example above, if we don't reprocess the column aliases to table alias, but leave them as the relation element
     // they carried from the sub-select the SQL generated will contain `sum("inner".treePlanted) > 100)`.
     // This is invalid as "inner" alias is not known to the outer select, the correct output should be `"outer".total > 100`.
-    let aliases = if($noSubSelect, | $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias),
-                   | $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias)->map(a|^Alias(name = $a.name,
-                            relationalElement = ^TableAliasColumn
-                                                (
-                                                    alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select),
-                                                    column = ^Column
-                                                            (
-                                                                name = $a.name,
-                                                                type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
-                                                            )
-                                                )
-                      ));
+    let aliases = if($noSubSelect, | $select.columns->filter(c|!$c->instanceOf(WindowColumn)),
+                   | $select.columns->filter(c|!$c->instanceOf(WindowColumn))->map(c|
+                        let name = $c->extractColumnName();
+                        ^Alias(name = $name,
+                              relationalElement = ^TableAliasColumn
+                                                  (
+                                                      alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select),
+                                                      column = ^Column
+                                                              (
+                                                                  name = $name,
+                                                                  type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
+                                                              )
+                                                  )
+                        );
+                      );
     );
 
     // Map
@@ -5105,7 +5114,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsProject(f:Functi
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processColSpec(f:meta::pure::metamodel::function::Function<Any>[1], name:String[1], currentPropertyMapping:PropertyMapping[*], mainQuery:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], context:DebugContext[1]):Pair<Alias,Pair<String,PathInformation>>[1]
 {
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
-  let newElement = processTdsLambda($f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), $mainQuery.select.columns->cast(@Alias), false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0);
+  let newElement = processTdsLambda($f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), $mainQuery.select.columns, false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0);
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
                                             relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
@@ -5203,15 +5212,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(ex
       select = ^TdsSelectSqlQuery(
                   data = $newData,
                   columns =$select.columns->map(c|
-                                 let newNamePair = $c->match([
-                                    a:Alias[1]|
-                                    let newNameStr = $projectColNamesMap->get($a.name);
-                                    let newName = if($newNameStr->isEmpty(),
-                                                     | $a.name,
-                                                     | $newNameStr->toOne()
-                                                     );
-                                    pair($a.name, $newName);
-                                 ]);
+                                 let name = $c->extractColumnName();
+                                 let newNameStr = $projectColNamesMap->get($name);
+                                 let newName = if($newNameStr->isEmpty(),
+                                                  | $name,
+                                                  | $newNameStr->toOne()
+                                              );
+                                 let newNamePair = pair($name, $newName);
 
                                  ^Alias(
                                        name = $newNamePair.second,
@@ -5321,29 +5328,17 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    let origSelect = $nestedQuery.select->cast(@TdsSelectSqlQuery);
 
    let origColumnsByName = $origSelect.columns->map(column|
-         let name = $column->match([
-               a:Alias[1]|$a.name,
-               c:ColumnName[1]|$c.name
-         ]);
-
+         let name = $column->extractColumnName();
          pair($name, $column);
       );
     let origColumnsByNameAsMap = $origColumnsByName->newMap();
     let origGroupByByName = $origSelect.groupBy->map(column|
-         let name = $column->match([
-               a:Alias[1]|$a.name,
-               c:ColumnName[1]|$c.name
-         ]);
-
+         let name = $column->extractColumnName();
          pair($name, $column);
       );
 
     let origSortByByName = $origSelect.orderBy.column->map(column|
-         let name = $column->match([
-               a:Alias[1]|$a.name,
-               c:ColumnName[1]|$c.name
-         ]);
-
+         let name = $column->extractColumnName();
          pair($name, $column);
       );
 
@@ -5380,7 +5375,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                     data =$newData,
                                     columns = $newCols->map(c|
                                                 let tac = ^TableAliasColumn(alias=$newAlias,
-                                                                                column=^Column(name=$c->match([a:Alias[1]|$a.name, c:ColumnName[1]|$c.name]), type=^meta::relational::metamodel::datatype::Integer()));
+                                                                                column=^Column(name=$c->extractColumnName(), type=^meta::relational::metamodel::datatype::Integer()));
                                                 ^Alias(name=$tac.column.name, relationalElement=$tac);
                                              ),
                                     groupBy = []->cast(@Alias),
@@ -5758,29 +5753,24 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::switchA
    );
 }
 
-function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(f:FunctionExpression[1], tdsAliases:Alias[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):RelationalOperationElement[*]
+function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(f:FunctionExpression[1], tdsAliases:RelationalOperationElement[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):RelationalOperationElement[*]
 {
     let propertyName =  $f.parametersValues->at(1)->match([ iv:InstanceValue[1]|$iv.values,
                                                             ve:VariableExpression[1]|let res = $ve->resolve($vars, $state.inScopeVars);
                                                                                      $res->cast(@InstanceValue).values;
                                                           ])->toOne()->toString()->addQuotesIfNecessary();
 
-
-    let foundColumn = $tdsAliases->filter(a|$a->match([a:Alias[1]|$a.name->addQuotesIfNecessary() == $propertyName,
-                                                       t:TableAliasColumn[1]| $propertyName == $t.column.name->addQuotesIfNecessary(),
-                                                       w:WindowColumn[1]| $w.columnName->addQuotesIfNecessary()==$propertyName])); //TODO: I think this case can be removed - WindowColumn isn't a subtype of Alias?
-
-    assertNotEmpty($foundColumn, {|'The column \''+$propertyName+'\' can\'t be found in the TDS ('+$tdsAliases.name->makeString(',')+')'});
+    let foundColumn = findAliasOrFail($propertyName, $tdsAliases);
 
     let funcName = $f.func.functionName;
 
     if($returnColumnName,
        {|
           assert($funcName->isEmpty() || !['isNull', 'isNotNull']->contains($funcName->toOne()), | $funcName->makeString() + ' can not be used to return column name');
-          $foundColumn->map(c|^ColumnName(name=$c->match([a:Alias[1]|$a.name ,w:WindowColumn[1]| $w.columnName,t:TableAliasColumn[1]| $t.column.name])));
+          $foundColumn->map(c|^ColumnName(name=$c.name));
        },
        {|
-          let foundCol = $foundColumn->map(c|$c->match([ a:Alias[1]| $a.relationalElement,r:RelationalOperationElement[1]|$r]));
+          let foundCol = $foundColumn.relationalElement;
 
           if($funcName =='isNull',
                    | ^DynaFunction(name = 'isNull', parameters = $foundCol->toOne()),
@@ -5813,26 +5803,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isFunct
   $r->instanceOf(FunctionExpression) && $r->cast(@FunctionExpression).func.functionName == $functionName;
 }
 
-function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:ValueSpecification[1], a:Alias[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], currentPropertyMapping:PropertyMapping[*], paths:Pair<String, PathInformation>[*], context:DebugContext[1]):RelationalOperationElement[*]
+function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:ValueSpecification[1], columns:RelationalOperationElement[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], currentPropertyMapping:PropertyMapping[*], paths:Pair<String, PathInformation>[*], context:DebugContext[1]):RelationalOperationElement[*]
 {
    $mapFn->match(
                   [
-                     r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                     r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                      fx:FunctionExpression[1]|
                         let f = $fx->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression);
-                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
-                          | let foundColumn = $a->filter(alias|
-                                                            $alias->match(
-                                                                [
-                                                                  al:Alias[1]| $al.name->addQuotesIfNecessary();,
-                                                                  t:TableAliasColumn[1]| $t.column.name->addQuotesIfNecessary(),
-                                                                  w:WindowColumn[1]| $w.columnName->addQuotesIfNecessary()
-                                                                ]
-                                                              ) == $f.func.name->toOne()->addQuotesIfNecessary()
-                                                            ); //TODO: I think this case can be removed - WindowColumn isn't a subtype of Alias?
-                            assertNotEmpty($foundColumn, {|'The column \''+$f.func.name->toOne()+'\' can\'t be found in the TDS ('+$a.name->makeString(',')+')'});
-                            let res = $foundColumn->map(c|$c->match([ a:Alias[1]| $a.relationalElement,r:RelationalOperationElement[1]|$r]));
-
+                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),                        
+                          | let foundColumn = findAliasOrFail($f.func.name->toOne(), $columns);
+                            let res = $foundColumn.relationalElement;
                             // Column application -> Generalize all that...
                             if ($f.parametersValues->size() == 1 && $f.parametersValues->at(0)->instanceOf(FunctionExpression),
                               | let subFuncExpr = $f.parametersValues->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate();
@@ -5859,19 +5839,21 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                               | $res
                             );
                             ,
-                          | let dispatch = [
-                                            pair('getNumber', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getInteger', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getDecimal', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getString', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getFloat', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getDate', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getDateTime', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getStrictDate', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getBoolean', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('getEnum', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('isNull', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
-                                            pair('isNotNull', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state))
+                          | 
+                            let tdsGetterDispatch = {|findColumnInTdsFromGetter($f, $columns, $returnColumnName, $vars, $state)};
+                            let dispatch = [
+                                            pair('getNumber', $tdsGetterDispatch),
+                                            pair('getInteger', $tdsGetterDispatch),
+                                            pair('getDecimal', $tdsGetterDispatch),
+                                            pair('getString', $tdsGetterDispatch),
+                                            pair('getFloat', $tdsGetterDispatch),
+                                            pair('getDate', $tdsGetterDispatch),
+                                            pair('getDateTime', $tdsGetterDispatch),
+                                            pair('getStrictDate', $tdsGetterDispatch),
+                                            pair('getBoolean', $tdsGetterDispatch),
+                                            pair('getEnum', $tdsGetterDispatch),
+                                            pair('isNull', $tdsGetterDispatch),
+                                            pair('isNotNull', $tdsGetterDispatch)
                                           ];
 
                             let func = $dispatch->filter(d|$d.first == $f.func.functionName);
@@ -5889,8 +5871,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                 | let enumVarParam = $params.first.values->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
                                                   let otherParam = $params.second.values->toOne()->evaluateAndDeactivate();
 
-                                                  let enumVarProcessedParam = $enumVarParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-                                                  let otherProcessedParam = $otherParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                                  let enumVarProcessedParam = $enumVarParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                                  let otherProcessedParam = $otherParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
                                                   let enumPropertyMapping = getEnumExprPropertyMapping($enumVarParam, $paths);
 
                                                   if($otherProcessedParam->hasReferenceToEnum(),
@@ -5903,20 +5885,20 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                       ),
                                                     | newDynaFunction('equal', [$enumVarProcessedParam, $otherProcessedParam]);
                                                   );,
-                                                | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
+                                                | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
                                               );
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {|
                                               ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context))
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = plus_String_MANY__String_1_, second = {|
-                                              ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
+                                              ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = {|
                                               let valueParam = $f.parametersValues->at(0);
-                                              let valueArg = $valueParam->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                              let valueArg = $valueParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
 
-                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
+                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
                                               let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
 
                                               if($valueParam->isFunctionWithName('getEnum'),
@@ -5934,22 +5916,22 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                               );
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {|
-                                              newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                              newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::date::month_Date_1__Month_1_, second = {|
-                                              newDynaFunction('monthName', $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                              newDynaFunction('monthName', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, second = {|
                                               newDynaFunction('splitPart', [
-                                                $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
-                                                $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
-                                                $f.parametersValues->at(2)->zeroToOneBasedIndex()->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) ->toOne()
+                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                $f.parametersValues->at(2)->zeroToOneBasedIndex()->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) ->toOne()
                                               ])
                                             }),
                                             ^PureFunctionTDSToRelationalFunctionPair(first = parseDate_String_1__Date_1_, second = {|
                                               let format = ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=String), values = 'YYYY-MM-DD HH24:MI:SS');
                                               newDynaFunction('toTimestamp', [
-                                                $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
                                                 ^Literal(value = 'YYYY-MM-DD HH24:MI:SS')
                                               ]);
                                             }),
@@ -5957,7 +5939,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                               let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
                                               let name = meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName($type);
 
-                                                  let value = $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
+                                                  let value = $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
 
                                                   newDynaFunction($name, $value);
                                                 })
@@ -5970,7 +5952,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                           ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {|
                                                             ^DynaFunction(
                                                               name = 'concat',
-                                                              parameters = $f.parametersValues->map(p|$p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                                              parameters = $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                                               )
                                                           })
                                                         )
@@ -5981,7 +5963,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                   | $override->toOne().second->eval(),
                                                   | if ($supportedFunction == processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_ ||
                                                         $supportedFunction == processCast_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
-                                                          | $f.parametersValues->at(0)->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          | $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                                                           | if($supportedFunction == processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
                                                             |  let win = $state.currentWindow->toOne();
                                                                ^$win
@@ -5989,12 +5971,12 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                                   func = ^DynaFunction
                                                                          (
                                                                             name = $f.func.functionName->toOne(),
-                                                                            parameters = $f.parametersValues->tail()->map(p|$p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                                                            parameters = $f.parametersValues->tail()->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
                                                                          )
                                                                );,
                                                             | if ($supportedFunction == meta::relational::functions::pureToSqlQuery::processWavgRowMapper_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
-                                                                  | $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));,
-                                                                  | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
+                                                                  | $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));,
+                                                                  | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
                                                           ););
                                                     );
                                               );,
@@ -6010,10 +5992,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                           b:Boolean[1] | ^Literal(value=$b),
                                                           e:Enum[1] | ^Literal(value=$e),
                                                           e:Enumeration<Any>[1] | ^Literal(value=$e),
-                                                          f:SimpleFunctionExpression[1]|$f->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          v:VariableExpression[1] | $v->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          i:InstanceValue[1]|$i->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($a, $returnColumnName,$vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          f:SimpleFunctionExpression[1]|$f->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          v:VariableExpression[1] | $v->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          i:InstanceValue[1]|$i->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($columns, $returnColumnName,$vars, $state, $currentPropertyMapping, $paths, $context),
                                                           v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
                                               ]));
                                           if($transformedValues->isNotEmpty(),
@@ -6021,7 +6003,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                              | ^Literal(value = ^SQLNull())
                                           );
                      ,v:VariableExpression[1] | let res = $v->resolve($vars, $state.inScopeVars);
-                                                if($res->isEmpty(),|[],|processTdsLambda($res->toOne(), $a, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));
+                                                if($res->isEmpty(),|[],|processTdsLambda($res->toOne(), $columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));
 
                   ]
                 );
@@ -7253,7 +7235,8 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
    let query = $nested->extractSelectWithCursor($operation);
    let mergedQuery = if($query.select.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
    let mergedSelect = $mergedQuery.select;
-   ^$mergedQuery(select=^$mergedSelect(columns = newDynaFunction('count', if ($mergedSelect.columns->isNotEmpty(), | $mergedSelect.columns->at(0)->cast(@Alias).relationalElement, | []))));
+   let count = newDynaFunction('count', if ($mergedSelect.columns->isNotEmpty(), | $mergedSelect.columns->at(0)->match([a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|$tcn]), | []));
+   ^$mergedQuery(select=^$mergedSelect(columns = ^Alias(name = 'count', relationalElement = $count)));
 }
 
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

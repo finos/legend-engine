@@ -36,3 +36,26 @@ function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimple
                   '   4\n'+
                   '#', $res->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimpleFilter_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                  |
+                    let a = #TDS
+                              val
+                              1
+                              3
+                              4
+                              5
+                            #;
+                    let b = $a->filter(x|$x.val > 3);
+                    $b->filter(x|$x.val > 4);
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val\n'+
+                  '   5\n'+
+                  '#', $res->toString());
+}

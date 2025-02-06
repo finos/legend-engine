@@ -39,3 +39,27 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   '   4,qw\n'+
                   '#', $res->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleLimitMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                let t = #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #;
+                $t->limit(3);                
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   4,qw\n'+
+                  '#', $res->toString());
+}

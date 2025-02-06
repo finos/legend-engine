@@ -89,3 +89,81 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSo
                 '   1,Sachin\n'+
                 '#', $res3->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSortMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {| 
+                let t = #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #;
+                
+                $t->sort(ascending(~id));
+            };
+
+  let res =  $f->eval($expr);
+
+  assertEquals([1,1,2,2,3,4,5], $res->map(x|$x.id));
+
+  let expr2 = {| 
+                let t = #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #;
+                
+                $t->sort([ascending(~id), ascending(~name)]);
+            };
+
+  let res2 =  $f->eval($expr2);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   1,Neema\n'+
+                '   1,Sachin\n'+
+                '   2,George\n'+
+                '   2,Thierry\n'+
+                '   3,Pierre\n'+
+                '   4,Alex\n'+
+                '   5,David\n'+
+                '#', $res2->toString());
+
+  let expr3 = {| 
+                let t = #TDS
+                  id, name
+                  2, George
+                  3, Pierre
+                  1, Sachin
+                  1, Neema
+                  5, David
+                  4, Alex
+                  2, Thierry
+                #;
+                
+                $t->sort([descending(~id), ascending(~name)]);
+            };
+
+  let res3 =  $f->eval($expr3);
+
+  assertEquals( '#TDS\n'+
+                '   id,name\n'+
+                '   5,David\n'+
+                '   4,Alex\n'+
+                '   3,Pierre\n'+
+                '   2,George\n'+
+                '   2,Thierry\n'+
+                '   1,Neema\n'+
+                '   1,Sachin\n'+
+                '#', $res3->toString());
+}

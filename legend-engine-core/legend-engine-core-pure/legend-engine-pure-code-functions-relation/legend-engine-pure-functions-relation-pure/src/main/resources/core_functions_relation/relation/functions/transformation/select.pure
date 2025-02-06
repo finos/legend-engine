@@ -46,6 +46,33 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiC
                   '#', $res->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                  let t = #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #;
+                  
+                  $t->select(~[val, other]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,other\n'+
+                  '   1,a\n'+
+                  '   3,b\n'+
+                  '   4,c\n'+
+                  '   5,d\n'+
+                  '   6,e\n'+
+                  '#', $res->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingleColSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -57,6 +84,33 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
                       5, wwe, d
                       6, weq, e
                   #->select(~str);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   str\n'+
+                  '   a\n'+
+                  '   ewe\n'+
+                  '   qw\n'+
+                  '   wwe\n'+
+                  '   weq\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                  let t = #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #;
+                  
+                  $t->select(~str);
                };
 
     let res =  $f->eval($expr);
@@ -96,6 +150,33 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
                   '#', $res->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                  let t = #TDS
+                      val, str, other kind
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #;
+                  
+                  $t->select(~'other kind');
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   other kind\n'+
+                  '   a\n'+
+                  '   b\n'+
+                  '   c\n'+
+                  '   d\n'+
+                  '   e\n'+
+                  '#', $res->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::select::testSelectAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -107,6 +188,33 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSelect
                       5, wwe, d
                       6, weq, e
                   #->select();
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,other\n'+
+                  '   1,a,a\n'+
+                  '   3,ewe,b\n'+
+                  '   4,qw,c\n'+
+                  '   5,wwe,d\n'+
+                  '   6,weq,e\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                  let t = #TDS
+                      val, str, other
+                      1, a,  a
+                      3, ewe, b
+                      4, qw, c
+                      5, wwe, d
+                      6, weq, e
+                  #;
+                  
+                  $t->select();
                };
 
     let res =  $f->eval($expr);
