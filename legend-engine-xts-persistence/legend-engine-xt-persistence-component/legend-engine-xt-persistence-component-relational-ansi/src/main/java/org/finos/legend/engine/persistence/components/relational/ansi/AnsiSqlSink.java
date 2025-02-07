@@ -159,6 +159,7 @@ import org.finos.legend.engine.persistence.components.relational.api.ErrorCatego
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -278,6 +279,7 @@ public class AnsiSqlSink extends RelationalSink
             CAPABILITIES,
             Collections.emptyMap(),
             Collections.emptyMap(),
+            null,
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (x, y, z) ->
@@ -298,6 +300,7 @@ public class AnsiSqlSink extends RelationalSink
         Set<Capability> capabilities,
         Map<DataType, Set<DataType>> implicitDataTypeMapping,
         Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
+        DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping,
         String quoteIdentifier,
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
         DatasetExists datasetExists,
@@ -308,6 +311,7 @@ public class AnsiSqlSink extends RelationalSink
             capabilities,
             implicitDataTypeMapping,
             nonBreakingDataTypeMapping,
+            dataTypeToDefaultSizeMapping,
             quoteIdentifier,
             rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
             datasetExists,

@@ -176,6 +176,7 @@ public class DuckDBSink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
+            null,
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
