@@ -120,19 +120,16 @@ class FunctionParametersNormalizer
     {
         try
         {
-            if (functionParametersValidationNode != null && executionState != null)
-            {
-                if (!(functionParametersValidationNode.implementation instanceof JavaPlatformImplementation))
-                {
-                    throw new RuntimeException("Only Java implementations are currently supported, found: " + functionParametersValidationNode.implementation);
-                }
-                JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) functionParametersValidationNode.implementation;
-                String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-                String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
-                return ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(functionParametersValidationNode, executionClassName, executionMethodName, Arrays.asList(String.class, Object.class), Arrays.asList(parameterValidationContext.parameterClassName, paramValue), executionState, Identity.getAnonymousIdentity());
-            }
 
-            return paramValue;
+            if (!(functionParametersValidationNode.implementation instanceof JavaPlatformImplementation))
+            {
+                throw new RuntimeException("Only Java implementations are currently supported, found: " + functionParametersValidationNode.implementation);
+            }
+            JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) functionParametersValidationNode.implementation;
+            String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
+            String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
+            return ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(functionParametersValidationNode, executionClassName, executionMethodName, Arrays.asList(String.class, Object.class), Arrays.asList(parameterValidationContext.parameterClassName, paramValue), executionState, Identity.getAnonymousIdentity());
+
         }
         catch (RuntimeException e)
         {
