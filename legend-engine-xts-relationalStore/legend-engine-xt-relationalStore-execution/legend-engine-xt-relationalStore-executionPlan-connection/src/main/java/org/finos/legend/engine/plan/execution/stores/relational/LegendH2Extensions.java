@@ -141,6 +141,11 @@ public class LegendH2Extensions
         return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
     }
 
+    public static float legend_h2_extension_cbrt(Float num)
+    {
+        return num == null ? null : (float) Math.cbrt(num.doubleValue());
+    }
+
     public static String legend_h2_extension_reverse_string(String string)
     {
         return string == null ? null : new StringBuilder(string).reverse().toString();

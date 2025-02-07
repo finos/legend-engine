@@ -77,7 +77,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),    
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),
+    dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='legend_h2_extension_cbrt(%s)')),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
