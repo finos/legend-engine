@@ -32,5 +32,6 @@
         <module>legend-engine-language-pure-dsl-generation-pure</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-xt-artifact-generation-http-api</module>
+        <module>legend-engine-xts-deployment-model</module>
     </modules>
 </project>
