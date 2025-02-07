@@ -61,7 +61,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
 
   assertEquals('id', $dialect->executeIdentifierProcessor('id', false, $state, $config));
   assertEquals('"id"', $dialect->executeIdentifierProcessor('id', true, $state, $config));
-  assertEquals('"date"', $dialect->executeIdentifierProcessor('date', false, $state, $config));
+  assertEquals('"table"', $dialect->executeIdentifierProcessor('table', false, $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testIntegerLiteralProcessing(): Boolean[1]
@@ -242,8 +242,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  assertEquals('db.schema.table', $dialect->executeNodeProcessor(^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table'])), $state, $config));
-  assertEquals('db.schema."date"', $dialect->executeNodeProcessor(^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'date'])), $state, $config));
+  assertEquals('db.schema.table_a', $dialect->executeNodeProcessor(^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a'])), $state, $config));
+  assertEquals('db.schema."table"', $dialect->executeNodeProcessor(^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table'])), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testIsNullAndIsNotNullProcessing(): Boolean[1]
@@ -252,7 +252,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  assertEquals('db.schema.table.column IS NULL', $dialect->executeNodeProcessor(^IsNullPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column']))), $state, $config));
+  assertEquals('db.schema.table_a.col IS NULL', $dialect->executeNodeProcessor(^IsNullPredicate(value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col']))), $state, $config));
   assertEquals('\'Abc\' IS NOT NULL', $dialect->executeNodeProcessor(^IsNotNullPredicate(value = literal('Abc')), $state, $config));
 }
 
@@ -262,7 +262,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  assertEquals('-db.schema.table.column', $dialect->executeNodeProcessor(^NegativeExpression(value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column']))), $state, $config));
+  assertEquals('-db.schema.table_a.col', $dialect->executeNodeProcessor(^NegativeExpression(value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col']))), $state, $config));
   assertEquals('-(101 + 102)', $dialect->executeNodeProcessor(^NegativeExpression(value = ^ArithmeticExpression(left = literal(101), right = literal(102), type = ArithmeticType.ADD)), $state, $config));
 }
 
@@ -338,8 +338,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column'])), type = ^ColumnType(name = 'decimal', parameters = [20, 9]));
-  assertEquals('CAST(db.schema.table.column AS DECIMAL(20, 9))', $dialect->executeNodeProcessor($e, $state, $config));
+  let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col'])), type = ^ColumnType(name = 'decimal', parameters = [20, 9]));
+  assertEquals('CAST(db.schema.table_a.col AS DECIMAL(20, 9))', $dialect->executeNodeProcessor($e, $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInListExpressionProcessing(): Boolean[1]
@@ -403,8 +403,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let config = testSqlDialectTranslationConfig(false);
 
   ExtractField->enumValues()->map({ev |
-    let e = ^Extract(field = $ev, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column'])));
-    assertEquals('EXTRACT(' + $ev.name->toUpper() + ' FROM db.schema.table.column)', $dialect->executeNodeProcessor($e, $state, $config));
+    let e = ^Extract(field = $ev, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col'])));
+    assertEquals('EXTRACT(' + $ev.name->toUpper() + ' FROM db.schema.table_a.col)', $dialect->executeNodeProcessor($e, $state, $config));
   })->and();
 }
 
@@ -414,8 +414,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let col = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column']));
-  assertEquals('db.schema.table.column BETWEEN 101 AND 111', $dialect->executeNodeProcessor(^BetweenPredicate(value = $col, min = literal(101), max = literal(111)), $state, $config));
+  let col = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col']));
+  assertEquals('db.schema.table_a.col BETWEEN 101 AND 111', $dialect->executeNodeProcessor(^BetweenPredicate(value = $col, min = literal(101), max = literal(111)), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSortItemProcessing(): Boolean[1]
@@ -424,10 +424,10 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let col = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'column']));
-  assertEquals('db.schema.table.column ASC', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.UNDEFINED), $state, $config));
-  assertEquals('db.schema.table.column DESC NULLS FIRST', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST), $state, $config));
-  assertEquals('db.schema.table.column DESC NULLS LAST', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.LAST), $state, $config));
+  let col = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col']));
+  assertEquals('db.schema.table_a.col ASC', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('db.schema.table_a.col DESC NULLS FIRST', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('db.schema.table_a.col DESC NULLS LAST', $dialect->executeNodeProcessor(^SortItem(sortKey = $col, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.LAST), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testWindowProcessing(): Boolean[1]
@@ -436,17 +436,17 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c1']));
-  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c2']));
-  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c3']));
-  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table', 'c4']));
+  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'c1']));
+  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'c2']));
+  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'c3']));
+  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'c4']));
 
   assertEquals('w_ref', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(windowRef = 'w_ref'), $state, $config));
   assertEquals('w_ref', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(windowRef = 'w_ref', partitions = $c1), $state, $config));
-  assertEquals('PARTITION BY db.schema.table.c1', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(partitions = $c1), $state, $config));
-  assertEquals('PARTITION BY db.schema.table.c1, db.schema.table.c2', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(partitions = [$c1, $c2]), $state, $config));
+  assertEquals('PARTITION BY db.schema.table_a.c1', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(partitions = $c1), $state, $config));
+  assertEquals('PARTITION BY db.schema.table_a.c1, db.schema.table_a.c2', $dialect->executeNodeProcessor(^meta::external::query::sql::metamodel::Window(partitions = [$c1, $c2]), $state, $config));
   assertEquals(
-    'ORDER BY db.schema.table.c3 DESC NULLS FIRST',
+    'ORDER BY db.schema.table_a.c3 DESC NULLS FIRST',
     $dialect->executeNodeProcessor(
       ^meta::external::query::sql::metamodel::Window(
         orderBy = [^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST)]
@@ -454,7 +454,7 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
       $state, $config)
   );
   assertEquals(
-    'PARTITION BY db.schema.table.c1, db.schema.table.c2 ORDER BY db.schema.table.c3 DESC NULLS FIRST, db.schema.table.c4 ASC NULLS LAST',
+    'PARTITION BY db.schema.table_a.c1, db.schema.table_a.c2 ORDER BY db.schema.table_a.c3 DESC NULLS FIRST, db.schema.table_a.c4 ASC NULLS LAST',
     $dialect->executeNodeProcessor(
       ^meta::external::query::sql::metamodel::Window(
         partitions = [$c1, $c2],
@@ -473,8 +473,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let tbl = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table']));
-  assertEquals('db.schema.table', $dialect->executeNodeProcessor($tbl, $state, $config));
+  let tbl = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_a']));
+  assertEquals('db.schema.table_a', $dialect->executeNodeProcessor($tbl, $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testAliasedRelationProcessing(): Boolean[1]
@@ -483,8 +483,8 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let state = testSqlDialectTranslationState();
   let config = testSqlDialectTranslationConfig(false);
 
-  let tbl = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table']));
-  assertEquals('db.schema.table AS "root"', $dialect->executeNodeProcessor(^AliasedRelation(relation = $tbl, alias = '"root"'), $state, $config));
+  let tbl = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_a']));
+  assertEquals('db.schema.table_a AS "root"', $dialect->executeNodeProcessor(^AliasedRelation(relation = $tbl, alias = '"root"'), $state, $config));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testJoinProcessing(): Boolean[1]
