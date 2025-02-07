@@ -18,37 +18,34 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Abs extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Degrees extends PostgresNativeSqlFunction
 [
-  $this.name == 'abs'
+  $this.name == 'degrees'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::abs(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::degrees(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Abs
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Degrees
   (
-    name = 'abs',
-    variations = orderedSubTypes(AbstractNumericSqlType)->map({numType |
+    name = 'degrees',
+    documentation = 'Converts the value of the given angle from radians to degrees.',
+    variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = $numType,
-        returnType = $numType
+        parameterTypes = AbstractNumericSqlType,
+        returnType = DoubleSqlType
       )
-    }),
+    ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(101)),
-        101
+        simpleFunctionCall('degrees', literal(pi())),
+        180.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(-101)),
-        101
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('abs', literal(-101.0)),
-        101.0
-      ) 
+        simpleFunctionCall('degrees', literal(0.5)),
+        28.64788976
+      )
     ]
   )
 }

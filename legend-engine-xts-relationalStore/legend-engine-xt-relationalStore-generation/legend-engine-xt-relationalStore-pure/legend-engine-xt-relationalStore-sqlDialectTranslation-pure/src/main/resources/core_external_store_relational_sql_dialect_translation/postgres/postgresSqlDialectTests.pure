@@ -26,7 +26,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   (
     dbConfig = ^DbConfig(dbType = 'Postgres'),
     formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true),
-    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
+    quoteIdentifiers = false
   )
 }
 

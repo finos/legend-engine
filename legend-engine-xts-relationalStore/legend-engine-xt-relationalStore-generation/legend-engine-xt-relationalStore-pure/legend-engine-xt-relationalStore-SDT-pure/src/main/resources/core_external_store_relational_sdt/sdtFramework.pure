@@ -139,11 +139,17 @@ function meta::external::store::relational::sdt::framework::testConfigForSimpleE
 
 function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1]): SqlDialectTranslationConfig[1]
 {
+  meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig($dbType, false);
+}
+
+function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1], quoteIdentifiers: Boolean[1]): SqlDialectTranslationConfig[1]
+{
   ^SqlDialectTranslationConfig
   (
     dbConfig = ^DbConfig(dbType = $dbType),
     formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
-    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
+    quoteIdentifiers = $quoteIdentifiers
   )
 }
 

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -27,6 +28,7 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
   identifierProcessor: IdentifierProcessor[1];
   expressionPrecedenceComparator: ExpressionPrecedenceComparator[1];
   keywords: String[*];
+  functionProcessorDispatch: Function<{SqlDialect[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> Map<Class<SqlFunction>, FunctionProcessor>[1]}>[0..1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::NodeProcessor<T> // T extends Node
@@ -143,6 +145,65 @@ function meta::external::store::relational::sqlDialectTranslation::identifierPro
 function meta::external::store::relational::sqlDialectTranslation::executeIdentifierProcessor(sqlDialect: SqlDialect[1], identifier: String[1], shouldQuote: Boolean[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   $sqlDialect.identifierProcessor.processFunction->eval($sqlDialect, $identifier, $shouldQuote, $state, $config)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::simpleFunctionProcessor(targetFunction: String[*]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      $f->doFunctionCallChecks();
+      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+
+      let functionCallRenderer =  {sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]|
+                                    let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
+                                    let functionName = $sqlDialect->qualifiedName(^QualifiedName(parts = $targetFunction), $state, $config);
+                                    let argumentsString = $args->joinStrings(',' + if($noArgIsMultiLine, |' ', |$state.separator(1, $config)));
+                                    $functionName + '(' + if($noArgIsMultiLine, |'', |$state.separatorIfPretty(1, $config)) +
+                                      $argumentsString +
+                                    if($noArgIsMultiLine, |'', |$state.separatorIfPretty(0, $config)) + ')';
+                                  };
+      $sqlDialect->generateFunctionCallWithArgs($functionCallRenderer, $f.window, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::argTransformFunctionProcessor(targetFunction: String[*], format: String[1]): FunctionProcessor[1]
+{
+  meta::external::store::relational::sqlDialectTranslation::argTransformFunctionProcessor($targetFunction, $format, []);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::argTransformFunctionProcessor(targetFunction: String[*], format: String[1], transform: Function<{String[*]->String[*]}>[0..1]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      $f->doFunctionCallChecks();
+      let processedArgs = $f.arguments->map(a|$sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
+      let transformedArgs = if($transform->isNotEmpty(), |$transform->toOne()->eval($processedArgs), |$processedArgs);
+      $sqlDialect->generateFunctionCallWithArgs({sqlDialect, state, config|if($transformedArgs->isNotEmpty(), |format($format, $transformedArgs), |$format)}, $f.window, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
+{
+  assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
+  assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+  assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
+  assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], functionCallRenderer:Function<{SqlDialect[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1], window: meta::external::query::sql::metamodel::Window[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separatorIfPretty(0, $config);
+  let sep1 = $state.separatorIfPretty(1, $config);
+
+  $functionCallRenderer->eval($sqlDialect, $state, $config) +
+  if ($window->isNotEmpty(),
+    | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
+    | ''
+  );
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

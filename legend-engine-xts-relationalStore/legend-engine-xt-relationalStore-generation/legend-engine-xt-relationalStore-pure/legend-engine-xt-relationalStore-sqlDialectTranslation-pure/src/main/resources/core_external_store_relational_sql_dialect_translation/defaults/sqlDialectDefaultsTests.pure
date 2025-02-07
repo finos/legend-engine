@@ -34,11 +34,22 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tes
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationConfig(pretty: Boolean[1]): SqlDialectTranslationConfig[1]
 {
+  meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationConfig($pretty, false)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationConfig(pretty: Boolean[1], quoteIdentifiers: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationConfig($pretty, $quoteIdentifiers, []);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testSqlDialectTranslationConfig(pretty: Boolean[1], quoteIdentifiers: Boolean[1], dbTimeZone:String[0..1]): SqlDialectTranslationConfig[1]
+{
   ^SqlDialectTranslationConfig
   (
-    dbConfig = ^DbConfig(dbType = 'Postgres'),
+    dbConfig = ^DbConfig(dbType = 'Postgres', dbTimeZone = $dbTimeZone),
     formatConfig = ^FormatConfig(pretty = $pretty, upperCaseKeywords = true),
-    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
+    quoteIdentifiers = $quoteIdentifiers
   )
 }
 
@@ -100,7 +111,6 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   assertEquals('1.0', $dialect->executeNodeProcessor(literal(1.0), $state, $config));
 }
 
-
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testNullLiteralProcessing(): Boolean[1]
 {
   let dialect = testDialect();
@@ -128,6 +138,9 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
 
   assertEquals('101', $dialect->executeNodeProcessor(^SingleColumn(expression = literal(101)), $state, $config));
   assertEquals('101 AS "val"', $dialect->executeNodeProcessor(^SingleColumn(expression = literal(101), alias = '"val"'), $state, $config));
+
+  let configWithQuotes = testSqlDialectTranslationConfig(false, true);
+  assertEquals('101 AS "val"', $dialect->executeNodeProcessor(^SingleColumn(expression = literal(101), alias = 'val'), $state, $configWithQuotes));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testComparisonExpressionProcessing(): Boolean[1]

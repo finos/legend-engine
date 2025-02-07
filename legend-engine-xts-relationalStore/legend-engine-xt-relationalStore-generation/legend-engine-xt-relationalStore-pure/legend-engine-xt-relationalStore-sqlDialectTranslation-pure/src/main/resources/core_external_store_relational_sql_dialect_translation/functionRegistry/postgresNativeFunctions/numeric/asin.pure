@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,32 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ln extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Asin extends PostgresNativeSqlFunction
 [
-  $this.name == 'ln'
+  $this.name == 'asin'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::ln(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::asin(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ln
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Asin
   (
-    name = 'ln',
+    name = 'asin',
+    documentation = 'Returns the inverse sine for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        parameterTypes = DoubleSqlType,
+        returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('ln', literal(2.0)),
-        0.69314718
+        simpleFunctionCall('asin', literal(0.0)),
+        0.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ln', literal(4)),
-        1.38629436
+        simpleFunctionCall('asin', literal(1.0)),
+        1.57079633
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('asin', literal(0.1234)),
+        0.12371535
       )
     ]
   )

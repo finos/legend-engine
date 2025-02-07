@@ -24,7 +24,7 @@ function meta::external::store::relational::sqlDialectTranslation::utils::keywor
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::qualifiedName(sqlDialect: SqlDialect[1], qualifiedName: QualifiedName[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
-  $qualifiedName.parts->map(p | $sqlDialect->executeIdentifierProcessor($p, false, $state, $config))->joinStrings('.')
+  $qualifiedName.parts->map(p | $sqlDialect->executeIdentifierProcessor($p, $config.quoteIdentifiers, $state, $config))->joinStrings('.')
 }
 
 function meta::external::store::relational::sqlDialectTranslation::utils::failWithMessage(message: String[1]): String[1]
@@ -68,6 +68,15 @@ function meta::external::store::relational::sqlDialectTranslation::utils::simple
     name = ^QualifiedName(parts = $name),
     arguments = $arguments,
     distinct = false
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::cast(expression: meta::external::query::sql::metamodel::Expression[1], typeName: String[1]): Cast[1]
+{
+  ^Cast
+  (
+    expression = $expression,
+    type = ^ColumnType(name = $typeName)
   )
 }
 

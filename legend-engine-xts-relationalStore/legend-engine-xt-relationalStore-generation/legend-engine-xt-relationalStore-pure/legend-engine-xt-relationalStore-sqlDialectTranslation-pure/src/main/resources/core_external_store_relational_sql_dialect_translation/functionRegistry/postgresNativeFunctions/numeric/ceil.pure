@@ -18,49 +18,46 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Log extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceil extends PostgresNativeSqlFunction
 [
-  $this.name == 'log'
+  $this.name == 'ceil'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::log(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceil(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Log
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceil
   (
-    name = 'log',
+    name = 'ceil',
+    documentation = 'Returns the rounded up value of the given number to the next integer.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        parameterTypes = DoubleSqlType,
+        returnType = DoubleSqlType
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
-        returnType = AbstractPrecisionScaleSqlType
+        parameterTypes = AbstractNumericSqlType,
+        returnType = AbstractNumericSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('log', literal(10)),
-        1.0
+        simpleFunctionCall('ceil', literal(17)),
+        17.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('log', literal(100.0)),
-        2.0
+        simpleFunctionCall('ceil', literal(17.4)),
+        18.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('log', [literal(10), literal(100)]),
-        2.0
+        simpleFunctionCall('ceil', literal(42.2)),
+        43.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('log', [literal(2.0), literal(8)]),
-        3.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('log', [literal(2.0), literal(16.0)]),
-        4.0
+        simpleFunctionCall('ceil', literal(-42.2)),
+        -42.0
       )
     ]
   )
