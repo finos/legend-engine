@@ -84,7 +84,8 @@ function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecifi
                                                        ^$i(values = $updatedValues);,
                v:VariableExpression[1]               | $v,
                f: FunctionRoutedValueSpecification[1]| $f,
-               e:ExtendedRoutedValueSpecification[1] | $e->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug)
+               e:ExtendedRoutedValueSpecification[1] | $e->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug),
+               nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs
       ]
    );
 }
@@ -150,7 +151,8 @@ function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[
                v:VariableExpression[1]               | $v,
                f: FunctionRoutedValueSpecification[1]| $f,
                e:ExtendedRoutedValueSpecification[1] | $e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug),
-               c:ClusteredValueSpecification[1]      | $c
+               c:ClusteredValueSpecification[1]      | $c,
+               nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs
       ]
    );
 }

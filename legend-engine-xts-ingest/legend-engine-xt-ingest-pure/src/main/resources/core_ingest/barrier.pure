@@ -28,3 +28,7 @@ function <<access.private>> meta::external::ingest::barrier::getBatchId(datasetN
   $watermark.datasetMarks->filter(w | $w.datasetName == $datasetName)->toOne().batchId;
 }
 
+function meta::external::ingest::barrier::isAvailable(datasetName : String[1], prevPublishedWatermark: Watermark[1], currentStateWatermark: Watermark[1]):Boolean[1]
+{
+   $prevPublishedWatermark.datasetMarks->filter(w | $w.datasetName == $datasetName)->toOne().batchId <  $currentStateWatermark.datasetMarks->filter(w | $w.datasetName == $datasetName)->toOne().batchId
+}

@@ -13,6 +13,9 @@
 // limitations under the License.
 
 import meta::external::language::java::factory::*;
+import meta::pure::functions::collection::*;
+import meta::external::language::java::generation::featureBased::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
@@ -75,6 +78,122 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
       )))), 
     | generateImplementionForExpression($p, $path, $context, $debug)
    );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateJavaClassForFunctionParameters(f:FunctionParametersValidationNode[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]
+{
+  
+  let parameterValidationContexts = $f.parameterValidationContext;
+  let pureClasses = $parameterValidationContexts->filter( p | $p->instanceOf(ProtocolObjectValidationContext))->cast(@ProtocolObjectValidationContext<Any>).parameterClass;
+  
+ if ($pureClasses->isEmpty(),
+    |^GeneratedCode(),
+    | let distinctParamClasses = $pureClasses->distinct();
+      let projects = $distinctParamClasses->fold({e,a|$e->generateJavaClassForFunctionParameter($context,$debug)}, []);
+      let parameterNormalizerImplementation = meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementationForParameterNormalizer($distinctParamClasses,$context,$debug);
+      generatedCode($projects->toOneMany()->mergeProjects()->addClass($parameterNormalizerImplementation),$parameterNormalizerImplementation);
+  );
+
+ }
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementationForParameterNormalizer(cls:meta::pure::metamodel::type::Class<Any>[*], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+
+  let javaClasses = $cls->map(c | meta::external::language::java::transform::className($context.conventions,$c));
+
+  let parameterNormalizerMethods = $javaClasses->fold({e,a|$e->generateParameterNormalizerForClass()}, []);
+
+  let javaNormilizeParam = javaParam(javaObject(), 'paramValue');
+  let javaNormilizeParamValue = j_parameter($javaNormilizeParam);
+
+  let pureClassName = javaParam(javaString(), 'pureClassName');
+  let pureClassNameValue = j_parameter($pureClassName);
+
+  let package = $context.conventions.basePackageName->javaPackage();
+  let errorMsg = j_string('Unsupported Function Parameter :\'')->j_plus($pureClassNameValue);
+
+  let baseCls = javaClass(['public'],$package ,'ProtocolObjectParameterNormalizer')
+                                                ->imports($javaClasses)
+                                                ->imports(objectMapper())
+                                                ->addMethod({c| javaMethod(['public','static'], javaObject() , 'normalizeParameterValue', [$pureClassName, $javaNormilizeParam], j_if(list([$cls->fold({e,a|
+                                                                                                                                                                                                $e->generateConditionalBlockForParameterNormalizer($context,'ProtocolObjectParameterNormalizer',$c)
+                                                                                                                                                                                                }, [])])
+                                                                                                                                                                                                , j_throw(j_new(javaIllegalArgumentException(), $errorMsg))))})
+                                                ->addMethods($parameterNormalizerMethods);
+
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateParameterNormalizerForClass(parameterClass:meta::external::language::java::metamodel::Class[1]):meta::external::language::java::metamodel::Method[1]
+{
+      let objectMapperClass           = objectMapper();
+      let mapper = j_parameter($objectMapperClass, 'OBJECT_MAPPER');
+      let mapperDeclaration = $mapper->j_declare(
+                      $objectMapperClass
+                        ->j_new([]));
+
+      let javaNormilizeParam = javaParam(javaObject(), 'paramValue');
+      let javaNormilizeParamValue = j_parameter($javaNormilizeParam);
+      let objectMapperField           = javaField('private', $objectMapperClass, 'objectMapper');
+      let ioEx            = j_parameter(javaIOException(), 'e');
+
+        javaMethod(['public','static'], $parameterClass , 'normalize'+$parameterClass.simpleName, $javaNormilizeParam,
+                j_if(
+                  j_instanceof($javaNormilizeParamValue, $parameterClass),
+                  j_return(j_cast($javaNormilizeParamValue, $parameterClass)),
+                  j_if(
+                    j_instanceof($javaNormilizeParamValue, javaString()),
+                   [  j_try(
+                      [$mapperDeclaration,
+                      j_return($mapper->j_invoke( 'readValue', [j_cast(j_parameter($javaNormilizeParam), javaString()), j_classField($parameterClass)], $parameterClass))],
+                      j_catch($ioEx, javaRuntimeException()->j_new($ioEx)->j_throw())
+                    )
+                  ],
+                    j_throw(j_new(javaIllegalArgumentException(), j_string('Function Parameter should be of type JSON String or ' + $parameterClass.simpleName + '.class')))
+                  )
+                )
+         );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateConditionalBlockForParameterNormalizer(parameterPureClass:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], normalizerClassName : String[1],baseClass:meta::external::language::java::metamodel::Class[1]):Pair<Code,Code>[1]
+{
+        let parameterJavaClass = meta::external::language::java::transform::className($context.conventions,$parameterPureClass);
+
+        let javaNormilizeParam = javaParam(javaObject(), 'paramValue');
+        let javaNormilizeParamValue = j_parameter($javaNormilizeParam);
+
+        let pureClassName = javaParam(javaString(), 'pureClassName');
+        let pureClassNameValue = j_parameter($pureClassName);
+
+        pair(j_invoke($pureClassNameValue, 'equals', j_string($parameterPureClass->elementToPath())),
+             j_return($baseClass->j_invoke(
+                                          'normalize'+$parameterJavaClass.simpleName,
+                                          $javaNormilizeParamValue,
+                                          $parameterJavaClass)
+                      )
+             );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateJavaClassForFunctionParameter(cls:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], debug:DebugContext[1]):Project[1]
+{
+  let newInfo      = $context.typeInfos->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties($cls)
+                                        ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($cls);
+  let typeInfos   = $newInfo->meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos($cls, []);
+  let conventions = $context.conventions;
+
+  let classes     = $typeInfos->allClassInfos()->map(ti | $ti.type)->cast(@PackageableElement);
+
+  let javaContext = ^meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationContext(
+      conventions = $conventions,
+      featuresToApply = [
+                            meta::external::language::java::generation::featureBased::definition::privateFields(),
+                            meta::external::language::java::generation::featureBased::definition::defaultConstructor(),
+                            meta::external::language::java::generation::featureBased::definition::gettersSetters()
+                          ],
+      config = ^meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationConfig( scopeElements = $classes ),
+      debug = $debug->indent()
+    );
+
+  $javaContext->meta::external::language::java::generation::featureBased::generateJavaModel();
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]

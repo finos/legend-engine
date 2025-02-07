@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-public interface ParameterValidationContextVisitor<T>
+public class ProtocolObjectValidationContext extends ParameterValidationContext
 {
-    T visit(EnumValidationContext enumValidationContext);
+    public String parameterClassName;
 
-    T visit(ProtocolObjectValidationContext protocolObjectValidationContext);
+    @Override
+    public <T> T accept(ParameterValidationContextVisitor<T> validationContextVisitor)
+    {
+        return validationContextVisitor.visit(this);
+    }
 }
