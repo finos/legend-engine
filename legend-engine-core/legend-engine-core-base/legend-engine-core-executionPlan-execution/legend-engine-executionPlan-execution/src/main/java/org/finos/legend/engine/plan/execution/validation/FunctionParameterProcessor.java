@@ -55,11 +55,11 @@ class FunctionParameterProcessor
                 {
                     if (parameterValidationContext != null)
                     {
-                        return FunctionParametersNormalizer.normalizeParameterValue(param, parameterValidationContext.stream().filter(x -> x.varName.equals(param.name)).findAny().orElse(null), val,null,executionState);
+                        return FunctionParametersNormalizer.normalizeParameterValue(param, parameterValidationContext.stream().filter(x -> x.varName.equals(param.name)).findAny().orElse(null), val, null, executionState);
                     }
                     else
                     {
-                        return FunctionParametersNormalizer.normalizeParameterValue(param, null, val,null,executionState);
+                        return FunctionParametersNormalizer.normalizeParameterValue(param, null, val,null, executionState);
                     }
                 }
                 else

@@ -82,14 +82,19 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
 
 function meta::pure::executionPlan::platformBinding::legendJava::platform::generateJavaClassForFunctionParameters(f:FunctionParametersValidationNode[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]
 {
+  
   let parameterValidationContexts = $f.parameterValidationContext;
   let pureClasses = $parameterValidationContexts->filter( p | $p->instanceOf(ProtocolObjectValidationContext))->cast(@ProtocolObjectValidationContext<Any>).parameterClass;
-  let distinctParamClasses = $pureClasses->distinct();
-  let projects = $distinctParamClasses->fold({e,a|$e->generateJavaClassForFunctionParameter($context,$debug)}, []);
-  let parameterNormalizerImplementation = meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementationForParameterNormalizer($distinctParamClasses,$context,$debug);
+  
+ if ($pureClasses->isEmpty(),
+    |^GeneratedCode(),
+    | let distinctParamClasses = $pureClasses->distinct();
+      let projects = $distinctParamClasses->fold({e,a|$e->generateJavaClassForFunctionParameter($context,$debug)}, []);
+      let parameterNormalizerImplementation = meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementationForParameterNormalizer($distinctParamClasses,$context,$debug);
+      generatedCode($projects->toOneMany()->mergeProjects()->addClass($parameterNormalizerImplementation),$parameterNormalizerImplementation);
+  );
 
-  generatedCode($projects->toOneMany()->mergeProjects()->addClass($parameterNormalizerImplementation),$parameterNormalizerImplementation);
-}
+ }
 
 function meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementationForParameterNormalizer(cls:meta::pure::metamodel::type::Class<Any>[*], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
 {

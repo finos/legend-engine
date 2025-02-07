@@ -60,7 +60,7 @@ class FunctionParametersNormalizer
         if (paramResult instanceof ConstantResult)
         {
             Object paramValue = ((ConstantResult) paramResult).getValue();
-            Object normalized = normalizeParameterValue(parameter, parameterValidationContext, paramValue,functionParametersValidationNode,executionState);
+            Object normalized = normalizeParameterValue(parameter, parameterValidationContext, paramValue, functionParametersValidationNode, executionState);
             if (normalized != paramValue)
             {
                 ConstantResult updatedDateTime = new ConstantResult(normalized);
@@ -109,7 +109,7 @@ class FunctionParametersNormalizer
             {
                 if (parameterValidationContext instanceof ProtocolObjectValidationContext)
                 {
-                    return normalizeParameterValue(paramValue, x -> normalizeProtocolObjectParameterValue((ProtocolObjectValidationContext) parameterValidationContext, x, functionParametersValidationNode,executionState));
+                    return normalizeParameterValue(paramValue, x -> normalizeProtocolObjectParameterValue((ProtocolObjectValidationContext) parameterValidationContext, x, functionParametersValidationNode, executionState));
                 }
                 return paramValue;
             }
