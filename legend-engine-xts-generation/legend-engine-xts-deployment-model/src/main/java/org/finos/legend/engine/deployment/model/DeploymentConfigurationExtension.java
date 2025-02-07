@@ -19,6 +19,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
+import java.util.List;
+
 
 public interface DeploymentConfigurationExtension  extends LegendGenerationExtension
 {
@@ -34,6 +36,25 @@ public interface DeploymentConfigurationExtension  extends LegendGenerationExten
      * @return string
      */
     String getKey();
+
+    /**
+     * Gives the label for extension for user facing messaging
+     * if different from key
+     *
+     * @return string
+     */
+    default String getLabel()
+    {
+        return this.getKey();
+    }
+
+    /**
+     * Gives supported classifier paths for extension
+     * important as used for filtering non-compiled elements
+     *
+     * @return List of classifier paths
+     */
+    List<String> getSupportedClassifierPaths();
 
 
     /**
