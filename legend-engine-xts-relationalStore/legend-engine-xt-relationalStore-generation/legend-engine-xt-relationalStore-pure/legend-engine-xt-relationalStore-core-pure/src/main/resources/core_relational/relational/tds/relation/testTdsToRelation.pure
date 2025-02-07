@@ -1,0 +1,64 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::join::*;
+import meta::pure::tds::toRelation::*;
+
+function <<test.Test>> meta::pure::tds::toRelation::testJoinUsing():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.INNER, ['int1', 'str1'], ['int2', 'str2']
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.INNER, {x, y | ($x.int1 == $y.int2) && $x.str1 == $y.str2}
+      )
+    },
+    meta::relational::extension::relationalExtension()
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testJoinFunc():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str1'),
+        col(x | $x.integer, 'int1')
+      ])->join(TestClass.all()->project([
+                col(x | $x.string, 'str2'),
+                col(x | $x.integer, 'int2')
+              ]), JoinType.INNER, {x, y | $x.getInteger('int1') == $y.getInteger('int2')}
+      )
+    },
+
+    {| TestClass.all()
+        ->project(~[str1: x | $x.string, int1: x | $x.integer])
+        ->join(TestClass.all()
+                ->project(~[str2: x | $x.string, int2: x | $x.integer]),
+              JoinKind.INNER, {x, y | $x.int1 == $y.int2}
+      )
+    },
+    meta::relational::extension::relationalExtension()
+  )
+}
