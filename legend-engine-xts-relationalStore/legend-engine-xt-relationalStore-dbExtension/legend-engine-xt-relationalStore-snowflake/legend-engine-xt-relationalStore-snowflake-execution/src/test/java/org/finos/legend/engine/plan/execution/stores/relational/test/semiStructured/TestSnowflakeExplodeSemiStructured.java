@@ -321,12 +321,12 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
         String snowflakeExpected =
                 "    Relational\n" +
                         "    (\n" +
-                        "      type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, \"\", \"\")]\n" +
+                        "      type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, FLOAT, \"\")]\n" +
                         "      resultColumns = [(\"Manufacturer Id\", INT), (\"Is Tax Exempt\", \"\"), (\"Date Foudned\", \"\"), (\"Name\", \"\"), (\"Annual Tax Rate\", \"\"), (\"Hourly Rate\", \"\")]\n" +
                         "      sql = select \"root\".MANUFACTURER_ID as \"Manufacturer Id\", \"root\".MANUFACTURER_DETAILS['isTaxExempt']::boolean as \"Is Tax Exempt\", \"root\".MANUFACTURER_DETAILS['dateFounded']::date as \"Date Foudned\", \"root\".MANUFACTURER_DETAILS['name']::varchar as \"Name\", \"root\".MANUFACTURER_DETAILS['annualTaxRate']::float as \"Annual Tax Rate\", \"root\".MANUFACTURER_DETAILS['hourlyRate'] as \"Hourly Rate\" from Semistructured.Manufacturers as \"root\" where \"root\".MANUFACTURER_DETAILS['isTaxExempt']::boolean\n" +
                         "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                         "    )\n";
-        String TDSType = "  type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(Manufacturer Id, Integer, INT, \"\"), (Is Tax Exempt, Boolean, BIT, \"\"), (Date Foudned, StrictDate, DATE, \"\"), (Name, String, VARCHAR(8192), \"\"), (Annual Tax Rate, Float, FLOAT, \"\"), (Hourly Rate, Decimal, FLOAT, \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
