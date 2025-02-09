@@ -53,7 +53,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             // Drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::list]"),
+            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::list]"),
             one("meta::pure::functions::collection::tests::drop::testDropManyOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
             one("meta::pure::functions::collection::tests::drop::testDropManyOnNonEmptyList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
             one("meta::pure::functions::collection::tests::drop::testDropNegativeOnEmptyList_Function_1__Boolean_1_", "\"Invalid type for parameter inside the drop function. Expected a value, found operation/function\""),
@@ -68,8 +68,8 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
 
             // Find
             one("meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:38cc38-42); error compiling generated Java code:"),
-            one("meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::find' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::find]"),
-            one("meta::pure::functions::collection::tests::find::testFindLiteral_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::find' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::find]"),
+            one("meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::find' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::find]"),
+            one("meta::pure::functions::collection::tests::find::testFindLiteral_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::find' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::find]"),
             one("meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:47cc38-42); error compiling generated Java code:"),
 
             // Fold
@@ -95,9 +95,9 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::collection::tests::indexof::testIndexOf_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'indexOf_T_MANY__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             // Init
-            one("meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::init]"),
-            one("meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::init]"),
-            one("meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::init]"),
+            one("meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::init]"),
+            one("meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::init]"),
+            one("meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::init' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::init]"),
 
             // Head
             one("meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
@@ -119,7 +119,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
 
             // Slice
             one("meta::pure::functions::collection::tests::slice::testSliceEqualBounds_Function_1__Boolean_1_", "\"Cannot cast a collection of size 4 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::list]"),
+            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::list]"),
             one("meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_", "\"Cannot cast a collection of size 4 to multiplicity [1]\""),
             one("meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
             one("meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_", "\"Cannot cast a collection of size 4 to multiplicity [1]\""),
@@ -143,7 +143,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             // Take
             one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
             one("meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnNonEmptyList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
-            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::with, Applying meta::pure::functions::collection::list]"),
+            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'meta::pure::functions::collection::list' - stack:[Function 'test::lambdaContainer__Any_MANY_' Third Pass, new lambda, Applying meta::pure::mapping::from, Applying meta::pure::functions::collection::list]"),
             one("meta::pure::functions::collection::tests::take::testTakeManyOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
             one("meta::pure::functions::collection::tests::take::testTakeManyOnNonEmptyList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 3 to multiplicity [1]\""),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "\"Invalid type for parameter inside the take/limit function. Expected a value, found operation/function\""),

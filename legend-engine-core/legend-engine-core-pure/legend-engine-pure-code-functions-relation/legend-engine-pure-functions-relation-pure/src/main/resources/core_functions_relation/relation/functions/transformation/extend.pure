@@ -410,7 +410,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -483,7 +483,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumnsMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -556,7 +556,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort(~id->descending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindowMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -629,7 +629,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindowMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -701,7 +701,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindowMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -773,7 +773,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumnsMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -847,7 +847,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWi
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumnsMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -921,7 +921,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimpleMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS
@@ -994,7 +994,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWi
                   '#', $res->sort([~grp->ascending(), ~grp2->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumnsMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {| 
                 let t = #TDS

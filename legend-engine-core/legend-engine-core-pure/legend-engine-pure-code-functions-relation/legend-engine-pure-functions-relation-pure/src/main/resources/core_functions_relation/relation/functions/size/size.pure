@@ -123,8 +123,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparis
                    1, a
                    3, ewe
                    4, qw
-                 #->size(); 
-                 $t > 0;
+                 #;
+                 let s = $t->size(); 
+                 $s > 0;
               };
 
     let res =  $f->eval($expr)->toOne();

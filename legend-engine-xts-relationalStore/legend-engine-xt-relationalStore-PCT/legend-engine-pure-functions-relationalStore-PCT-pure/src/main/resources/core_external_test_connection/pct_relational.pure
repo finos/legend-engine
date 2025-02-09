@@ -354,7 +354,7 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
       let withWith = ^SimpleFunctionExpression
       (
         importGroup=system::imports::coreImport,
-        func = if($mapping->isEmpty(), |with_T_m__Runtime_1__T_m_, |with_T_m__Mapping_1__Runtime_1__T_m_),
+        func = if($mapping->isEmpty(), |from_T_m__Runtime_1__T_m_, |from_T_m__Mapping_1__Runtime_1__T_m_),
         functionName = 'with',
         genericType = $returnGenericType,
         multiplicity = $returnMultiplicity,
@@ -385,7 +385,7 @@ function meta::relational::tests::pct::process::addWith(func: FunctionDefinition
       let withWith = ^SimpleFunctionExpression
       (
         importGroup=system::imports::coreImport,
-        func = if($mapping->isEmpty(), |with_FunctionDefinition_1__Runtime_1__T_m_, |with_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
+        func = if($mapping->isEmpty(), |from_FunctionDefinition_1__Runtime_1__T_m_, |from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
         functionName = 'with',
         genericType = $returnGenericType,
         multiplicity = $returnMultiplicity,

@@ -41,7 +41,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDist
                   '#', $res->sort(~val->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinct_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS

@@ -395,6 +395,20 @@
             <artifactId>joda-time</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-server-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+        </dependency>
 
     </dependencies>
 

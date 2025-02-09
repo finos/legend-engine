@@ -902,8 +902,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
-                String requestId = new RequestIdGenerator().generateId();
-                String fileName = tempTableName + requestId;
+                String requestId = RequestIdGenerator.generateId();
+                String tempTableNameForFileName = tempTableName.startsWith("\"") && tempTableName.endsWith("\"") ? tempTableName.substring(1, tempTableName.length() - 1) : tempTableName;
+                String fileName = tempTableNameForFileName + requestId;
                 try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
                 {
                     CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);

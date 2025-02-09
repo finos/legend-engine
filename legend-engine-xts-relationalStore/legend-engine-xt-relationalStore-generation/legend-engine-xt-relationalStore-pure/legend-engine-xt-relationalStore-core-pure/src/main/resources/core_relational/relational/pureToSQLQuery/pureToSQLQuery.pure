@@ -2095,7 +2095,6 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
                   let varValue = $e->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);
 
                   let returnType = $e->cast(@SimpleFunctionExpression).genericType;
-                  // assert($returnType.typeArguments->head().rawType->isNotEmpty() && $returnType.typeArguments->at(0).rawType->toOne()->instanceOf(meta::pure::metamodel::relation::RelationType), |'Multi expression only supported on expressions that return Relation');
 
                   let sqlQuery = $varValue->match([
                           sc:StoreMappingClusteredValueSpecification[1] |
@@ -2108,7 +2107,17 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
                             fail($a->type()->elementToPath() + ' not supported on multi expression')->cast(@SelectWithCursor)->toOne();
                   ]);
 
-                  let cteSelect = $sqlQuery.select;
+                  let letSelectResult = $sqlQuery.select;
+
+                  let colAsAlais = $letSelectResult.columns->toIndexed()->map(c|
+                    $c.second->match([
+                      a: Alias[1] | $a,
+                      tac: TableAliasColumn[1] | $tac,
+                      roe: RelationalOperationElement[1] | ^Alias(name = 'col_%d'->format($c.first), relationalElement = $roe)
+                    ]);
+                  );
+
+                  let cteSelect = ^$letSelectResult(columns = $colAsAlais);
 
                   let newCtes = $ctes->concatenate(^CommonTableExpression(name = $varName, sqlQuery = $cteSelect));
 
@@ -3698,12 +3707,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
                            | let unSupportedBiTemporalProcessing = $mergedSQL.filteringOperation->isEmpty() && $operation.milestoningContext->isNotEmpty() && $operation.milestoningContext->toOne()->isBiTemporalMilestoningTopLevelAnd($f.func);
                              if($unSupportedBiTemporalProcessing ,| $mergedSQL
                                                                  ,| ^$mergedSQL(filteringOperation = newDynaFunction($name, if($parameterSQL->isEmpty(), | [], |$mergedSQL.filteringOperation))));,
-                           | ^$mergedSQL
-                             (
-                                columns = ^Alias(name = $name, 
-                                                 relationalElement = newDynaFunction($name, $mergedSQL.columns->map(c|$c->match([ a:Alias[1]| $a.relationalElement,r:RelationalOperationElement[1]|$r])))
-                                                )
-                             )
+                           | ^$mergedSQL(columns = newDynaFunction($name, $mergedSQL.columns))
                         ),
                         currentTreeNode = [],
                         positionBeforeLastApplyJoinTreeNode = []
@@ -3714,9 +3718,13 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::newDynaFunction(name: String[1], params: RelationalOperationElement[*]): DynaFunction[1]
 {
+   let unwrapped = $params->map(p | $p->match([
+    a: Alias[1] | $a.relationalElement,
+    roe: RelationalOperationElement[1] | $roe
+   ])); 
    if($name->in(['and','or']),
-               | newAndOrDynaFunctionWrappedInGroup($name, $params),
-               | ^DynaFunction(name = $name, parameters = $params)
+               | newAndOrDynaFunctionWrappedInGroup($name, $unwrapped),
+               | ^DynaFunction(name = $name, parameters = $unwrapped)
      );
 }
 
@@ -7235,8 +7243,7 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
    let query = $nested->extractSelectWithCursor($operation);
    let mergedQuery = if($query.select.groupBy->isNotEmpty(), |$query->isolateTdsSelect($extensions), |$query);
    let mergedSelect = $mergedQuery.select;
-   let count = newDynaFunction('count', if ($mergedSelect.columns->isNotEmpty(), | $mergedSelect.columns->at(0)->match([a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|$tcn]), | []));
-   ^$mergedQuery(select=^$mergedSelect(columns = ^Alias(name = 'count', relationalElement = $count)));
+   ^$mergedQuery(select=^$mergedSelect(columns = newDynaFunction('count', if ($mergedSelect.columns->isNotEmpty(), | $mergedSelect.columns->at(0), | []))));
 }
 
 function meta::relational::functions::pureToSqlQuery::processUnary(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], f:meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
