@@ -1,0 +1,149 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "association",
+      "name": "AnAssociation3",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassA",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 3
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "a",
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "aggregation": "COMPOSITE",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassB",
+              "sourceInformation": {
+                "endColumn": 53,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 18,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "b",
+          "sourceInformation": {
+            "endColumn": 60,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassA",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 9,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 7
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassB",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 13,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 11
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AnAssociation3",
+            "protocol::support::AssociationClassA",
+            "protocol::support::AssociationClassB"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 15,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

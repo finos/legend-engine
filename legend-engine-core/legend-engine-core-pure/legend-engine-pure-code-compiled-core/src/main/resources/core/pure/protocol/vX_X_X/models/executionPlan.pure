@@ -126,8 +126,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AggregationAwareE
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecutionNode extends ExecutionNode
 {
-   func : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
-   jsonPropertyPaths : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[*];
+   func : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+   jsonPropertyPaths : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[*];
    pathToMapping : String[1];
    pathToClasses : String[*];
    connection : meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1];
@@ -340,7 +340,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::PureModelContextComposite extend
 Class meta::protocols::pure::vX_X_X::metamodel::QueryExecutionInfo
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];

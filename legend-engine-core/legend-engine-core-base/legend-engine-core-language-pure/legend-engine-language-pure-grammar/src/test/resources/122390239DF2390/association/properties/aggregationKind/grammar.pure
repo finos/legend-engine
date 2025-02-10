@@ -1,5 +1,0 @@
-Association protocol::AnAssociation3
-{
-  a: protocol::AssociationClassA[1];
-  (composite) b: protocol::AssociationClassB[1..*];
-}

@@ -31,7 +31,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::MappingClass extends met
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTest
 {
    name: String[1];
-   query: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   query: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    inputData: meta::protocols::pure::vX_X_X::metamodel::mapping::InputData[*];
    assert: meta::protocols::pure::vX_X_X::metamodel::mapping::MappingTestAssert[1];
 }
@@ -99,7 +99,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::OperationClassMapping e
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::MergeOperationClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::OperationClassMapping
 {
 
-   validationFunction : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   validationFunction : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::AggregationAwareClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
@@ -185,14 +185,14 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInsta
 {
    srcClass : String[0..1];
    propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping[*];
-   filter : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+   filter : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PurePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
    explodeProperty : Boolean[0..1];
    enumMappingId : String[0..1];
-   transform : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   transform : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStoreAssociationMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping
@@ -202,7 +202,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStoreAssociati
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
-   crossExpression : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   crossExpression : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping

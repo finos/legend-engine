@@ -47,7 +47,7 @@ public class DataQualityLambdaGenerator
 
     public static LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
     {
-        if (packageableElement instanceof  Root_meta_external_dataquality_DataQuality)
+        if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
         {
             return generateModelConstraintLambda(pureModel, null, (Root_meta_external_dataquality_DataQuality) packageableElement);
         }
@@ -61,11 +61,11 @@ public class DataQualityLambdaGenerator
     public static LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName, Boolean runQuery)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        if (packageableElement instanceof  Root_meta_external_dataquality_DataQuality)
+        if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
         {
             return generateModelConstraintLambda(pureModel, queryLimit, (Root_meta_external_dataquality_DataQuality) packageableElement);
         }
-        else if (packageableElement instanceof  Root_meta_external_dataquality_DataQualityRelationValidation)
+        else if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
         {
             return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationName, runQuery, queryLimit);
         }
@@ -88,13 +88,13 @@ public class DataQualityLambdaGenerator
 
     public static Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
-        Object protocol = transformToVersionedModel(lambda,  PureClientVersions.production, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, extensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, Lambda.class, pureModel);
     }
 
     public static String transformLambdaAsJson(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
-        Object protocol = transformToVersionedModel(lambda,  "vX_X_X", extensions.apply(pureModel), pureModel.getExecutionSupport());
+        Object protocol = transformToVersionedModel(lambda, "vX_X_X", extensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, pureModel);
     }
 
@@ -103,7 +103,12 @@ public class DataQualityLambdaGenerator
         try
         {
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Method method = cl.getMethod("Root_meta_protocols_pure_"
+                            + version
+                            + (PureClientVersions.versionAGreaterThanVersionB(version, "v1_33_0") ?
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__LambdaFunction_1_" :
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_"),
+                    FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, lambda, extensions, executionSupport);
         }
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)

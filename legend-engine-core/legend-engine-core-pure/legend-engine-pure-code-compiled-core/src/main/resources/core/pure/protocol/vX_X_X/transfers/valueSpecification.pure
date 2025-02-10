@@ -402,7 +402,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                   l:LambdaFunction<Any>[1]|
                      let nInScope = $l->functionType().parameters->evaluateAndDeactivate().name;
                      let nOpen = $open->putAll($l->openVariableValues()->keyValues()->filter(v|$v.second.values->isNotEmpty()));
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                      (
                         _type = 'lambda',
                         parameters = $l->at(0)->functionType().parameters->evaluateAndDeactivate()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($nInScope, $nOpen, true,$useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)),
@@ -458,8 +458,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                        type = 'aggregateValue',
                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
                                 (
-                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                 )
                      ),
                   a:meta::pure::tds::AggregateValue<Any,Any>[1]|
@@ -470,8 +470,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
                                 (
                                     name = $a.name,
-                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                 )
                      ),
                   oo:meta::pure::tds::OlapOperation<Any>[1]|
@@ -484,7 +484,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
                                     (
                                         columnName = $oa.colName,
-                                        function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           ),
                         or :  meta::pure::tds::TdsOlapRank<Any>[1]|
@@ -494,7 +494,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                             type = 'tdsOlapRank',
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
                                     (
-                                        function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           )
                         ]),
@@ -517,7 +517,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
                                     (
                                         name = $co.name,
-                                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           ),
                   pair:Pair<Any,Any>[1]|
@@ -579,7 +579,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                             value = $g->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)
                           ),
                   k:KeyExpression[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression
                      (
                         _type = 'keyExpression',
                         add =  $k.add,
@@ -742,14 +742,14 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($f, false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
    (
       _type = 'lambda',
       body = $f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions),
@@ -995,7 +995,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   '%s.%s'->format([$enumName, $ev.value]);
                   ,
          col:Collection[1]| $col.values->map(v|$state->toPure($v))->joinStrings('[',',',']'),
-         l : Lambda[1]|
+         l : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]|
             let pStr = $l.parameters->map(p|$p->match([
                v : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]|
                if ($v.genericType->isEmpty() || $v.genericType.rawType->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType),
@@ -1023,7 +1023,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                      aggValue : TDSAggregateValue[1]| 'agg(\'%s\', %s, %s)'->format([$aggValue.name, $state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      aggValue : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue[1]| 'agg(%s, %s)'->format([$state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      sortInfo : TDSSortInformation[1]| '^SortInformation(column = \'%s\', direction = SortDirection.%s)'->format([$sortInfo.column, $sortInfo.direction]),
-                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@Lambda).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
+                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
                      path : Path[1]| '#/%s/%s%s#'->format([$path.startType, $path.path->map(p|$p->match([ppe:PropertyPathElement[1]|$ppe.property]))->joinStrings('.'), if($path.name->isEmpty() || ($path.name->toOne()->length() == 0), |'', |'!' + $path.name->toOne())]);,
                      or : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1]|
                         '^TdsOlapRank<TDSRow>(func = %s)'->format($state->toPure($or.function)),
@@ -1222,12 +1222,12 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::isAutoMapFunction(af:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]):Boolean[1]
 {
-   $af.parameters->at(1)->instanceOf(meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
-      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).parameters->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)
-      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).parameters->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)->toOne().name == 'v_automap'
+   $af.parameters->at(1)->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
+      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)
+      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)->toOne().name == 'v_automap'
 }
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::getAutoMapProperty(af:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
-   $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).body->toOne();
+   $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).body->toOne();
 }

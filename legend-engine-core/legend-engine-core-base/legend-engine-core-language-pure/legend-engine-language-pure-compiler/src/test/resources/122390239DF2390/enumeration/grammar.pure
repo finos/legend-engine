@@ -1,0 +1,18 @@
+import protocol::support::*;
+Enum protocol::AnEnum
+{
+  Val,
+  Val2
+}
+
+Enum <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::AnEnum2
+{
+  Val,
+  <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} Val2
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}

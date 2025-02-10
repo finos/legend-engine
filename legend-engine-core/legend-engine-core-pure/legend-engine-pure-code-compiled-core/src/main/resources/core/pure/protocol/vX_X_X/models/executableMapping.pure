@@ -30,7 +30,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::TestAssert
 {
    expected:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
    inputs : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
-   comparisonKey : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+   comparisonKey : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
    comparisonType : ComparisonType[0..1];
 }
 

@@ -423,7 +423,11 @@ public class SQLExecutor
         try
         {
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Method method = cl.getMethod("Root_meta_protocols_pure_" + version +
+                    (PureClientVersions.versionAGreaterThanVersionB(version, "v1_33_0") ?
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__LambdaFunction_1_" :
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_"),
+                    FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, lambda, extensions, executionSupport);
         }
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)

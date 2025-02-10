@@ -66,11 +66,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue
 Class meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint
 {
    name               : String[1];
-   functionDefinition : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   functionDefinition : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    externalId         : String[0..1];
    enforcementLevel   : String[0..1];
    sourceInformation  : SourceInformation[0..1];
-   messageFunction    : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+   messageFunction    : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::m3::type::Class extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::m3::extension::AnnotatedElement
@@ -92,6 +92,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association ex
 Class meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property extends meta::protocols::pure::vX_X_X::metamodel::m3::extension::AnnotatedElement
 {
    defaultValue : meta::protocols::pure::vX_X_X::metamodel::m3::function::property::DefaultValue[0..1];
+   aggregation : meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind[0..1];
    name : String[1];
    multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
    genericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1];
@@ -105,6 +106,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Qualifie
    returnGenericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1];
    returnMultiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
    body : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
+}
+
+Enum meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind
+{
+    NONE,
+    SHARED,
+    COMPOSITE
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity
@@ -139,7 +147,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::type::Unit
 {
    name : String[1];
    measure : String[1];
-   conversionFunction : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
+   conversionFunction : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::m3::type::Type
@@ -182,23 +190,23 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable
    genericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::FunctionApplication extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
 {
    property : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
 {
    function : String[1];
    fControl : String[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::UnknownAppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::UnknownAppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
 {
    function : String[1];
    returnType : String[1];
@@ -206,14 +214,14 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application:
 }
 
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    add : Boolean[0..1];
    key: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1];
    expression: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[*];
    body : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];

@@ -1,7 +1,0 @@
-Class protocol::ClassWithQualifiedProperties
-{
-  <<AProfile.flag, protocol::AProfile.newFlag>> {protocol::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} qualifiedProperty(param: String[1],param2: String[1]) {
-    let x = 'ok' + $param + $param2;
-    $x;
-  }: String[1];
-}

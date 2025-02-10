@@ -1,5 +1,0 @@
-function protocol::f(): Any[*]
-{
-  ^myClass(prop='ll');
-  [^myClass(prop='ll'), ^myClass(prop='qwe')];
-}

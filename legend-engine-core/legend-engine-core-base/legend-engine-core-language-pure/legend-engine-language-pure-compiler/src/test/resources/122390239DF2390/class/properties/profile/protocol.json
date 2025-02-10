@@ -1,0 +1,232 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "ClassWithPropertiesWithStereotypesAndTaggedValues",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 137,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 131,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "value",
+          "sourceInformation": {
+            "endColumn": 141,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [
+            {
+              "profile": "AProfile",
+              "profileSourceInformation": {
+                "endColumn": 12,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 4
+              },
+              "sourceInformation": {
+                "endColumn": 17,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 4
+              },
+              "value": "flag"
+            },
+            {
+              "profile": "protocol::support::AProfile",
+              "profileSourceInformation": {
+                "endColumn": 46,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 4
+              },
+              "sourceInformation": {
+                "endColumn": 54,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 4
+              },
+              "value": "newFlag"
+            }
+          ],
+          "taggedValues": [
+            {
+              "sourceInformation": {
+                "endColumn": 99,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 59,
+                "startLine": 4
+              },
+              "tag": {
+                "profile": "protocol::support::AProfile",
+                "profileSourceInformation": {
+                  "endColumn": 85,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 59,
+                  "startLine": 4
+                },
+                "sourceInformation": {
+                  "endColumn": 90,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 87,
+                  "startLine": 4
+                },
+                "value": "tag1"
+              },
+              "value": "yeah"
+            },
+            {
+              "sourceInformation": {
+                "endColumn": 121,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 102,
+                "startLine": 4
+              },
+              "tag": {
+                "profile": "AProfile",
+                "profileSourceInformation": {
+                  "endColumn": 109,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 102,
+                  "startLine": 4
+                },
+                "sourceInformation": {
+                  "endColumn": 114,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 111,
+                  "startLine": 4
+                },
+                "value": "tag2"
+              },
+              "value": "ok"
+            }
+          ]
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol::support",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 11,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 7
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 9
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 9
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 10
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 10
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::ClassWithPropertiesWithStereotypesAndTaggedValues",
+            "protocol::support::AProfile"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+import protocol::support::*;
+Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::AClass extends protocol::support::SuperClass, Light
+[
+  $this.other->startsWith('x'),
+  id: $this.other->endsWith('z'),
+  other
+  (
+    ~owner: theOwner
+    ~externalId: 'someId'
+    ~function: $this.other->length() > 2
+    ~enforcementLevel: Error
+    ~message: $this.other + ' has issues'
+  ),
+  other2
+  (
+    ~externalId: 'ok'
+    ~function: $this.other->length() < 4
+  )
+]
+{
+  <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} (composite) other: String[1];
+  (shared) defaultValue: String[1] = 'default';
+  defaultValueArray: String[1..*] = ['a', 'b'];
+  defaultType: LightP[1] = ^LightP(value=1);
+  graph: String[1] = Class.name;
+  extendedPrimitive: meta::external::catalog::precisePrimitives::Varchar(200)[1];
+  <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} qualifiedProperty(param: String[1],param2: String[1]) {
+    let x = 'ok' + $param + $param2;
+    $x;
+  }: String[1];
+}
+
+Class protocol::support::LightP
+{
+  value: Integer[1];
+}
+
+Class protocol::support::Light
+{
+}
+
+Class protocol::support::SuperClass
+{
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}

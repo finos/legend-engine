@@ -1,0 +1,317 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "new",
+          "parameters": [
+            {
+              "_type": "genericTypeInstance",
+              "genericType": {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "meta::pure::metamodel::type::Class"
+                },
+                "typeArguments": [
+                  {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "myClass"
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": []
+                  }
+                ],
+                "typeVariableValues": []
+              }
+            },
+            {
+              "_type": "string",
+              "value": ""
+            },
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [
+                {
+                  "_type": "keyExpression",
+                  "add": false,
+                  "expression": {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 20,
+                      "endLine": 4,
+                      "sourceId": "",
+                      "startColumn": 17,
+                      "startLine": 4
+                    },
+                    "value": "ll"
+                  },
+                  "key": {
+                    "_type": "string",
+                    "value": "prop"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 2,
+            "upperBound": 2
+          },
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "values": [
+            {
+              "_type": "func",
+              "function": "new",
+              "parameters": [
+                {
+                  "_type": "genericTypeInstance",
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments": [
+                      {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "myClass"
+                        },
+                        "typeArguments": [],
+                        "typeVariableValues": []
+                      }
+                    ],
+                    "typeVariableValues": []
+                  }
+                },
+                {
+                  "_type": "string",
+                  "value": ""
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "values": [
+                    {
+                      "_type": "keyExpression",
+                      "add": false,
+                      "expression": {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 21,
+                          "endLine": 5,
+                          "sourceId": "",
+                          "startColumn": 18,
+                          "startLine": 5
+                        },
+                        "value": "ll"
+                      },
+                      "key": {
+                        "_type": "string",
+                        "value": "prop"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "_type": "func",
+              "function": "new",
+              "parameters": [
+                {
+                  "_type": "genericTypeInstance",
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "meta::pure::metamodel::type::Class"
+                    },
+                    "typeArguments": [
+                      {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "myClass"
+                        },
+                        "typeArguments": [],
+                        "typeVariableValues": []
+                      }
+                    ],
+                    "typeVariableValues": []
+                  }
+                },
+                {
+                  "_type": "string",
+                  "value": ""
+                },
+                {
+                  "_type": "collection",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "values": [
+                    {
+                      "_type": "keyExpression",
+                      "add": false,
+                      "expression": {
+                        "_type": "string",
+                        "sourceInformation": {
+                          "endColumn": 43,
+                          "endLine": 5,
+                          "sourceId": "",
+                          "startColumn": 39,
+                          "startLine": 5
+                        },
+                        "value": "qwe"
+                      },
+                      "key": {
+                        "_type": "string",
+                        "value": "prop"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "f__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 25,
+            "startLine": 2
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "myClass",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 10,
+                "sourceId": "",
+                "startColumn": 10,
+                "startLine": 10
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "prop",
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 10
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 11,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 8
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::f__Any_MANY_",
+            "protocol::support::myClass"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}
