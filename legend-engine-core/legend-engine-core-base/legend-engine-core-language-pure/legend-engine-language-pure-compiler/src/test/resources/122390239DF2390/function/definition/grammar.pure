@@ -1,0 +1,25 @@
+import protocol::support::*;
+function protocol::f(p: Integer[1], z: String[*]): String[0..1]
+{
+  []
+}
+
+function protocol::f2(r: meta::pure::metamodel::relation::Relation<(col:String, col2:Integer)>[1]): protocol::support::Light[*]
+{
+  []
+}
+
+function <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::aNativeFunc(x: Integer[1], z: Property<Nil, String|*>[1..*], other: meta::external::catalog::precisePrimitives::Varchar(200)[1]): String[*]
+{
+  []
+}
+
+Class protocol::support::Light
+{
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}

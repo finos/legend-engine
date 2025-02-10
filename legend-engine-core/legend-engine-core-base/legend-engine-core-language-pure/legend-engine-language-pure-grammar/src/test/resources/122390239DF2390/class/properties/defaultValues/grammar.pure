@@ -1,7 +1,0 @@
-Class protocol::ClassWithPropertiesWithDefaultValues
-{
-  defaultValue: String[1] = 'default';
-  defaultValueArray: String[1..*] = ['a', 'b'];
-  defaultType: Light[1] = ^Light(value=1);
-  graph: String[1] = Class.name;
-}

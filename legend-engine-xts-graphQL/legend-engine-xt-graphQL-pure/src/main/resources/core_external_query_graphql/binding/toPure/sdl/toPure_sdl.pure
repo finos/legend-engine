@@ -164,10 +164,9 @@ function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl
                         ^VariableExpression(name = $a.name, multiplicity = $argumentMultiplicityAndName.first, genericType = ^GenericType(rawType = $argumentType->toOne()));
                       );
                       if ($fieldVariableExpressions->isEmpty(), 
-                          | 
-                            meta::pure::functions::meta::newProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first), 
-                          | 
-                            newQualifiedProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first, $fieldVariableExpressions);
+                          | meta::pure::functions::meta::newProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first), 
+                          | let _this = ^VariableExpression(name = 'this', multiplicity = PureOne, genericType = ^GenericType(rawType = $shellType));
+                            newQualifiedProperty($f.name, ^GenericType(rawType = $shellType), ^GenericType(rawType = $fieldType->toOne()), $fieldTypeMultiplicityAndName.first, $_this->concatenate($fieldVariableExpressions));
                       );
                   );
                 );

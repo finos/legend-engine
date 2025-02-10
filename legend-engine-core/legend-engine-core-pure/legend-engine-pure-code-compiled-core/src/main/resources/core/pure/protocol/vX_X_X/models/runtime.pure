@@ -28,7 +28,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::AuthenticationContext extends me
 Class meta::protocols::pure::vX_X_X::metamodel::AnalyticsExecutionContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
 {
    useAnalytics: Boolean[1];
-   toFlowSetFunction: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   toFlowSetFunction: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::Runtime

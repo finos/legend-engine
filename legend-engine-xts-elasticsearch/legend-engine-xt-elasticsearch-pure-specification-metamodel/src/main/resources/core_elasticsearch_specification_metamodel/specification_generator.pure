@@ -108,7 +108,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
         multiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
       );
 
-      let filterLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+      let filterLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                           (
                               _type = 'lambda',
                               body = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type = 'var', name = 'b'),
@@ -149,7 +149,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                             ]
                         );
 
-      let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+      let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                           (
                               _type = 'lambda',
                               body = $equalFunc,
@@ -190,7 +190,7 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                       parameters = $lambdaParameter
                     );            
 
-  let mapLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+  let mapLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                       (
                           _type = 'lambda',
                           body = $keysFunc,
@@ -224,7 +224,7 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                         ]
                     );
 
-  let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+  let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                     (
                         _type = 'lambda',
                         body = $lessThanEqualFunc,

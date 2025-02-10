@@ -1,0 +1,209 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AClass",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 4,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "superTypes": [
+        {
+          "path": "protocol::support::SuperClass",
+          "sourceInformation": {
+            "endColumn": 60,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 32,
+            "startLine": 2
+          },
+          "type": "CLASS"
+        },
+        {
+          "path": "Light",
+          "sourceInformation": {
+            "endColumn": 67,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 63,
+            "startLine": 2
+          },
+          "type": "CLASS"
+        }
+      ],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "SimpleClass",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 8,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 6
+      },
+      "stereotypes": [],
+      "superTypes": [
+        {
+          "path": "protocol::support::Light",
+          "sourceInformation": {
+            "endColumn": 60,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 37,
+            "startLine": 6
+          },
+          "type": "CLASS"
+        }
+      ],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "SuperClass",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 18,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 13,
+                "startLine": 12
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "property",
+          "sourceInformation": {
+            "endColumn": 25,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 12
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "aggregation": "NONE",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 21,
+                "endLine": 13,
+                "sourceId": "",
+                "startColumn": 15,
+                "startLine": 13
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "val",
+          "sourceInformation": {
+            "endColumn": 25,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 13
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 10
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Light",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 18,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 16
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AClass",
+            "protocol::SimpleClass",
+            "protocol::support::SuperClass",
+            "protocol::support::Light"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 22,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

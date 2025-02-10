@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.m3.function.property;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultValue
 {
     public ValueSpecification value;
