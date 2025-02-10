@@ -66,6 +66,7 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new Sort(),
                 new Rename(),
                 new Project(),
+                new ProjectRelation(),
                 new GroupBy(),
                 new GroupByArray(),
                 new Pivot(),

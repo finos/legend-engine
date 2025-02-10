@@ -38,7 +38,6 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Extend;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -111,7 +110,7 @@ public abstract class AggregationShared extends Shared
                 if (twoParamFunc)
                 {
                     mapParameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, sourceTDSType, repository, processorSupport), false, processorSupport));
-                    mapParameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new Extend.RepoPrimitiveBuilder(repository)), false, processorSupport));
+                    mapParameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new ProjectExtend.RepoPrimitiveBuilder(repository)), false, processorSupport));
                 }
                 mapParameters.set(twoParamFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType, -1, this.repository, false), true, processorSupport));
                 CoreInstance oneRes = this.functionExecution.executeFunction(false, mapF, mapParameters, resolvedTypeParameters, resolvedMultiplicityParameters, mapFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport).getValueForMetaPropertyToOne("values");
