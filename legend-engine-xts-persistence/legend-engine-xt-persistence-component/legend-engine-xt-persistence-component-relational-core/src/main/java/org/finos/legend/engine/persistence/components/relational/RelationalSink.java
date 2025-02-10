@@ -255,65 +255,6 @@ public abstract class RelationalSink implements Sink
         return Math.max(mainSize, stagingSize);
     }
 
-    /*
-    private Optional<Integer> getDesiredSizeV2(Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction)
-    {
-        // When both main and staging have size, return the greater one (or fail the process if capability does not allow decrement)
-        if (mainSize.isPresent() && stagingSize.isPresent())
-        {
-            return Optional.of(findMaxOrFail(mainSize.get(), stagingSize.get()));
-        }
-
-        // If main has a size and staging does not have a size
-        // Type1<Size1> -> Type2
-        if (mainSize.isPresent() && !stagingSize.isPresent())
-        {
-            Optional<Integer> defaultSizeForStaging = dataTypeToDefaultSizeFunction.apply(stagingType);
-            if (defaultSizeForStaging.isPresent())
-            {
-                return Optional.of(findMaxOrFail(mainSize.get(), defaultSizeForStaging.get()));
-            }
-            else
-            {
-                switch (dataTypeEvolutionType)
-                {
-                    case SAME_DATA_TYPE:
-                        return Optional.empty();
-                    case IMPLICIT_DATATYPE_CONVERSION:
-                        return mainSize;
-                    case EXPLICIT_DATATYPE_CONVERSION:
-                        return Optional.empty();
-                }
-            }
-        }
-
-        // If main does not have a size and staging has a size
-        // Type1 -> Type2<Size1>
-        if (!mainSize.isPresent() && stagingSize.isPresent())
-        {
-            Optional<Integer> defaultSizeForMain = dataTypeToDefaultSizeFunction.apply(mainType);
-            if (defaultSizeForMain.isPresent())
-            {
-                return Optional.of(findMaxOrFail(defaultSizeForMain.get(), stagingSize.get()));
-            }
-            else
-            {
-                switch (dataTypeEvolutionType)
-                {
-                    case SAME_DATA_TYPE:
-                        return Optional.empty();
-                    case IMPLICIT_DATATYPE_CONVERSION:
-                        return Optional.empty();
-                    case EXPLICIT_DATATYPE_CONVERSION:
-                        return stagingSize;
-                }
-            }
-        }
-
-        return Optional.empty();
-    }
-     */
-
     @Override
     public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {
