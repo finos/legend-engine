@@ -60,6 +60,7 @@ public class SchemaEvolutionTest extends IngestModeTest
                             Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
                     Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
                     Collections.singletonMap(DataType.FLOAT, EnumSet.of(DataType.DOUBLE)),
+                    null,
                     SqlGenUtils.QUOTE_IDENTIFIER,
                     AnsiSqlSink.LOGICAL_PLAN_VISITOR_BY_CLASS,
                     (x, y, z) ->

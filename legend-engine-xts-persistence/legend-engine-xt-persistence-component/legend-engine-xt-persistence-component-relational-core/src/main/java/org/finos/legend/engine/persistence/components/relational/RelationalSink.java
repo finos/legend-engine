@@ -41,8 +41,10 @@ import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
-import org.finos.legend.engine.persistence.components.executor.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
+import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
@@ -52,12 +54,14 @@ import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.time.Clock;
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class RelationalSink implements Sink
 {
     private final Set<Capability> capabilities;
     private final Map<DataType, Set<DataType>> implicitDataTypeMapping;
     private final Map<DataType, Set<DataType>> explicitDataTypeMapping;
+    private final DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping;
     private final String quoteIdentifier;
     private final Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass;
 
@@ -68,6 +72,7 @@ public abstract class RelationalSink implements Sink
     protected RelationalSink(Set<Capability> capabilities,
                              Map<DataType, Set<DataType>> implicitDataTypeMapping,
                              Map<DataType, Set<DataType>> explicitDataTypeMapping,
+                             DataTypeToDefaultSizeMapping dataTypeToDefaultSizeMapping,
                              String quoteIdentifier,
                              Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
                              DatasetExists datasetExists,
@@ -77,6 +82,7 @@ public abstract class RelationalSink implements Sink
         this.capabilities = capabilities;
         this.implicitDataTypeMapping = implicitDataTypeMapping;
         this.explicitDataTypeMapping = explicitDataTypeMapping;
+        this.dataTypeToDefaultSizeMapping = dataTypeToDefaultSizeMapping;
         this.quoteIdentifier = quoteIdentifier;
         this.logicalPlanVisitorByClass = logicalPlanVisitorByClass;
         this.datasetExists = datasetExists;
@@ -176,6 +182,137 @@ public abstract class RelationalSink implements Sink
         return createNewField(evolveTo, evolveFrom, length, scale);
     }
 
+    public Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement)
+    {
+        return getEvolveToSize(columnName, mainLength, stagingLength, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultLength, failOnDecrement);
+    }
+
+    public Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement)
+    {
+        return getEvolveToSize(columnName, mainScale, stagingScale, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultScale, failOnDecrement);
+    }
+
+    private Optional<Integer> getEvolveToSize(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction, boolean failOnDecrement)
+    {
+        // When both main and staging have size, return the greater one (or fail the process if capability does not allow decrement)
+        if (mainSize.isPresent() && stagingSize.isPresent())
+        {
+            return Optional.of(findMaxOrFail(columnName, mainSize.get(), stagingSize.get(), failOnDecrement));
+        }
+
+        // When both sides do not have size, return empty size
+        if (!mainSize.isPresent() && !stagingSize.isPresent())
+        {
+            return Optional.empty();
+        }
+
+        // When either size does not have size, we give the default value to the missing side and return the greater one (or fail the process if capability does not allow decrement)
+        Optional<Integer> maxSizeComparingWithDefault = getDefaultValueForMissingSizeAndReturnMax(columnName, mainSize, stagingSize, mainType, stagingType, dataTypeToDefaultSizeFunction, failOnDecrement);
+        if (maxSizeComparingWithDefault.isPresent())
+        {
+            return maxSizeComparingWithDefault;
+        }
+        else
+        {
+            // When we are unable to retrieve a default size, this means the data type does not support size
+            switch (dataTypeEvolutionType)
+            {
+                case IMPLICIT_DATATYPE_CONVERSION:
+                    return mainSize; // we follow main size because the final data type will be main type
+                case EXPLICIT_DATATYPE_CONVERSION:
+                    return stagingSize; // we follow staging size because the final data type will be staging type
+                default:
+                    throw new IllegalStateException("Unexpected value: " + dataTypeEvolutionType);
+            }
+        }
+    }
+
+    private Optional<Integer> getDefaultValueForMissingSizeAndReturnMax(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction, boolean failOnDecrement)
+    {
+        if (mainSize.isPresent() && !stagingSize.isPresent())
+        {
+            Optional<Integer> defaultSizeForStaging = dataTypeToDefaultSizeFunction.apply(stagingType);
+            return defaultSizeForStaging.map(size -> findMaxOrFail(columnName, mainSize.get(), size, failOnDecrement));
+        }
+        else if (!mainSize.isPresent() && stagingSize.isPresent())
+        {
+            Optional<Integer> defaultSizeForMain = dataTypeToDefaultSizeFunction.apply(mainType);
+            return defaultSizeForMain.map(size -> findMaxOrFail(columnName, size, stagingSize.get(), failOnDecrement));
+        }
+        else
+        {
+            throw new IllegalStateException("Size is expected to be present in either main or staging only");
+        }
+    }
+
+    private int findMaxOrFail(String columnName, int mainSize, int stagingSize, boolean failOnDecrement)
+    {
+        if (failOnDecrement && stagingSize < mainSize)
+        {
+            throw new IncompatibleSchemaChangeException(String.format("Data type size is decremented from \"%s\" to \"%s\" for column \"%s\", but user capability does not allow it", mainSize, stagingSize, columnName));
+        }
+
+        return Math.max(mainSize, stagingSize);
+    }
+
+    /*
+    private Optional<Integer> getDesiredSizeV2(Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction)
+    {
+        // When both main and staging have size, return the greater one (or fail the process if capability does not allow decrement)
+        if (mainSize.isPresent() && stagingSize.isPresent())
+        {
+            return Optional.of(findMaxOrFail(mainSize.get(), stagingSize.get()));
+        }
+
+        // If main has a size and staging does not have a size
+        // Type1<Size1> -> Type2
+        if (mainSize.isPresent() && !stagingSize.isPresent())
+        {
+            Optional<Integer> defaultSizeForStaging = dataTypeToDefaultSizeFunction.apply(stagingType);
+            if (defaultSizeForStaging.isPresent())
+            {
+                return Optional.of(findMaxOrFail(mainSize.get(), defaultSizeForStaging.get()));
+            }
+            else
+            {
+                switch (dataTypeEvolutionType)
+                {
+                    case SAME_DATA_TYPE:
+                        return Optional.empty();
+                    case IMPLICIT_DATATYPE_CONVERSION:
+                        return mainSize;
+                    case EXPLICIT_DATATYPE_CONVERSION:
+                        return Optional.empty();
+                }
+            }
+        }
+
+        // If main does not have a size and staging has a size
+        // Type1 -> Type2<Size1>
+        if (!mainSize.isPresent() && stagingSize.isPresent())
+        {
+            Optional<Integer> defaultSizeForMain = dataTypeToDefaultSizeFunction.apply(mainType);
+            if (defaultSizeForMain.isPresent())
+            {
+                return Optional.of(findMaxOrFail(defaultSizeForMain.get(), stagingSize.get()));
+            }
+            else
+            {
+                switch (dataTypeEvolutionType)
+                {
+                    case SAME_DATA_TYPE:
+                        return Optional.empty();
+                    case IMPLICIT_DATATYPE_CONVERSION:
+                        return Optional.empty();
+                    case EXPLICIT_DATATYPE_CONVERSION:
+                        return stagingSize;
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+     */
 
     @Override
     public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
