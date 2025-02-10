@@ -72,7 +72,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
     '{\n' +
-    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  firmByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}',
     $pureTypes);
 }
@@ -143,7 +143,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Mutation\n' +
     '{\n' +
-    '  upsertFirm(firm: meta::external::query::graphQL::metamodel::sql::Firm[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  upsertFirm(firm: meta::external::query::graphQL::metamodel::sql::Firm[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
@@ -155,7 +155,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
     '{\n' +
-    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  firmByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}',
     $pureTypes);
 }
@@ -528,8 +528,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::MutationHierarchy\n' +
      '{\n' +
-     '  upsertTeam(team: meta::external::query::graphQL::metamodel::sql::Team[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
-     '  upsertEmployee(employee: meta::external::query::graphQL::metamodel::sql::Employee[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '  upsertTeam(team: meta::external::query::graphQL::metamodel::sql::Team[1]) {}: meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  upsertEmployee(employee: meta::external::query::graphQL::metamodel::sql::Employee[1]) {}: meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
@@ -541,8 +541,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::QueryHierarchy\n' +
      '{\n' +
-     '  teamByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
-     '  employeeByFirstName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '  teamByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  employeeByFirstName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::Team\n' +

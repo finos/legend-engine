@@ -1,6 +1,0 @@
-function protocol::f(): Any[*]
-{
-  f(x: Integer[1]|$x + 1);
-  g({z: String[1],x: Integer[1]|$z + $x->toString()});
-  h(z|$z + $x->toString());
-}

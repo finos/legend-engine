@@ -1,5 +1,0 @@
-Association protocol::AnAssociation5
-{
-  <<AProfile.flag, protocol::AProfile.newFlag>> a: protocol::AssociationClassA[1];
-  <<AProfile.flag, protocol::AProfile.newFlag>> {protocol::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} b: protocol::AssociationClassB[1..*];
-}

@@ -1,0 +1,388 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "ClassWithQualifiedProperties",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "letFunction",
+              "parameters": [
+                {
+                  "_type": "string",
+                  "value": "x"
+                },
+                {
+                  "_type": "func",
+                  "function": "plus",
+                  "parameters": [
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 3,
+                        "upperBound": 3
+                      },
+                      "sourceInformation": {
+                        "endColumn": 35,
+                        "endLine": 5,
+                        "sourceId": "",
+                        "startColumn": 18,
+                        "startLine": 5
+                      },
+                      "values": [
+                        {
+                          "_type": "string",
+                          "sourceInformation": {
+                            "endColumn": 16,
+                            "endLine": 5,
+                            "sourceId": "",
+                            "startColumn": 13,
+                            "startLine": 5
+                          },
+                          "value": "ok"
+                        },
+                        {
+                          "_type": "var",
+                          "name": "param",
+                          "sourceInformation": {
+                            "endColumn": 25,
+                            "endLine": 5,
+                            "sourceId": "",
+                            "startColumn": 20,
+                            "startLine": 5
+                          }
+                        },
+                        {
+                          "_type": "var",
+                          "name": "param2",
+                          "sourceInformation": {
+                            "endColumn": 35,
+                            "endLine": 5,
+                            "sourceId": "",
+                            "startColumn": 29,
+                            "startLine": 5
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 35,
+                    "endLine": 5,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 5
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 35,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 5
+              }
+            },
+            {
+              "_type": "var",
+              "name": "x",
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 6,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 6
+              }
+            }
+          ],
+          "name": "qualifiedProperty",
+          "parameters": [
+            {
+              "_type": "var",
+              "genericType": {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String",
+                  "sourceInformation": {
+                    "endColumn": 154,
+                    "endLine": 4,
+                    "sourceId": "",
+                    "startColumn": 149,
+                    "startLine": 4
+                  }
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "param",
+              "sourceInformation": {
+                "endColumn": 157,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 142,
+                "startLine": 4
+              }
+            },
+            {
+              "_type": "var",
+              "genericType": {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String",
+                  "sourceInformation": {
+                    "endColumn": 172,
+                    "endLine": 4,
+                    "sourceId": "",
+                    "startColumn": 167,
+                    "startLine": 4
+                  }
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "param2",
+              "sourceInformation": {
+                "endColumn": 175,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 159,
+                "startLine": 4
+              }
+            }
+          ],
+          "returnGenericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 11,
+                "endLine": 7,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 7
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "sourceInformation": {
+            "endColumn": 15,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [
+            {
+              "profile": "AProfile",
+              "profileSourceInformation": {
+                "endColumn": 12,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 4
+              },
+              "sourceInformation": {
+                "endColumn": 17,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 4
+              },
+              "value": "flag"
+            },
+            {
+              "profile": "protocol::support::AProfile",
+              "profileSourceInformation": {
+                "endColumn": 46,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 4
+              },
+              "sourceInformation": {
+                "endColumn": 54,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 4
+              },
+              "value": "newFlag"
+            }
+          ],
+          "taggedValues": [
+            {
+              "sourceInformation": {
+                "endColumn": 99,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 59,
+                "startLine": 4
+              },
+              "tag": {
+                "profile": "protocol::support::AProfile",
+                "profileSourceInformation": {
+                  "endColumn": 85,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 59,
+                  "startLine": 4
+                },
+                "sourceInformation": {
+                  "endColumn": 90,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 87,
+                  "startLine": 4
+                },
+                "value": "tag1"
+              },
+              "value": "yeah"
+            },
+            {
+              "sourceInformation": {
+                "endColumn": 121,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 102,
+                "startLine": 4
+              },
+              "tag": {
+                "profile": "AProfile",
+                "profileSourceInformation": {
+                  "endColumn": 109,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 102,
+                  "startLine": 4
+                },
+                "sourceInformation": {
+                  "endColumn": 114,
+                  "endLine": 4,
+                  "sourceId": "",
+                  "startColumn": 111,
+                  "startLine": 4
+                },
+                "value": "tag2"
+              },
+              "value": "ok"
+            }
+          ]
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 8,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol::support",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 10
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 12
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 12
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 13
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 13
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::ClassWithQualifiedProperties",
+            "protocol::support::AProfile"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 16,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

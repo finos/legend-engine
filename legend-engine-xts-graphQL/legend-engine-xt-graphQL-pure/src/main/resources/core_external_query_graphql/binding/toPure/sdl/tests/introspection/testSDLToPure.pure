@@ -92,8 +92,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
                   '  possibleTypes : meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
                   '  inputFields : meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
                   '  ofType : meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
-                  '  fields(includeDeprecated: Boolean[0..1]): meta::external::query::graphQL::metamodel::introspection::__Field[*];\n' +
-                  '  enumValues(includeDeprecated: Boolean[0..1]): meta::external::query::graphQL::metamodel::introspection::__EnumValue[*];\n' +
+                  '  fields(includeDeprecated: Boolean[0..1]) {}: meta::external::query::graphQL::metamodel::introspection::__Field[*];\n' +
+                  '  enumValues(includeDeprecated: Boolean[0..1]) {}: meta::external::query::graphQL::metamodel::introspection::__EnumValue[*];\n' +
                   '}\n' +
                   '\n' +
                   'Enum meta::external::query::graphQL::metamodel::introspection::__TypeKind\n' +
