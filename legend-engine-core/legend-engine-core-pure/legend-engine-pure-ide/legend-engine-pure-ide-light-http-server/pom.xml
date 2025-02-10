@@ -401,7 +401,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-server-http-server</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

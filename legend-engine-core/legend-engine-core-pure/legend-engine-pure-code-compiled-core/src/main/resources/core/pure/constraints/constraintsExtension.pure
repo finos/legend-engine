@@ -197,7 +197,6 @@ function meta::pure::constraints::functions::assertConstraint(class:Class<Any>[1
    assert($result->cast(@ValidatedInstance).instance->instanceOf($class));
    let validatedResult = $result->cast(@ValidatedInstance).results;
    assertFalse($validatedResult->isEmpty());
-   println($validatedResult);
    $constraintIds->map( id | assertEquals(1, $validatedResult->filter(r | $r.constraintId == $id)->size(),| 'Constraint [' + $id +'] not found'));
    $constraintIds->map( id | assertEquals($validity,$validatedResult->filter(r | $r.constraintId == $id)->toOne().success,| 'Constraint [' + $id +'] expected to be ' + $validity->toString()));
    true;
