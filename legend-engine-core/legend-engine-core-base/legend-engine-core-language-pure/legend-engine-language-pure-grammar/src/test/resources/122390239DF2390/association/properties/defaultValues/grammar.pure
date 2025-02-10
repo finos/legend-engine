@@ -1,5 +1,0 @@
-Association protocol::AnAssociation4
-{
-  a: protocol::AssociationClassA[1];
-  b: protocol::AssociationClassB[1..*] = [^AssociationClassB(), ^AssociationClassB()];
-}

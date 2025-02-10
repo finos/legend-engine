@@ -27,7 +27,7 @@ import meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration:
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::SeedDataGenerationInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
@@ -38,7 +38,7 @@ Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithSeedInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
@@ -50,7 +50,7 @@ Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithDefaultSeedInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];

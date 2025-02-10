@@ -69,7 +69,7 @@ function <<access.private>> meta::protocols::pure::v1_20_0::transformation::from
             $fe.genericType.rawType->concatenate($params)->concatenate($func);
          },
          i:InstanceValue[1]         | $i.values->map(v | $v->scan($visited)),
-         k:meta::pure::functions::lang::KeyExpression[1]         | $k.expression->scan($visited);,
+         k:meta::pure::metamodel::function::KeyExpression[1]         | $k.expression->scan($visited);,
          lf :LambdaFunction<Any>[1] | $lf.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($visited)),
          v:VariableExpression[1]    | [],
          {cfd:ConcreteFunctionDefinition<Any>[1]|

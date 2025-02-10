@@ -32,20 +32,20 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySe
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::GroupByFunctions
 {
-   groupByFn: 	meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   groupByFn: 	meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::AggregateFunctions
 {
-    mapFn: 	meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
-    aggregateFn: 	meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+    mapFn: 	meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+    aggregateFn: 	meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
 {
    name : String[1];
-   mapFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
-   aggregateFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   mapFn : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+   aggregateFn : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSortInformation
@@ -57,13 +57,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSort
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
 {
    name: String[1];
-   columnFn: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   columnFn: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
 {
-   mapFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
-   aggregateFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   mapFn : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+   aggregateFn : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOperation
@@ -72,13 +72,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOpe
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
 {
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    columnName : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
 {
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance

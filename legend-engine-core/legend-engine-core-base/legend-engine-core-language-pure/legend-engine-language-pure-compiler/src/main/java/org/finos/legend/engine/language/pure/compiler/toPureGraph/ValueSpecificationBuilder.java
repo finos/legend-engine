@@ -79,7 +79,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_lang_KeyExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_KeyExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
@@ -972,7 +972,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(keyExpressionGenericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.with(new Root_meta_pure_functions_lang_KeyExpression_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.KeyExpression))._add(keyExpression.add)._key((InstanceValue) key)._expression(expression)));
+                ._values(Lists.immutable.with(new Root_meta_pure_metamodel_function_KeyExpression_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.KeyExpression))._add(keyExpression.add)._key((InstanceValue) key)._expression(expression)));
     }
 
     @Override

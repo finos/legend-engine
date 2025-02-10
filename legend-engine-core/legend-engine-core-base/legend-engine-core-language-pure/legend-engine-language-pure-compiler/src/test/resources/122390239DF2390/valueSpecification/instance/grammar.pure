@@ -1,0 +1,11 @@
+import protocol::support::*;
+function protocol::f(): Any[*]
+{
+  ^myClass(prop='ll');
+  [^myClass(prop='ll'), ^myClass(prop='qwe')];
+}
+
+Class protocol::support::myClass
+{
+  prop: String[1];
+}

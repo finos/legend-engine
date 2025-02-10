@@ -1,0 +1,301 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "association",
+      "name": "AnAssociation1",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassA",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "a",
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassB",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 5
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "b",
+          "sourceInformation": {
+            "endColumn": 48,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [
+        {
+          "profile": "AProfile",
+          "profileSourceInformation": {
+            "endColumn": 22,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 15,
+            "startLine": 2
+          },
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 15,
+            "startLine": 2
+          },
+          "value": "flag"
+        },
+        {
+          "profile": "protocol::support::AProfile",
+          "profileSourceInformation": {
+            "endColumn": 56,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 30,
+            "startLine": 2
+          },
+          "sourceInformation": {
+            "endColumn": 64,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 30,
+            "startLine": 2
+          },
+          "value": "newFlag"
+        }
+      ],
+      "taggedValues": [
+        {
+          "sourceInformation": {
+            "endColumn": 109,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 69,
+            "startLine": 2
+          },
+          "tag": {
+            "profile": "protocol::support::AProfile",
+            "profileSourceInformation": {
+              "endColumn": 95,
+              "endLine": 2,
+              "sourceId": "",
+              "startColumn": 69,
+              "startLine": 2
+            },
+            "sourceInformation": {
+              "endColumn": 100,
+              "endLine": 2,
+              "sourceId": "",
+              "startColumn": 97,
+              "startLine": 2
+            },
+            "value": "tag1"
+          },
+          "value": "yeah"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 131,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 112,
+            "startLine": 2
+          },
+          "tag": {
+            "profile": "AProfile",
+            "profileSourceInformation": {
+              "endColumn": 119,
+              "endLine": 2,
+              "sourceId": "",
+              "startColumn": 112,
+              "startLine": 2
+            },
+            "sourceInformation": {
+              "endColumn": 124,
+              "endLine": 2,
+              "sourceId": "",
+              "startColumn": 121,
+              "startLine": 2
+            },
+            "value": "tag2"
+          },
+          "value": "ok"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassA",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 10,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 8
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassB",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 12
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol::support",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 20,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 16
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 18,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 18
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 18,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 18
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 19
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 19
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AnAssociation1",
+            "protocol::support::AssociationClassA",
+            "protocol::support::AssociationClassB",
+            "protocol::support::AProfile"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 22,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

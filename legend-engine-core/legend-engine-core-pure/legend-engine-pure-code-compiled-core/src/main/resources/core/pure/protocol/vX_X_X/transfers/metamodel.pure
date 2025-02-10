@@ -173,12 +173,25 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property
    (
       defaultValue = if($property.defaultValue->isEmpty(),|[],|$property.defaultValue->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue($extensions)->toOne()),
+      aggregation = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAggregation($property.aggregation, $extensions),
       name = $property.name->toOne(),
       multiplicity = $property.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       genericType = transformGenericType($property.genericType),
       stereotypes = $property.stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
       taggedValues = $property.taggedValues->map(t|$t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformTaggedValue())
    )
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAggregation(aggKind:AggregationKind[0..1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind[0..1]
+{
+  if (
+    [
+      pair(|$aggKind == AggregationKind.Shared, |meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind.SHARED),
+      pair(|$aggKind == AggregationKind.Composite, |meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind.COMPOSITE),
+      pair(|$aggKind == AggregationKind.None, |[])
+    ],
+    |[];
+  )
 }
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::QualifiedProperty[1]
