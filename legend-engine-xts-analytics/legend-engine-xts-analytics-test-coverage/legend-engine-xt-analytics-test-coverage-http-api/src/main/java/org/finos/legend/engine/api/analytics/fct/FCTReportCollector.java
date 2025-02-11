@@ -19,7 +19,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
 import org.finos.legend.engine.test.fct.FCTReport;
-import org.finos.legend.engine.test.fct.FCTReportBuilder;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
 import org.finos.legend.pure.code.core.LineageFCTReport;
 import org.finos.legend.pure.code.core.relational.dbSpecific.RelationalFCTReportH2;
