@@ -53,6 +53,7 @@ Class meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint
   dateOfBirth : StrictDate[0..1];
   firm        : Firm[1];
   addresses   : Address[1..*];
+  firmLegalName() { $this.firm.legalName} : String[1];
 }
 
 Class meta::external::format::xml::executionPlan::test::Firm
