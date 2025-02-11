@@ -15,28 +15,28 @@ import meta::pure::testCoverage::featureMatrix::*;
 // limitations under the License.
 
 
-function <<QueryType.tds,QueryFeature.sort,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN(toEval:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+function <<QueryType.tds,QueryFeature.sort,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN():FunctionDefinition<{->Any[1]}>[1]
 { 
-     true;
+     {|'test'};
 }
 
-function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2(toEval:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2():FunctionDefinition<{->Any[1]}>[1]
 { 
-     true;
+     {|'test'};
 }
 
 function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest():FCTMappingTest[1]
 { 
     ^FCTMappingTest(setupData = ^meta::pure::test::fct::SetupData(),
                     mapping=meta::analytics::testCoverage::featureMatrix::tests::testMapping,
-                    assertions = ^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_))
+                    assertions = ^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_))
 } 
 
 
  function <<test.Test>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrix():Boolean[1]
  {
-  let featureTests =[pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_ ),
-                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_ )
+  let featureTests =[pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_ ),
+                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_ )
             ]->newMap();
  
 
@@ -48,13 +48,13 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
 
   let report = meta::analytics::testCoverage::featureMatrix::buildStoreReport( meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_,$featureTests,$features,'test','testStore');
   let expected  = [
-         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2_Function_1__Boolean_1_', assertionType='assertion'),
+         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_', assertionType='assertion'),
                                 mappingFeature='filter',
                                 queryFeature='filter',
                                 sourceTypeFeature = 'tds',
                                 store = 'testStore',
                                 testType= 'test'),
-        ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN_Function_1__Boolean_1_', assertionType='UnTested'),
+        ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', assertionType='UnTested'),
         mappingFeature='filter',
         queryFeature='sort',
         sourceTypeFeature = 'tds',

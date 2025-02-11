@@ -44,32 +44,30 @@ Association meta::pure::fct::tests::collection::PositionProduct
 
 
 
-
-
-function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
- { 
-    $toEval->eval({|Position.all()->filter(i|$i.gsn  == 'ABC123')->project(p|[$p.gsn],['gsn'])});
-
-}
-
-function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
- { 
-   let tree =     #{Position{gsn}}#;
-   $toEval->eval({|Position.all()->filter(i|$i.gsn  == 'ABC123')->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)});
-
-}
-
-function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
- { 
-   let tree =     #{Position{gsn}}#;
-   $toEval->eval({|Position.all()->filter(i|$i.product.description ->in(['Gold']))->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)});
+function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS():FunctionDefinition<{->Any[1]}>[1]
+ {  
+   {|Position.all()->filter(i|$i.gsn  == 'ABC123')->project(p|[$p.gsn],['gsn'])};
 
 }
 
 
-function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS<T>(toEval:Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]):Boolean[1]
+
+function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[1]}>[1]
+ { 
+   {|Position.all()->filter(i|$i.gsn  == 'ABC123')->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)};
+
+}
+
+function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[1]}>[1]
+ { 
+   {|Position.all()->filter(i|$i.product.description ->in(['Gold']))->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)};
+
+}
+
+
+function  <<FCT.test, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[1]}>[1]
 {
-   $toEval->eval({|Position.all()->filter(i|$i.product.description->in(['Gold']))->project(p|[$p.gsn],['gsn'])});
+   {|Position.all()->filter(i|$i.product.description->in(['Gold']))->project(p|[$p.gsn],['gsn'])};
 }
 
 

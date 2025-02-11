@@ -60,6 +60,11 @@ public class FCTTestCollection
         return tests;
     }
 
+    public MutableList<CoreInstance> getTestFunctions()
+    {
+        return this.testFunctions;
+    }
+
     public CoreInstance getPackage()
     {
         return this.pkg;

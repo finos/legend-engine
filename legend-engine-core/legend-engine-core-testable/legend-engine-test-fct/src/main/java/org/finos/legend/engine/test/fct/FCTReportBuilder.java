@@ -50,7 +50,7 @@ public class FCTReportBuilder
 
                    RichIterable<? extends ConcreteFunctionDefinition<? extends Object>> testfunctions = (RichIterable<? extends ConcreteFunctionDefinition<? extends Object>>) (RichIterable<?>) Lists.mutable.withAll(report.getTestCollection().stream()
                            .flatMap(c -> c.getAllTestFunctions().stream()).map(c -> (ConcreteFunctionDefinition<? extends Object>) c).collect(Collectors.toList()));
-                   String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_(testfunctions, report.getreportID(), report.getStoreID(), getClassLoaderExecutionSupport());
+                   String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_(testfunctions, report.getReportID(), report.getStoreID(), getClassLoaderExecutionSupport());
                    try
                    {
                        FCTTestResult[] fctTestResults = mapper.readValue(json, FCTTestResult[].class);

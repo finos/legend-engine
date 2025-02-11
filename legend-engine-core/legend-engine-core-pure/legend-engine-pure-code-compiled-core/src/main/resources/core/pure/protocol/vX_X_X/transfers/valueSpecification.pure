@@ -122,7 +122,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                            $updatedProperty->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope,$open,false,$useAppliedFunction, $extensions);
 
                                                        ,|   if($passToTransformAny->contains($fe.func) || (new_Class_1__String_1__KeyExpression_MANY__T_1_ == $fe.func && $fe.parametersValues->at(0).genericType.typeArguments.rawType->cast(@Class<Any>)->at(0)->isWithinPackage(meta::pure) && !($fe.parametersValues->at(0).genericType.typeArguments.rawType->cast(@Class<Any>)->at(0)->cast(@PackageableElement)->meta::alloy::isMetaAlloyTestDependency())),
-                                                                       |$fe->reactivate($fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->newMap())->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
+                                                                       |$fe->reactivate($fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->concatenate($open->keyValues())->newMap())->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
                                                                        |let package = if($fe.func->instanceOf(PackageableFunction), |$fe.func->cast(@PackageableFunction<Any>).package->toOne(), |::);
                                                                         if($fe.func->instanceOf(FunctionDefinition) && $useAppliedFunction && (!$package->isWithinPackage(meta) && !$package->meta::alloy::isMetaAlloyTestDependency() || $package->meta::alloy::isMetaAlloyTestDependencyForGeneration() ),
                                                                            |let functionName = $fe.functionName->toOne();
@@ -643,6 +643,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
 
 
       | let class = $any->genericType().rawType->toOne()->cast(@PackageableElement);
+
         ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString
         (
           _type = 'string',
@@ -732,7 +733,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
          i:InstanceValue[1]| $i.values->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
          l:LambdaFunction<Any>[1]|$l.openVariables,
          f:FunctionExpression[1]|$f.parametersValues->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
-         a:Any[1]|[]
+         k:KeyExpression[1]|$k.expression->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
+         a:Any[1]|  [];
       ]
    )
 }
@@ -814,7 +816,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   infixFunctions = getSignFunctions(),
                   coreImportPackages = $imports,
                   funcs = $fControlToFunctionMapping,
-                  removeFunctionPaths = false
+                  removeFunctionPaths = false,   
+                  keyExpressionsOnNewLine = false             
                 );
 }
 
@@ -826,6 +829,9 @@ Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPure
    funcs : Map<String, meta::pure::functions::collection::List<Function<Any>>>[1];
    coreImportPackages : Package[*];
    removeFunctionPaths:Boolean[1];
+   injectFirstParamFuncs: Function<Any>[*];
+   keyExpressionsOnNewLine: Boolean[1];
+
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::domainToPure(domain:meta::protocols::pure::vX_X_X::metamodel::domain::Domain[0..1]):String[1]
@@ -895,7 +901,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   let p2 = $state->toPure($af.parameters->at(1));
 
                   'let %s = %s'->format([$p1, $p2]);
-                  })
+                  }),
+                  ^meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->String[1]}>>(first = new_Class_1__String_1__KeyExpression_MANY__T_1_, second = {|
+                  let p1 = $state->toPure( $af.parameters->at(0));
+                  let keys = $af.parameters->at(2)->match([c:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection[1] | $c.values->map(v| $state->toPure($v) )->joinStrings(','),
+                                                           v: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*] | $state->toPure($v)]);
+                  '^%s(%s)'->format([$p1,$keys]);
+                  })    
             ];
 
             let h = $handlers->filter(p|$p.first == $f);
@@ -938,7 +950,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
 						       not_Boolean_1__Boolean_1_,
                                asc_String_1__SortInformation_1_,
                                desc_String_1__SortInformation_1_
-					           ]);
+					           ]->concatenate($state.injectFirstParamFuncs));
 					        let iStr = if($injectFirstParam == false || $af.parameters->isEmpty(),
 									| '',
 									|
@@ -1040,8 +1052,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          ev: PackageableElementPtr[1] | let enumName = if($ev.fullPath->isInMeta(),
                                                     | $ev.fullPath->substring($ev.fullPath->lastIndexOf('::') + 2),
                                                     | $ev.fullPath
-                                                     )
+                                                     ),
 
+         k:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]  |  $k.key->cast(@CString).value + '='  + toPure($state,$k.expression)   + if($state.keyExpressionsOnNewLine,|'\n',|'') ;   
          ]);
       )->joinStrings('', ';\n', if($vs->size() <= 1, | '', | ';'));
 }
