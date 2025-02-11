@@ -87,7 +87,6 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         catch (Error e)
         {
             Throwable thrown = e.getCause().getMessage().contains("Unexpected error executing function with params") && e.getCause().getCause() != null ? e.getCause().getCause() : e.getCause();
-            String message = "";//exclusions.get(PackageableElement.getUserPathForPackageableElement(toEval, "::"));
             if (thrown instanceof PureAssertFailException)
             {
                 fail(thrown.getMessage());
@@ -117,20 +116,14 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport);
     }
 
-    public static boolean isFCTTest(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "test", processorSupport);
-    }
+
 
     public static boolean isFCTTestCollection(CoreInstance node, ProcessorSupport processorSupport)
     {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "testCollection", processorSupport);
+        return Profile.hasStereotype(node, "meta::pure::test::fct::model::FCT", "testCollection", processorSupport);
     }
 
-    public static boolean isFCTAdaptor(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "adapter", processorSupport);
-    }
+
 
     public static TestSuite buildFCTSuite(FCTTestCollection testCollection,   String toEval, String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
     {

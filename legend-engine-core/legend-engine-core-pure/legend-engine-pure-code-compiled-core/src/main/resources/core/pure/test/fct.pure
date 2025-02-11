@@ -22,6 +22,12 @@ import meta::pure::mapping::*;
 import meta::pure::test::fct::*;
 import meta::pure::fct::*;
 
+Profile meta::pure::test::fct::model::FCT
+{
+    stereotypes : [feature,test, adapter, testCollection];
+}
+
+
 Class meta::pure::test::fct::TestResult
 {
 }

@@ -53,12 +53,14 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
                                 queryFeature='filter',
                                 sourceTypeFeature = 'tds',
                                 store = 'testStore',
+                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
                                 testType= 'test'),
         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', assertionType='UnTested'),
         mappingFeature='filter',
         queryFeature='sort',
         sourceTypeFeature = 'tds',
         store = 'testStore',
+        testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
         testType= 'test'),
        ^FeatureResult(
         mappingFeature=['filter','union'],
@@ -71,7 +73,8 @@ assert($report->removeAll($expected,{ a,b | $a.featureTests ==$b.featureTests &&
                                                   $a.queryFeature == $b.queryFeature    &&                     
                                                   $a.testType == $b.testType    &&   
                                                   $a.store == $b.store    &&   
-                                                  $a.sourceTypeFeature == $b.sourceTypeFeature  
+                                                  $a.sourceTypeFeature == $b.sourceTypeFeature  &&
+                                                  $a.testCollection == $b.testCollection
 
       })->isEmpty());
  }
