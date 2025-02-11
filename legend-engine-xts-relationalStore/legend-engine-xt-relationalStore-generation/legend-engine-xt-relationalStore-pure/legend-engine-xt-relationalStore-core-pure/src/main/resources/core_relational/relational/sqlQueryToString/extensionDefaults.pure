@@ -661,12 +661,14 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
     let separator = if($js.separator->isEmpty(), |'\'\'', |$js.separator->toOne()->processOperation($sgc));
     let prefix = if($js.prefix->isEmpty(), |'\'\'', |$js.prefix->toOne()->processOperation($sgc));
     let suffix = if($js.suffix->isEmpty(), |'\'\'', |$js.suffix->toOne()->processOperation($sgc));
-    let strs = if(eq($prefix, '\'\''),
-                  | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
-                  | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
-    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat,
-        |assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $groupByCat->toOne()->eval($strs->at(0), $separator);,
-        |assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strs, $separator);));
+    let strs = if($strings->size() == 0, 
+                    | $strings->at(0),
+                    | if($isGroupByCat,
+                          | assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $groupByCat->toOne()->eval($strings->at(0), $separator);,
+                          | assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strings, $separator);));
+    if(eq($prefix, '\'\''),
+        | if(eq($suffix, '\'\''), | $strs, | $stringCat->toOne()->eval($strs->add($suffix), '\'\'')),
+        | if(eq($suffix, '\'\''), | $stringCat->toOne()->eval($strs->add(0, $prefix), '\'\''), | $stringCat->toOne()->eval($strs->add(0, $prefix)->add($suffix), '\'\'')));
 }
 
 function meta::relational::functions::sqlQueryToString::default::convertDateTimeFunctionHasCorrectParams(params:String[*]):Boolean[1]
