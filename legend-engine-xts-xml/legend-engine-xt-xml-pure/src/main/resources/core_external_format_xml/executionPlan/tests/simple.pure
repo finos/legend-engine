@@ -141,3 +141,35 @@ function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnl
   // TODO [internalize] should only fetch primitive properties
   assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirmConstraint firstName=\\"John\\" lastName=\\"Doe\\"><age>23</age><dateOfBirth>2000-01-01</dateOfBirth><firm><legalName>FirmName</legalName><firmAddress><street>Mapletree</street></firmAddress><firmAddress><street>Anson</street></firmAddress><active>true</active></firm><addresses><street>Raffles</street></addresses><addresses><street>Link</street></addresses></personWithFirmConstraint>"},"value":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"},{"street":"Anson"}],"active":true},"addresses":[{"street":"Raffles"},{"street":"Link"}]}}}', $result);
 }
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::testXmlConstraintPassWithQP(): Boolean[0..1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint{firstName, lastName, age, dateOfBirth, 'Firm Legal Name' : firmLegalName, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding  = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personWithFirmConstraint firstName="John" lastName="Doe">\n'+
+    '  <age>23</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Anson</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Raffles</street>\n'+
+    '  </addresses>\n'+
+    '  <addresses>\n'+
+    '    <street>Link</street>\n'+
+    '  </addresses>\n'+
+    '</personWithFirmConstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  // TODO [internalize] should only fetch primitive properties
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"<personWithFirmConstraint firstName=\\"John\\" lastName=\\"Doe\\"><age>23</age><dateOfBirth>2000-01-01</dateOfBirth><firm><legalName>FirmName</legalName><firmAddress><street>Mapletree</street></firmAddress><firmAddress><street>Anson</street></firmAddress><active>true</active></firm><addresses><street>Raffles</street></addresses><addresses><street>Link</street></addresses></personWithFirmConstraint>"},"value":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","Firm Legal Name":"FirmName","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"},{"street":"Anson"}],"active":true},"addresses":[{"street":"Raffles"},{"street":"Link"}]}}}', $result);
+}
