@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresDataTypeToDefaultsizeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.PostgresJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.postgres.sql.visitor.*;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
@@ -135,7 +136,7 @@ public class PostgresSink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
-            null,
+            new PostgresDataTypeToDefaultsizeMapping(),
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),

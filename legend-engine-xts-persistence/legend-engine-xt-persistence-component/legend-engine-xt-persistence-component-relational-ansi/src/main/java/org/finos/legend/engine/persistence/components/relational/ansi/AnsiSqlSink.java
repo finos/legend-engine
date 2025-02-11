@@ -90,6 +90,7 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.AnsiDatatypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.AllQuantifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.AllVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.AlterVisitor;
@@ -279,7 +280,7 @@ public class AnsiSqlSink extends RelationalSink
             CAPABILITIES,
             Collections.emptyMap(),
             Collections.emptyMap(),
-            null,
+            new AnsiDatatypeToDefaultSizeMapping(),
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (x, y, z) ->

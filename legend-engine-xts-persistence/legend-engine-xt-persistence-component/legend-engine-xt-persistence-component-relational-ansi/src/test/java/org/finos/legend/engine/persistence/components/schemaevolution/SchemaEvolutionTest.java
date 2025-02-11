@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.AnsiDatatypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.scenarios.BitemporalDeltaSourceSpecifiesFromAndThroughScenarios;
@@ -60,7 +61,7 @@ public class SchemaEvolutionTest extends IngestModeTest
                             Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
                     Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
                     Collections.singletonMap(DataType.FLOAT, EnumSet.of(DataType.DOUBLE)),
-                    null,
+                    new AnsiDatatypeToDefaultSizeMapping(),
                     SqlGenUtils.QUOTE_IDENTIFIER,
                     AnsiSqlSink.LOGICAL_PLAN_VISITOR_BY_CLASS,
                     (x, y, z) ->

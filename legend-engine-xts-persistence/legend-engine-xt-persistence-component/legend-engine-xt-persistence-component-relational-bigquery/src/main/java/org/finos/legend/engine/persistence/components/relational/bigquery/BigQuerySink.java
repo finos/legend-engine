@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.execut
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
@@ -170,7 +171,7 @@ public class BigQuerySink extends AnsiSqlSink
                 CAPABILITIES,
                 IMPLICIT_DATA_TYPE_MAPPING,
                 EXPLICIT_DATA_TYPE_MAPPING,
-                null,
+                new BigQueryDataTypeToDefaultSizeMapping(),
                 SqlGenUtils.BACK_QUOTE_IDENTIFIER,
                 LOGICAL_PLAN_VISITOR_BY_CLASS,
                 (executor, sink, dataset) -> sink.doesTableExist(dataset),
