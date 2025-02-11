@@ -30,6 +30,7 @@ function meta::relational::transform::fromPure::pureTypeToDataTypeMap():Map<Type
 {
    newMap([
       pair(Integer, ^meta::relational::metamodel::datatype::Integer()),
+      pair(Decimal, ^meta::relational::metamodel::datatype::Float()),
       pair(Float, ^meta::relational::metamodel::datatype::Float()),
       pair(Number, ^meta::relational::metamodel::datatype::Float()),
       pair(String, ^meta::relational::metamodel::datatype::Varchar(size = 200)),

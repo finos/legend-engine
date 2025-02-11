@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.deployment.extension;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.deployment.model.DeploymentConfigurationExtension;
 import org.finos.legend.engine.deployment.model.DeploymentResponse;
 import org.finos.legend.engine.deployment.model.DeploymentStatus;
@@ -24,6 +25,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -37,6 +40,8 @@ public class ClassDeploymentExtension implements DeploymentConfigurationExtensio
     {
         return "classDeploymentTest";
     }
+
+
 
     @Override
     public boolean canDeploy(PackageableElement element)
@@ -57,6 +62,12 @@ public class ClassDeploymentExtension implements DeploymentConfigurationExtensio
 
         DeploymentResponse response = new DeploymentResponse(this.getKey(), getElementFullPath(element, pureModel.getExecutionSupport()), DeploymentStatus.SUCCESS, "Validation Complete");
         return response;
+    }
+
+    @Override
+    public List<String> getSupportedClassifierPaths()
+    {
+        return Lists.mutable.with("meta::pure::metamodel::type::Class");
     }
 
 
