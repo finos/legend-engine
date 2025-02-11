@@ -96,6 +96,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
 
             // Project
             pack("meta::pure::functions::relation::tests::project", "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "\"meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_ is not supported yet!\""),
 
             // Rename
             one("meta::pure::functions::relation::tests::rename::testSimpleRenameShared_Function_1__Boolean_1_", "\"meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_ is not supported yet!\""),
