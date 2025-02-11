@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,17 +20,17 @@ import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 
-public class ExtendArray extends AbstractNative implements Native
+public class ProjectRelation extends AbstractNative implements Native
 {
-    public ExtendArray()
+    public ProjectRelation()
     {
-        super("extend_Relation_1__FuncColSpecArray_1__Relation_1_");
+        super("project_Relation_1__FuncColSpecArray_1__Relation_1_");
     }
 
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())", true);
+        StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())", false);
         return result.toString();
     }
 }

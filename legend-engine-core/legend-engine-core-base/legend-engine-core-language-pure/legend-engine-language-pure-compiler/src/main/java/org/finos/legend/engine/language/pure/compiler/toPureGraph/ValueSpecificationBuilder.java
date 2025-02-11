@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -879,17 +880,28 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapAggregation.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapAggregation"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.of(new Root_meta_pure_tds_TdsOlapAggregation_Impl<>("")._func(lambda)._colName(tdsOlapAggregation.columnName)));
+                ._values(Lists.immutable.of(new Root_meta_pure_tds_TdsOlapAggregation_Impl<>("")._func(lambda)._colName(tdsOlapAggregation.columnName)
+                        ._classifierGenericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapAggregation")._typeArguments(FastList.newListWith(
+                                ((FunctionType) lambda._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters().getFirst()._genericType()
+                        )))));
     }
 
     public ValueSpecification processClassInstance(TDSAggregateValue tdsAggregateValue)
     {
         LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.mapFn.accept(this))._values().getFirst();
         LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.aggregateFn.accept(this))._values().getFirst();
+
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))._name(tdsAggregateValue.name)._mapFn(l)._aggregateFn(o)));
+                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))
+                        ._classifierGenericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue")._typeArguments(FastList.newListWith(
+                                ((FunctionType) l._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType(),
+                                ((FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()
+                        )))
+                        ._name(tdsAggregateValue.name)
+                        ._mapFn(l)
+                        ._aggregateFn(o)));
     }
 
     public ValueSpecification processClassInstance(TDSSortInformation tdsSortInformation)
@@ -916,7 +928,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapRank.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapRank"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.of(new Root_meta_pure_tds_TdsOlapRank_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapRank.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::TdsOlapRank"))._func(lambda)));
+                ._values(Lists.immutable.of(new Root_meta_pure_tds_TdsOlapRank_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapRank.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::TdsOlapRank"))
+                        ._func(lambda)
+                        ._classifierGenericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapRank")._typeArguments(FastList.newListWith(
+                                ((FunctionType) lambda._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters().getFirst()._genericType()
+                        )))));
     }
 
     @Override

@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.ProjectExtend;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
-public class Extend extends ProjectExtend
+public class ProjectRelation extends ProjectExtend
 {
-    public Extend(FunctionExecutionInterpreted functionExecution, ModelRepository repository)
+    public ProjectRelation(FunctionExecutionInterpreted functionExecution, ModelRepository repository)
     {
-        super(true, functionExecution, repository);
+        super(false, functionExecution, repository);
     }
 }
