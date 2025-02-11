@@ -81,7 +81,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                    _type = 'property',
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
-                                                ),                                                
+                                                ),
                                              f:Function<Any>[1]|
                                                 let passToTransformAny =
                                                    [
@@ -338,7 +338,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                             value = $c.name->transformColSpec()
                           );,
                   c:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|
-                     
+
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
@@ -382,7 +382,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                       colSpecs = $a.aggSpecs->map(c|$c->transformAggColSpec($extensions))
                                     )
                           );,
-                      
+
                   r:meta::pure::store::RelationStoreAccessor<Any>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
@@ -1031,6 +1031,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                      a :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Whatever[1]|fail('Unsupported type in alloy protocol ' + $a.class);'';,
                      r : RuntimeInstance[1]|'',
                      e : ExecutionContextInstance[1]|'',
+                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(', ')),
+                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1] | $c->colSpecToPure(false, $state),
                      pv : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair[1]|
                                             let tMatcher = {val:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]| $val->match([
                                                   x : EnumValue[1]| $x.fullPath,
@@ -1058,6 +1060,19 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          k:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]  |  $k.key->cast(@CString).value + '='  + toPure($state,$k.expression)   + if($state.keyExpressionsOnNewLine,|'\n',|'') ;   
          ]);
       )->joinStrings('', ';\n', if($vs->size() <= 1, | '', | ';'));
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::colSpecToPure(c:meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1], inArray:Boolean[1], state : AlloyToPureState[1]):String[1]
+{
+  let name = if($c.name->contains(' '),|'\''+$c.name+'\'',|$c.name);
+
+  let prefix = if ($inArray, | '', | '~');
+
+  if ($c.function1->isEmpty(),
+    | '%s%s'->format([$prefix, $name]),
+    | if ($c.function2->isEmpty(),
+       | '%s%s : %s'->format([$prefix, $name, toPure($state, $c.function1->toOne())]),
+       | '%s%s : %s : %s'->format([$prefix, $name, toPure($state, $c.function1->toOne()), toPure($state, $c.function2->toOne())])));
 }
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString(m : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1]):String[1]

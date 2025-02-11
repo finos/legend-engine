@@ -26,6 +26,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
@@ -267,11 +268,13 @@ public class RelationNativeImplementation
         }
     }
 
-    public static <T> Relation<? extends Object> extend(Relation<? extends T> rel, MutableList<ColFuncSpecTrans1> colFuncSpecTrans, ExecutionSupport es)
+    public static <T> Relation<? extends Object> projectExtend(Relation<? extends T> rel, MutableList<ColFuncSpecTrans1> colFuncSpecTrans, boolean includeExistingColumns, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel);
-        return new TDSContainer((TestTDSCompiled) colFuncSpecTrans.injectInto((TestTDS) tds, (accTDS, colFuncSpec) -> accTDS.addColumn(performExtend(new Window(), tds.wrapFullTDS(), colFuncSpec, es))), ps);
+        TestTDSCompiled target = includeExistingColumns ? tds : (TestTDSCompiled) tds.removeColumns(tds.getColumnNames().toSet());
+
+        return new TDSContainer((TestTDSCompiled) colFuncSpecTrans.injectInto((TestTDS) target, (accTDS, colFuncSpec) -> accTDS.addColumn(performExtend(new Window(), tds.wrapFullTDS(), colFuncSpec, es))), ps);
     }
 
     public static <T> Relation<?> extendAgg(Relation<? extends T> rel, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
