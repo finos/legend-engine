@@ -1,0 +1,481 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::vX_X_X::transformation::helpers::*;
+import meta::protocols::pure::vX_X_X::metamodel::relation::*;
+import meta::pure::functions::math::olap::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::*;
+import meta::pure::extension::*;
+import meta::pure::tds::toRelation::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+
+Class meta::pure::tds::toRelation::TdsToRelationExtension {}
+
+Class meta::pure::tds::toRelation::TdsToRelationExtension_V_X_X extends TdsToRelationExtension {
+
+  transfers: Function<{AppliedFunction[1], Extension[*] -> meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[*]}>[1];
+}
+
+function meta::pure::tds::toRelation::transform(l:LambdaFunction<Any>[1], extensions:Extension[*]):Lambda[1]
+{
+  let transformed = $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions);
+  ^$transformed(body = $transformed.body->map(b | $b->transform($extensions)));
+}
+
+function meta::pure::tds::toRelation::transform(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  $v->match([
+    a:AppliedFunction[1] | $a->transform($extensions),
+    a:AppliedProperty[1] |
+      if ($a.property->in(TDSRow.qualifiedProperties.name) && $a.parameters->size() == 2 && $a.parameters->at(1)->instanceOf(CString),
+          | property($a.parameters->at(1)->cast(@CString).value, $a.parameters->at(0)),
+          | $a),
+    l:Lambda[1] | ^$l(parameters = $l.parameters->map(p | $p->transform($extensions)->cast(@Variable)), body = $l.body->map(b | $b->transform($extensions))),
+    c:Collection[1] | ^$c(values = $c.values->map(v | $v->transform($extensions))),
+    v:Variable[1] | var($v.name),
+    v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $v
+  ])
+}
+
+function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  [
+    pair(project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
+
+        appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
+    pair(project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let lambdas = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
+        let names = $a.parameters->at(2)->fromCollection()->cast(@CString).value;
+
+        let columns = $lambdas->zip($names)
+          ->map(p |
+            createColSpec($p.second, $p.first, [])
+          )->createColSpecArrayInstance();
+
+        appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
+    //TODO activate when relation inference is fixed on project
+    // pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
+    //   |
+    //     let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
+
+    //     appliedFunction(project_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    // ),
+    pair(groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let groupByColumns = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
+        let aggs = $a.parameters->at(2)->fromCollection()->cast(@ClassInstance).value->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue);
+        let names = $a.parameters->at(3)->fromCollection()->cast(@CString).value;
+
+        let projects = $groupByColumns->concatenate($aggs.mapFn)->zip($names)
+            ->map(p | createColSpec($p.second, $p.first, []))
+            ->createColSpecArrayInstance();
+
+        let groupBys = $names->slice(0, $groupByColumns->size())
+            ->map(n | createColSpec($n, [], []))
+            ->createColSpecArrayInstance();
+
+        let aggregations = $names->slice($groupByColumns->size(), $names->size())->zip($aggs)
+              ->map(p |
+                let agg = $p.second.aggregateFn->transform($extensions)->cast(@Lambda);
+                createColSpec($p.first, lambda(property($p.first, $p.second.mapFn.parameters), $p.second.mapFn.parameters), $agg);
+              )->createColSpecArrayInstance();
+
+
+        appliedFunction(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [
+          appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $projects]),
+          $groupBys,
+          $aggregations
+        ]);
+    ),
+    pair(groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let groupBys = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+        let aggs = $a.parameters->at(2)->fromCollection()->map(a |
+          $a->match([
+            c:ClassInstance[1] |
+              let agg = $c.value->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue);
+              createColSpec($agg.name, $agg.mapFn->transform($extensions)->cast(@Lambda), $agg.aggregateFn->transform($extensions)->cast(@Lambda));,
+            a:AppliedFunction[1] |
+              let name = $a.parameters->at(0)->cast(@CString).value;
+              let map = $a.parameters->at(1)->transform($extensions)->cast(@Lambda);
+              let agg = $a.parameters->at(2)->transform($extensions)->cast(@Lambda);
+              createColSpec($name, $map, $agg);
+          ])
+        )->createColSpecArrayInstance();
+
+        appliedFunction(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $groupBys, $aggs]);
+    ),
+    pair(sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let items = $a.parameters->at(1)->fromCollection()->map(p | $p->match([
+          f:AppliedFunction[1] |
+            let column = $f.parameters->at(0)->cast(@CString).value->createColSpecInstance();
+            [
+              pair(asc_String_1__SortInformation_1_.name->toOne(),
+                | appliedFunction(ascending_ColSpec_1__SortInfo_1_, $column)),
+              pair(desc_String_1__SortInformation_1_.name->toOne(),
+                | appliedFunction(descending_ColSpec_1__SortInfo_1_, $column))
+            ]->getValue($f.fControl->toOne())->eval();,
+         s:ClassInstance[1] |
+            let si = $s.value->cast(@TDSSortInformation);
+            let column = createColSpecInstance($si.column);
+            [
+              pair(SortDirection.ASC.name,
+                | appliedFunction(ascending_ColSpec_1__SortInfo_1_, $column)),
+              pair(SortDirection.DESC.name,
+                | appliedFunction(descending_ColSpec_1__SortInfo_1_, $column))
+            ]->getValue($si.direction)->eval();
+        ]))->toCollection(false);
+
+        appliedFunction(sort_Relation_1__SortInfo_MANY__Relation_1_, [$a.parameters->at(0)->transform($extensions), $items]);
+    ),
+    pair(filter_TabularDataSet_1__Function_1__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let func = $a.parameters->at(1)->transform($extensions)->cast(@Lambda);
+
+        appliedFunction(filter_Relation_1__Function_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $func]);
+    ),
+    pair(extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
+        appliedFunction(extend_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
+    pair(renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let renames = $a.parameters->at(1)->fromCollection()->map(p |
+          $p->match([
+            c:ClassInstance[1] |
+              let pair = $c.value->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair);
+              pair($pair.first->cast(@CString).value, $pair.second->cast(@CString).value);,
+            a:AppliedFunction[1] |
+              pair($a.parameters->at(0)->cast(@CString).value, $a.parameters->at(1)->cast(@CString).value)
+          ])
+        );
+
+        $renames->fold({p, acc |
+                  appliedFunction(rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_, [$acc, createColSpecInstance($p.first), createColSpecInstance($p.second)])
+                  }, $a.parameters->at(0)->transform($extensions)->cast(@AppliedFunction));
+    ),
+    pair(renameColumn_TabularDataSet_1__String_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let from = $a.parameters->at(1)->cast(@CString).value->createColSpecInstance();
+        let to = $a.parameters->at(2)->cast(@CString).value->createColSpecInstance();
+
+        appliedFunction(rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $from, $to]);
+    ),
+    pair(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+
+        appliedFunction(select_Relation_1__ColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
+    pair(restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+
+        let args = [$a.parameters->at(0)->transform($extensions), $columns];
+        appliedFunction(distinct_Relation_1__Relation_1_, appliedFunction(select_Relation_1__ColSpecArray_1__Relation_1_, [$args]));
+    ),
+    pair(olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByStringSortOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByStringSortOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByStringOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupBySortOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByStringOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupByOpString($a, $extensions)
+    ),
+    pair(olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_->cast(@Function<Any>),
+      | transformOlapGroupBySortOpString($a, $extensions)
+    )
+  ]->concatenate([
+      swap(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, drop_Relation_1__Integer_1__Relation_1_, $a, $extensions),
+      swap(slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, slice_Relation_1__Integer_1__Integer_1__Relation_1_, $a, $extensions),
+      swap(limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
+      swap(take_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
+      swap(distinct_TabularDataSet_1__TabularDataSet_1_, distinct_Relation_1__Relation_1_, $a, $extensions),
+      swap(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, concatenate_Relation_1__Relation_1__Relation_1_, $a, $extensions)
+    ])->concatenate(getExtensions($a, $extensions))->getValue(resolveFControlFunction($a, $extensions), | ^$a(parameters = $a.parameters->map(p | $p->transform($extensions))))->eval();
+}
+
+function meta::pure::tds::toRelation::getExtensions(a:AppliedFunction[1], extensions:Extension[*]):meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[*]
+{
+  $extensions.tdsToRelation
+    ->filter(t | $t->instanceOf(TdsToRelationExtension_V_X_X))
+    ->cast(@TdsToRelationExtension_V_X_X).transfers->map(t | $t->eval($a, $extensions))
+}
+
+
+
+function meta::pure::tds::toRelation::swap(f:Function<Any>[1], o:Function<Any>[1], a:AppliedFunction[1], extensions:Extension[*]):meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[1]
+{
+  pair($f, | appliedFunction($o, $a.parameters->map(p | $p->transform($extensions))))
+}
+
+function meta::pure::tds::toRelation::colsToColSpecArrayInstance(params:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], extensions:Extension[*]):ClassInstance[1]
+{
+  $params->fromCollection()->map(i | $i->match([
+      c:ClassInstance[1] |
+        let col = $c.value->cast(@TDSColumnInformation);
+        createColSpec($col.name, $col.columnFn, []);,
+      f:AppliedFunction[1] |
+        createColSpec($f.parameters->at(1)->cast(@CString).value, $f.parameters->at(0)->transform($extensions)->cast(@Lambda), [])
+    ]))->createColSpecArrayInstance();
+}
+
+function meta::pure::tds::toRelation::fromCollection(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]
+{
+  $v->match([
+    c:Collection[1] | $c.values,
+    v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*] | $v
+  ])
+}
+
+function meta::pure::tds::toRelation::toCollection(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):Collection[1]
+{
+  toCollection($v, true)->cast(@Collection);
+}
+
+function meta::pure::tds::toRelation::toCollection(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], force:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  $v->match([
+    c:Collection[1] | $c,
+    c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]
+      | if($c->size() == 1 && !$force, | $c->toOne(), | collection($c))
+  ])
+}
+
+function meta::pure::tds::toRelation::transformOlapGroupBySortOpString(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  let name = $a.parameters->at(3)->cast(@CString).value;
+  let agg = $a.parameters->at(2)->transformOlapFunction($name, $extensions)->createColSpecArrayInstance();
+  let sort = $a.parameters->at(1)->transformSortInfo()->toCollection(false);
+  let func = $a.parameters->at(2)->getOlapExtendFunction();
+
+  let over = appliedFunction(over_SortInfo_MANY___Window_1_, [$sort]);
+
+  appliedFunction($func, [$a.parameters->at(0)->transform($extensions), $over, $agg]);
+}
+
+function meta::pure::tds::toRelation::transformOlapGroupByOpString(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  let name = $a.parameters->at(2)->cast(@CString).value;
+  let agg = $a.parameters->at(1)->transformOlapFunction($name, $extensions)->createColSpecArrayInstance();
+  let func = $a.parameters->at(1)->getOlapExtendFunction();
+
+  let over = appliedFunction(over_String_MANY__SortInfo_MANY__Frame_$0_1$___Window_1_, [collection([]), collection([]), collection([])]);
+
+  appliedFunction($func, [$a.parameters->at(0)->transform($extensions), $over, $agg]);
+}
+
+function meta::pure::tds::toRelation::transformOlapGroupByStringOpString(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  let columns = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+  let name = $a.parameters->at(3)->cast(@CString).value;
+  let agg = $a.parameters->at(2)->transformOlapFunction($name, $extensions)->createColSpecArrayInstance();
+  let func = $a.parameters->at(2)->getOlapExtendFunction();
+
+  let over = appliedFunction(over_ColSpecArray_1___Window_1_, [$columns]);
+
+  appliedFunction($func, [$a.parameters->at(0)->transform($extensions), $over, $agg]);
+}
+function meta::pure::tds::toRelation::transformOlapGroupByStringSortOpString(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  let columns = $a.parameters->at(1)->fromCollection()->cast(@CString).value->createColSpecArrayInstance();
+  let sort = $a.parameters->at(2)->transformSortInfo()->toCollection(false);
+  let name = $a.parameters->at(4)->cast(@CString).value;
+  let agg = $a.parameters->at(3)->transformOlapFunction($name, $extensions)->createColSpecArrayInstance();
+  let func = $a.parameters->at(3)->getOlapExtendFunction();
+
+  let over = appliedFunction(over_ColSpecArray_1__SortInfo_MANY___Window_1_, [$columns, $sort]);
+
+  appliedFunction($func, [$a.parameters->at(0)->transform($extensions), $over, $agg]);
+}
+
+function meta::pure::tds::toRelation::transformOlapFunction(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], name:String[1], extensions:Extension[*]):ColSpec[1]
+{
+  $v->match([
+      c:ClassInstance[1] |
+        $c.value->match([
+          r:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1] |
+            let var = $r.function.parameters->at(0).name;
+
+            assert($r.function.body->size() == 1 && $r.function.body->toOne()->instanceOf(AppliedFunction), 'olap func must be a simple lambda');
+
+            let func = [
+                pair(rowNumber_Any_MANY__Map_1_.name->toOne(), | appliedFunction(rowNumber_Relation_1__T_1__Integer_1_, [var('p'), var('r')])),
+                pair(denseRank_Any_MANY__Map_1_.name->toOne(), | appliedFunction(denseRank_Relation_1___Window_1__T_1__Integer_1_, [var('p'), var('w'), var('r')])),
+                pair(rank_Any_MANY__Map_1_.name->toOne(), | appliedFunction(rank_Relation_1___Window_1__T_1__Integer_1_, [var('p'), var('w'), var('r')]))
+            ]->getValue($r.function.body->toOne()->cast(@AppliedFunction).fControl->toOne())->eval();
+
+            let aggregation = lambda($func, [var('p'), var('w'), var('r')]);
+            createColSpec($name, $aggregation);,
+          a:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1] |
+              let mapFn = lambda(property($a.columnName, var('r')), [var('p'), var('w'), var('r')]);
+              let aggregation = $a.function->transform($extensions)->cast(@Lambda);
+              createColSpec($name, $mapFn, $aggregation);
+        ]),
+      a:AppliedFunction[1] |
+        [
+          pair(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_.name->toOne(), |
+              ^ClassInstance(_type='classInstance',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation(function = $a.parameters->at(1)->cast(@Lambda), columnName = $a.parameters->at(0)->cast(@CString).value),
+                            type= 'tdsOlapAggregation')
+          ),
+          pair(func_FunctionDefinition_1__TdsOlapRank_1_.name->toOne(), |
+              ^ClassInstance(_type='classInstance',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank(function = $a.parameters->at(0)->cast(@Lambda)),
+                            type= 'tdsOlapRank')
+          )
+        ]->getValue($a.fControl->toOne())->eval()->transformOlapFunction($name, $extensions),
+      l:Lambda[1] |
+        ^ClassInstance(_type='classInstance',
+                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank(function = $l),
+                        type= 'tdsOlapRank')->transformOlapFunction($name, $extensions)
+    ]);
+}
+
+function meta::pure::tds::toRelation::getOlapExtendFunction(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]):Function<Any>[1]
+{
+
+  $v->match([
+      c:ClassInstance[1] |
+        $c.value->match([
+          r:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1] | extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_,
+          a:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1] | extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_
+        ]),
+      l:Lambda[1] | extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_
+    ]);
+}
+
+function meta::pure::tds::toRelation::transformJoinColsToFunc(left:String[*], right:String[*]):Lambda[1]
+{
+  let func = $left->zip($right)->map(v |
+          let lc = property($v.first, var('x'));
+          let rc = property($v.second, var('y'));
+
+          appliedFunction(equal_Any_MANY__Any_MANY__Boolean_1_, [$lc, $rc]);
+  )->potentiallyCombineToLogical(true);
+
+  lambda($func, [var('x'), var('y')]);
+}
+
+function meta::pure::tds::toRelation::transformSortInfo(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]):AppliedFunction[0..1]
+{
+  $v->match([
+      f:AppliedFunction[1] |
+        let column = $f.parameters->at(0)->cast(@CString).value->createColSpecInstance();
+        [
+          pair(asc_String_1__SortInformation_1_.name->toOne(),
+            | appliedFunction(ascending_ColSpec_1__SortInfo_1_, $column)),
+          pair(desc_String_1__SortInformation_1_.name->toOne(),
+            | appliedFunction(descending_ColSpec_1__SortInfo_1_, $column))
+        ]->getValue($f.fControl->toOne())->eval();,
+      s:ClassInstance[1] |
+        let si = $s.value->cast(@TDSSortInformation);
+        let column = createColSpecInstance($si.column);
+        [
+          pair('ASC',
+            | appliedFunction(ascending_ColSpec_1__SortInfo_1_, $column)),
+          pair('DESC',
+            | appliedFunction(descending_ColSpec_1__SortInfo_1_, $column))
+        ]->getValue($si.direction)->eval();,
+      v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[0..1] | []
+  ])
+}
+
+function meta::pure::tds::toRelation::transformJoinKind(v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  $v->match([
+          a:AppliedProperty[1] | meta::relational::metamodel::join::JoinType->extractEnumValue($a.property);
+        ])->getJoinKind()->transformJoinKind();
+}
+
+function meta::pure::tds::toRelation::transformJoinKind(joinKind:meta::pure::functions::relation::JoinKind[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  processExtractEnumValue(meta::pure::functions::relation::JoinKind, $joinKind.name);
+}
+
+function meta::pure::tds::toRelation::getJoinKind(joinType:meta::relational::metamodel::join::JoinType[1]):meta::pure::functions::relation::JoinKind[1]
+{
+  [
+    pair(meta::relational::metamodel::join::JoinType.LEFT_OUTER,  | meta::pure::functions::relation::JoinKind.LEFT),
+    pair(meta::relational::metamodel::join::JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER)
+  ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
+}
+
+
+function <<access.private>> meta::pure::tds::toRelation::potentiallyCombineToLogical(expressions:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], and:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+
+  $expressions->match([
+    e:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $e,
+    e:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[2..*] | combineToLogical($e, $and),
+    e:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[0..1] | fail('must be at least 1 expression'); $expressions->toOne();
+  ])
+}
+
+function <<access.private>> meta::pure::tds::toRelation::combineToLogical(expressions:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[2..*], and:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  let func = if ($and, | and_Boolean_1__Boolean_1__Boolean_1_, | or_Boolean_1__Boolean_1__Boolean_1_);
+
+  $expressions->slice(2, $expressions->size())->fold({item, acc |
+    appliedFunction($func, [$item, $acc]);
+  },
+    appliedFunction($func, [$expressions->at(0), $expressions->at(1)])
+  );
+}
+
+function meta::pure::tds::toRelation::getValue<X, Y>(pairs : meta::pure::functions::collection::Pair<X, Y>[*], key : X[1]) : Y[1]
+{
+   let r = newMap($pairs)->get($key);
+   assert($r->isNotEmpty(), | 'No value found for ' + $key->makeString() + if($pairs->size() < 15 && ($key->instanceOf(String) || $key->instanceOf(Enumeration)), |', expected one of ' + $pairs.first->map(x|$x->makeString())->sort()->joinStrings('[', ',', ']'), |''));
+   $r->toOne();
+}
+
+function meta::pure::tds::toRelation::getValue<X, Y>(pairs : meta::pure::functions::collection::Pair<X, Y>[*], key : X[1], defaultValue : Y[1]) : Y[1]
+{
+   let r = newMap($pairs)->get($key);
+   if ($r->isEmpty(),
+          | $defaultValue,
+          | $r->toOne();
+       );
+}
+
+function meta::pure::tds::toRelation::resolveFControlFunction(a:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1], extensions:meta::pure::extension::Extension[*]):Function<Any>[1]
+{
+  assert($a.fControl->isNotEmpty(), 'fControl required to calculate type');
+
+  let state = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::defaultAlloyToPureState($extensions); //todo plug in extensions
+
+  $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::resolveFControlFunction($state.funcs);
+}

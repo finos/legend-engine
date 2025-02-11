@@ -73,6 +73,8 @@ Class meta::pure::extension::Extension
   tdsSchema_resolveSchemaImpl : Function<{FunctionExpression[1], Map<String, List<Any>>[1], Extension[*] -> Pair<Function<Any>, Function<{->SchemaState[1]}>>[*]}>[0..1];
   //---------------------------------------------------------------------------------------------------------------------------------------
 
+  tdsToRelation: meta::pure::tds::toRelation::TdsToRelationExtension[0..1];
+
   // testedBy navigates the Database structure. Should probably delete --------------------------------------------------------------------
   testExtension_testedBy : Function<{ReferenceUsage[1], Extension[*] -> Function<{TestedByResult[1]->TestedByResult[1]}>[*]}>[0..1];
   //---------------------------------------------------------------------------------------------------------------------------------------
