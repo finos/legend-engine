@@ -23,42 +23,30 @@ function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test
 
  }
 
-function meta::relational::fct::relationalRunTimeMock(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1]
+
+
+function   meta::relational::fct::relationalTestSetUpH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Runtime[1]
 {
-      $mappingTest.setupData->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
-                                                                                                                      datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
-                                                                                                                      authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
-                                                                                                                    ),
-                                                            element = $c.database));
-                                  ] );
-   
-
-
-}
-
-
-function   meta::relational::fct::relationalTestSetUpH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
-{
-     meta::relational::fct::setupData($mappingTestFN,DatabaseType.H2);
+  meta::relational::fct::relationalTestSetUp($mappingTestFN,DatabaseType.H2);
 }
 
 
 
-// function   meta::relational::fct::relationalTestSetUp(mappingTestFN:Function<{->FCTMappingTest[1]}>[1],databaseType:DatabaseType[1]):Runtime[1]
-// {
-//   let mappingTest = $mappingTestFN->eval();
-//    $mappingTest.setupData->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
-//                                                                  let rt = meta::relational::fct::testfctRuntime($c.database,$databaseType);
+function   meta::relational::fct::relationalTestSetUp(mappingTestFN:Function<{->FCTMappingTest[1]}>[1],databaseType:DatabaseType[1]):Runtime[1]
+{
+  let mappingTest = $mappingTestFN->eval();
+   $mappingTest.setupData->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+                                                                 let rt = meta::relational::fct::testfctRuntime($c.database,$databaseType);
 
-//                                                                  let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
-//                                                                                         ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
-//                                                                                         ->concatenate(list(''));
+                                                                 let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
+                                                                                        ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
+                                                                                        ->concatenate(list(''));
 
-//                                                                   meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database) ->map(sql| meta::relational::metamodel::execute::executeInDb($sql, $rt->connectionByElement($c.database->at(0))->cast(@DatabaseConnection));)->size();
-//                                                                   $rt;
+                                                                  meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database) ->map(sql| meta::relational::metamodel::execute::executeInDb($sql, $rt->connectionByElement($c.database->at(0))->cast(@DatabaseConnection));)->size();
+                                                                  $rt;
 
-//           ] );
-// }
+          ] );
+}
 
 
 

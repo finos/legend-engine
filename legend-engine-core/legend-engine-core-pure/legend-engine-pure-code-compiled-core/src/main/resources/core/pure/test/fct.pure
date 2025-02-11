@@ -22,12 +22,6 @@ import meta::pure::mapping::*;
 import meta::pure::test::fct::*;
 import meta::pure::fct::*;
 
-Profile meta::pure::test::fct::model::FCT
-{
-    stereotypes : [feature,test, adapter, testCollection];
-}
-
-
 Class meta::pure::test::fct::TestResult
 {
 }
@@ -54,20 +48,9 @@ Class meta::pure::test::fct::StringResult extends meta::pure::test::fct::TestRes
   result:String[1];
 }
 
-Class  meta::pure::test::fct::SetupData 
+Class  meta::pure::test::fct::SetupData
 {
 }
-
-Class  meta::pure::test::fct::JSONSetupData extends meta::pure::test::fct::SetupData
-{
-  class: Class<Any>[1];
-  json:String[1];
-}
-Class  meta::pure::test::fct::InstanceSetupData extends meta::pure::test::fct::SetupData
-{
-  Instance: Map<Class<Any>, List<Any>>[1];
-}
-
 
 Class  meta::pure::test::fct::FCTMappingTest
 {
@@ -173,7 +156,8 @@ function   meta::pure::fct::tests::testRunnerAssertion(toEval:Function<{TestPara
 {
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $runtimeFn->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
+          $mappingTest->createTestParameters($runtime)->map(p   |  // let evalFN = $toEval->eval($p);
+                                                                    ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
                                                      );
 }
 
@@ -187,9 +171,9 @@ Class meta::pure::fct::AssertionRun
 
 function  meta::pure::fct::tests::execute::AssertionRunExecute(assertion:meta::pure::fct::AssertionRun[1]):Boolean[1]
 {
-   $assertion.evalFn->eval($assertion.parameter);
-
+   $assertion.evalFn->eval($assertion.parameter);//    $assertion.testFn->eval($assertion.evalFn);
 }
+
 
 function meta::pure::test::fct::expectedLineage( storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):ExpectedLineage[1]
 {

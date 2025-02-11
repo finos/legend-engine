@@ -130,6 +130,10 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-FCT-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
             <type>test-jar</type>
 
