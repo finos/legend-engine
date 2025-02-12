@@ -63,10 +63,8 @@
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-shared-core</artifactId>
-    </dependency>
+
+
     <dependency>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-protocol-pure</artifactId>
@@ -134,6 +132,29 @@
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>
     </dependency>
+
+
+    <dependency>
+        <groupId>org.finos.legend.pure</groupId>
+        <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.finos.legend.pure</groupId>
+        <artifactId>legend-pure-m4</artifactId>
+    </dependency>
+
+
+    <dependency>
+        <groupId>org.finos.legend.pure</groupId>
+        <artifactId>legend-pure-m3-core</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.eclipse.collections</groupId>
+        <artifactId>eclipse-collections</artifactId>
+    </dependency>
+
     <!-- ANNOTATIONS -->
 
     <!-- ANNOTATIONS -->
