@@ -173,14 +173,24 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
              );
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::platform::classPropertiesRecursive(class:meta::pure::metamodel::type::Class<Any>[1], visitedClasses:meta::pure::metamodel::type::Class<Any>[*]):meta::pure::metamodel::type::Class<Any>[*]
+{
+   if($class->in($visitedClasses) || $class == Any,
+      |[],
+      {|
+         let properties = $class.properties->filter(p| $p.genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->map(c |$c.genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>));
+         
+         let forChildren = $properties->map(c| classPropertiesRecursive($c, $visitedClasses->concatenate($class)));
+         $properties->concatenate($forChildren)->distinct();
+      }
+   );
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::platform::generateJavaClassForFunctionParameter(cls:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], debug:DebugContext[1]):Project[1]
 {
-  let newInfo      = $context.typeInfos->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties($cls)
-                                        ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($cls);
-  let typeInfos   = $newInfo->meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos($cls, []);
-  let conventions = $context.conventions;
 
-  let classes     = $typeInfos->allClassInfos()->map(ti | $ti.type)->cast(@PackageableElement);
+  let conventions = $context.conventions;  
+  let pureClasses = meta::pure::executionPlan::platformBinding::legendJava::platform::classPropertiesRecursive($cls,[])->concatenate($cls);
 
   let javaContext = ^meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationContext(
       conventions = $conventions,
@@ -189,7 +199,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
                             meta::external::language::java::generation::featureBased::definition::defaultConstructor(),
                             meta::external::language::java::generation::featureBased::definition::gettersSetters()
                           ],
-      config = ^meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationConfig( scopeElements = $classes ),
+      config = ^meta::external::language::java::generation::featureBased::metamodel::JavaCodeGenerationConfig( scopeElements = $pureClasses ),
       debug = $debug->indent()
     );
 
