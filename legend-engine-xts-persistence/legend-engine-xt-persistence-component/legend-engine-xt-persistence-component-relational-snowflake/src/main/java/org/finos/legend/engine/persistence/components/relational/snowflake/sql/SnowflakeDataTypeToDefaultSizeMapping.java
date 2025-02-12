@@ -19,7 +19,7 @@ import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToD
 
 import java.util.Optional;
 
-// TODO: schema evol - mapping not confirmed
+// TODO: schema evol - doc confirmed, JDBC not confirmed
 public class SnowflakeDataTypeToDefaultSizeMapping implements DataTypeToDefaultSizeMapping
 {
     @Override
@@ -32,30 +32,35 @@ public class SnowflakeDataTypeToDefaultSizeMapping implements DataTypeToDefaultS
             case BIGINT:
             case TINYINT:
             case SMALLINT:
-            case NUMERIC:
-            case DECIMAL:
             case REAL:
             case FLOAT:
             case DOUBLE:
+            case BOOLEAN:
+            case DATE:
+            case JSON:
+            case VARIANT:
+            case ARRAY:
+            case MAP:
+                return Optional.empty();
+            case NUMERIC:
+            case DECIMAL:
+                return Optional.of(38);
             case CHAR:
+                return Optional.of(1);
             case VARCHAR:
             case STRING:
             case TEXT:
+                return Optional.of(16777216);
             case BINARY:
             case VARBINARY:
-            case BOOLEAN:
-            case DATE:
+                return Optional.of(8388608);
             case TIME:
             case DATETIME:
             case TIMESTAMP:
             case TIMESTAMP_NTZ:
             case TIMESTAMP_TZ:
             case TIMESTAMP_LTZ:
-            case JSON:
-            case VARIANT:
-            case ARRAY:
-            case MAP:
-                return Optional.empty();
+                return Optional.of(9);
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type);
         }
@@ -71,8 +76,6 @@ public class SnowflakeDataTypeToDefaultSizeMapping implements DataTypeToDefaultS
             case BIGINT:
             case TINYINT:
             case SMALLINT:
-            case NUMERIC:
-            case DECIMAL:
             case REAL:
             case FLOAT:
             case DOUBLE:
@@ -95,6 +98,9 @@ public class SnowflakeDataTypeToDefaultSizeMapping implements DataTypeToDefaultS
             case ARRAY:
             case MAP:
                 return Optional.empty();
+            case NUMERIC:
+            case DECIMAL:
+                return Optional.of(0);
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type);
         }

@@ -474,11 +474,11 @@ public class IngestModeTest
 
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
 
-    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(16777216)";
     protected String expectedSchemaEvolutionModifyDecimal = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DECIMAL(10,0)";
     protected String expectedSchemaEvolutionModifyScale = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"decimal_col\" DECIMAL(10,2)";
 
-    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(16777216)";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE";
     protected String expectedSchemaNonBreakingChangeWithAmount = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"Amount\" DOUBLE";

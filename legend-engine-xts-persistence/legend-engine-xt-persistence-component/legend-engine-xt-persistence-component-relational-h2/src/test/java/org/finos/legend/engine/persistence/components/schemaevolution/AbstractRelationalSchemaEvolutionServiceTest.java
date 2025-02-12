@@ -370,7 +370,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .build();
 
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
@@ -548,7 +548,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length is decremented for column \"name\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
         }
     }
 
@@ -591,7 +591,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type scale is decremented for column \"income\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"4\" to \"2\" for column \"income\", but user capability does not allow it", e.getMessage());
         }
     }
 
