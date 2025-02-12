@@ -90,7 +90,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSo
                 '#', $res3->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSortMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {| 
                 let t = #TDS

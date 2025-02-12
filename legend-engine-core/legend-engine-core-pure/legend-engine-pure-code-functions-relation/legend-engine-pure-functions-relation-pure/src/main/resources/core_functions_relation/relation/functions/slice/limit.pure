@@ -40,7 +40,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   '#', $res->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleLimitMultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                 let t = #TDS
