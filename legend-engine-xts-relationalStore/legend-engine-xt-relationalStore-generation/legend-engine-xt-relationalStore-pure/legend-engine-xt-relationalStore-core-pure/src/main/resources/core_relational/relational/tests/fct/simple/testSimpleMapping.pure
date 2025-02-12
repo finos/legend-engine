@@ -17,13 +17,13 @@ function <<MappingFeature.simple, meta::pure::test::fct::model::FCT.testCollecti
                  assertions= [
                               ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterTDS__FunctionDefinition_1_,
                                              // simpleTests = meta::pure::fct::tests::collection::filter::filterTDSSimple__FunctionDefinition_1_,
-                                               expectedLineageResult= expectedLineage(['Lambda', 'db_myDB',  'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]')  ,
+                                               expectedLineageResult= expectedLineage(['Lambda', 'db_FCTtestDB',  'tb_FCTtestDBTESTTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]')  ,
                                              expectedExecutionResult = ^TDSResult(value='gsn\nABC123\n')),
                               ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,
-                                             expectedLineageResult= expectedLineage(['Lambda', 'db_myDB', 'tb_myDBdefaultPRODUCT', 'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'meta::pure::fct::tests::collection::Product', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]'),
+                                             expectedLineageResult= expectedLineage(['Lambda', 'db_FCTtestDB', 'tb_FCTtestDBTESTPRODUCT', 'tb_FCTtestDBTESTTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'meta::pure::fct::tests::collection::Product', 'pack_meta::pure::fct::tests::collection'],'[gsn: [TRADE.GSN <TableAliasColumn>]]'),
                                              expectedExecutionResult = ^TDSResult(value='gsn\nABCDEF\n')),
                              ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,
-                                             expectedLineageResult= expectedLineage( ['Lambda', 'db_myDB', 'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[Position.gsn: [TRADE.GSN <TableAliasColumn>]]'),
+                                             expectedLineageResult= expectedLineage( ['Lambda', 'db_FCTtestDB', 'tb_FCTtestDBTESTTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[Position.gsn: [TRADE.GSN <TableAliasColumn>]]'),
                                              expectedExecutionResult = ^JSONResult(value='{"builder":{"_type":"json"},"values":{"gsn":"ABC123"}}'))
                            ]
             );

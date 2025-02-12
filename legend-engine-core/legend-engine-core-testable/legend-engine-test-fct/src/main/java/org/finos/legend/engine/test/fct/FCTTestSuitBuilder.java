@@ -45,17 +45,17 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.Functio
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.junit.Assert;
-
 import static org.finos.legend.pure.generated.core_pure_test_fct.Root_meta_pure_fct_tests_testRunnerAssertionH2_Function_1__Function_1__Function_1__AssertionRun_MANY_;
 import static org.junit.Assert.fail;
 
 public class FCTTestSuitBuilder extends PureTestBuilder
 {
 
-    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
+    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, boolean useMockRuntime, ExecutionSupport executionSupport)
     {
         TestSuite suite = new PureTestBuilderCompiled();
-        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
+
+        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(useMockRuntime), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
         return suite;
     }
 
@@ -107,10 +107,10 @@ public class FCTTestSuitBuilder extends PureTestBuilder
     }
 
 
-    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction, ProcessorSupport processorSupport)
+    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction,  String mockRuntime, ProcessorSupport processorSupport)
     {
 
-        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport);
+        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport,mockRuntime);
     }
 
 
@@ -127,10 +127,8 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         MutableList<TestSuite> subSuites = Lists.mutable.empty();
         for (FCTTestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
-            System.out.println("add subsuite");
             subSuites.add(buildFCTSuite(collection,  toEval, runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport));
         }
-        System.out.println("add" + testCollection.getPackage().getName());
 
         return buildFCTSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
                 toEval,
