@@ -63,30 +63,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
   assertEquals('select cast(parsedatetime("root".stringDateTimeFormat,\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\') as timestamp) as "timestamp" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringParseDateForSnowFlakeDDMMMYYYY():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormat1], ['parseDate']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date("root".string2date,\'DDMONYYYY\') as "parseDate" from dataTable as "root"',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringParseDateForSnowFlakeDDMONYYYY():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormat2], ['parseDate']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date("root".string2date,\'DDMONYYYY\') as "parseDate" from dataTable as "root"',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringParseDateForSnowFlakeDDMMMMYYYY():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormat3], ['parseDate']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date("root".string2date,\'DDMMMMYYYY\') as "parseDate" from dataTable as "root"',$s);
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testProject():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
