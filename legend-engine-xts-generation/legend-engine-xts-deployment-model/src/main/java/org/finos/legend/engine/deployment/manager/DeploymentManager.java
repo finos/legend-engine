@@ -15,62 +15,90 @@
 package org.finos.legend.engine.deployment.manager;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.deployment.model.DeploymentConfigurationExtension;
+import org.finos.legend.engine.deployment.model.DeploymentExtension;
+import org.finos.legend.engine.deployment.model.DeploymentExtensionLoader;
 import org.finos.legend.engine.deployment.model.DeploymentResponse;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DeploymentManager
 {
 
-    private final PureModel pureModel;
     private final PureModelContextData pureModelContextData;
     private final List<PackageableElement> elements;
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentManager.class);
-    public List<DeploymentConfigurationExtension> extensions;
+    public List<DeploymentExtension> extensions;
 
-
-    public DeploymentManager(PureModelContextData pureModelContextData, PureModel pureModel, List<PackageableElement> elements, List<DeploymentConfigurationExtension> extensions)
+    public DeploymentManager(PureModelContextData pureModelContextData, List<PackageableElement> elements, List<DeploymentExtension> extensions)
     {
-        this.pureModel = pureModel;
         this.pureModelContextData = pureModelContextData;
         this.elements = elements;
         this.extensions = extensions;
     }
 
-    public DeploymentManager(PureModelContextData pureModelContextData, PureModel pureModel, List<PackageableElement> elements)
+    public DeploymentManager(PureModelContextData pureModelContextData, List<PackageableElement> elements)
     {
-        this(pureModelContextData, pureModel, elements, extensions());
+        this(pureModelContextData, elements, DeploymentExtensionLoader.extensions());
     }
 
-    public static List<DeploymentConfigurationExtension> extensions()
+    public DeploymentResponse deployElement(String elementPath)
     {
-        List<DeploymentConfigurationExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(DeploymentConfigurationExtension.class));
-        Set<String> extensionKeys = Sets.mutable.empty();
-        for (DeploymentConfigurationExtension extension : extensions)
+        PackageableElement element = this.findElement(pureModelContextData, elementPath);
+        if (element == null)
         {
-            if (!extensionKeys.add(extension.getKey()))
+            return null;
+        }
+        for (DeploymentExtension extension : extensions)
+        {
+            if (extension.isElementDeployable(element))
             {
-                String extensionsWithSameKey = ListIterate.collect(extensions.stream().filter(e -> e.getKey().equals(extension.getKey())).collect(Collectors.toList()), e -> e.getClass().getName())
-                        .makeString(",");
-                throw new EngineException("Deployment extension keys must be unique. Found duplicate key: '" + extension.getKey() + "' on extensions: " + extensionsWithSameKey);
+                try
+                {
+                    LOGGER.info("Start deploying '{}' for element '{}'", extension.getKey(), element.getPath());
+                    DeploymentResponse response = extension.deployElement(this.pureModelContextData, element);
+                    LOGGER.info("Start deploying '{}' for element '{}'", extension.getKey(), element.getPath());
+                    return  response;
+                }
+                catch (Exception exception)
+                {
+                    LOGGER.error("Error generating deploying for extension '{}' for element '{}':", extension.getClass(), element.getPath(), exception);
+                    throw exception;
+                }
             }
         }
-        return extensions;
+        return null;
+    }
+
+    public DeploymentResponse validateElement(String elementPath)
+    {
+        PackageableElement element = this.findElement(pureModelContextData, elementPath);
+        if (element == null)
+        {
+            return null;
+        }
+        for (DeploymentExtension extension : extensions)
+        {
+            if (extension.isElementDeployable(element))
+            {
+                try
+                {
+                    LOGGER.info("Start validating '{}' for element '{}'", extension.getKey(), element.getPath());
+                    DeploymentResponse response = extension.validateElement(this.pureModelContextData, element);
+                    LOGGER.info("Start validating '{}' for element '{}'", extension.getKey(), element.getPath());
+                    return  response;
+                }
+                catch (Exception exception)
+                {
+                    LOGGER.error("Error generating validating for extension '{}' for element '{}':", extension.getClass(), element.getPath(), exception);
+                    throw exception;
+                }
+            }
+        }
+        return null;
     }
 
     public List<DeploymentResponse> deploy()
@@ -80,34 +108,24 @@ public class DeploymentManager
         {
             return responses;
         }
-        for (PackageableElement element : this.elements)
+        for (DeploymentExtension extension : extensions)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.findPackageableElement(pureModel, element);
-            if (packageableElement != null)
+            try
             {
-                for (DeploymentConfigurationExtension extension : extensions)
+                LOGGER.info("Start deploying all elements for extension '{}'", extension.getKey());
+                List<DeploymentResponse> response = extension.deployAll(this.pureModelContextData, this.elements);
+                if (response != null)
                 {
-                    if (extension.canDeploy(packageableElement))
-                    {
-                        try
-                        {
-                            LOGGER.info("Start deploying '{}' for element '{}'", extension.getKey(), element.getPath());
-                            DeploymentResponse response = extension.deploy(packageableElement, this.pureModel, this.pureModelContextData, PureClientVersions.production);
-                            if (response != null)
-                            {
-                                responses.add(response);
-                            }
-                            LOGGER.info("Start deploying '{}' for element '{}'", extension.getKey(), element.getPath());
-                        }
-                        catch (Exception exception)
-                        {
-                            LOGGER.error("Error generating deploying for extension '{}' for element '{}':", extension.getClass(), element.getPath(), exception);
-                            throw exception;
-                        }
-
-                    }
+                    responses.addAll(response);
                 }
+                LOGGER.info("Stop deploying all elements for extension '{}'", extension.getKey());
             }
+            catch (Exception exception)
+            {
+                LOGGER.info("Error deploying all elements for extension '{}'", extension.getKey());
+                throw exception;
+            }
+
         }
         return responses;
     }
@@ -115,61 +133,36 @@ public class DeploymentManager
     public List<DeploymentResponse> validate()
     {
         List<DeploymentResponse> responses = Lists.mutable.empty();
-        List<DeploymentConfigurationExtension> validateExtensions = extensions.stream().filter(DeploymentConfigurationExtension::requiresValidation).collect(Collectors.toList());
-        if (validateExtensions.isEmpty() || this.elements.isEmpty())
+        if (extensions.isEmpty() || this.elements.isEmpty())
         {
             return responses;
         }
-        for (PackageableElement element : this.elements)
+        for (DeploymentExtension extension : extensions)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.findPackageableElement(pureModel, element);
-            if (packageableElement != null)
+            try
             {
-                for (DeploymentConfigurationExtension extension : validateExtensions)
+                LOGGER.info("Start validating all elements for extension '{}'", extension.getKey());
+                List<DeploymentResponse> response = extension.validateAll(this.pureModelContextData, this.elements);
+                if (response != null)
                 {
-                    if (extension.canDeploy(packageableElement))
-                    {
-                        try
-                        {
-                            LOGGER.info("Start validate '{}' for element '{}'", extension.getKey(), element.getPath());
-                            DeploymentResponse validateResponse = extension.validate(packageableElement, this.pureModel, this.pureModelContextData, PureClientVersions.production);
-                            if (validateResponse != null)
-                            {
-                                responses.add(validateResponse);
-                            }
-                            LOGGER.info("Start validate '{}' for element '{}'", extension.getKey(), element.getPath());
-                        }
-                        catch (Exception exception)
-                        {
-                            LOGGER.error("Error validate validating for extension '{}' for element '{}':", extension.getClass(), element.getPath(), exception);
-                            throw exception;
-                        }
-
-                    }
+                    responses.addAll(response);
                 }
+                LOGGER.info("Stop validating all elements for extension '{}'", extension.getKey());
             }
+            catch (Exception exception)
+            {
+                LOGGER.info("Error validating all elements for extension '{}'", extension.getKey());
+                throw exception;
+            }
+
         }
         return responses;
     }
 
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement findPackageableElement(PureModel pureModel, PackageableElement packageableElement)
+    private PackageableElement findElement(PureModelContextData modelContextData, String elementPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = pureModel.getPackageableElement_safe(packageableElement.getPath());
-        if (element != null)
-        {
-            return element;
-        }
-        if (packageableElement instanceof Function)
-        {
-            Function elementFunc = (Function) packageableElement;
-            String fullPath = pureModel.buildPackageString(packageableElement._package, HelperModelBuilder.getSignature(elementFunc));
-            element = pureModel.getPackageableElement_safe(fullPath);
-        }
-        if (element == null)
-        {
-            LOGGER.debug("Unable to find element '{}' in Pure Model", packageableElement.getPath());
-        }
-        return element;
+        return modelContextData.getElements().stream().filter(e -> e.getPath().equals(elementPath)).findFirst().orElse(null);
     }
+
 
 }
