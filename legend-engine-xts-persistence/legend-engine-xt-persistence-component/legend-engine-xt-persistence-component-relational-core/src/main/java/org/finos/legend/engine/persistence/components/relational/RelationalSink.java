@@ -206,7 +206,7 @@ public abstract class RelationalSink implements Sink
             return Optional.empty();
         }
 
-        // When either size does not have size, we give the default value to the missing side and return the greater one (or fail the process if capability does not allow decrement)
+        // When either side does not have size, we give the default value to the missing side and return the greater one (or fail the process if capability does not allow decrement)
         Optional<Integer> maxSizeComparingWithDefault = getDefaultValueForMissingSizeAndReturnMax(columnName, mainSize, stagingSize, mainType, stagingType, dataTypeToDefaultSizeFunction, failOnDecrement);
         if (maxSizeComparingWithDefault.isPresent())
         {
@@ -221,6 +221,8 @@ public abstract class RelationalSink implements Sink
                     return mainSize; // we follow main size because the final data type will be main type
                 case EXPLICIT_DATATYPE_CONVERSION:
                     return stagingSize; // we follow staging size because the final data type will be staging type
+                case SAME_DATA_TYPE:
+                    return Optional.empty(); // TODO: remove when all default size mappings have been finalized
                 default:
                     throw new IllegalStateException("Unexpected value: " + dataTypeEvolutionType);
             }
