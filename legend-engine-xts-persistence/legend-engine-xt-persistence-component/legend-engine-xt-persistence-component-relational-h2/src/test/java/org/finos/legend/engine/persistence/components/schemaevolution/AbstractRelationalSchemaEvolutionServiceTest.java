@@ -85,7 +85,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -132,7 +132,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName.toUpperCase(), mainTableName.toUpperCase());
@@ -172,7 +172,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -213,7 +213,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -256,7 +256,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -298,7 +298,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -340,7 +340,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -380,7 +380,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -421,7 +421,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
@@ -462,8 +462,15 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
-
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Primary keys for main table has changed which is not allowed", e.getMessage());
+        }
         try
         {
             SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
@@ -501,7 +508,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        Assertions.assertDoesNotThrow(() -> evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
         SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         Assertions.assertEquals(SchemaEvolutionStatus.FAILED, result.status());
@@ -539,7 +546,15 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
+        }
 
         try
         {
@@ -582,7 +597,15 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .ingestMode(ingestMode)
             .build();
 
-        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
+        }
 
         try
         {
@@ -625,6 +648,16 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
             .ingestMode(ingestMode)
             .build();
+
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
+        }
 
         try
         {

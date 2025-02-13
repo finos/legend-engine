@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUt
 import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
+import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -209,7 +210,7 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
             .build();
     }
 
-    public boolean isSchemaEvolvable(SchemaDefinition mainSchema, SchemaDefinition stagingSchema)
+    public void validateSchemaEvolvable(SchemaDefinition mainSchema, SchemaDefinition stagingSchema) throws IncompatibleSchemaChangeException
     {
         LOGGER.info("Invoked isSchemaEvolvable method, will check if schema evolution is possible");
 
@@ -221,8 +222,9 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         mainDatasetDefinition = ApiUtils.applyCase(mainDatasetDefinition, caseConversion());
         stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
 
+        // Attempt to build logical plan for schema evolution
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
-        return schemaEvolution.isSchemaEvolvable(mainDatasetDefinition, stagingSchema);
+        schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDatasetDefinition, stagingSchema);
     }
 
     private Dataset performCaseConversionForMainDataset(Dataset mainDataset)
