@@ -195,6 +195,7 @@ public class BigQuerySink extends AnsiSqlSink
 
     //evolve to = field to replace main column (datatype)
     //evolve from = reference field to compare sizing/nullability requirements
+    @Deprecated
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
@@ -239,6 +240,7 @@ public class BigQuerySink extends AnsiSqlSink
         return value;
     }
 
+    @Deprecated
     @Override
     public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {

@@ -199,6 +199,7 @@ public class DuckDBSink extends AnsiSqlSink
         }
     }
 
+    @Deprecated
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {

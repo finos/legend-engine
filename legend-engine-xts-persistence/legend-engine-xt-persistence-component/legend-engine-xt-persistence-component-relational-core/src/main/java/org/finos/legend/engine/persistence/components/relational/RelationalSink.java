@@ -146,6 +146,7 @@ public abstract class RelationalSink implements Sink
 
     //evolve to = field to replace main column (datatype)
     //evolve from = reference field to compare sizing/nullability requirements
+    @Deprecated
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
@@ -257,6 +258,7 @@ public abstract class RelationalSink implements Sink
         return Math.max(mainSize, stagingSize);
     }
 
+    @Deprecated
     @Override
     public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {

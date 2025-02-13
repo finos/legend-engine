@@ -19,7 +19,6 @@ import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToD
 
 import java.util.Optional;
 
-// TODO: schema evol - mapping not confirmed
 public class DuckDBDataTypeToDefaultSizeMapping implements DataTypeToDefaultSizeMapping
 {
     @Override
@@ -33,8 +32,6 @@ public class DuckDBDataTypeToDefaultSizeMapping implements DataTypeToDefaultSize
             case VARBINARY:
             case BOOLEAN:
             case DATE:
-            case DECIMAL:
-            case NUMERIC:
             case DOUBLE:
             case INT:
             case INTEGER:
@@ -54,6 +51,9 @@ public class DuckDBDataTypeToDefaultSizeMapping implements DataTypeToDefaultSize
             case JSON:
             case VARIANT:
                 return Optional.empty();
+            case DECIMAL:
+            case NUMERIC:
+                return Optional.of(18);
             case MAP:
             case ARRAY:
             case LONGVARCHAR:
@@ -77,8 +77,6 @@ public class DuckDBDataTypeToDefaultSizeMapping implements DataTypeToDefaultSize
             case VARBINARY:
             case BOOLEAN:
             case DATE:
-            case DECIMAL:
-            case NUMERIC:
             case DOUBLE:
             case INT:
             case INTEGER:
@@ -98,6 +96,9 @@ public class DuckDBDataTypeToDefaultSizeMapping implements DataTypeToDefaultSize
             case JSON:
             case VARIANT:
                 return Optional.empty();
+            case DECIMAL:
+            case NUMERIC:
+                return Optional.of(3);
             case MAP:
             case ARRAY:
             case LONGVARCHAR:

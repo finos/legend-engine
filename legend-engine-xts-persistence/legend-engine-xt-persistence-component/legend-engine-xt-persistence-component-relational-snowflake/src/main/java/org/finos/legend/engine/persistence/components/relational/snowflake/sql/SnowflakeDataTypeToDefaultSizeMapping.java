@@ -19,7 +19,6 @@ import org.finos.legend.engine.persistence.components.relational.sql.DataTypeToD
 
 import java.util.Optional;
 
-// TODO: schema evol - doc confirmed, JDBC not confirmed
 public class SnowflakeDataTypeToDefaultSizeMapping implements DataTypeToDefaultSizeMapping
 {
     @Override
