@@ -94,7 +94,7 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseTy
                                                                         mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
                                                                         runtime = $rt,
                                                                         rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
-                                                                                              resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void),
+                                                                                              resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType = Any)),
                                                                                               executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $rt.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)))
                                                                                             ),
                                                                         authDependent = false
