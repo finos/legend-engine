@@ -1677,8 +1677,8 @@ public class TestUtils
             .build();
     }
 
-    // Schema Evolution
-    public static DatasetDefinition getMainTableWithCharColumns()
+    // Schema Evolution: explicit
+    public static DatasetDefinition getMainTableForExplicit()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1686,9 +1686,9 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.CHAR, Optional.of(5), Optional.empty())).fieldAlias("char_with_length_5").build())
-                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.CHAR, Optional.empty(), Optional.empty())).fieldAlias("char_with_no_length").build())
-                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.CHAR, Optional.of(100), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.CHAR, Optional.of(5), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.CHAR, Optional.empty(), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.CHAR, Optional.of(100), Optional.empty())).fieldAlias("char_100").build())
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
                 .addFields(batchId)
@@ -1696,7 +1696,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getStagingTableWithCharColumns()
+    public static DatasetDefinition getStagingTableForExplicit()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1704,15 +1704,15 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("char_with_length_5").build())
-                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_no_length").build())
-                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_100").build())
                 .addFields(digest)
                 .build())
             .build();
     }
 
-    public static DatasetDefinition getExpectedMainTableWithCharColumns()
+    public static DatasetDefinition getExpectedMainTableForExplicit()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1720,9 +1720,63 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("char_with_length_5").build())
-                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_no_length").build())
-                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.VARCHAR, Optional.of(100), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(100), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    // Schema Evolution: implicit
+    public static DatasetDefinition getMainTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("another_varchar_10").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.STRING, Optional.of(10), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.STRING, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
                 .addFields(digestWithLength)
                 .build())
             .build();

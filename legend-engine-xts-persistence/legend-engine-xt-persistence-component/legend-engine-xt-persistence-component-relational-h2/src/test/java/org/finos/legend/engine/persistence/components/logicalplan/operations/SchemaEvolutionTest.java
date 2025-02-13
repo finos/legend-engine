@@ -428,14 +428,83 @@ class SchemaEvolutionTest extends BaseTest
     }
 
     // Alter column
-    // char_with_length_5: CHAR(5) -> VARCHAR
-    // char_with_no_length: CHAR -> VARCHAR(10)
-    // char_with_length_100: CHAR(100) -> VARCHAR(10)
+    // char_5: CHAR(5) -> VARCHAR
+    // char: CHAR -> VARCHAR(10)
+    // char_100: CHAR(100) -> VARCHAR(10)
     @Test
     void testDataTypeConversionAndDataTypeSizeChangeExplicit() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithCharColumns();
-        DatasetDefinition stagingTable = TestUtils.getStagingTableWithCharColumns();
+        DatasetDefinition mainTable = TestUtils.getMainTableForExplicit();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableForExplicit();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, "char_5", "char", "char_100", digestName, batchUpdateTimeName, batchIdName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "explicit_data_type_conversion_and_data_type_size_change_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "explicit_data_type_conversion_and_data_type_size_change_expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForExplicit(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char_5"));
+        Assertions.assertEquals(1000000000, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char_5"));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char"));
+        Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char"));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char_100"));
+        Assertions.assertEquals(100, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char_100"));
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(TestUtils.getExpectedMainTableForExplicit(), result.updatedDatasets().mainDataset());
+        // 5. Verify schema evolution SQLs
+        Assertions.assertEquals(3, result.schemaEvolutionSql().get().size());
+        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char_5\" VARCHAR(1000000000)", result.schemaEvolutionSql().get().get(0));
+        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char\" VARCHAR(10)", result.schemaEvolutionSql().get().get(1));
+        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char_100\" VARCHAR(100)", result.schemaEvolutionSql().get().get(2));
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "explicit_data_type_conversion_and_data_type_size_change_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "explicit_data_type_conversion_and_data_type_size_change_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForExplicit(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(TestUtils.getExpectedMainTableForExplicit(), result.updatedDatasets().mainDataset());
+        // 5. Verify schema evolution SQLs
+        Assertions.assertEquals(0, result.schemaEvolutionSql().get().size());
+    }
+
+    // Alter column
+    @Test
+    void testDataTypeConversionAndDataTypeSizeChangeImplicit() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableForImplicit();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableForImplicit();
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -457,45 +526,47 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, "char_with_length_5", "char_with_no_length", "char_with_length_100", digestName, batchUpdateTimeName, batchIdName};
+        String[] schema = new String[]{idName, nameName, "decimal_10_2", "varchar_10", "varchar", "another_varchar_10", digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
-        String dataPass1 = basePathForInput + "explicit_data_type_conversion_and_data_type_size_change_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "explicit_data_type_conversion_and_data_type_size_change_expected_pass1.csv";
+        String dataPass1 = basePathForInput + "implicit_data_type_conversion_and_data_type_size_change_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "implicit_data_type_conversion_and_data_type_size_change_expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataForCharColumns(dataPass1);
+        loadStagingDataForImplicit(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
         IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
-        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char_with_length_5"));
-        Assertions.assertEquals(1000000000, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char_with_length_5"));
-        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char_with_no_length"));
-        Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char_with_no_length"));
-        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "char_with_length_100"));
-        Assertions.assertEquals(100, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "char_with_length_100"));
+        Assertions.assertEquals("DECIMAL", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "decimal_10_2"));
+        Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "decimal_10_2"));
+        Assertions.assertEquals(2, getColumnDataTypeScaleFromTable(h2Sink, mainTableName, "decimal_10_2"));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "varchar_10"));
+        Assertions.assertEquals(1000000000, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "varchar_10"));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "varchar"));
+        Assertions.assertEquals(1000000000, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "varchar"));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, "another_varchar_10"));
+        Assertions.assertEquals(20, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, "another_varchar_10"));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(TestUtils.getExpectedMainTableWithCharColumns(), result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.getExpectedMainTableForImplicit(), result.updatedDatasets().mainDataset());
         // 5. Verify schema evolution SQLs
-        Assertions.assertEquals(3, result.schemaEvolutionSql().get().size());
-        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char_with_length_5\" VARCHAR(1000000000)", result.schemaEvolutionSql().get().get(0));
-        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char_with_no_length\" VARCHAR(10)", result.schemaEvolutionSql().get().get(1));
-        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"char_with_length_100\" VARCHAR(100)", result.schemaEvolutionSql().get().get(2));
+        Assertions.assertEquals(2, result.schemaEvolutionSql().get().size());
+        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"varchar_10\" VARCHAR(1000000000)", result.schemaEvolutionSql().get().get(0));
+        Assertions.assertEquals("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"another_varchar_10\" VARCHAR(20)", result.schemaEvolutionSql().get().get(1));
 
         // ------------ Perform Pass2 ------------------------
-        String dataPass2 = basePathForInput + "explicit_data_type_conversion_and_data_type_size_change_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "explicit_data_type_conversion_and_data_type_size_change_expected_pass2.csv";
+        String dataPass2 = basePathForInput + "implicit_data_type_conversion_and_data_type_size_change_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "implicit_data_type_conversion_and_data_type_size_change_expected_pass2.csv";
         // 1. Update datasets
         datasets = result.updatedDatasets();
         // 2. Load staging table
-        loadStagingDataForCharColumns(dataPass2);
+        loadStagingDataForImplicit(dataPass2);
         // 3. Execute plans and verify results
         expectedStats = createExpectedStatsMap(1,0,1,0,0);
         result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(TestUtils.getExpectedMainTableWithCharColumns(), result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.getExpectedMainTableForImplicit(), result.updatedDatasets().mainDataset());
         // 5. Verify schema evolution SQLs
         Assertions.assertEquals(0, result.schemaEvolutionSql().get().size());
     }
