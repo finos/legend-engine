@@ -1677,6 +1677,57 @@ public class TestUtils
             .build();
     }
 
+    // Schema Evolution
+    public static DatasetDefinition getMainTableWithCharColumns()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.CHAR, Optional.of(5), Optional.empty())).fieldAlias("char_with_length_5").build())
+                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.CHAR, Optional.empty(), Optional.empty())).fieldAlias("char_with_no_length").build())
+                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.CHAR, Optional.of(100), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithCharColumns()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("char_with_length_5").build())
+                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_no_length").build())
+                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableWithCharColumns()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_with_length_5").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("char_with_length_5").build())
+                .addFields(Field.builder().name("char_with_no_length").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_with_no_length").build())
+                .addFields(Field.builder().name("char_with_length_100").type(FieldType.of(DataType.VARCHAR, Optional.of(100), Optional.empty())).fieldAlias("char_with_length_100").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
     public static MetadataDataset getMetadataDataset()
     {
         return MetadataDataset.builder().build();

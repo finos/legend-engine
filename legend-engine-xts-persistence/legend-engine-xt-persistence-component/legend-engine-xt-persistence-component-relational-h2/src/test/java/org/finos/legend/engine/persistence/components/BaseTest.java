@@ -665,6 +665,16 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataForCharColumns(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, char_with_length_5, char_with_no_length, char_with_length_100, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", \"char_with_length_5\", \"char_with_no_length\", \"char_with_length_100\", digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, char_with_length_5, char_with_no_length, char_with_length_100, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected static void validateFileExists(String path) throws Exception
     {
         File f = new File(path);
