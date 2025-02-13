@@ -132,10 +132,12 @@ public class TestUtils
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
+    public static Field nameWithShorterLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 32, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
-    public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
+    public static Field decimalIncomeWithShorterScale = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
+    public static Field decimalIncomeWithMoreScale = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 4)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field startTimeNonPk = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startTimeName).build();
     public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
@@ -255,6 +257,24 @@ public class TestUtils
                 .addFields(id)
                 .addFields(name)
                 .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableWithBatchUpdateTimeFieldWithDecimalIncome()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncomeWithMoreScale)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -1446,7 +1466,7 @@ public class TestUtils
                 .schema(SchemaDefinition.builder()
                         .addFields(id)
                         .addFields(name)
-                        .addFields(decimalIncome)
+                        .addFields(decimalIncomeWithShorterScale)
                         .addFields(startTimeTimestamp)
                         .addFields(expiryDate)
                         .addFields(digestWithLength)
@@ -1472,7 +1492,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionDataTypeSizeChangeStagingTable()
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthIncrementStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1481,6 +1501,38 @@ public class TestUtils
                 .addFields(id)
                 .addFields(nameWithMoreLength)
                 .addFields(nullableIntIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthDecrementStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nameWithShorterLength)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeScaleDecrementStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncomeWithShorterScale)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -1530,7 +1582,7 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(decimalIncome)
+                .addFields(decimalIncomeWithShorterScale)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)

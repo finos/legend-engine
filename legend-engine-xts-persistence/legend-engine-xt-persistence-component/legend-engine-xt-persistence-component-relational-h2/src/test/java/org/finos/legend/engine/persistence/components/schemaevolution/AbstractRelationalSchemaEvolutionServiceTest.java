@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components;
+package org.finos.legend.engine.persistence.components.schemaevolution;
 
+import org.finos.legend.engine.persistence.components.BaseTest;
+import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
@@ -24,8 +26,6 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalS
 import org.finos.legend.engine.persistence.components.relational.api.SchemaEvolutionServiceResult;
 import org.finos.legend.engine.persistence.components.relational.api.SchemaEvolutionStatus;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,6 +41,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.digestNam
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeLengthFromTable;
+import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeScaleFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.getColumnsFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.getIsColumnNullableFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
@@ -51,8 +52,10 @@ import static org.finos.legend.engine.persistence.components.TestUtils.startTime
 import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
 
-class RelationalSchemaEvolutionServiceTest extends BaseTest
+public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseTest
 {
+    protected abstract SchemaEvolutionServiceResult evolve(Dataset mainDataset, Dataset stagingDataset, RelationalSchemaEvolutionService evolutionService);
+
     @Test
     void testAddColumn() throws Exception
     {
@@ -82,7 +85,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -128,7 +132,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTableDatasetReference, stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName.toUpperCase(), mainTableName.toUpperCase());
         List<String> expectedSchema = Arrays.asList(schema);
@@ -167,7 +172,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -178,10 +184,10 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
     }
 
     @Test
-    void testDataTypeSizeChange() throws Exception
+    void testDataTypeSizeChangeIncrementLength() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
-        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeSizeChangeStagingTable();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthIncrementStagingTable();
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -207,7 +213,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -217,6 +224,90 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
         Assertions.assertEquals(256, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
         Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
         Assertions.assertEquals(Arrays.asList("ALTER TABLE \"TEST\".\"main\" ALTER COLUMN \"name\" VARCHAR(256) NOT NULL"), result.executedSchemaEvolutionSqls());
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementLength() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+
+        List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
+        List<String> expectedSchema = Arrays.asList(schema);
+        Assertions.assertTrue(actualSchema.size() == expectedSchema.size() && actualSchema.containsAll(expectedSchema) && expectedSchema.containsAll(actualSchema));
+        Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
+        Assertions.assertEquals(64, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
+        Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
+        Assertions.assertEquals(0, result.executedSchemaEvolutionSqls().size());
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementScale() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeFieldWithDecimalIncome();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeScaleDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+
+        List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
+        List<String> expectedSchema = Arrays.asList(schema);
+        Assertions.assertTrue(actualSchema.size() == expectedSchema.size() && actualSchema.containsAll(expectedSchema) && expectedSchema.containsAll(actualSchema));
+        Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, incomeName));
+        Assertions.assertEquals(4, getColumnDataTypeScaleFromTable(h2Sink, mainTableName, incomeName));
+        Assertions.assertEquals(SchemaEvolutionStatus.SUCCEEDED, result.status());
+        Assertions.assertEquals(0, result.executedSchemaEvolutionSqls().size());
     }
 
     @Test
@@ -249,7 +340,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -288,7 +380,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -328,7 +421,8 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         List<String> actualSchema = getColumnsFromTable(h2Sink.connection(), null, testSchemaName, mainTableName);
         List<String> expectedSchema = Arrays.asList(schema);
@@ -368,9 +462,11 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
+        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+
         try
         {
-            evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
             Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
@@ -405,10 +501,139 @@ class RelationalSchemaEvolutionServiceTest extends BaseTest
             .ingestMode(ingestMode)
             .build();
 
-        SchemaEvolutionServiceResult result = evolutionService.evolve(mainTable.datasetReference(), stagingTable.schema(), JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertTrue(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+        SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
 
         Assertions.assertEquals(SchemaEvolutionStatus.FAILED, result.status());
         Assertions.assertEquals("Dataset is not found: main", result.message().get());
         Assertions.assertTrue(result.executedSchemaEvolutionSqls().isEmpty());
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementLengthFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type length is decremented for column \"name\", but user capability does not allow it", e.getMessage());
+        }
+    }
+
+    @Test
+    void testDataTypeSizeChangeDecrementScaleFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeFieldWithDecimalIncome();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeScaleDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        Assertions.assertFalse(evolutionService.isSchemaEvolvable(mainTable.schema(), stagingTable.schema()));
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type scale is decremented for column \"income\", but user capability does not allow it", e.getMessage());
+        }
+    }
+
+    @Test
+    void testDataTypeSizeChangeValidateCapabilities() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeLengthDecrementStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Invalid schema evolution capabilities. Select either DATA_TYPE_LENGTH_CHANGE or DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY.", e.getMessage());
+        }
     }
 }
