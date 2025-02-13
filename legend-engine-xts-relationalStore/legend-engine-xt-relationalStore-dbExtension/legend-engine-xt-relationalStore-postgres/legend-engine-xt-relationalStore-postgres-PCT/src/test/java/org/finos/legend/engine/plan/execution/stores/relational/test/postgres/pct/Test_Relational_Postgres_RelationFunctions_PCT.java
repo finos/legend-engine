@@ -46,10 +46,10 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
 
             // BUG: Column name with special characters is not properly escaped
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema."),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: Create Table leSchema."),
 
             // Postgres doesn't support asOf Join (May want to compensate with an OLAP equivalent if required
-            one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "\"AsOfJoins are not supported in the generic generator!\""),
-            one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"AsOfJoins are not supported in the generic generator!\"")
+            pack("meta::pure::functions::relation::tests::asOfJoin", "\"AsOfJoins are not supported in the generic generator!\"")
             );
 
     public static Test suite()

@@ -265,6 +265,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::test::bas
   '              PureExp\n' +
   '              (\n' +
   '                type = Class[impls=]\n' +
+  '                       as meta::relational::mutation::executionPlan::test::Firm\n' +
   '                requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
   '                expression = $generatedVariableSingleRecordFromStream.firm\n' +
   '              )\n' +
@@ -297,6 +298,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::test::bas
   '        ExternalFormat_Internalize\n' +
   '        (\n' +
   '          type = Class[impls=]\n' +
+  '                 as meta::relational::mutation::executionPlan::test::Person\n' +
   '          resultSizeRange = *\n' +
   '          binding = meta::relational::mutation::executionPlan::test::Person_Binding[application/json]\n' +
   '          enableConstraints = true\n' +

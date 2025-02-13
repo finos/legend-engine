@@ -400,7 +400,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                           l: ConcreteFunctionDefinition<Any>[1]                                | $l.expressionSequence->map(e | $e->internal_scanProperties($processed, $vars, $config, $visitedFunctions, ^$debug(space=$debug.space+'    ')));,
                                           a: String[1]                                                         | makeScanPropertiesState(emptyPath(), [], $visitedFunctions),
                                           p: Path<Nil,Any|*>[1]                                                | makeScanPropertiesState(emptyPath(), $p->scanPath(emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions),
-                                          r: RootGraphFetchTree<Any>[1]                                        | makeScanPropertiesState(emptyPath(), $r->scanGraphFetchTree($r->typeFromGraphFetchTree()->cast(@Class<Any>), emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions),
+                                          r: RootGraphFetchTree<Any>[1]                                        | makeScanPropertiesState(emptyPath(), $r->scanGraphFetchTree($r->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>), emptyPath(), $processed, $vars, $config, $visitedFunctions, $debug), $visitedFunctions),
                                           c: Class<Any>[1]                                                      | if($config.scanClasses->toOne(),
                                                                                                                     |   print(if($debug.debug,|$debug.space+'  Class : '+ $c.name->toOne()+ '\n',|''));
                                                                                                                         let v=  list(meta::pure::lineage::scanProperties::dummyNodeForClass($c));
@@ -649,7 +649,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::scanGraphFetchT
          q:QualifiedProperty<Any>[1]| processQualifier($q, $type, $st.parameters, $list, $processed, $vars, true, $config, $visitedFunctions, $debug)
       ]); 
       if($st.subTrees->isNotEmpty(),
-         | scanGraphFetchTree($st, $st->typeFromGraphFetchTree()->cast(@Class<Any>), $res, $processed, $vars, $config, $visitedFunctions, $debug),
+         | scanGraphFetchTree($st, $st->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>), $res, $processed, $vars, $config, $visitedFunctions, $debug),
          | $res
       );
   });

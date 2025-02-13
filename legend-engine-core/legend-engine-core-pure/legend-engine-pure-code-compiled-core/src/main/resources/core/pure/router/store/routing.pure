@@ -104,7 +104,7 @@ function <<access.private>> meta::pure::router::store::routing::getIncludedMappi
 
 function meta::pure::router::store::routing::routeRelationFunctionSetImplementations(sets:SetImplementation[*], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):SetImplementation[*]
 {
-  $sets->map(s|$s->routeRelationFunctionSetImplementation($mapping, $runtime, $extensions)); 
+  $sets->map(s|$s->routeRelationFunctionSetImplementation($mapping, $runtime, $extensions));
 }
 
 function meta::pure::router::store::routing::routeRelationFunctionSetImplementation(s:SetImplementation[1], mapping:Mapping[1], extensions: Extension[*]):SetImplementation[1]
@@ -398,6 +398,51 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 );
         }
     ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([
+                                                  meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_,
+                                                  meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+                                                  meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+                                                  meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_
+                                                ]),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                let resolvedParameters     = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
+                                                                                                                     f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
+                                                                                                                                              $r->reactivate($inScopeVars);,
+                                          
+                                                                                                                        i:InstanceValue[1]      |$i.values]));
+                let fromRuntime = $resolvedParameters->last()->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
+                
+                let routingStrategy = $resolvedParameters->init()->head()->match([
+                  fromMapping: Mapping[1] | getRoutingStrategyFromMappingAndRuntime($state.routingStrategy, $fromMapping, $fromRuntime, $extensions),
+                  m: Any[0] | getRoutingStrategyFromRuntime($fromRuntime)
+                ]);
+
+                let exCtx = $state.executionContext;
+
+                let funcToRoute = $fe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@FunctionDefinition<Any>);
+
+                let preEvalFuncToRoute = meta::pure::router::preeval::preval($funcToRoute, $extensions, $debug->indent());
+
+                let routedFunc = routeFunction($preEvalFuncToRoute, $routingStrategy, $exCtx, [], $extensions, $debug->indent());
+
+                let clusters = $routedFunc.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+                let uniqueClusters = $clusters->removeDuplicates({x, y | meta::pure::router::clustering::areClustersCompatible($x, $y, $extensions)});
+                assert($uniqueClusters->size() == 1, |'Function definition on ->with(..) accesses multiple stores and runtimes, and this is not supported:\n' + $uniqueClusters->map(c | $c->asString())->joinStrings(',\n'));
+                
+                let unclusteredRoutedFunc = ^$routedFunc(expressionSequence = $clusters.val);
+
+                let routedVs = ^SimpleFunctionExpression(
+                          func = $unclusteredRoutedFunc,
+                          genericType = $funcToRoute->functionReturnType(),                      
+                          multiplicity = $funcToRoute->functionReturnMultiplicity(),
+                          importGroup=system::imports::coreImport                      
+                        )->evaluateAndDeactivate();
+
+                let wrapped = $routingStrategy.wrapValueSpec($routedVs, 'from_function_wrapper', $exCtx, $extensions, $debug);
+
+                ^$state(value = $wrapped, routingStrategy = $routingStrategy);
+        }
+    ),
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
                                                   meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
                                                   meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
@@ -553,7 +598,7 @@ function meta::pure::router::store::routing::processProperty(p:AbstractProperty<
 function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
 {
   $srcSets->size() == 1 && $srcSets->toOne()->instanceOf(InstanceSetImplementation)                   // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
-  && !$srcSets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation) 
+  && !$srcSets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation)
   && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->isNotEmpty()
   && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation));
 }

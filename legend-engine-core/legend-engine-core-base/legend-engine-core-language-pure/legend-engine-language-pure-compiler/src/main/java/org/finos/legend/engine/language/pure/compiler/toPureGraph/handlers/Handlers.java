@@ -1414,14 +1414,26 @@ public class Handlers
 
         register(
                 m(
-                        m(h("meta::pure::mapping::from_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
-                                h("meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))),
-                        m(h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                                h("meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 2 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))
+                        ),
+                        m(
+                                h("meta::pure::mapping::from_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                                h("meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))
+                        ),
+                        m(
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                                h("meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))), ps -> ps.size() == 3 && typeOne(ps.get(0), Sets.immutable.with("FunctionDefinition", "ConcreteFunctionDefinition", "LambdaFunction")) && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
+                        ),
+                        m(
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name()) && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime"))),
                                 h("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
                         ),
-                        m(h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4 && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
                         )
                 )
@@ -1429,10 +1441,12 @@ public class Handlers
 
         register(
                 m(
-                        m(h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::with_T_m__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), Sets.immutable.with("PackageableRuntime")))
                         ),
-                        m(h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
+                        m(
+                                h("meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("Runtime", "EngineRuntime"))),
                                 h("meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3 && typeOne(ps.get(2), Sets.immutable.with("PackageableRuntime")))
                         )
                 )

@@ -305,7 +305,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
                   let qp = $routedTree.property->cast(@QualifiedProperty<Any>);
                   let qualifierTree = $qp.expressionSequence->evaluateAndDeactivate()->toOne()->fetchTreeInExpression($qp->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@Class<Any>));
                   let routedDependencyTree = getRoutedDependencyTree($ch.second.values->toOne(), $qualifierTree);
-                  let resultType = ^ResultType(type = $qp->functionReturnType().rawType->toOne());
+                  let resultType = ^ResultType(genericType = $qp->functionReturnType());
                   let currentPath = $newParentPath + '.' + $routedTree->nodePathName();
                   let platformNode = ^PlatformGlobalGraphFetchExecutionNode
                   (
@@ -468,7 +468,7 @@ function meta::pure::graphFetch::executionPlan::resultTypeFromGraphFetchTree(g: 
 {
    ^PartialClassResultType
     (
-       type = $g->byPassClusteringInfo()->typeFromGraphFetchTree(),
+       genericType = $g->byPassClusteringInfo()->typeFromGraphFetchTree(),
        setImplementations = $g->byPassClusteringInfo()->cast(@RoutedGraphFetchTree).sets,
        propertiesWithParameters = $g->byPassClusteringInfo().subTrees->map(x | $x->byPassClusteringInfo()->cast(@PropertyGraphFetchTree)->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
     )

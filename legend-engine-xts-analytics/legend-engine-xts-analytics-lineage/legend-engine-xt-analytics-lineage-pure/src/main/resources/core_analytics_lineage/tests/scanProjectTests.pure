@@ -124,7 +124,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::m
                                 ]
                                )};
    
-  let vars = $fn->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
+  let vars = $fn->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity))));
    let p = $fn->toOne()->evaluateAndDeactivate().expressionSequence->last()->toOne()->meta::pure::lineage::scanProject::scanProject($vars->newMap());
    assertEquals(['type'], $p.columns.first);
 }

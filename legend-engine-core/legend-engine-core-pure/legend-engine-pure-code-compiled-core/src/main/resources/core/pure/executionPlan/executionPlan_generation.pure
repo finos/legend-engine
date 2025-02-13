@@ -68,7 +68,7 @@ Class meta::pure::executionPlan::ExecutionOption
 
 Class meta::pure::executionPlan::MultiExecutionContext extends meta::pure::runtime::ExecutionContext
 {
-    childExecutionContext:meta::pure::runtime::ExecutionContext[*];
+    <<equality.Key>> childExecutionContext:meta::pure::runtime::ExecutionContext[*];
     allContexts()  {$this.childExecutionContext->map(e |if($e->instanceOf(MultiExecutionContext),
                                                               | $e->concatenate($e->cast(@MultiExecutionContext)->collectionMultiExecutionContexts([])),
                                                               |$e)
@@ -161,9 +161,9 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
                                              print(if($debugContext.debug,|'Generating plan for cluster: '+$c->meta::pure::router::printer::asString()+'\n',|''));
                                              let node = $c->plan($x, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));
-                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type == TabularDataSet,
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.genericType.rawType->toOne() == TabularDataSet,
                                                                                                                        |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
-                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));
+                                                                                                                       |^PlanVarPlaceHolder(name=$a.varName,genericType = $a.resultType.genericType, multiplicity=$a.resultSizeRange));
                                                                                                     $x->put($a.varName, ^List<Any>(values=$varValues));,
                                                                        a:Any[*]|$x]);
                                              ^$a(nodes+=$node, vars = $nVars);
@@ -212,20 +212,20 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
-   let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
+   let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.genericType.rawType->toOne()->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
    assert($collectionEnumParams->size() == 0, |'Collection of Enums is not supported as service parameter ' + $collectionEnumParams->map(p | $p.name)->makeString('[',', ',']'));
    let parameterValidationContexts = $planVarPlaceHolders->map(p |
                                              if(
                                                [
-                                                 pair(|$p.type->instanceOf(Enumeration), |^meta::pure::executionPlan::EnumValidationContext(varName = $p.name, validEnumValues = $p.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id()))),
-                                                 pair(|$p.type->instanceOf(Class), |^meta::pure::executionPlan::ProtocolObjectValidationContext<Any>(varName = $p.name, parameterClass = $p.type->cast(@Class<Any>)))
+                                                 pair(|$p.genericType.rawType->toOne()->instanceOf(Enumeration), |^meta::pure::executionPlan::EnumValidationContext(varName = $p.name, validEnumValues = $p.genericType.rawType->toOne()->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id()))),
+                                                 pair(|$p.genericType.rawType->toOne()->instanceOf(Class), |^meta::pure::executionPlan::ProtocolObjectValidationContext<Any>(varName = $p.name, parameterClass = $p.genericType.rawType->toOne()->cast(@Class<Any>)))
                                                ],
                                                |[]
                                              );
                                        );
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
-   if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
-                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $parameterValidationContexts);
+   if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType=$p.genericType));
+                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(genericType=^GenericType(rawType = Boolean)), parameterValidationContext = $parameterValidationContexts);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);
@@ -261,7 +261,7 @@ function <<access.private>> meta::pure::executionPlan::findParamsForStreamInput(
 
 function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>[1]):PlanVarPlaceHolder[*]
 {
-   $f->functionType().parameters->evaluateAndDeactivate()->map(p|^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity));
+   $f->functionType().parameters->evaluateAndDeactivate()->map(p|^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity));
 }
 
 function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]

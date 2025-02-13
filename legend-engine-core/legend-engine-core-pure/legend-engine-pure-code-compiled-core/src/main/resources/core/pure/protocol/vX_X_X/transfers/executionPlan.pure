@@ -103,7 +103,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode(
               _type = 'function-parameters-validation',
               resultType = $exp.resultType->transformResultType($extensions),
-              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, genericType=^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath=$p.type->elementToPath())), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
+              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, genericType=$p.genericType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
               parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
                                                                               e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext'),
                                                                               p:meta::pure::executionPlan::ProtocolObjectValidationContext<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ProtocolObjectValidationContext(varName = $p.varName, parameterClassName = $p.parameterClass->elementToPath(), _type = 'protocolObjectValidationContext')
@@ -319,14 +319,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          partialClass:meta::pure::executionPlan::PartialClassResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PartialClassResultType
                                                                             (
                                                                               _type = 'partialClass',
-                                                                               class = $partialClass.type->elementToPath(),
+                                                                               class = $partialClass.genericType.rawType->toOne()->elementToPath(),
                                                                                setImplementations=$partialClass.setImplementations->map(s|$s->transformSetImplementation($extensions)),
                                                                                propertiesWithParameters = $partialClass.propertiesWithParameters->map(x | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PropertyWithParameters(property = $x.property.name->toOne(), parameters = $x.parameters->map(x | $x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String,List<Any>>(), $extensions))))
                                                                             ),
          class:meta::pure::executionPlan::ClassResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ClassResultType
                                                              (
                                                                 _type='class',
-                                                                class = $class.type->elementToPath(),
+                                                                class = $class.genericType.rawType->toOne()->elementToPath(),
                                                                 setImplementations=$class.setImplementations->map(s|$s->transformSetImplementation($extensions))
                                                              ),
          void:meta::pure::executionPlan::VoidResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VoidResultType
@@ -336,7 +336,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                               (
                                                                  _type='dataType',
-                                                                 dataType=$rt.type->elementToPath()
+                                                                 dataType=$rt.genericType.rawType->toOne()->elementToPath()
                                                               ),
          tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::TDSResultType
                                                           (
@@ -353,7 +353,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',
-                                                         dataType=$rt.type->elementToPath()
+                                                         dataType=$rt.genericType.rawType->defaultIfEmpty(Any)->toOne()->elementToPath()
                                                       )
       ])->toOneMany()
    );
@@ -363,7 +363,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
 {
    ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput(
      name = $source.name,
-     type = $source.type->elementToPath(),
+     type = $source.genericType.rawType->toOne()->elementToPath(),
      multiplicity = $source.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
    )
 }

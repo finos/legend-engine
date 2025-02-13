@@ -120,7 +120,7 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                                                                         , $pathInfoPairs->cast(@Pair<String, PathInformation>)
                                                                                         , $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection
                                                                                         , $runtime
-                                                                                        , $r.resultType.type
+                                                                                        , $r.resultType.genericType.rawType->toOne()
                                                                                         , []->cast(@RoutedValueSpecification)
                                                                                         , $mapping
                                                                                         , []->cast(@Integer)

@@ -37,7 +37,7 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
     resultSizeRange = ZeroMany,
     request = $request,
     connection = $runtime->toOne('missing required runtime for ES plan execution').connectionByElement($sq.store)->cast(@Elasticsearch7StoreConnection),
-    resultType = ^meta::pure::executionPlan::TDSResultType(type = TabularDataSet, tdsColumns = $tdsDetailsIndexed->map(p | ^TDSColumn(name = $p.second.name, offset = $p.first, type = $p.second.type))),
+    resultType = ^meta::pure::executionPlan::TDSResultType(genericType = ^GenericType(rawType = TabularDataSet), tdsColumns = $tdsDetailsIndexed->map(p | ^TDSColumn(name = $p.second.name, offset = $p.first, type = $p.second.type))),
     metadata = ^TDSMetadata(columnResultPaths = $tdsDetailsIndexed->map(ci | ^TDSColumnResultPath(index = $ci.first, resultPath = $ci.second.resultPath)))
   );
 
