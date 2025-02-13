@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - Pure - Runtime - Java Extension - Compiled - Functions - Relational Store - Postgres SQL - Parser</name>
 
@@ -67,7 +67,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-postgresSql-parser</artifactId>
+                        <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -122,7 +122,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relationalStore-postgresSql-parser</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- ENGINE -->

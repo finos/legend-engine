@@ -183,12 +183,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "      type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(1024), \"\")]\n" +
                 "      resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['address']['name']::varchar as \"Address\", listagg(\"root\".FIRSTNAME, ';') as \"Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" group by \"Address\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(200), \"\")]\n";
+        String TDSType = "  type = TDS[(Address, String, VARCHAR(8192), \"\"), (Names, String, VARCHAR(1024), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
@@ -421,12 +421,12 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
+                "      type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(1024), \"\")]\n" +
                 "      resultColumns = [(\"Address\", \"\"), (\"Names\", \"\")]\n" +
                 "      sql = select \"root\".FIRM_DETAILS['entityType']::varchar as \"Address\", listagg(\"root\".FIRSTNAME, ';') as \"Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" group by \"Address\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n";
+        String TDSType = "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(1024), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 

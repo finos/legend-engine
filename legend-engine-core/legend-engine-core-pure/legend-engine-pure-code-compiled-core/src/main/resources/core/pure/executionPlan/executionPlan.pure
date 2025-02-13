@@ -26,8 +26,7 @@ Profile meta::pure::executionPlan::profiles::serverVersion
 
 Class meta::pure::executionPlan::ResultType
 {
-   type        : Type[1];
-   genericType : GenericType[0..1];
+   genericType : GenericType[1];
 }
 
 Class meta::pure::executionPlan::ClassResultType extends ResultType
@@ -94,7 +93,7 @@ Class meta::pure::executionPlan::ExecutionNode
 Class meta::pure::executionPlan::VariableInput
 {
    name         : String[1];
-   type         : Type[1];
+   genericType  : GenericType[1];
    multiplicity : Multiplicity[1];
 }
 
@@ -200,7 +199,7 @@ Class meta::pure::executionPlan::ProtocolObjectValidationContext<T> extends Para
 Class meta::pure::executionPlan::FunctionParameter
 {
    name : String[1];
-   type : Type[1];
+   genericType : GenericType[1];
    supportsStream : Boolean[0..1];
    multiplicity: Multiplicity[0..1];
 }

@@ -59,7 +59,7 @@ public class SQLExecutionNode extends ExecutionNode
     @JsonIgnore
     public String getDatabaseTimeZone()
     {
-        return this.connection.timeZone;
+        return this.connection.timeZone == null ? "GMT" : this.connection.timeZone;
     }
 
     @JsonIgnore

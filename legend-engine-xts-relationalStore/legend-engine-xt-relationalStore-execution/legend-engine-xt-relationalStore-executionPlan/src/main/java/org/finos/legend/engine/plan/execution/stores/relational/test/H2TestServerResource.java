@@ -26,17 +26,8 @@ public class H2TestServerResource implements TestServerResource
     @Override
     public void start() throws Exception
     {
-        int relationalDBPort;
-        if (System.getProperty("legend.test.h2.port") == null)
-        {
-            relationalDBPort = DynamicPortGenerator.generatePort();
-        }
-        else
-        {
-            relationalDBPort = Integer.parseInt(System.getProperty("legend.test.h2.port"));
-        }
-
-        this.h2Server = AlloyH2Server.startServer(relationalDBPort);
+        this.h2Server = AlloyH2Server.startServer(Integer.parseInt(System.getProperty("legend.test.h2.port", "0")));
+        int relationalDBPort = this.h2Server.getPort();
         System.out.println("H2 database (Major Version:" + H2Manager.getMajorVersion() + ") started on port:" + relationalDBPort);
 
         // Set drop wizard vars

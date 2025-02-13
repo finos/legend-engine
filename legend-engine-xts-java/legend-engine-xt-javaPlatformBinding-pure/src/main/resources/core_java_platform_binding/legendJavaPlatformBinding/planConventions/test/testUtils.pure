@@ -300,7 +300,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 {
    let node = ^PureExpressionPlatformExecutionNode(
       expression     = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
-      resultType     = ^ResultType(type=String),
+      resultType     = ^ResultType(genericType=^GenericType(rawType = String)),
       implementation = ^JavaPlatformImplementation
                        (
                           executionClassFullName = testClass()->typeToString(),

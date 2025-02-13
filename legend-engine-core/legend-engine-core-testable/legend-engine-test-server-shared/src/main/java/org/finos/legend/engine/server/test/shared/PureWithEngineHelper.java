@@ -51,6 +51,7 @@ public class PureWithEngineHelper
         T server = engineServerCreator.get();
         server.run("server", Objects.requireNonNull(PureWithEngineHelper.class.getClassLoader().getResource(serverConfigFilePath)).getFile());
         System.out.println("Alloy server started on port:" + engineServerPort);
+        System.clearProperty("dw.server.connector.port");
 
         System.setProperty("alloy.test.server.host", "127.0.0.1");
         System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));

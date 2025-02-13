@@ -16,12 +16,11 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerManager;
 
-public class SqlServerConnectionExtension implements RelationalConnectionExtension
+public class SqlServerConnectionExtension implements ConnectionExtension
 {
     @Override
     public String type()
@@ -39,15 +38,5 @@ public class SqlServerConnectionExtension implements RelationalConnectionExtensi
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SqlServerManager());
-    }
-
-    @Override
-    public Boolean visit(StreamResultToTempTableVisitor visitor, RelationalDatabaseCommands databaseCommands)
-    {
-        if (databaseCommands instanceof SqlServerCommands)
-        {
-            throw new UnsupportedOperationException("not yet implemented");
-        }
-        return null;
     }
 }

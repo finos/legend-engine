@@ -101,7 +101,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
       let changedFunctionsNotRequiringConditionNode = $transformedQueryNotRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
       let changedFunctionsRequiringConditionNode    = $transformedQueryRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
 
-      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $dbSpecificTempTableCreationLogicSupplier, $runtime, $store->toOne(), $exeCtx, $extensions);
+      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->sortBy(p | $p.first->buildUniqueName(true, $extensions))->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $dbSpecificTempTableCreationLogicSupplier, $runtime, $store->toOne(), $exeCtx, $extensions);
    );
 }
 
@@ -141,9 +141,9 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                                      values     = list(list(if($collectionValuesWithoutVarPlaceHolder->at(0)->instanceOf(Date),
                                                                                                                                 |$collectionValuesWithoutVarPlaceHolder->map(d | $d->cast(@Date)->convertDateToSqlString([])),
                                                                                                                                 |$collectionValuesWithoutVarPlaceHolder))),
-                                                                                                     resultType = ^ResultType(type = List)
+                                                                                                     resultType = ^ResultType(genericType=^GenericType(rawType=List))
                                                                                                   ),
-                                                                                resultType     = ^ResultType(type = List)
+                                                                                resultType     = ^ResultType(genericType=^GenericType(rawType=List))
                                                                              );,
                                                                            |[]
                                                                         );
@@ -156,7 +156,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                                                                   dataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne()->translateCoreTypeToDbSpecificType($translationContext))
                                                                                                      ),
                                                                           connection              = $connection,
-                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void)
+                                                                          resultType              = ^VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void))
                                                                        );
 
                            let executionNodeToBeAdded               = if($collectionValues->size() > $dbThreshold,
@@ -170,21 +170,21 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                                                                                   )->concatenate($conditionString)->joinStrings('(', ' || ', ')');
 
                                                                                 let trueString                 = $processedResultForTempTable.query->sqlQueryToString($connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
-                                                                                let trueExecutionNodes         = $allocationNode->concatenate($createAndPopulateTempTableNode)->concatenate(^ConstantExecutionNode(values = $trueString, resultType = ^ResultType(type = String)));
+                                                                                let trueExecutionNodes         = $allocationNode->concatenate($createAndPopulateTempTableNode)->concatenate(^ConstantExecutionNode(values = $trueString, resultType = ^ResultType(genericType=^GenericType(rawType=String))));
 
                                                                                 let falseString                = $origInFunction.parameters->at(1)->processOperation($connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
                                                                                 let processedfalseString       = if($falseString->startsWith('(') && $falseString->endsWith(')'), | $falseString->substring(1, $falseString->length()-1), | $falseString);
 
                                                                                 let conditionalnode      = ^FreeMarkerConditionalExecutionNode(
                                                                                                                freeMarkerBooleanExpression  = '${' + $conditionWithStreamHandled + '?c}',
-                                                                                                               trueBlock                    = ^SequenceExecutionNode(executionNodes = $trueExecutionNodes, resultType = ^ResultType(type = String)),
-                                                                                                               falseBlock                   = ^ConstantExecutionNode(values = $processedfalseString, resultType = ^ResultType(type = String)),
-                                                                                                               resultType                   = ^ResultType(type = String)
+                                                                                                               trueBlock                    = ^SequenceExecutionNode(executionNodes = $trueExecutionNodes, resultType = ^ResultType(genericType=^GenericType(rawType=String))),
+                                                                                                               falseBlock                   = ^ConstantExecutionNode(values = $processedfalseString, resultType = ^ResultType(genericType=^GenericType(rawType=String))),
+                                                                                                               resultType                   = ^ResultType(genericType=^GenericType(rawType=String))
                                                                                                            );
                                                                                 ^AllocationExecutionNode(
                                                                                          varName        = $outerAllocationNodeName,
                                                                                          executionNodes = $conditionalnode,
-                                                                                         resultType     = ^ResultType(type = String)
+                                                                                         resultType     = ^ResultType(genericType=^GenericType(rawType=String))
                                                                                      );
                                                                         );
 

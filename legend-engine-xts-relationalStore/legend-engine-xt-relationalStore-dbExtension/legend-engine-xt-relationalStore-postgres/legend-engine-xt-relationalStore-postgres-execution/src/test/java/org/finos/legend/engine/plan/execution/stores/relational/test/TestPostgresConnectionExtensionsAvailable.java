@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.test;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,10 +32,5 @@ public class TestPostgresConnectionExtensionsAvailable
                 Lists.mutable.withAll(ServiceLoader.load(ConnectionExtension.class))
                         .collect(Object::getClass);
         Assert.assertTrue(connectionExtensions.contains(PostgresConnectionExtension.class));
-
-        MutableList<Class<?>> relationalConnectionExtensions =
-                Lists.mutable.withAll(ServiceLoader.load(RelationalConnectionExtension.class))
-                        .collect(Object::getClass);
-        Assert.assertTrue(relationalConnectionExtensions.contains(PostgresConnectionExtension.class));
     }
 }
