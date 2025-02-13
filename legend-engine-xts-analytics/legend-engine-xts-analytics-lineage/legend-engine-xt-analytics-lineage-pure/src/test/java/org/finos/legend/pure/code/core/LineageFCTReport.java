@@ -41,7 +41,7 @@ public class LineageFCTReport extends FCTReport
     }
 
     @Override
-    public String getreportID()
+    public String getReportID()
     {
         return "LineageFCT";
     }
