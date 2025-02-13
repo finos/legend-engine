@@ -604,7 +604,7 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"4\" to \"2\" for column \"income\", but user capability does not allow it", e.getMessage());
         }
 
         try
@@ -654,9 +654,9 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
             evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
             Assertions.fail("Exception was not thrown");
         }
-        catch (IncompatibleSchemaChangeException e)
+        catch (Exception e)
         {
-            Assertions.assertEquals("Data type size is decremented from \"64\" to \"32\" for column \"name\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Invalid schema evolution capabilities. Select either DATA_TYPE_LENGTH_CHANGE or DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY.", e.getMessage());
         }
 
         try
