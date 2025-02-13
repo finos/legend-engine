@@ -56,6 +56,7 @@ import org.finos.legend.engine.persistence.components.relational.api.ErrorCatego
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
@@ -195,6 +196,7 @@ public class H2Sink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
+            new H2DataTypeToDefaultSizeMapping(),
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),

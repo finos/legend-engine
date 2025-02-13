@@ -35,6 +35,7 @@ public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
     String FLOAT4 = "FLOAT4";
     String FLOAT8 = "FLOAT8";
     String CHAR = "CHAR";
+    String CHARACTER = "CHARACTER";
     String VARCHAR = "VARCHAR";
     String TEXT = "TEXT";
     String BPCHAR = "BPCHAR";

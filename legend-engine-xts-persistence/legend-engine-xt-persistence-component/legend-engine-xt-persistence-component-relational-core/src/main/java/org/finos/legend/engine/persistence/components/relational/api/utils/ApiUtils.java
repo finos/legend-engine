@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatas
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
@@ -70,6 +71,20 @@ public class ApiUtils
             return converter.applyCase(enrichedDatasets, String::toLowerCase);
         }
         return enrichedDatasets;
+    }
+
+    public static DatasetDefinition applyCase(DatasetDefinition datasetDefinition, CaseConversion caseConversion)
+    {
+        DatasetCaseConverter converter = new DatasetCaseConverter();
+        if (caseConversion == CaseConversion.TO_UPPER)
+        {
+            return (DatasetDefinition) converter.applyCaseOnDataset(datasetDefinition, String::toUpperCase);
+        }
+        if (caseConversion == CaseConversion.TO_LOWER)
+        {
+            return (DatasetDefinition) converter.applyCaseOnDataset(datasetDefinition, String::toLowerCase);
+        }
+        return datasetDefinition;
     }
 
     public static DatasetReference applyCase(DatasetReference datasetReference, CaseConversion caseConversion)

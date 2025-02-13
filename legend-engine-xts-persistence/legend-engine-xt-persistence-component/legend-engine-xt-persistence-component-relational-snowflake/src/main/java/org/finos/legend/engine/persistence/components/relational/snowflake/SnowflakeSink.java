@@ -69,6 +69,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.logic
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
@@ -252,6 +253,7 @@ public class SnowflakeSink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
+            new SnowflakeDataTypeToDefaultSizeMapping(),
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) ->

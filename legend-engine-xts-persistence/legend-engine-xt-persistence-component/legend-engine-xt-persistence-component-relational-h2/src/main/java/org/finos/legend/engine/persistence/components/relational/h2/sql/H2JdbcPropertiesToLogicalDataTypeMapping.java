@@ -26,6 +26,7 @@ public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesT
         switch (typeName)
         {
             case CHAR:
+            case CHARACTER:
                 return FieldType.builder().dataType(DataType.CHAR).length(columnSize).build();
             case VARCHAR:
             case CHARACTER_VARYING:

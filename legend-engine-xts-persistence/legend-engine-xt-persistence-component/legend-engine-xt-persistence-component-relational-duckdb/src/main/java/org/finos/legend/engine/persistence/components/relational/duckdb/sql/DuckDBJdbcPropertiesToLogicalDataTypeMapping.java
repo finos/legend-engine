@@ -23,9 +23,12 @@ public class DuckDBJdbcPropertiesToLogicalDataTypeMapping implements JdbcPropert
 {
     public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)
     {
+        String jdbcTypeName = typeName;
         if (typeName.contains("("))
         {
             typeName = typeName.substring(0, typeName.indexOf('('));
+            columnSize = Integer.parseInt(jdbcTypeName.substring(jdbcTypeName.indexOf('(') + 1, jdbcTypeName.indexOf(',')));
+            decimalDigits = Integer.parseInt(jdbcTypeName.substring(jdbcTypeName.indexOf(',') + 1, jdbcTypeName.indexOf(')')));
         }
         switch (typeName)
         {

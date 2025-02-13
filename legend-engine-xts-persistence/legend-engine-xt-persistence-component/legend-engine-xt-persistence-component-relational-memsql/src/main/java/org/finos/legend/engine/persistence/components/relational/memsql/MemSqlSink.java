@@ -46,6 +46,7 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SchemaDefinitionVisitor;
@@ -159,6 +160,7 @@ public class MemSqlSink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
+            new MemSqlDataTypeToDefaultSizeMapping(),
             SqlGenUtils.BACK_QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),

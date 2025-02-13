@@ -61,7 +61,9 @@ public class DuckDBDataTypeMapping implements DataTypeMapping
                 break;
             case DECIMAL:
             case NUMERIC:
-                dataType = new Decimal(type.length().get(), type.scale().get());
+                dataType = new Decimal(type.length().orElse(-1), type.scale().orElse(-1));
+                type.length().ifPresent(dataType::setLength);
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case DOUBLE:
                 dataType = new Double();
