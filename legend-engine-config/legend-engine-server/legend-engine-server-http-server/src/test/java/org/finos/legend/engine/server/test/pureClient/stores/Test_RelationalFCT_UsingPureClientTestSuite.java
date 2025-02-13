@@ -35,7 +35,7 @@ public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTRe
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return wrapSuite(
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Boolean_1_", true, executionSupport),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Boolean_1_", true,false,executionSupport),
                 PureWithEngineHelper::cleanUp
         );
     }

@@ -18,7 +18,7 @@ function  {doc.doc ='Use this function to generate the assertions for a mapping 
 meta::analytics::testCoverage::testGenerator(fctTest:FCTMappingTest[1]):String[1]   //FCT mapping   with the mapping and the data setup 
 {
   let mapping = $fctTest.mapping;
-  let allTests =  meta::pure::testCoverage::featureMatrix::collectFCTTestFunctions();  
+  let allTests =  meta::pure::testCoverage::featureMatrix::collectFCTFeatures();  
   let existingTest =  $fctTest.assertions.tests->map(t|$t->elementToPath());
   let tests = $allTests->keyValues()->filter(t|!$t.first->in( $existingTest)); //filter out exists tests in the mapping .  
   let setupData =  $fctTest.setupData;

@@ -19,7 +19,6 @@ package org.finos.legend.engine.test.fct;
 import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.util.GlobalTracer;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import junit.framework.Test;
@@ -37,28 +36,26 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.profile.Profile;
-import org.finos.legend.pure.m3.pct.shared.PCTTools;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.FunctionProcessor;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.junit.Assert;
-
 import static org.finos.legend.pure.generated.core_pure_test_fct.Root_meta_pure_fct_tests_testRunnerAssertionH2_Function_1__Function_1__Function_1__AssertionRun_MANY_;
 import static org.junit.Assert.fail;
 
 public class FCTTestSuitBuilder extends PureTestBuilder
 {
 
-    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
+    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, boolean useMockRuntime, ExecutionSupport executionSupport)
     {
         TestSuite suite = new PureTestBuilderCompiled();
-        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
+
+        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(useMockRuntime), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
         return suite;
     }
 
@@ -87,7 +84,6 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         catch (Error e)
         {
             Throwable thrown = e.getCause().getMessage().contains("Unexpected error executing function with params") && e.getCause().getCause() != null ? e.getCause().getCause() : e.getCause();
-            String message = "";//exclusions.get(PackageableElement.getUserPathForPackageableElement(toEval, "::"));
             if (thrown instanceof PureAssertFailException)
             {
                 fail(thrown.getMessage());
@@ -111,36 +107,28 @@ public class FCTTestSuitBuilder extends PureTestBuilder
     }
 
 
-    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction, ProcessorSupport processorSupport)
+    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction,  String mockRuntime, ProcessorSupport processorSupport)
     {
 
-        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport);
+        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport,mockRuntime);
     }
 
-    public static boolean isFCTTest(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "test", processorSupport);
-    }
+
 
     public static boolean isFCTTestCollection(CoreInstance node, ProcessorSupport processorSupport)
     {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "testCollection", processorSupport);
+        return Profile.hasStereotype(node, "meta::pure::test::fct::model::FCT", "testCollection", processorSupport);
     }
 
-    public static boolean isFCTAdaptor(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "adapter", processorSupport);
-    }
+
 
     public static TestSuite buildFCTSuite(FCTTestCollection testCollection,   String toEval, String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
     {
         MutableList<TestSuite> subSuites = Lists.mutable.empty();
         for (FCTTestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
-            System.out.println("add subsuite");
             subSuites.add(buildFCTSuite(collection,  toEval, runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport));
         }
-        System.out.println("add" + testCollection.getPackage().getName());
 
         return buildFCTSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
                 toEval,
