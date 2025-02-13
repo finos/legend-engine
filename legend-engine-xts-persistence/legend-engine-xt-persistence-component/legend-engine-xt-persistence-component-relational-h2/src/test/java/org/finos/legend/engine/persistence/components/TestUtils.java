@@ -1782,6 +1782,54 @@ public class TestUtils
             .build();
     }
 
+    // Schema Evolution: same type
+    public static DatasetDefinition getMainTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
     public static MetadataDataset getMetadataDataset()
     {
         return MetadataDataset.builder().build();
