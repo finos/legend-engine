@@ -87,7 +87,14 @@ function meta::pure::metamodel::serialization::grammar::printFunctionDefinition(
                                          let addBrackets = $fType.parameters->size() > 1;
                                          let functionParameters = if($addBrackets,|'{',|'') + printLambdaParameters($lambda, !($context.parentFunction->isNotEmpty() && noParamLambda()->contains($context.parentFunction->toOne())))+'|';
                                          let multipleLineIndent = repeat(' ', $functionParameters->length())->joinStrings('');
-                                         $functionParameters+($expressions->joinStrings(';\n'+$multipleLineIndent)) + if($addBrackets,|'}',|'');,
+                                         $functionParameters +
+                                            if (
+                                              [
+                                                pair(|$expressions->isEmpty(), |''),
+                                                pair(|$expressions->size() == 1, |$expressions->toOne())
+                                              ],
+                                              | $expressions->joinStrings('', ';\n'+$multipleLineIndent, ';\n')
+                                            ) + if($addBrackets,|'}',|'');,
       other:FunctionDefinition<Any>[1] | $other->printFunctionSignature() + '\n' +
                                          $context.space + '{\n' +
                                          if($expressions->size() == 1,
@@ -258,13 +265,10 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                 ))  ,
               | let element = $functionExpression.parametersValues->head()->toOne();
                 let t_element = $element->printValueSpecification($configuration, $context);
-                if (
-                  [
-                    pair(|$element->instanceOf(FunctionExpression) && $element->cast(@FunctionExpression).func->in([minus_Integer_MANY__Integer_1_,plus_Integer_MANY__Integer_1_]), |'('+$t_element+')'),
-                    pair(|$element.genericType.rawType == LambdaFunction && !$t_element->trim()->startsWith('{'), |'{' + $t_element + '}')
-                  ],
-                  | $t_element
-                ) + '->' + if($functionExpression.func.functionName->isEmpty(),
+                if ($element.genericType.rawType == LambdaFunction && !$t_element->trim()->startsWith('{'),
+                      |'{' + $element->printValueSpecification($configuration, $context) + '}',
+                      | $element->mayWrapInParenthesis($configuration, $context)                    
+                   ) + '->' + if($functionExpression.func.functionName->isEmpty(),
                             |'UNKNOWN',
                             | if($configuration->isNotEmpty() && $configuration->toOne().fullPath,
                                 |$functionExpression.func->cast(@PackageableElement).package->toOne()->elementToPath()+'::',

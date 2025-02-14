@@ -16,6 +16,7 @@ import meta::protocols::pure::vX_X_X::transformation::helpers::*;
 import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
 import meta::pure::extension::*;
 import meta::pure::tds::toRelation::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 
 function meta::pure::tds::toRelation::tdsToRelationExtension():TdsToRelationExtension_V_X_X[1]
    {
