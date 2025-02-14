@@ -73,6 +73,11 @@
                         <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
 
                 </dependencies>
             </plugin>
@@ -160,6 +165,12 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                        <dependency>
+                            <groupId>org.finos.legend.pure</groupId>
+                            <artifactId>legend-pure-m3-core</artifactId>
+                            <version>${legend.pure.version}</version>
+
+                        </dependency>
                 </dependencies>
             </plugin>
 
@@ -249,6 +260,10 @@
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
