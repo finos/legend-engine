@@ -31,6 +31,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::M
    binding           : String[1];
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
-   tree              : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[0..1];
+   tree              : meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree[0..1];
    //config            : meta::external::format::shared::MongoDBDocumentInternalizeInternalizeConfig[0..1];
 }

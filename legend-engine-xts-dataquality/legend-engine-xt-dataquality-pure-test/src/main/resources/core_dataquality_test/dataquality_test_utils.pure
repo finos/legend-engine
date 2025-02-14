@@ -94,7 +94,7 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
                                   ]
                             )
             );
-  assertEquals($expected->printFunctionDefinition($config, ''), $actual->printFunctionDefinition($config, ''));
+  assertEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
 }
 
 function meta::external::dataquality::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]

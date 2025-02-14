@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.autocomplete.Completer;

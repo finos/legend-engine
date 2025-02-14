@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph;
+package org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class RootGraphFetchTree extends GraphFetchTree
+public class SubTypeGraphFetchTree extends GraphFetchTree
 {
-    public String _type = "rootGraphFetchTree";
-    @JsonProperty("class")
-    public String _class;
+    public String _type = "subTypeGraphFetchTree";
+    public String subTypeClass;
 
     @Override
     public <T> T accept(GraphFetchTreeVisitor<T> visitor)

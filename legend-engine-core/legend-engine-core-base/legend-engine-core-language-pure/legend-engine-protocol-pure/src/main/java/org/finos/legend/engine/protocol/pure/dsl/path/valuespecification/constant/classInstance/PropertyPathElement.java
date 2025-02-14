@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph;
+package org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance;
 
-public interface GraphFetchTreeVisitor<T>
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+
+import java.util.Collections;
+import java.util.List;
+
+public class PropertyPathElement extends PathElement
 {
-    T visit(PropertyGraphFetchTree valueSpecification);
-
-    T visit(RootGraphFetchTree valueSpecification);
-
-    T visit(SubTypeGraphFetchTree valueSpecification);
+    public String property;
+    public List<ValueSpecification> parameters = Collections.emptyList();
 }

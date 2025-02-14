@@ -42,9 +42,9 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;

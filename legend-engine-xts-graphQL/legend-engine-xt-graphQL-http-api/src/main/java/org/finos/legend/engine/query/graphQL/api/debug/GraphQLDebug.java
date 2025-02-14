@@ -34,7 +34,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.debug.model.GraphFetchResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;

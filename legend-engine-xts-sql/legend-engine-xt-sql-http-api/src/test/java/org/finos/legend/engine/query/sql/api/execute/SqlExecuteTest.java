@@ -118,7 +118,7 @@ public class SqlExecuteTest
     @Test
     public void testLambda() throws JsonProcessingException
     {
-        String expectedCode = "{names: String[*],_1: String[1]|demo::employee.all()->filter(\n" +
+        String expectedCode = "{names: String[*], _1: String[1]|demo::employee.all()->filter(\n" +
                 "  p: demo::employee[1]|$names->isEmpty() ||\n" +
                 "    $p.name->in(\n" +
                 "    $names\n" +

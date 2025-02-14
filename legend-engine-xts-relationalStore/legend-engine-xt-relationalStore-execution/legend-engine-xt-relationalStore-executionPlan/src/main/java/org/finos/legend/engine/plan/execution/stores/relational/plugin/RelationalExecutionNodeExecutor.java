@@ -133,9 +133,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.finos.legend.engine.shared.core.identity.Identity;

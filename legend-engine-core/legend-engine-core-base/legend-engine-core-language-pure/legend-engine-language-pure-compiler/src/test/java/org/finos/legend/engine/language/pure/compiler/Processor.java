@@ -49,20 +49,20 @@ public class Processor
     {
         // Validate latest
         File grammarTests = new File(Processor.class.getClassLoader().getResource("122390239DF2390").toURI());
-//        validate(grammarTests);
+        //validate(grammarTests);
 
         // Generate for old protocol
         //generateOldProtocolFromGrammarTests(grammarTests, "v1_23_0");
-//        generateOldProtocolFromGrammarTests(grammarTests, "vX_X_X");
+        generateOldProtocolFromGrammarTests(grammarTests, "vX_X_X");
 
         // Validate old protocols
- //       validate(new File(Processor.class.getClassLoader().getResource("vX_X_X").toURI()));
+        validate(new File(Processor.class.getClassLoader().getResource("vX_X_X").toURI()));
     }
 
     private void validate(File latestHashFolder)
     {
         processRecursive(latestHashFolder, a -> validateJsonFromGrammar(a, latestHashFolder));
-   }
+    }
 
     private void generateOldProtocolFromGrammarTests(File latestHashFolder, String version)
     {
@@ -98,9 +98,10 @@ public class Processor
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
                 //System.out.println(files.get(0).getPath());
-                //System.out.println(mapper.writeValueAsString(PureGrammarParser.newInstance().parseModel(grammar)));
+//                System.out.println(grammar);
+//                System.out.println(mapper.writeValueAsString(PureGrammarParser.newInstance().parseModel(grammar)));
                 PureModelContextData pureModelContextData = mapper.readValue(protocol, PureModelContextData.class);
-                String rendered = grammarTransformer.renderPureModelContextData(pureModelContextData);
+                String rendered = grammarTransformer.renderPureModelContextData(pureModelContextData, x -> x._package + "::" + x.name);
                 Assert.assertEquals(grammarCompare == null ? grammar : grammarCompare, rendered);
             }
         }
@@ -136,7 +137,7 @@ public class Processor
             if (PureClientVersions.versionAGreaterThanOrEqualsVersionB(version, "v1_23_0"))
             {
                 Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_scan_buildBasePureModel");
-                Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_buildBasePureModelFromPackageStr_String_1__Extension_MANY__String_1_", String.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+                Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_buildBasePureModelFromAllElementsInPackageStr_String_1__Extension_MANY__String_1_", String.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
                 String protocol = (String) method.invoke(null, "protocol", Lists.mutable.empty(), pureModel.getExecutionSupport());
 
                 // Reformat ----
@@ -155,7 +156,7 @@ public class Processor
         catch (Exception e)
         {
             e.printStackTrace();
-            System.out.println("ERROR!");
+            System.out.println("ERROR! " + pureFile);
         }
     }
 

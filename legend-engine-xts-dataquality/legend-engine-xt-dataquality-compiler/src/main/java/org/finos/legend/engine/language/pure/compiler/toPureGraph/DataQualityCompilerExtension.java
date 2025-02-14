@@ -42,8 +42,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
@@ -303,7 +303,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         HashSet<String> subTypeClasses = new HashSet<String>();
         HashSet<String> propertieIdentifiersAtRootLevel = new HashSet<String>();
-        for (org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree propertyGraphFetchTree : rootGraphFetchTree.subTrees)
+        for (org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree propertyGraphFetchTree : rootGraphFetchTree.subTrees)
         {
             propertieIdentifiersAtRootLevel.add(getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree));
         }
@@ -313,7 +313,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
             {
                 throw new EngineException("There are multiple subTypeTrees having subType " + subTypeGraphFetchTree.subTypeClass + ", Only one is allowed", subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
             }
-            for (org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree propertyGraphFetchTree : subTypeGraphFetchTree.subTrees)
+            for (org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree propertyGraphFetchTree : subTypeGraphFetchTree.subTrees)
             {
                 String propertyIdentifier = getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree);
                 if (propertieIdentifiersAtRootLevel.contains(propertyIdentifier))

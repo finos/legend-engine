@@ -20,7 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;

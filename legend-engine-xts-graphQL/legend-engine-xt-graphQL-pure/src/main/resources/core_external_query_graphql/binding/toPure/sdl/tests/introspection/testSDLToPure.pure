@@ -20,10 +20,10 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   let pureTypes = $types->sortBy(t|$t->elementToPath())->map(t | $t->meta::pure::metamodel::serialization::grammar::printType())->joinStrings('\n\n');
   assertEquals(   'Class meta::external::query::graphQL::metamodel::introspection::__Directive\n' +
                   '{\n' +
-                  '  name : String[1];\n' +
-                  '  description : String[0..1];\n' +
-                  '  locations : meta::external::query::graphQL::metamodel::introspection::__DirectiveLocation[*];\n' +
-                  '  args : meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
+                  '  name: String[1];\n' +
+                  '  description: String[0..1];\n' +
+                  '  locations: meta::external::query::graphQL::metamodel::introspection::__DirectiveLocation[*];\n' +
+                  '  args: meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
                   '}\n' +
                   '\n' +
                   'Enum meta::external::query::graphQL::metamodel::introspection::__DirectiveLocation\n' +
@@ -50,48 +50,48 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
                   '\n' +
                   'Class meta::external::query::graphQL::metamodel::introspection::__EnumValue\n' +
                   '{\n' +
-                  '  name : String[1];\n' +
-                  '  description : String[0..1];\n' +
-                  '  isDeprecated : Boolean[1];\n' +
-                  '  deprecationReason : String[0..1];\n' +
+                  '  name: String[1];\n' +
+                  '  description: String[0..1];\n' +
+                  '  isDeprecated: Boolean[1];\n' +
+                  '  deprecationReason: String[0..1];\n' +
                   '}\n' +
                   '\n' +
                   'Class meta::external::query::graphQL::metamodel::introspection::__Field\n' +
                   '{\n' +
-                  '  name : String[1];\n' +
-                  '  description : String[0..1];\n' +
-                  '  args : meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
-                  '  type : meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
-                  '  isDeprecated : Boolean[1];\n' +
-                  '  deprecationReason : String[0..1];\n' +
+                  '  name: String[1];\n' +
+                  '  description: String[0..1];\n' +
+                  '  args: meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
+                  '  type: meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
+                  '  isDeprecated: Boolean[1];\n' +
+                  '  deprecationReason: String[0..1];\n' +
                   '}\n' +
                   '\n' +
                   'Class meta::external::query::graphQL::metamodel::introspection::__InputValue\n' +
                   '{\n' +
-                  '  name : String[1];\n' +
-                  '  description : String[0..1];\n' +
-                  '  type : meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
-                  '  defaultValue : String[0..1];\n' +
+                  '  name: String[1];\n' +
+                  '  description: String[0..1];\n' +
+                  '  type: meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
+                  '  defaultValue: String[0..1];\n' +
                   '}\n' +
                   '\n' +
                   'Class meta::external::query::graphQL::metamodel::introspection::__Schema\n' +
                   '{\n' +
-                  '  types : meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
-                  '  queryType : meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
-                  '  mutationType : meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
-                  '  subscriptionType : meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
-                  '  directives : meta::external::query::graphQL::metamodel::introspection::__Directive[*];\n' +
+                  '  types: meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
+                  '  queryType: meta::external::query::graphQL::metamodel::introspection::__Type[1];\n' +
+                  '  mutationType: meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
+                  '  subscriptionType: meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
+                  '  directives: meta::external::query::graphQL::metamodel::introspection::__Directive[*];\n' +
                   '}\n' +
                   '\n' +
                   'Class meta::external::query::graphQL::metamodel::introspection::__Type\n' +
                   '{\n' +
-                  '  kind : meta::external::query::graphQL::metamodel::introspection::__TypeKind[1];\n' +
-                  '  name : String[0..1];\n' +
-                  '  description : String[0..1];\n' +
-                  '  interfaces : meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
-                  '  possibleTypes : meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
-                  '  inputFields : meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
-                  '  ofType : meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
+                  '  kind: meta::external::query::graphQL::metamodel::introspection::__TypeKind[1];\n' +
+                  '  name: String[0..1];\n' +
+                  '  description: String[0..1];\n' +
+                  '  interfaces: meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
+                  '  possibleTypes: meta::external::query::graphQL::metamodel::introspection::__Type[*];\n' +
+                  '  inputFields: meta::external::query::graphQL::metamodel::introspection::__InputValue[*];\n' +
+                  '  ofType: meta::external::query::graphQL::metamodel::introspection::__Type[0..1];\n' +
                   '  fields(includeDeprecated: Boolean[0..1]) {}: meta::external::query::graphQL::metamodel::introspection::__Field[*];\n' +
                   '  enumValues(includeDeprecated: Boolean[0..1]) {}: meta::external::query::graphQL::metamodel::introspection::__EnumValue[*];\n' +
                   '}\n' +

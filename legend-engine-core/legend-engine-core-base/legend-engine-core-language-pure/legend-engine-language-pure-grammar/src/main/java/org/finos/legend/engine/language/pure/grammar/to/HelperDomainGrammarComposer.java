@@ -129,7 +129,7 @@ public class HelperDomainGrammarComposer
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
         return renderAnnotations(qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
-                + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
+                + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"
                 + (qualifiedProperty.body.size() <= 1
                 ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")

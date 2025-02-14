@@ -23,7 +23,6 @@ import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -86,7 +85,7 @@ public abstract class AbstractTestLegendStoreSQLSourceProvider
     @Test
     public void testStoreNotFound()
     {
-        when(getProjectCoordinateLoader().resolve(any(), any())).thenReturn(new ProjectResolvedContext(mock(PureModelContextData.class), mock(PureModelContextData.class)));
+        when(getProjectCoordinateLoader().resolve(any(), any())).thenReturn(new ProjectResolvedContext(PureModelContextData.newBuilder().build(), PureModelContextData.newBuilder().build()));
         String connectionName = "simple::store::DB::H2Connection";
 
         TableSource table = new TableSource("store", FastList.newListWith(

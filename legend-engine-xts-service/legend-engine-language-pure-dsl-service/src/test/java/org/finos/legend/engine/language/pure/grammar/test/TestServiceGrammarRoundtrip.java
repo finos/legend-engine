@@ -882,7 +882,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: {stringParam: String[1],stringOptionalParam: String[0..1],stringListParam: String[*],integerParam: Integer[1],integerOptionalParam: Integer[0..1],integerListParam: Integer[*],floatParam: Float[1],floatOptionalParam: Float[0..1],floatListParam: Float[*],strictDateParam: StrictDate[1],strictDateOptionalParam: StrictDate[0..1],strictDateListParam: StrictDate[*],dateTimeParam: DateTime[1],dateTimeOptionalParam: DateTime[0..1],dateTimeListParam: DateTime[*],booleanParam: Boolean[1],booleanOptionalParam: Boolean[0..1],booleanListParam: Boolean[*]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#)};\n" +
+                "    query: {stringParam: String[1], stringOptionalParam: String[0..1], stringListParam: String[*], integerParam: Integer[1], integerOptionalParam: Integer[0..1], integerListParam: Integer[*], floatParam: Float[1], floatOptionalParam: Float[0..1], floatListParam: Float[*], strictDateParam: StrictDate[1], strictDateOptionalParam: StrictDate[0..1], strictDateListParam: StrictDate[*], dateTimeParam: DateTime[1], dateTimeOptionalParam: DateTime[0..1], dateTimeListParam: DateTime[*], booleanParam: Boolean[1], booleanOptionalParam: Boolean[0..1], booleanListParam: Boolean[*]|demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#)};\n" +
                 "    mapping: meta::myMapping;\n" +
                 "    runtime: meta::myRuntime;\n" +
                 "  }\n" +
@@ -1583,7 +1583,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Multi\n" +
                 "  {\n" +
-                "    query: {env: String[1],data: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->getWithRuntime($env, $data))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)};\n" +
+                "    query: {env: String[1], data: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->getWithRuntime($env, $data))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)};\n" +
                 "  }\n" +
                 "}\n" +
                 "\n" +

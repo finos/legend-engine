@@ -30,21 +30,21 @@ Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support:
   }: String[1];
 }
 
-Class protocol::support::LightP
+Profile protocol::support::AProfile
 {
-  value: Integer[1];
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
 }
 
 Class protocol::support::Light
 {
 }
 
-Class protocol::support::SuperClass
+Class protocol::support::LightP
 {
+  value: Integer[1];
 }
 
-Profile protocol::support::AProfile
+Class protocol::support::SuperClass
 {
-  stereotypes: [flag, newFlag];
-  tags: [tag1, tag2];
 }

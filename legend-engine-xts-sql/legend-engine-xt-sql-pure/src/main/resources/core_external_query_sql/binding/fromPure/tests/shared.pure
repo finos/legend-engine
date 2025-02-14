@@ -163,7 +163,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
 
 function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {
-  assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
+  assertEquals($expected->printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actual->printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
 }
 
 

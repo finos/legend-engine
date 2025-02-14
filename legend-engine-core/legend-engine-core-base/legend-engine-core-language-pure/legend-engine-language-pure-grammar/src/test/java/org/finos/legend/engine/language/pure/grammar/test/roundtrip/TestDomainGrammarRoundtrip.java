@@ -45,7 +45,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testAppliedFunctionAsParameters()
     {
-        test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+        test("Class my::TestClass\n" +
                 "[\n" +
                 "  myConstraint\n" +
                 "  (\n" +
@@ -64,7 +64,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testAppliedFunctionPrimitiveAsParameters()
     {
-        test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+        test("Class my::TestClass\n" +
                 "[\n" +
                 "  myConstraint\n" +
                 "  (\n" +
@@ -81,7 +81,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testPrimitiveAppliedFunctionAsParameters()
     {
-        test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+        test("Class my::TestClass\n" +
                 "[\n" +
                 "  myConstraint\n" +
                 "  (\n" +
@@ -98,7 +98,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testPrimitivesAsParameters()
     {
-        test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+        test("Class my::TestClass\n" +
                 "[\n" +
                 "  myConstraint\n" +
                 "  (\n" +
@@ -115,7 +115,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testIsNotEmptyWithAppliedFunctionsAsParameters()
     {
-        test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +
+        test("Class my::TestClass\n" +
                 "[\n" +
                 "  myConstraint\n" +
                 "  (\n" +
@@ -991,12 +991,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testMetaNewFunctionWithSingleParameter()
     {
-        test("Class modelA::Firm extends meta::pure::metamodel::type::Any\n" +
+        test("Class modelA::Firm\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
                 "\n" +
-                "Class modelA::Person extends meta::pure::metamodel::type::Any\n" +
+                "Class modelA::Person\n" +
                 "[\n" +
                 "  [^modelA::Firm(name='Goldman Sachs'), ^modelA::Firm(name='Google')]->filter(t|$t.name == $this.firmName)->isNotEmpty()\n" +
                 "]\n" +

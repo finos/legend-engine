@@ -7,12 +7,12 @@ Class protocol::SimpleClass extends protocol::support::Light
 {
 }
 
+Class protocol::support::Light
+{
+}
+
 Class protocol::support::SuperClass
 {
   property: String[0..1];
   (none) val: Integer[1];
-}
-
-Class protocol::support::Light
-{
 }

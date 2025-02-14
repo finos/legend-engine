@@ -50,7 +50,7 @@ function <<access.private>> meta::relational::transform::autogen::columnToProper
    (
       name = $column.name->createSQLSafeName()->createValidPropertyName(),
       multiplicity = if($column.nullable == false, | PureOne, | ZeroOne)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-      genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()))
+      genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()))
    );
 }
 
@@ -138,7 +138,7 @@ function <<access.private>> meta::relational::transform::autogen::generateAssoci
    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
      name = $propertyName->createSQLSafeName()->createValidPropertyName(),
      multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-     genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)))
+     genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)))
    );
 }
 
@@ -255,8 +255,8 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
 {
    let p1 = $association.properties->at(0);
    let p2 = $association.properties->at(1);
-   let p1ClassPath = $p2.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath;
-   let p2ClassPath = $p1.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath;
+   let p1ClassPath = $p2.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath;
+   let p2ClassPath = $p1.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath;
    let p1ClassName = getClassNameFromClassPath($p1ClassPath);
    let p2ClassName = getClassNameFromClassPath($p2ClassPath);
    let associationAlias = $join.aliases->at(0);
