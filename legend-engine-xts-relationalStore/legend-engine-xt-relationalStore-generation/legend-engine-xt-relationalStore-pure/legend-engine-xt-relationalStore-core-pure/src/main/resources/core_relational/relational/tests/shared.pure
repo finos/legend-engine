@@ -175,26 +175,26 @@ Database meta::relational::transform::toPure::tests::SimpleDb1
 ###Pure
 Class meta::relational::transform::toPure::tests::PersonTable
 {
-  id : Integer[1];
-  firstName : String[0..1];
-  lastName : String[0..1];
-  a : String[0..1];
-  b : String[0..1];
-  isValid : Boolean[0..1];
-  isValidNotNullable : Boolean[1];
+  id: Integer[1];
+  firstName: String[0..1];
+  lastName: String[0..1];
+  a: String[0..1];
+  b: String[0..1];
+  isValid: Boolean[0..1];
+  isValidNotNullable: Boolean[1];
 }
 
 Class meta::relational::transform::toPure::tests::FirmTable
 {
-  id : Integer[1];
-  legalname : String[1];
-  alternativeName : String[0..1];
+  id: Integer[1];
+  legalname: String[1];
+  alternativeName: String[0..1];
 }
 
 Class meta::relational::transform::toPure::tests::Other
 {
-  id : Integer[1];
-  name : String[1];
+  id: Integer[1];
+  name: String[1];
 }
 
 ###Mapping
