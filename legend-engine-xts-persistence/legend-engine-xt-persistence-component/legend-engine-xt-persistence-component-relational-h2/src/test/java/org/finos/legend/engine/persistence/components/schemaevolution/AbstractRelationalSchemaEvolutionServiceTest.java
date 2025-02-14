@@ -619,6 +619,57 @@ public abstract class AbstractRelationalSchemaEvolutionServiceTest extends BaseT
     }
 
     @Test
+    void testOptionalToMandatoryFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getSchemaEvolutionColumnOptionalToMandatoryMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Create main table with old schema
+        createTempTable(mainTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+            .build();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE_ALLOW_MANDATORY_TO_OPTIONAL_ONLY);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
+
+        RelationalSchemaEvolutionService evolutionService = RelationalSchemaEvolutionService.builder()
+            .relationalSink(H2Sink.get())
+            .schemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet)
+            .ingestMode(ingestMode)
+            .build();
+
+        try
+        {
+            evolutionService.validateSchemaEvolvable(mainTable.schema(), stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is changed from nullable to non-nullable, but user capability does not allow it", e.getMessage());
+        }
+
+        try
+        {
+            SchemaEvolutionServiceResult result = evolve(mainTable, stagingTable, evolutionService);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"name\" is changed from nullable to non-nullable, but user capability does not allow it", e.getMessage());
+        }
+    }
+
+    @Test
     void testDataTypeSizeChangeValidateCapabilities() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
