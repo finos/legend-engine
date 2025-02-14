@@ -29,12 +29,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;

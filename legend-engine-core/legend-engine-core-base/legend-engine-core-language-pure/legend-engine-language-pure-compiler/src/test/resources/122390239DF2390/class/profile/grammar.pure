@@ -4,12 +4,12 @@ Class <<AProfile.flag, protocol::support::AProfile.newFlag>> protocol::LightProf
   value: Integer[1];
 }
 
-Class {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileTaggedValues
+Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileStereotypesTaggedValues
 {
   value: Integer[1];
 }
 
-Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileStereotypesTaggedValues
+Class {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileTaggedValues
 {
   value: Integer[1];
 }

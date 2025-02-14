@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree
 {
     _type : String[1];
-    subTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[*];
-    subTypeTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree[*];
+    subTrees : meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree[*];
+    subTypeTrees : meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::SubTypeGraphFetchTree[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree
 {
    class : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::PropertyGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree
 {
    property   : String[1];
    parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
@@ -32,7 +32,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Propert
    subType    : String[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::SubTypeGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree
 {
    subTypeClass : String[1];
 }

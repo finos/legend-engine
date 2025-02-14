@@ -81,7 +81,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Join;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;

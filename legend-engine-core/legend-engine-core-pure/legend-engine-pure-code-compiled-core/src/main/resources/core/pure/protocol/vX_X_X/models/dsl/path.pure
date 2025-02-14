@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::Path
 {
    name : String[1];
    startType : String[1];
-   path : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PathElement[*];
+   path : meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PathElement extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyPathElement extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PathElement
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PropertyPathElement extends meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement
 {
    property : String[1];
    parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];

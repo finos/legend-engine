@@ -66,12 +66,12 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
      properties = [
         ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
           name = 'value',
-          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='T')),
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath='T')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         ),
         ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
           name = 'expression',
-          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='String')),
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath='String')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         )
      ],
@@ -102,7 +102,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                 ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar))
                 ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction(_type = 'func', function = 'isNotEmpty', fControl = 'isNotEmpty_Any_$0_1$__Boolean_1_', parameters = $p));
       
-      let collection = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection(
+      let collection = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection(
         _type = 'collection',
         values = $properties,
         multiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
@@ -116,7 +116,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                                 ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(
                                   _type = 'var',
                                   name = 'b',
-                                  genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'Boolean')),
+                                  genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = 'Boolean')),
                                   multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                                 )
                               ]
@@ -145,7 +145,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                           fControl = 'equal_Any_MANY__Any_MANY__Boolean_1_', 
                           parameters = [
                               $sizeFunc,
-                              ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger(_type = 'integer', value = 1)
+                              ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger(_type = 'integer', value = 1)
                             ]
                         );
 
@@ -220,7 +220,7 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                       fControl = 'lessThanEqual_Number_1__Number_1__Boolean_1_', 
                       parameters = [
                           $sizeFunc,
-                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger(_type = 'integer', value = 1)
+                          ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger(_type = 'integer', value = 1)
                         ]
                     );
 
@@ -415,10 +415,10 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
         {stringVal: String[1] |
           ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
             name = $name,
-            genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'String')),
+            genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = 'String')),
             multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
             defaultValue = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::DefaultValue(
-              value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString(_type = 'string', value = $stringVal)
+              value = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString(_type = 'string', value = $stringVal)
             )
           );
         }
@@ -429,7 +429,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
       let multiplicity = $property.type->propertyTypeMultiplicity($property.required, $state);
       let pureProperty = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
         name = $name,
-        genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = $pureType)),
+        genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = $pureType)),
         multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
       );
     }
@@ -447,7 +447,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
   );
 
   $state.log(|'Processing property finished: %s (kind: %s)'->format([$property.name, $property.type->type()->elementToPath()]));
-  if($fullProp.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
+  if($fullProp.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
 }
 
 function

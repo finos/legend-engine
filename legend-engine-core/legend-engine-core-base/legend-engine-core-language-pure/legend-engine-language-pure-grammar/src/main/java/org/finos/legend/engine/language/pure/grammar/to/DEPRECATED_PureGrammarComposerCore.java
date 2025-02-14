@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.block.factory.Functions;
 import org.eclipse.collections.impl.factory.Lists;
@@ -77,7 +78,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictTime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
@@ -86,7 +87,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.depreca
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
@@ -96,15 +97,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTreeVisitor;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.SubTypeGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTreeVisitor;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.nio.charset.StandardCharsets;
@@ -365,9 +366,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         StringBuilder builder = new StringBuilder();
         builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, _class.taggedValues)).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
-        if (!_class.superTypes.isEmpty())
+        MutableList<String> superTypesStr = ListIterate.collect(_class.superTypes, x -> x.path).select(x -> !"meta::pure::metamodel::type::Any".equals(x));
+        if (!superTypesStr.isEmpty())
         {
-            builder.append(" extends ").append(_class.superTypes.stream().map(x -> x.path).collect(Collectors.joining(", ")));
+            builder.append(" extends ").append(superTypesStr.makeString(", "));
         }
         builder.append("\n");
         if (!_class.constraints.isEmpty())
@@ -710,7 +712,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
-                + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
+                + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", "))
                 + "|" + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
                 + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
                 + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");

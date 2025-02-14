@@ -34,7 +34,7 @@ import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;

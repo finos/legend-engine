@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path;
+package org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.Collections;
-import java.util.List;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties("_type")
-public class Path
+public class RootGraphFetchTree extends GraphFetchTree
 {
-    public SourceInformation sourceInformation;
-    public String name;
-    public String startType;
-    public List<PathElement> path = Collections.emptyList();
+    public String _type = "rootGraphFetchTree";
+    @JsonProperty("class")
+    public String _class;
+
+    @Override
+    public <T> T accept(GraphFetchTreeVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

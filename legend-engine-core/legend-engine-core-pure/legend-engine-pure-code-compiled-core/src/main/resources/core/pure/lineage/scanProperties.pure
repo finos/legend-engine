@@ -169,7 +169,7 @@ function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecificati
 
 function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecification[1], debug:DebugContext[1], config:ScanConfig[1]):ScanPropertiesState[0..1]
 {
-   print(if($debug.debug,|$debug.space+'>>> ScanProperties in : ' +$vs->printValueSpecification('') + ' \n',|''));
+   print(if($debug.debug,|$debug.space+'>>> ScanProperties in : ' +$vs->printValueSpecification(^GContext(space='')) + ' \n',|''));
    internal_scanProperties($vs, [], noVars(), $config, ^Map<String,ScanPropertiesState>(), ^$debug(space=$debug.space+'    '));
 }
 

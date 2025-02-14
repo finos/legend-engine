@@ -497,7 +497,7 @@ function <<access.private>> meta::external::dataquality::propertyNodeToDqRule(no
 
 function <<access.private>> meta::external::dataquality::constraintToDqRule(constraint:Constraint[1], path:String[1]):DataQualityRule[1]
 {
-  ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->replaceVariableWithVariable('this', 'x')->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions('')->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
+  ^DataQualityRule(constraintName=$constraint.name->toOne(), constraintGrammar=$constraint.functionDefinition->replaceVariableWithVariable('this', 'x')->meta::pure::metamodel::serialization::grammar::printFunctionDefinitionExpressions(^meta::pure::metamodel::serialization::grammar::GContext(space=''))->toOne(), constraintType='Alloy_Constraint_Validation', propertyPath=$path);
 }
 
 
@@ -560,9 +560,9 @@ function meta::external::dataquality::buildRelationExpressionForAggregateLevelVa
       [ ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='aggfilter', genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters(false))]),
                                                           $assertion.expressionSequence->evaluateAndDeactivate()->toOne())
-         ), 
+         ),
          $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne()
      ]
    )->evaluateAndDeactivate();
@@ -584,7 +584,7 @@ function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVa
          ^InstanceValue (
             genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=^GenericType(rawType=$relationType),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters(false))]),
                                                           $assertion.expressionSequence->evaluateAndDeactivate()->toOne()->negatedFunctionExpression())
          )
      ]

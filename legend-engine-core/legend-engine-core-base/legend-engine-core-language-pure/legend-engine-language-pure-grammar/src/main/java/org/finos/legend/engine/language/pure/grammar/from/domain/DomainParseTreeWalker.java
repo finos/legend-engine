@@ -89,12 +89,12 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CLatestDate;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;

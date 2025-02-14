@@ -153,7 +153,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
                                         )
                                     )
                                ),
-        type: Type[1] | ^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType
+        type: Type[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType
                         (
                           _type='packageableType',
                           fullPath=$genericType.rawType->toOne()->elementToPath()
@@ -164,7 +164,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
     (
         rawType = $rawType,
         typeArguments = $genericType.typeArguments->map(ta|$ta->transformGenericType()),
-        multiplicityArguments = $genericType.multiplicityArguments->map(ma|$ma->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
+        multiplicityArguments = $genericType.multiplicityArguments->map(ma|$ma->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+        typeVariableValues = $genericType.typeVariableValues->map(x|$x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, []))
     );
 }
 

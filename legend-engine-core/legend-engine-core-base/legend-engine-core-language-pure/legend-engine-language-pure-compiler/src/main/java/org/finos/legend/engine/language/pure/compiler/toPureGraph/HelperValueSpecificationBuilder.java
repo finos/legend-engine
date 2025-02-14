@@ -32,10 +32,10 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProper
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
 import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
@@ -343,7 +343,7 @@ public class HelperValueSpecificationBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution context type '" + executionContext.getClass() + "'"));
     }
 
-    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         if (graphFetchTree instanceof PropertyGraphFetchTree)
         {
@@ -397,7 +397,7 @@ public class HelperValueSpecificationBuilder
     {
         HashSet<String> subTypeClasses = new HashSet<String>();
         HashSet<String> propertieIdentifiersAtRootLevel = new HashSet<String>();
-        for (org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree propertyGraphFetchTree : rootGraphFetchTree.subTrees)
+        for (org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree propertyGraphFetchTree : rootGraphFetchTree.subTrees)
         {
             propertieIdentifiersAtRootLevel.add(getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree));
         }
@@ -407,7 +407,7 @@ public class HelperValueSpecificationBuilder
             {
                 throw new EngineException("There are multiple subTypeTrees having subType " + subTypeGraphFetchTree.subTypeClass + ", Only one is allowed", subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
             }
-            for (org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree propertyGraphFetchTree : subTypeGraphFetchTree.subTrees)
+            for (org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree propertyGraphFetchTree : subTypeGraphFetchTree.subTrees)
             {
                 String propertyIdentifier = getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree);
                 if (propertieIdentifiersAtRootLevel.contains(propertyIdentifier))

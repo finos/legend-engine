@@ -52,7 +52,7 @@ public class TestLambdaRoundtrip
     @Test
     public void testLambdaWithTwoParameters()
     {
-        testLambda("{a,b|'ok'}");
+        testLambda("{a, b|'ok'}");
     }
 
     @Test
@@ -274,7 +274,7 @@ public class TestLambdaRoundtrip
         testLambda("|(2 - 1)->f()");
         testLambda("|-(2 - 1)->f()");
         testLambda("|(-(2 - 1))->f()");
-        testLambda("|(-(2 * -1))->f()", "|(-(2 * (-1)))->f()");
+        testLambda("|(-(2 * -1))->f()", "|(-(2 * -1))->f()");
         testLambda("|(!true)->f()");
         testLambda("|!true->f()", "|!f(true)");
         testLambda("|!$c.salesPerson.lastName->in($names)");

@@ -21,7 +21,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.CompletionResult;

@@ -30,7 +30,7 @@ public class TestExampleSchemaToModelGeneration extends SchemaToModelGenerationT
         PureModelContextData model = generateModel(schemaCode, config());
 
         String expected = ">>>meta::external::format::shared::transformation::tests::ExampleSchema\n" +
-                "Class meta::external::format::shared::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
+                "Class meta::external::format::shared::transformation::tests::ExampleSchema\n" +
                 "{\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
@@ -46,7 +46,7 @@ public class TestExampleSchemaToModelGeneration extends SchemaToModelGenerationT
         PureModelContextData model = generateModel(schemaCode, config(), true, "test::gen::TargetBinding");
 
         String expected = ">>>meta::external::format::shared::transformation::tests::ExampleSchema\n" +
-                "Class meta::external::format::shared::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
+                "Class meta::external::format::shared::transformation::tests::ExampleSchema\n" +
                 "{\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));

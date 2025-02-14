@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;

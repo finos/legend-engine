@@ -5,16 +5,16 @@ Association <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::su
   b: protocol::support::AssociationClassB[1..*];
 }
 
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}
+
 Class protocol::support::AssociationClassA
 {
 }
 
 Class protocol::support::AssociationClassB
 {
-}
-
-Profile protocol::support::AProfile
-{
-  stereotypes: [flag, newFlag];
-  tags: [tag1, tag2];
 }

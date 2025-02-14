@@ -28,8 +28,8 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleHashingStrategy;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 

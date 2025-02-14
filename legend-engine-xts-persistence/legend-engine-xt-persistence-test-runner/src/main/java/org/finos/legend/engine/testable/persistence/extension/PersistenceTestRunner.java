@@ -39,7 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;

@@ -560,15 +560,13 @@ function   meta::external::format::json::schema::fromSchema::wrapWithIF(vs:Simpl
    let functionName = $vs->evaluateAndDeactivate().functionName->first();  
    if($required || $functionName->in( ['discriminateOneOf' ,'forAll' ,'isDistinct']) || ($property->evaluateAndDeactivate().multiplicity.lowerBound.value->toOne()>1) ,
       |  $vs;,   
-      | let isNotEmpty =   $lambdsES.parametersValues->at(0)->cast(@SimpleFunctionExpression);
+      | let isNotEmpty = $lambdsES.parametersValues->at(0)->cast(@SimpleFunctionExpression);
         let updatedNotEmpty= ^$isNotEmpty(parametersValues=$property)->toOne();
         let updatedVS = if($addToOne,|$vs->evaluateAndDeactivate()->toOne()->addToOne(),|$vs);
         let firsParam = $lambdsES.parametersValues->at(1)->cast(@InstanceValue);
         let firsParamValue = $firsParam.values->toOne()->cast(@LambdaFunction<Any>);
         let updatedFirstParam= ^$firsParam(values=^$firsParamValue(expressionSequence=$updatedVS));
-     
-        let result = ^$lambdsES(parametersValues=[$updatedNotEmpty,$updatedFirstParam,$lambdsES.parametersValues->at(2)]);
-        $result;
+        ^$lambdsES(parametersValues=[$updatedNotEmpty,$updatedFirstParam,$lambdsES.parametersValues->at(2)]);
    );
    
    
@@ -600,7 +598,7 @@ function  <<access.private>> meta::external::format::json::schema::fromSchema::f
                                                               let lambdaParams = $a.values->map( v |$v-> fragmentToValueSpecifcation($key,$ownerFileName,$pathPrefix,$property,$generateInstance,$format,$rootProperty,$pathSchemas))->evaluateAndDeactivate();
                                                         if($key=='oneOf' || $key =='anyOf' ,
                                                                            |let lambda = $FunctionConstraintMap->get($key->toOne()).expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
-                                                                              ^$lambda(parametersValues=^InstanceValue(values=$lambdaParams,genericType=$lambdaParams.genericType->at(0),multiplicity=$lambdaParams->multiplicityFromCollection()));,
+                                                                              ^$lambda(parametersValues=^InstanceValue(values=$lambdaParams, genericType=$lambdaParams.genericType->at(0), multiplicity=$lambdaParams->multiplicityFromCollection()));,
                                                                            |if( $key =='enum',
                                                                                 |  let lambda = $FunctionConstraintMap->get($key->toOne()).expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression); 
                                                                                     let initialParam = replaceFirstParameter($lambda.parametersValues->at(0),$property);
@@ -675,13 +673,15 @@ function  <<access.private>> meta::external::format::json::schema::fromSchema::f
                                                                                                      let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
                                                                                                       if($kvp.key.value=='items',  
                                                                                                              | 
-                                                                                                               let forAllproperty = ^VariableExpression(name='value',multiplicity=PureOne,genericType=^GenericType(rawType=Any));
-                                                                                                               let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$forAllproperty,$generateInstance,$formatElement,$rootProperty,$pathSchemas);                                                                                                               
+                                                                                                               let forAllproperty = ^VariableExpression(name='value',multiplicity=PureOne, genericType=^GenericType(rawType=String));
+                                                                                                               let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value, $ownerFileName, $pathPrefix, $forAllproperty, $generateInstance, $formatElement, $rootProperty, $pathSchemas);                                                                                                               
                                                                                                                if ($lambdaParam->isNotEmpty(),
                                                                                                                     |let IV = $lambdaEs.parametersValues->at(1)->cast(@InstanceValue); 
                                                                                                                      let forAllLambda = $IV.values->cast(@LambdaFunction<Any>)->toOne();
                                                                                                                      let initialParam = replaceFirstParameter($lambdaEs.parametersValues->at(0), $property);
                                                                                                                      let lambdaWithParam = ^$forAllLambda(expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Boolean),values=$lambdaParam->toOne()));
+                                                                                                                     println($lambdaWithParam->functionType().parameters);
+                                                                                                                     println($lambdaWithParam);
                                                                                                                      ^$lambdaEs(parametersValues=$initialParam->concatenate(^$IV(values=$lambdaWithParam)));,
                                                                                                                     |[]);,
                                                                                                              |let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);

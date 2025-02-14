@@ -29,8 +29,8 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class NavigationParseTreeWalker

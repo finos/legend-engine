@@ -45,6 +45,8 @@ public class Test_Relational_Snowflake_GrammarFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::eq(SideClass[*],Nil[1])'"),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::eq(SideClass[*],SideClass[*])'"),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::boolean::eq(SideClass[*],Nil[1])'"),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""),
 
             // Equal
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),

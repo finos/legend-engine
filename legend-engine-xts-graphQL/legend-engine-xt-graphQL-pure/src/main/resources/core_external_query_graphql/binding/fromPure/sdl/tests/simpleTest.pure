@@ -9,16 +9,16 @@ Enum meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncTy
 
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Firm
 {
-  legalName : String[1];
-  employees : Person[*];
-  incType : meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType[1];
+  legalName: String[1];
+  employees: Person[*];
+  incType: meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType[1];
 }
 
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
 {
-  firstName : String[0..1];
-  lastName : String[1];
-  age : Integer[1];
+  firstName: String[0..1];
+  lastName: String[1];
+  age: Integer[1];
 }
 
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::NonEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person

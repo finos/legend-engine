@@ -236,7 +236,7 @@ function meta::relational::tests::pct::process::printRelationalOperationElement(
 function meta::relational::tests::pct::process::reprocess(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
 {
   '^meta::external::store::relational::runtime::RelationalDatabaseConnection('+
-  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], '')+','+
+  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+','+
   'authenticationStrategy = '+$connection.authenticationStrategy->printNew()+','+ //^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),'+
   'datasourceSpecification = '+$connection.datasourceSpecification->printNew()+ //^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path = \'\')'+
   ')'
@@ -289,7 +289,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
   $f->match(
     [
       z:FunctionDefinition<Any>[1]|
-            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, '')+'\n',|''));
+            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n',|''));
 
             // Init
             let initState = meta::relational::tests::pct::process::initState(
@@ -306,7 +306,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             let newFunction = ^$z(expressionSequence = $allReprocessed.current->cast(@ValueSpecification)->toOneMany())
                   ->addWith($allReprocessed.mapping, $runtime);
 
-            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
+            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n',|''));
 
             let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
             let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
@@ -322,9 +322,9 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                           $reprocessed.mapping->toOne()->printMapping()
                         )+
                         '\n###Pure\n'+
-                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, '');)->joinStrings('')+
+                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('')+
                         'function test::lambdaContainer():Any[*]{\n'+
-                        '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
+                        '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n'+
                         '}'
                         ;
             //println($code);
@@ -945,7 +945,7 @@ Class meta::relational::tests::pct::process::tests::functionReprocess::SimpleCla
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testConstantFunctionReprocess():Boolean[1]
 {
   let newState = reprocess(|1+1, meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
-  assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
 }
@@ -955,7 +955,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
   let newState = reprocess(|#TDS
                             col
                             value#->filter(x|$x.col == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
-  assertEquals('{|RelationElementAccessor(RelationStoreAccessor)->filter({x|(col == \'test\')})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|RelationElementAccessor(RelationStoreAccessor)->filter({x|(col == \'test\')})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
 }
@@ -963,7 +963,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassReprocess():Boolean[1]
 {
   let newState = reprocess(|[^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')]->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
@@ -977,7 +977,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 {
   let vals = [^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')];
   let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
@@ -990,7 +990,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveListReprocess():Boolean[1]
 {
   let newState = reprocess(|[1,2,3,4]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);
@@ -999,7 +999,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveAnyReprocess():Boolean[1]
 {
   let newState = reprocess(|[1,'a']->filter(x|$x == 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);
@@ -1009,7 +1009,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testEmptySetReprocess():Boolean[1]
 {
   let newState = reprocess(|[]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);

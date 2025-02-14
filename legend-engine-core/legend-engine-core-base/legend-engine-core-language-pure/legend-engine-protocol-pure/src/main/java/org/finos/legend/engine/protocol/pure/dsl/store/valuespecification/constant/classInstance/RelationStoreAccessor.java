@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation;
+package org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 

@@ -452,7 +452,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::re
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformMilestoning(m:meta::relational::metamodel::relation::Milestoning[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning[1]
 {
    let open = newMap([]->cast(@Pair<String,List<Any>>));
-   let transformInfinityDate = {m:TemporalMilestoning[0..1]|if($m.infinityDate->isEmpty(),|[],|$m.infinityDate->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate))};
+   let transformInfinityDate = {m:TemporalMilestoning[0..1]|if($m.infinityDate->isEmpty(),|[],|$m.infinityDate->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate))};
 
    $m->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).transfers_milestoning_transformMilestoning->concatenate([
                 b:BusinessMilestoning[1]|^meta::protocols::pure::vX_X_X::metamodel::store::relational::BusinessMilestoning( _type = 'businessMilestoning', from = $b.from.name, thru = $b.thru.name, infinityDate=$transformInfinityDate->eval($b),thruIsInclusive = $b.thruIsInclusive),

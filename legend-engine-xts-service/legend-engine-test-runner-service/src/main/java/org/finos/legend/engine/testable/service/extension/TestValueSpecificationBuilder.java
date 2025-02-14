@@ -44,7 +44,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictTime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
@@ -55,7 +55,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.RuntimeInstance;
 
 import java.io.Closeable;

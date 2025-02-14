@@ -42,8 +42,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PropertyPathElement;
 import org.finos.legend.engine.testable.persistence.mapper.AppendOnlyMapper;
 import org.finos.legend.engine.testable.persistence.mapper.BitemporalDeltaMapper;
 import org.finos.legend.engine.testable.persistence.mapper.BitemporalSnapshotMapper;

@@ -178,9 +178,9 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
 
    let nodeText = $node->match([
       rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
-      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
+      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(^GContext(space='')))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
       r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
-      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
+      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(^GContext(space='')))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
    ]) +  $requiredQPText + $constraintsExclusionsText;
 
   $nodeText +
