@@ -60,7 +60,7 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
                     enableConstraints = $mdIntern.enableConstraints,
                     binding           = $mdIntern.binding->elementToPath(),
                     contentType       = $mdIntern.binding.contentType,
-                    tree              = $mdIntern.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
+                    tree              = $mdIntern.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree),
                     resultType        = $mdIntern.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                     resultSizeRange   = $mdIntern.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
                 ),
@@ -69,7 +69,7 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
                   _type             = 'externalFormatInternalize',
                   resultType        = $exfin.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                   resultSizeRange   = $exfin.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
-                  tree              = $exfin.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
+                  tree              = $exfin.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree),
                   binding           = $exfin.binding->elementToPath(),
                   enableConstraints = $exfin.enableConstraints,
                   checked           = $exfin.checked,

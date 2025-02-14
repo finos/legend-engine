@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
-
-
 Class meta::protocols::pure::vX_X_X::metamodel::objectReference::AlloyObjectReference
 {
    type                    : meta::protocols::pure::vX_X_X::metamodel::objectReference::AlloyObjectReferenceType[1];

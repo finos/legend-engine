@@ -1014,8 +1014,8 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::Rectangle\n" +
                 "Class test::gen::Rectangle extends test::gen::Shape\n" +
                 "[\n" +
-                "  c1_range_Rectangle: $this.height->forAll(x: Decimal[1]|$x >= 0d),\n" +
-                "  c2_range_Rectangle: $this.width->forAll(x: Decimal[1]|$x >= 0d)\n" +
+                "  c1_range_Rectangle: $this.height->forAll(x: Decimal[1]|$x >= 0D),\n" +
+                "  c2_range_Rectangle: $this.width->forAll(x: Decimal[1]|$x >= 0D)\n" +
                 "]\n" +
                 "{\n" +
                 "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Decimal[1..*];\n" +
@@ -1025,7 +1025,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
                 ">>>test::gen::Shape\n" +
                 "Class test::gen::Shape\n" +
                 "[\n" +
-                "  c1_range_Shape: $this.area->forAll(x: Decimal[1]|$x >= 0d)\n" +
+                "  c1_range_Shape: $this.area->forAll(x: Decimal[1]|$x >= 0D)\n" +
                 "]\n" +
                 "{\n" +
                 "  area: Decimal[*];\n" +

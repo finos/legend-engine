@@ -23,12 +23,12 @@ Class meta::protocols::pure::vX_X_X::metamodel::SourceInformation
     endColumn: Integer[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    fullPath : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::type::PackageableType extends meta::protocols::pure::vX_X_X::metamodel::m3::type::Type, meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType extends meta::protocols::pure::vX_X_X::metamodel::m3::type::Type, meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
 {
 }
 
@@ -40,7 +40,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::type::PackageableType extends me
 // InstanceValue: ClassInstance
 //------------------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    type : String[1];
    value : Any[1];
@@ -50,7 +50,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstanc
 // InstanceValue: Collection
 //---------------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
    values : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
@@ -60,7 +60,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection e
 // InstanceValue: EnumValue
 //--------------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumValue extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::EnumValue extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    fullPath : String[1];
    value : String[1];
@@ -70,7 +70,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumVal
 // InstanceValue: Unit
 //---------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::UnitInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    unitType : String[1];
    unitValue : Number[1];
@@ -80,46 +80,51 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance
 // InstanceValue: Primitive
 //--------------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    value : Integer[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDecimal extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDecimal extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    value : Decimal[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    value : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CBoolean extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CBoolean extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    value : Boolean[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CFloat extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CFloat extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    value : Float[1];
 }
 
-Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDateTime extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
-{
-   value : String[1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CStrictDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDateTime extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
 {
    value : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CLatestDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictTime extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CLatestDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
 {
 }
 
@@ -127,7 +132,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CLatest
 // InstanceValue: '@' Notation
 //-----------------------------
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
   genericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1];
 }

@@ -79,7 +79,7 @@ function    meta::external::format::json::schema::fromSchema::tests::printTransf
    $packs->sortBy(p|$p->elementToPath())->map(p|$p->match([c:Class<Any>[1]|$c->printClass(),
                                                    p:Profile[1]|$p->meta::external::format::json::schema::fromSchema::tests::printProfile(),
                                                    e:Enumeration<Any>[1] |$e->printEnumeration(),
-                                                   f:ConcreteFunctionDefinition<Any>[1] | 'function '+  printStereotypes($f) + printTaggedValues($f) + $f.package->toOne()->elementToPath()+'::'+$f->printFunctionDefinition('')  ]) ) ->joinStrings('\n')
+                                                   f:ConcreteFunctionDefinition<Any>[1] | 'function '+  printStereotypes($f) + printTaggedValues($f) + $f.package->toOne()->elementToPath()+'::'+$f->printFunctionDefinition(^GContext(space=''))  ]) ) ->joinStrings('\n')
                                                 
 }
 
@@ -768,7 +768,7 @@ function <<test.Test>>  meta::external::format::json::schema::fromSchema::tests:
    let expectedDog = meta::external::format::json::schema::fromSchema::tests::Dog->printTransformToString();
    
    
-    assertEquals($expectedDog,$generatedDog);
+   assertEquals($expectedDog,$generatedDog);
    let friendsWithMap =  $generated->filter(g|$g->elementToPath()=='meta::external::format::json::schema::fromSchema::tests::friends_Pet_1__Boolean_1_')->toSerializer()->parseJSON();
    let expectedfriendsWithMap = meta::external::format::json::schema::fromSchema::tests::friends_Pet_1__Boolean_1_->toSerializer()->parseJSON();
     assert(jsonEquivalent($friendsWithMap,$expectedfriendsWithMap));
@@ -1021,7 +1021,7 @@ function  meta::external::format::json::schema::fromSchema::tests::testfromJSONS
        $generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString()->println();
        false;,
       |
-      println($generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString());
+       //println($generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString());
        assert(jsonEquivalent($type->toSerializer()->parseJSON(),$generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()));
 );
    

@@ -46,7 +46,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
       _type             = 'externalFormatInternalize',
       resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
       resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
-      tree              = $node.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
+      tree              = $node.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree),
       binding           = $node.binding->elementToPath(),
       enableConstraints = $node.enableConstraints,
       checked           = $node.checked,

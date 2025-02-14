@@ -138,7 +138,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::se
 {
    ^meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceMapping(
       service          = $sm.service->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceToServicePtr(),
-      pathOffset       = $sm.pathOffset->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([])->cast(@Map<String,List<Any>>), $p->functionReturnMultiplicity(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path),
+      pathOffset       = $sm.pathOffset->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([])->cast(@Map<String,List<Any>>), $p->functionReturnMultiplicity(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::Path),
       requestBuildInfo = $sm.requestBuildInfo->map(r | $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::mapping::transformServiceRequestBuildInfo($extensions))
    )
 }

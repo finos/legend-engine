@@ -6,12 +6,6 @@ function protocol::precedenceArithmetic(): Any[*]
   2 / 4 - 4;
 }
 
-function protocol::precedenceBoolean(): Any[*]
-{
-  true && false || true;
-  true || true && false;
-}
-
 function protocol::precedenceBooleanWithEqual(): Any[*]
 {
   true == false && true == false;
@@ -23,4 +17,10 @@ function protocol::precedenceBooleanWithEqual(): Any[*]
   true && false == $x->isNumber();
   $x->isNumber() && false == $x->isNumber();
   $x->isNumber() && false == true;
+}
+
+function protocol::precedenceBoolean(): Any[*]
+{
+  true && false || true;
+  true || true && false;
 }

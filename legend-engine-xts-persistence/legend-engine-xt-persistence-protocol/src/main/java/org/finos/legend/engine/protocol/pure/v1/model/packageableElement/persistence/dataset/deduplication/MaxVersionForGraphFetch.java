@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication;
 
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 
 public class MaxVersionForGraphFetch extends MaxVersion
 {

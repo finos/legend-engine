@@ -84,11 +84,11 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
     if(!$r->anyModified(),
        |
          $state->printDebug(|'No changes made for: ');
-         $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));,
+         $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')));,
        |
          let res = $r.value->toOne();
          $state->printDebug('Transformed To:');
-         $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));
+         $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
     );
     $r;  
   }, 'preval');

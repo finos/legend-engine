@@ -190,23 +190,23 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable
    genericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
 {
    parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication
 {
    property : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication
 {
    function : String[1];
    fControl : String[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::UnknownAppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valueSpecification::FunctionApplication
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::UnknownAppliedFunction extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication
 {
    function : String[1];
    returnType : String[1];

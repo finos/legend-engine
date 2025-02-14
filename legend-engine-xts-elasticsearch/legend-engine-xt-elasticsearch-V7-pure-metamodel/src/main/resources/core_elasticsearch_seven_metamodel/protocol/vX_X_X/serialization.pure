@@ -30,7 +30,7 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
       transfers_valueSpecification_transformAny = {inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
             s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] |
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                   (
                      _type = 'packageableElementPtr',
                      fullPath = $s->elementToPath()

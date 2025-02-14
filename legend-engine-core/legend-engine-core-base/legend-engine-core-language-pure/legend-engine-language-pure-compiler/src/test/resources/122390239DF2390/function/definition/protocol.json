@@ -20,7 +20,7 @@
           "values": []
         }
       ],
-      "name": "f_Integer_1__String_MANY__String_$0_1$_",
+      "name": "f1_Integer_1__String_MANY__String_$0_1$_",
       "package": "protocol",
       "parameters": [
         {
@@ -31,10 +31,10 @@
               "_type": "packageableType",
               "fullPath": "Integer",
               "sourceInformation": {
-                "endColumn": 31,
+                "endColumn": 32,
                 "endLine": 2,
                 "sourceId": "",
-                "startColumn": 25,
+                "startColumn": 26,
                 "startLine": 2
               }
             },
@@ -47,10 +47,10 @@
           },
           "name": "p",
           "sourceInformation": {
-            "endColumn": 34,
+            "endColumn": 35,
             "endLine": 2,
             "sourceId": "",
-            "startColumn": 22,
+            "startColumn": 23,
             "startLine": 2
           }
         },
@@ -62,10 +62,10 @@
               "_type": "packageableType",
               "fullPath": "String",
               "sourceInformation": {
-                "endColumn": 45,
+                "endColumn": 46,
                 "endLine": 2,
                 "sourceId": "",
-                "startColumn": 40,
+                "startColumn": 41,
                 "startLine": 2
               }
             },
@@ -77,10 +77,10 @@
           },
           "name": "z",
           "sourceInformation": {
-            "endColumn": 48,
+            "endColumn": 49,
             "endLine": 2,
             "sourceId": "",
-            "startColumn": 37,
+            "startColumn": 38,
             "startLine": 2
           }
         }
@@ -93,10 +93,10 @@
           "_type": "packageableType",
           "fullPath": "String",
           "sourceInformation": {
-            "endColumn": 57,
+            "endColumn": 58,
             "endLine": 2,
             "sourceId": "",
-            "startColumn": 52,
+            "startColumn": 53,
             "startLine": 2
           }
         },
@@ -294,7 +294,7 @@
           "values": []
         }
       ],
-      "name": "aNativeFunc_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
+      "name": "f3_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
       "package": "protocol",
       "parameters": [
         {
@@ -305,10 +305,10 @@
               "_type": "packageableType",
               "fullPath": "Integer",
               "sourceInformation": {
-                "endColumn": 162,
+                "endColumn": 153,
                 "endLine": 12,
                 "sourceId": "",
-                "startColumn": 156,
+                "startColumn": 147,
                 "startLine": 12
               }
             },
@@ -321,10 +321,10 @@
           },
           "name": "x",
           "sourceInformation": {
-            "endColumn": 165,
+            "endColumn": 156,
             "endLine": 12,
             "sourceId": "",
-            "startColumn": 153,
+            "startColumn": 144,
             "startLine": 12
           }
         },
@@ -340,10 +340,10 @@
               "_type": "packageableType",
               "fullPath": "Property",
               "sourceInformation": {
-                "endColumn": 192,
+                "endColumn": 184,
                 "endLine": 12,
                 "sourceId": "",
-                "startColumn": 171,
+                "startColumn": 162,
                 "startLine": 12
               }
             },
@@ -354,10 +354,10 @@
                   "_type": "packageableType",
                   "fullPath": "Nil",
                   "sourceInformation": {
-                    "endColumn": 182,
+                    "endColumn": 173,
                     "endLine": 12,
                     "sourceId": "",
-                    "startColumn": 180,
+                    "startColumn": 171,
                     "startLine": 12
                   }
                 },
@@ -370,10 +370,10 @@
                   "_type": "packageableType",
                   "fullPath": "String",
                   "sourceInformation": {
-                    "endColumn": 189,
+                    "endColumn": 181,
                     "endLine": 12,
                     "sourceId": "",
-                    "startColumn": 184,
+                    "startColumn": 176,
                     "startLine": 12
                   }
                 },
@@ -388,10 +388,10 @@
           },
           "name": "z",
           "sourceInformation": {
-            "endColumn": 198,
+            "endColumn": 190,
             "endLine": 12,
             "sourceId": "",
-            "startColumn": 168,
+            "startColumn": 159,
             "startLine": 12
           }
         },
@@ -403,10 +403,10 @@
               "_type": "packageableType",
               "fullPath": "meta::external::catalog::precisePrimitives::Varchar",
               "sourceInformation": {
-                "endColumn": 263,
+                "endColumn": 255,
                 "endLine": 12,
                 "sourceId": "",
-                "startColumn": 208,
+                "startColumn": 200,
                 "startLine": 12
               }
             },
@@ -415,10 +415,10 @@
               {
                 "_type": "integer",
                 "sourceInformation": {
-                  "endColumn": 262,
+                  "endColumn": 254,
                   "endLine": 12,
                   "sourceId": "",
-                  "startColumn": 260,
+                  "startColumn": 252,
                   "startLine": 12
                 },
                 "value": 200
@@ -431,10 +431,10 @@
           },
           "name": "other",
           "sourceInformation": {
-            "endColumn": 266,
+            "endColumn": 258,
             "endLine": 12,
             "sourceId": "",
-            "startColumn": 201,
+            "startColumn": 193,
             "startLine": 12
           }
         }
@@ -447,10 +447,10 @@
           "_type": "packageableType",
           "fullPath": "String",
           "sourceInformation": {
-            "endColumn": 275,
+            "endColumn": 267,
             "endLine": 12,
             "sourceId": "",
-            "startColumn": 270,
+            "startColumn": 262,
             "startLine": 12
           }
         },
@@ -566,6 +566,62 @@
       "tests": []
     },
     {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol::support",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 21,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 17
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 19
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 19
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 20
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 20
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
       "_type": "class",
       "constraints": [],
       "name": "Light",
@@ -575,70 +631,14 @@
       "qualifiedProperties": [],
       "sourceInformation": {
         "endColumn": 1,
-        "endLine": 19,
+        "endLine": 25,
         "sourceId": "",
         "startColumn": 1,
-        "startLine": 17
+        "startLine": 23
       },
       "stereotypes": [],
       "superTypes": [],
       "taggedValues": []
-    },
-    {
-      "_type": "profile",
-      "name": "AProfile",
-      "package": "protocol::support",
-      "sourceInformation": {
-        "endColumn": 1,
-        "endLine": 25,
-        "sourceId": "",
-        "startColumn": 1,
-        "startLine": 21
-      },
-      "stereotypes": [
-        {
-          "sourceInformation": {
-            "endColumn": 20,
-            "endLine": 23,
-            "sourceId": "",
-            "startColumn": 17,
-            "startLine": 23
-          },
-          "value": "flag"
-        },
-        {
-          "sourceInformation": {
-            "endColumn": 29,
-            "endLine": 23,
-            "sourceId": "",
-            "startColumn": 23,
-            "startLine": 23
-          },
-          "value": "newFlag"
-        }
-      ],
-      "tags": [
-        {
-          "sourceInformation": {
-            "endColumn": 13,
-            "endLine": 24,
-            "sourceId": "",
-            "startColumn": 10,
-            "startLine": 24
-          },
-          "value": "tag1"
-        },
-        {
-          "sourceInformation": {
-            "endColumn": 19,
-            "endLine": 24,
-            "sourceId": "",
-            "startColumn": 16,
-            "startLine": 24
-          },
-          "value": "tag2"
-        }
-      ]
     },
     {
       "_type": "sectionIndex",
@@ -648,11 +648,11 @@
         {
           "_type": "importAware",
           "elements": [
-            "protocol::f_Integer_1__String_MANY__String_$0_1$_",
+            "protocol::f1_Integer_1__String_MANY__String_$0_1$_",
             "protocol::f2_Relation_1__Light_MANY_",
-            "protocol::aNativeFunc_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
-            "protocol::support::Light",
-            "protocol::support::AProfile"
+            "protocol::f3_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
+            "protocol::support::AProfile",
+            "protocol::support::Light"
           ],
           "imports": [
             "protocol::support"

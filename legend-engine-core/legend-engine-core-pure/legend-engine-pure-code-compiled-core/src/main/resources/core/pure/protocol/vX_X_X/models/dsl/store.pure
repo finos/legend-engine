@@ -17,7 +17,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::Store extends meta::proto
    includedStores:String[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::store::RelationStoreAccessor
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::store::valuespecification::constant::classInstance::RelationStoreAccessor
 {
    path:String[*];
 }

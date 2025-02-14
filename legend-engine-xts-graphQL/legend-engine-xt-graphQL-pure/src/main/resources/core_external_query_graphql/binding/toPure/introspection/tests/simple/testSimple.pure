@@ -8,19 +8,19 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspe
     let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
     assertEquals( 'Class Domain\n' +
                   '{\n' +
-                  '  val : String[1];\n' +
-                  '  firmByLegalName : Firm[0..1];\n' +
-                  '  employeeByLastName : Person[0..1];\n' +
+                  '  val: String[1];\n' +
+                  '  firmByLegalName: Firm[0..1];\n' +
+                  '  employeeByLastName: Person[0..1];\n' +
                   '}\n'+
                   'Class Firm\n' +
                   '{\n' +
-                  '  legalName : String[1];\n' +
-                  '  employees : Person[*];\n' +
+                  '  legalName: String[1];\n' +
+                  '  employees: Person[*];\n' +
                   '}\n' +
                   'Class Person\n' +
                   '{\n' +
-                  '  firstName : String[1];\n' +
-                  '  lastName : String[1];\n' +
+                  '  firstName: String[1];\n' +
+                  '  lastName: String[1];\n' +
                   '}'
                   ,$res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
 }

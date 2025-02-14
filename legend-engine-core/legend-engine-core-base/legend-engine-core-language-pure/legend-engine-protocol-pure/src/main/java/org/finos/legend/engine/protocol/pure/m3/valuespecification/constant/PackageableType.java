@@ -15,7 +15,6 @@
 package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant;
 
 import org.finos.legend.engine.protocol.pure.m3.type.Type;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
 
 public class PackageableType extends PackageableElementPtr implements Type
 {
