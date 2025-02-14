@@ -223,7 +223,7 @@ public abstract class RelationalSink implements Sink
                 case EXPLICIT_DATATYPE_CONVERSION:
                     return stagingSize; // we follow staging size because the final data type will be staging type
                 case SAME_DATA_TYPE:
-                    return Optional.empty(); // TODO: remove when all default size mappings have been finalized
+                    return Optional.empty();
                 default:
                     throw new IllegalStateException("Unexpected value: " + dataTypeEvolutionType);
             }
