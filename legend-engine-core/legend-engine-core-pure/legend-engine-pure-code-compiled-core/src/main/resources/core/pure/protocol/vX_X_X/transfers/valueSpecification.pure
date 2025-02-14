@@ -1042,8 +1042,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                         '^TdsOlapAggregation<TDSRow>(colName = \'%s\', func = %s)'->format([$oa.columnName, $state->toPure($oa.function)]),
                      r : RuntimeInstance[1]|'',
                      e : ExecutionContextInstance[1]|'',
-                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(',')),
-                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1] | $c->colSpecToPure(false, $state),
+                     c : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(', ')),
+                     c : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1] | $c->colSpecToPure(false, $state),
                      pv : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair[1]|
                                             let tMatcher = {val:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]| $val->match([
                                                   x : EnumValue[1]| $x.fullPath,
@@ -1080,7 +1080,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
   if ($escape->exists(e | $name->contains($e)), | '\''+$name+'\'', |$name);
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::colSpecToPure(c:meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1], inArray:Boolean[1], state : AlloyToPureState[1]):String[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::colSpecToPure(c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1], inArray:Boolean[1], state : AlloyToPureState[1]):String[1]
 {
   let name = escape($c.name);
 
