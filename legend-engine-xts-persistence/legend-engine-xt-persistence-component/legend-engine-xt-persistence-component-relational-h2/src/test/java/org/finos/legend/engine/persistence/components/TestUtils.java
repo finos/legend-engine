@@ -1556,6 +1556,22 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionColumnOptionalToMandatoryMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nullableName)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionDataTypeConversionAndColumnNullabilityChangeMainTable()
     {
         return DatasetDefinition.builder()
