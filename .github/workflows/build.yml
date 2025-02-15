@@ -135,6 +135,34 @@ jobs:
             module: legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
             test-name: Test_DuckDB_SDT
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: zulu
+          server-id: ossrh
+          server-username: CI_DEPLOY_USERNAME
+          server-password: CI_DEPLOY_PASSWORD
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Check Java version
+        run: java -version
+        shell: bash
+
       - name: ${{ matrix.project.name }}
         uses: ./.github/workflows/actions/sdt-test
         with:
@@ -156,6 +184,34 @@ jobs:
           - name: PCT - Relational - Databricks
             module: legend-engine-xt-relationalStore-databricks-PCT
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: zulu
+          server-id: ossrh
+          server-username: CI_DEPLOY_USERNAME
+          server-password: CI_DEPLOY_PASSWORD
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Check Java version
+        run: java -version
+        shell: bash
+
       - name: ${{ matrix.project.name }}
         uses: ./.github/workflows/actions/pct-test
         with:
