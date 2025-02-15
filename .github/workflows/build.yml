@@ -82,7 +82,7 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         run: |
-          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true install -T2
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -115,3 +115,20 @@ jobs:
         with:
           name: event-file
           path: ${{ github.event_path }}
+
+  pct:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    strategy:
+      matrix:
+        project:
+          - name: PCT - Relational - Snowflake
+            module: legend-engine-xt-relationalStore-snowflake-PCT
+          - name: PCT - Relational - Databricks
+            module: legend-engine-xt-relationalStore-databricks-PCT
+    steps:
+      - name: ${{ matrix.project.name }}
+        uses: ./.github/workflows/actions/pct-test
+        with:
+          name: ${{ matrix.project.name }}
+          module: ${{ matrix.project.module }}
