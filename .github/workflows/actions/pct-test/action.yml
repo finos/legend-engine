@@ -1,0 +1,86 @@
+# Copyright 2024 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: PCT Test
+
+description: PCT Test
+
+inputs:
+  name:
+    description: 'PCT Name'
+    required: true
+  module:
+    description: 'Project module (ie artifactid)'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: 11
+        distribution: zulu
+        server-id: ossrh
+        server-username: CI_DEPLOY_USERNAME
+        server-password: CI_DEPLOY_PASSWORD
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-mvn-deps
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Build repository
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T2 -p pct-test
+      shell: bash
+
+    - name: Run PCT Test
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} test -p pct-test
+      shell: bash
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ${{ inputs.project-dir }}/target/surefire-reports/*.xml
+
+    - name: Publish Test Results
+      uses: mikepenz/action-junit-report@v4
+      if: always()
+      with:
+        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
+        fail_on_failure: true
+        summary: true
+        detailed_summary: true
+        include_passed: true
+        check_name: ${{ inputs.name }}
+        job_name: ${{ inputs.name }}
+
+    - name: Upload CI Event
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: event-file
+        path: ${{ github.event_path }}

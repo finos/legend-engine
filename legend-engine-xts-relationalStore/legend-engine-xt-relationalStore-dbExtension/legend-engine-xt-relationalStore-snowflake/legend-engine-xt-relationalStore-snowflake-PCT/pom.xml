@@ -41,7 +41,7 @@
 
     <profiles>
         <profile>
-            <id>run-cloud-tests</id>
+            <id>pct-test</id>
             <build>
                 <plugins>
                     <plugin>
