@@ -122,9 +122,32 @@ jobs:
           name: event-file
           path: ${{ github.event_path }}
 
+  sdt:
+    name: SQL Dialect Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project:
+          - check-name: Postgres SDT Report
+            module: legend-engine-xt-relationalStore-SDT-pure
+            test-name: Test_Postgres_SDT
+          - check-name: DuckDB SDT Report
+            module: legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
+            test-name: Test_DuckDB_SDT
+    steps:
+      - name: ${{ matrix.project.name }}
+        uses: ./.github/workflows/actions/sdt-test
+        with:
+          check-name:  ${{ matrix.project.name }}
+          module:  ${{ matrix.project.module }}
+          test-name: ${{ matrix.project.test-name }}
+
   pct:
     runs-on: ubuntu-latest
-    needs: [ build ]
+    # only run if previous pass as this can be expensive test...
+    needs:
+      - build
+      - sdt
     strategy:
       matrix:
         project:
