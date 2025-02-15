@@ -28,6 +28,8 @@ runs:
   using: "composite"
   steps:
     - name: Build repository
+      env:
+        MAVEN_OPTS: "-Xmx12g"
       run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T2 -p pct-test
       shell: bash
 
