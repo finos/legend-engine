@@ -33,22 +33,32 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractStringSqlType,
+        parameterTypes = [AbstractStringSqlType],
+        returnType = AbstractStringSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType,AbstractStringSqlType,AbstractStringSqlType],
         returnType = AbstractStringSqlType
       )
     ],
     tests = [
+      
       sqlFunctionTest(
-        simpleFunctionCall('trim', literal('both \'xyz\' from \'yxTomxx\'')),
-        'Tom'
+        simpleFunctionCall('trim', [literal('both'),literal('abc'),literal('abDEFab')] ),
+        'DEF'
       ),
       sqlFunctionTest(
-       simpleFunctionCall('trim', literal('leading \'xyz\' from \'yxTomxx\'')),
-        'Tomxx'
+        simpleFunctionCall('trim', literal('  abcd  ') ),
+        'abcd'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('trim', literal('both \'xyz\' from \'abcXyzabc\'')),
-        'abcXyzabc'
+        simpleFunctionCall('trim', [literal('leading'),literal('abc'),literal('abDEFab')] ),
+        'DEFab'
+      ),
+       sqlFunctionTest(
+        simpleFunctionCall('trim', [literal('trailing'),literal('abc'),literal('abDEFab')] ),
+        'abDEF'
       )
     ]
   )

@@ -33,7 +33,19 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AnySqlType, AnySqlType,AnySqlType,AnySqlType],
+        parameterTypes = [SqlType, SqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType,SqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType,SqlType,SqlType],
         returnType = AbstractStringSqlType,
         documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
       )
@@ -46,6 +58,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('concat', [literal('Hi'), literal(' '),literal('There!')]),
         'Hi There!'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('concat', [literal('Hello'),literal('World')]),
+        'HelloWorld'
       )
     ]
   )

@@ -33,20 +33,32 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AnySqlType, AnySqlType,AnySqlType,AnySqlType],
-        returnType = AnySqlType,
+        parameterTypes = [SqlType, SqlType,SqlType,SqlType],
+        returnType = SqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType],
+        returnType = SqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType,SqlType],
+        returnType = SqlType,
         documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
       )
     ],
     // need to write proper tests with Null values 
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [literal('Hello'), literal('!'),literal(2),literal('World')]),
-        'Hello!2World'
+        simpleFunctionCall('coalesce', [literal('null'), literal('Hello'),literal('2'),literal('World')]),
+        'Hello'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [literal('Hi'), literal(' '),literal('There!')]),
-        'Hi There!'
+        simpleFunctionCall('coalesce', [literal('null'), literal('null'),literal('There!')]),
+        'There!'
       )
     ]
   )

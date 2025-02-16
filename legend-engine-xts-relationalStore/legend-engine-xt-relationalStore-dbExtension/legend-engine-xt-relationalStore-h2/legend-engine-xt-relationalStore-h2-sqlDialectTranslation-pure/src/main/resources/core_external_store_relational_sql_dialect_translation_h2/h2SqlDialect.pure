@@ -62,33 +62,9 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
 function meta::external::store::relational::sqlDialectTranslation::h2::h2FunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-  pair(
-      'FuncTests - cbrt(0/2)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),
-    pair(
-      'FuncTests - cbrt(1/2)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),
-     pair(
-      'FuncTests - cbrt(2/2)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),
-    pair(
-      'FuncTests - ceiling(0/3)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),
-    pair(
-      'FuncTests - ceiling(1/3)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),
-    pair(
-      'FuncTests - ceil(0/3)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    ),pair(
-      'FuncTests - ceil(1/3)',
-      'Postgres SQL Dialect does not support the function - cbrt'
-    )
+  
+   
+    
   
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -205,81 +181,107 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2Keywords(): String[*]
 {
   [ 
-    'ALL',
-    'ANALYSE',
-    'ANALYZE',
-    'AND',
-    'ANY',
-    'ARRAY',
-    'AS',
-    'ASC_P',
-    'ASYMMETRIC',
-    'BOTH',
-    'CASE',
-    'CAST',
-    'CHECK_P',
-    'COLLATE',
-    'COLUMN',
-    'CONSTRAINT',
-    'CREATE_P',
-    'DEFAULT',
-    'DEFERRABLE',
-    'DESC_P',
-    'DESCRIBE',
-    'DISTINCT',
-    'DO',
-    'ELSE',
-    'END_P',
-    'EXCEPT',
-    'FALSE_P',
-    'FETCH',
-    'FOR',
-    'FOREIGN',
-    'FROM',
-    'GRANT',
-    'GROUP_P',
-    'HAVING',
-    'QUALIFY',
-    'IN_P',
-    'INITIALLY',
-    'INTERSECT',
-    'INTO',
-    'LATERAL_P',
-    'LEADING',
-    'LIMIT',
-    'NOT',
-    'NULL_P',
-    'OFFSET',
-    'ON',
-    'ONLY',
-    'OR',
-    'ORDER',
-    'PIVOT',
-    'PIVOT_WIDER',
-    'PIVOT_LONGER',
-    'PLACING',
-    'PRIMARY',
-    'REFERENCES',
-    'RETURNING',
-    'SELECT',
-    'SHOW',
-    'SOME',
-    'SUMMARIZE',
-    'SYMMETRIC',
-    'TABLE',
-    'THEN',
-    'TO',
-    'TRAILING',
-    'TRUE_P',
-    'UNION',
-    'UNIQUE',
-    'UNPIVOT',
-    'USING',
-    'VARIADIC',
-    'WHEN',
-    'WHERE',
-    'WINDOW',
-    'WITH' 
+    
+'ALL',
+'AND',
+'ANY',
+'ARRAY',
+'AS',
+'ASYMMETRIC',
+'AUTHORIZATION',
+'BETWEEN',
+'BOTH',
+'CASE',
+'CAST',
+'CHECK',
+'CONSTRAINT',
+'CROSS',
+'CURRENT_CATALOG',
+'CURRENT_DATE',
+'CURRENT_PATH',
+'CURRENT_ROLE',
+'CURRENT_SCHEMA',
+'CURRENT_TIME',
+'CURRENT_TIMESTAMP',
+'CURRENT_USER',
+'DAY',
+'DEFAULT',
+'DISTINCT',
+'ELSE',
+'END',
+'EXCEPT',
+'EXISTS',
+'FALSE',
+'FETCH',
+'FOR',
+'FOREIGN',
+'FROM',
+'FULL',
+'GROUP',
+'GROUPS',
+'HAVING',
+'HOUR',
+'IF',
+'ILIKE',
+'IN',
+'INNER',
+'INTERSECT',
+'INTERVAL',
+'IS',
+'JOIN',
+'KEY',
+'LEADING',
+'LEFT',
+'LIKE',
+'LIMIT',
+'LOCALTIME',
+'LOCALTIMESTAMP',
+'MINUS',
+'MINUTE',
+'MONTH',
+'NATURAL',
+'NOT',
+'NULL',
+'OFFSET',
+'ON',
+'OR',
+'ORDER',
+'OVER',
+'PARTITION',
+'PRIMARY',
+'QUALIFY',
+'RANGE',
+'REGEXP',
+'RIGHT',
+'ROW',
+'ROWNUM',
+'ROWS',
+'SECOND',
+'SELECT',
+'SESSION_USER',
+'SET',
+'SOME',
+'SYMMETRIC',
+'SYSTEM_USER',
+'TABLE',
+'TO',
+'TOP',
+'TRAILING',
+'TRUE',
+'UESCAPE',
+'UNION',
+'UNIQUE',
+'UNKNOWN',
+'USER',
+'USING',
+'VALUE',
+'VALUES',
+'WHEN',
+'WHERE',
+'WINDOW',
+'WITH',
+'YEAR'  
+   
   ]
 }
 
@@ -295,7 +297,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
           pair(|$a.type == ArithmeticType.ADD, | '+'),
           pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
           pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
-          pair(|$a.type == ArithmeticType.DIVIDE, | '//'),
+          pair(|$a.type == ArithmeticType.DIVIDE, | '/'),
           pair(|$a.type == ArithmeticType.MODULUS, | '%'),
           pair(|$a.type == ArithmeticType.POWER, | '^')
         ],
@@ -311,14 +313,14 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
 {
   newMap([
     // Numeric
-    pair( meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Abs, simpleFunctionProcessor('abs')),
-    pair(Cbrt, simpleFunctionProcessor('cbrt')),
-    pair(Ceil, simpleFunctionProcessor('ceil')),
-    pair(Ceiling, simpleFunctionProcessor('ceiling')),
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Cbrt, argTransformFunctionProcessor('cbrt','power(%s,1.0/3)')),
+    pair(Ceil, argTransformFunctionProcessor('ceil','cast(ceil(%s) as float)')),
+    pair(Ceiling, argTransformFunctionProcessor('ceiling','cast(ceiling(%s) as float)')),
     pair(Degrees, simpleFunctionProcessor('degrees')),
     pair(Exp, simpleFunctionProcessor('exp')),
     pair(Ln, simpleFunctionProcessor('ln')),
-    pair(Log, simpleFunctionProcessor('log')),
+    pair(Log, argTransformFunctionProcessor('log','log(%s,%s)',{p:String[*]| if($p->size()==1,|['10',$p->at(0)],|$p)})),
     pair(Log10, simpleFunctionProcessor('log10')),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Acos, simpleFunctionProcessor('acos')),
@@ -329,20 +331,39 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
     pair(Cot, simpleFunctionProcessor('cot')),
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Tan, simpleFunctionProcessor('tan')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Sign, argTransformFunctionProcessor('sign','cast(sign(%s) as float)')),
+    pair(Mod,simpleFunctionProcessor('mod')),
+    pair(Round,simpleFunctionProcessor('round')),
+
 
     // String
     pair(Lpad, argTransformFunctionProcessor('lpad', 'lpad(%s)', {p:String[*]| if($p->size() == 2, |$p->concatenate('\' \''), |$p)->joinStrings(', ')})),
     pair(Rpad, argTransformFunctionProcessor('rpad', 'rpad(%s)', {p:String[*]| if($p->size() == 2, |$p->concatenate('\' \''), |$p)->joinStrings(', ')})),
-    pair(Ltrim, simpleFunctionProcessor('ltrim')),
-    pair(Rtrim, simpleFunctionProcessor('rtrim')),
+    pair(Ltrim, argTransformFunctionProcessor('ltrim','regexp_replace(%s,\'^[%s]+\',\'\')',{p:String[*]| if($p->size()==1,|[$p->at(0),' '],| [$p->at(0),$p->at(1)->replace('\'','')] ) } )),
+    pair(Rtrim, argTransformFunctionProcessor('rtrim','regexp_replace(%s,\'[%s]+$\',\'\')',{p:String[*]| if($p->size()==1,|[$p->at(0),' '],| [$p->at(0),$p->at(1)->replace('\'','')] ) } )),
     pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair( meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Trim, argTransformFunctionProcessor('trim','%s',{p:String[*]| if($p->size()==1,|'trim('+$p->at(0)+')',| $p->trimHandlerForH2() ) } )),
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Upper, simpleFunctionProcessor('upper')),
+    pair(Repeat,simpleFunctionProcessor('repeat')),
+    pair(Replace,simpleFunctionProcessor('replace')),
+    pair(Left,argTransformFunctionProcessor('left','%s',{p:String[*]| if($p->at(1)->parseInteger()<0,|'left('+$p->at(0)+',LENGTH('+$p->at(0)+')+'+$p->at(1)+')',|'left('+$p->at(0)+','+$p->at(1)+')')})),
+    pair(Right,argTransformFunctionProcessor('right','%s',{p:String[*]| if($p->at(1)->parseInteger()<0,|'right('+$p->at(0)+',LENGTH('+$p->at(0)+')+'+$p->at(1)+')',|'right('+$p->at(0)+','+$p->at(1)+')')})),
+    pair(Md5,argTransformFunctionProcessor('md5','hash(\'MD5\',%s)')),
+    pair(Char_length,simpleFunctionProcessor('char_length')),
+    pair(Chr,argTransformFunctionProcessor('chr','char(%s)')),
+    pair(Strpos,argTransformFunctionProcessor('strpos','locate(%s,%s)',{p:String[*]|[$p->at(1),$p->at(0)]})),
+    pair(Concat,simpleFunctionProcessor('concat')),
+    pair(Coalesce,argTransformFunctionProcessor('coalesce','coalesce(%s,%s,%s,%s)',{p:String[*]|$p->concatArgumentHandlerForH2()->map(e|if($e->replace('\'','')=='null',|$e->replace('\'',''),|$e)) })),
+
 
     // Boolean
     pair(RegexpLike, argTransformFunctionProcessor('regexp_like', regexpPattern('~'), {p:String[*]|$p->transformRegexpParams()})),
 
     // Temporal
     pair(DateTrunc, argTransformFunctionProcessor('date_trunc', 'cast(date_trunc(%s, %s) as timestamp)')),
-    pair(DatePart, simpleFunctionProcessor('date_part')),
+    pair(DatePart, argTransformFunctionProcessor('date_part','extract(%s)',{p:String[*]|$p->at(0)+' from '+$p->at(1) })),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, argTransformFunctionProcessor('to_date', 'cast(parsedatetime(%s, %s) as date)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForH2())})),
     pair(ToTimestamp, argTransformFunctionProcessor('to_timestamp', '%s', {p:String[*]|$p->toTimestampForH2()}))
@@ -352,10 +373,37 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
 function meta::external::store::relational::sqlDialectTranslation::h2::toTimestampForH2(p:String[*]): String[1]
 {
   if($p->size() == 1,
-    | 'epoch_ms(cast(' + $p->at(0) + ' as bigint) * 1000)',
-    | 'strptime(' + $p->at(0) + ', ' + $p->at(1)->dateFormatSpecifierForH2() + ')'
+    | 'cast(dateadd(\'MILLISECOND\',cast(' + $p->at(0) + ' as bigint) * 1000,TIMESTAMP \'1970-01-01 00:00:00\') as TIMESTAMP(3))', //explicit casting needed as milliseconds are not shown if zero
+    | 'parsedatetime(' + $p->at(0) + ', ' + $p->at(1)->dateFormatSpecifierForH2() + ')'
   )
 }
+
+function meta::external::store::relational::sqlDialectTranslation::h2::trimHandlerForH2(p:String[*]): String[1]
+{
+  
+  let trimString=$p->at(2);
+  let trimSeq=$p->at(1)->replace('\'','');
+  println($p->at(0)->replace('\'',''));
+  if($p->at(0)->replace('\'','')->equal('both'),|
+     'regexp_replace('+$trimString+',\'^['+$trimSeq+']+|['+$trimSeq+']+$\',\'\')',|
+     if($p->at(0)->replace('\'','')->equal('leading'),|
+     'regexp_replace('+$trimString+',\'^['+$trimSeq+']+\',\'\')',|
+     'regexp_replace('+$trimString+',\'['+$trimSeq+']+$\',\'\')'
+     )
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::h2::concatArgumentHandlerForH2(p:String[*]): String[*]
+{
+ if($p->size()==2,|
+   $p->concatenate('null')->concatenate('null'),|
+   if($p->size()==3,|
+   $p->concatenate('null'),|
+   $p
+   )
+ );
+}
+
 
 function meta::external::store::relational::sqlDialectTranslation::h2::dateFormatSpecifierForH2(f:String[1]): String[1]
 {
@@ -364,13 +412,13 @@ function meta::external::store::relational::sqlDialectTranslation::h2::dateForma
     pair('MM', 'MM'),
     pair('DD', 'dd'),
     pair('Mon', 'MMM'),
-    pair('HH24', '%H'),
-    pair('HH12', '%I'),
-    pair('HH', '%I'),
-    pair('MI','%M'),
-    pair('SS', '%S'),
-    pair('MS', '%g'),
-    pair('US', '%f')
+    pair('HH24', 'HH'),
+    pair('HH12', 'hh'),
+    pair('HH', 'HH'),
+    pair('MI','mm'),
+    pair('SS', 'ss'),
+    pair('MS', 'SSS'),
+    pair('US', 'SSSSSS')
     // TODO: Handle more format specifiers
   ];
 
