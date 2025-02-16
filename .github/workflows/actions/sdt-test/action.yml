@@ -64,5 +64,5 @@ runs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: event-file
+        name: event-file-${{ inputs.check-name }}
         path: ${{ github.event_path }}
