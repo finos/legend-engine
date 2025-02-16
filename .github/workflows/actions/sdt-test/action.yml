@@ -12,50 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: SDT Test
-
-description: SDT Test
+name: SDT
+description: SQL Dialect Test
 
 inputs:
   check-name:
     description: 'Job/Check Name'
     required: true
   module:
-    description: 'Project module'
+    description: 'Project module (ie artifact id)'
     required: true
-  test-name:
-    description: 'SDT Test Name'
+  test-class:
+    description: 'SQL Dialect Test Class Name'
     required: true
 
 runs:
   using: "composite"
   steps:
-
-#    - name: Build repository
-#      env:
-#        MAVEN_OPTS: "-Xmx14g"
-#      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T3
-#      shell: bash
-
-    - name: Run SDT Test
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} test -Dtest=${{ inputs.test-name }}
+    - name: Run SDT
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} test -Dtest=${{ inputs.test-class }}
       shell: bash
 
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ inputs.check-name }}
-        path: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-name }}*.xml'
+        name: test-results-sdt-${{ inputs.check-name }}
+        path: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-class }}*.xml'
 
     - name: Publish Test Results
       uses: mikepenz/action-junit-report@v4
       if: always()
       with:
-        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-name }}*.xml'
+        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-class }}*.xml'
         fail_on_failure: true
         summary: true
         detailed_summary: true
         include_passed: true
-        check_name: ${{ inputs.check-name }}
-        job_name: ${{ inputs.check-name }}
+        check_name: SDT - ${{ inputs.check-name }}
+        job_name: SDT - ${{ inputs.check-name }}

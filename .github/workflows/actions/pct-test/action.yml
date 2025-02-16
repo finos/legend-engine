@@ -12,36 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: PCT Test
-
-description: PCT Test
+name: PCT
+description: Pure Compatibility Test
 
 inputs:
   name:
     description: 'PCT Name'
     required: true
   module:
-    description: 'Project module (ie artifactid)'
+    description: 'Project module (ie artifact id)'
     required: true
 
 runs:
   using: "composite"
   steps:
-#    - name: Build repository
-#      env:
-#        MAVEN_OPTS: "-Xmx14g"
-#      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T3 -p pct-test
-#      shell: bash
-
-    - name: Run PCT Test
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} test -p pct-test
+    - name: Run PCT
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} -p pct-test test
       shell: bash
 
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ inputs.name }}
+        name: test-results-pct-${{ inputs.name }}
         path: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
 
     - name: Publish Test Results
@@ -53,5 +46,5 @@ runs:
         summary: true
         detailed_summary: true
         include_passed: true
-        check_name: ${{ inputs.name }}
-        job_name: ${{ inputs.name }}
+        check_name: PCT - ${{ inputs.name }}
+        job_name: PCT - ${{ inputs.name }}
