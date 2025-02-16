@@ -87,9 +87,9 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx14g"
+          MAVEN_OPTS: "-Xmx12g"
         run: |
-          mvn -B -e -DskipTests=true install -T3
+          mvn -B -e -DskipTests=true install -T2
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
