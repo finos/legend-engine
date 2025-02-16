@@ -87,9 +87,9 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx12g"
+          MAVEN_OPTS: "-Xmx14g"
         run: |
-          mvn -B -e -DskipTests=true install -T2
+          mvn -B -e -DskipTests=true install -T3
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -169,7 +169,7 @@ jobs:
       - name: ${{ matrix.project.name }}
         uses: ./.github/workflows/actions/sdt-test
         with:
-          check-name:  ${{ matrix.project.name }}
+          check-name:  ${{ matrix.project.check-name }}
           module:  ${{ matrix.project.module }}
           test-name: ${{ matrix.project.test-name }}
 
