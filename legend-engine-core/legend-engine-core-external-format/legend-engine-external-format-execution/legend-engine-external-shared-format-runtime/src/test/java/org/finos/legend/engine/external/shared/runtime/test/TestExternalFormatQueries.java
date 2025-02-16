@@ -30,7 +30,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -40,7 +40,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_I
 import org.finos.legend.pure.generated.core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 
@@ -73,8 +72,8 @@ public abstract class TestExternalFormatQueries
             PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
-            Lambda lambdaProtocol = parser.parseLambda(query);
-            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
+            LambdaFunction lambdaProtocol = parser.parseLambda(query);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
 
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
             extensions.addAll(formatExtensions);
@@ -247,8 +246,8 @@ public abstract class TestExternalFormatQueries
             PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
-            Lambda lambdaProtocol = parser.parseLambda(query);
-            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
+            LambdaFunction lambdaProtocol = parser.parseLambda(query);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
 
             Root_meta_pure_runtime_ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);
 

@@ -20,7 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.parameterization.ParameterizedValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class TestParameterizedValueSpecWithGrammar
     public void testParameterizedSpecWithGrammar()
     {
         DomainParser parser = new DomainParser();
-        Lambda lambda = parser.parseLambda("{test:String[1]|example::Person.all()->filter(f|$f.name=='ABC' || $f.id==1 ||$f.age->in([1,2,3])  && $f.foo==$test )}", "id", 0, 0, false);
+        LambdaFunction lambda = parser.parseLambda("{test:String[1]|example::Person.all()->filter(f|$f.name=='ABC' || $f.id==1 ||$f.age->in([1,2,3])  && $f.foo==$test )}", "id", 0, 0, false);
 
         ValueSpecification spec = new ParameterizedValueSpecification(lambda, "GENERATED").getValueSpecification();
         String actualLambda = spec.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.STANDARD).build());

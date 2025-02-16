@@ -26,7 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextTe
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
@@ -107,7 +107,7 @@ public class TestCompileApi
                 "}\n";
         PureModelContextText text = new PureModelContextText();
         text.code = model;
-        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project(~['Person Name':x|$x.name])", "", 0, 0, false);
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project(~['Person Name':x|$x.name])", "", 0, 0, false);
         LambdaReturnTypeInput lambdaReturnTypeInput = new LambdaReturnTypeInput();
         lambdaReturnTypeInput.model = text;
         lambdaReturnTypeInput.lambda = lambda;

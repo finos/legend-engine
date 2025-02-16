@@ -15,13 +15,13 @@
 package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class ColSpec
 {
     public SourceInformation sourceInformation;
     public String name;
     public String type;
-    public Lambda function1;
-    public Lambda function2;
+    public LambdaFunction function1;
+    public LambdaFunction function2;
 }

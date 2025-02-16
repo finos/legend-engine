@@ -50,7 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData;
@@ -83,7 +83,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.GroupByFunctionSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -286,7 +285,7 @@ public class HelperMappingBuilder
         return cm.id != null ? cm.id : HelperModelBuilder.getElementFullPath(context.resolveClass(cm._class, cm.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
     }
 
-    public static LambdaFunction<?> processPurePropertyMappingTransform(PurePropertyMapping ppm, Lambda lambda, PropertyMappingsImplementation owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type inputVarType, CompileContext context, String mappingName)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> processPurePropertyMappingTransform(PurePropertyMapping ppm, LambdaFunction lambda, PropertyMappingsImplementation owner, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type inputVarType, CompileContext context, String mappingName)
     {
         List<ValueSpecification> expressions = lambda.body;
         VariableExpression lambdaParam = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
@@ -420,7 +419,7 @@ public class HelperMappingBuilder
     private static GroupByFunctionSpecification processGroupByFunction(GroupByFunction groupByFunction, CompileContext context, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         GroupByFunctionSpecification gb = new Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl("", null, context.pureModel.getClass("meta::pure::mapping::aggregationAware::GroupByFunctionSpecification"));
-        gb._groupByFn((LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) groupByFunction.groupByFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
+        gb._groupByFn((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) groupByFunction.groupByFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
         return gb;
     }
 
@@ -428,9 +427,9 @@ public class HelperMappingBuilder
     {
         AggregationFunctionSpecification afs = new Root_meta_pure_mapping_aggregationAware_AggregationFunctionSpecification_Impl(" ");
         InstanceValue processed = (InstanceValue) aggregateFunction.mapFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
-        afs._mapFn((LambdaFunction) processed._values().getFirst());
+        afs._mapFn((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction) processed._values().getFirst());
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createVariableForMapped((LambdaFunction) processed._values().getFirst(), context);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createVariableForMapped((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction) processed._values().getFirst(), context);
         processingContext.addInferredVariables("mapped", thisVariable);
 
         if (aggregateFunction.aggregateFn.parameters.size() > 0)
@@ -439,7 +438,7 @@ public class HelperMappingBuilder
             variable.genericType = context.convertGenericType(Handlers.funcReturnType(processed, context.pureModel));
             variable.multiplicity = new Multiplicity(1, 1);
         }
-        afs._aggregateFn((LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
+        afs._aggregateFn((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction) ((InstanceValue) aggregateFunction.aggregateFn.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)))._values().getFirst());
         return afs;
     }
 

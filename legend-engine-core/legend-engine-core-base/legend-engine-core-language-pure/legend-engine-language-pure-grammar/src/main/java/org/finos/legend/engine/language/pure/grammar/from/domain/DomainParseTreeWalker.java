@@ -93,7 +93,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.clas
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
@@ -323,7 +323,7 @@ public class DomainParseTreeWalker
     private Constraint visitConstraint(List<DomainParserGrammar.ConstraintContext> constraintContexts, DomainParserGrammar.ConstraintContext ctx)
     {
         Constraint constraint = new Constraint();
-        constraint.functionDefinition = new Lambda();
+        constraint.functionDefinition = new LambdaFunction();
         List<String> typeParametersNames = Lists.mutable.empty();
 
         if (ctx.simpleConstraint() != null)
@@ -346,7 +346,7 @@ public class DomainParseTreeWalker
             constraint.functionDefinition.body = Collections.singletonList(this.combinedExpression(complexConstraintContext.constraintFunction().combinedExpression(), "constraint", typeParametersNames, lambdaContext, "", true, false));
             if (complexConstraintContext.constraintMessage() != null)
             {
-                constraint.messageFunction = new Lambda();
+                constraint.messageFunction = new LambdaFunction();
                 constraint.messageFunction.body = Collections.singletonList(this.combinedExpression(complexConstraintContext.constraintMessage().combinedExpression(), "message", typeParametersNames, lambdaContext, "", true, false));
             }
             constraint.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -710,7 +710,7 @@ public class DomainParseTreeWalker
     {
         String name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
 
-        Lambda conversionFunction = new Lambda();
+        LambdaFunction conversionFunction = new LambdaFunction();
         Variable variable = new Variable();
         variable.name = PureGrammarParserUtility.fromIdentifier(ctx.unitExpr().identifier());
         conversionFunction.parameters = Collections.singletonList(variable);
@@ -734,13 +734,13 @@ public class DomainParseTreeWalker
         String name = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         LambdaContext lambdaContext = new LambdaContext(name.replace("::", "_"));
         List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, false, " ");
-        if (block.size() == 1 && block.get(0) instanceof Lambda)
+        if (block.size() == 1 && block.get(0) instanceof LambdaFunction)
         {
             return block.get(0);
         }
         else
         {
-            Lambda lambda = new Lambda();
+            LambdaFunction lambda = new LambdaFunction();
             lambda.body = block;
             lambda.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.codeBlock());
             return lambda;
@@ -1334,7 +1334,7 @@ public class DomainParseTreeWalker
         return null;
     }
 
-    private Lambda processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
+    private LambdaFunction processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
     {
         if (lambda.lambdaFunction() != null)
         {
@@ -1351,7 +1351,7 @@ public class DomainParseTreeWalker
         }
     }
 
-    private Lambda processMultiParamLambda(DomainParserGrammar.LambdaFunctionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    private LambdaFunction processMultiParamLambda(DomainParserGrammar.LambdaFunctionContext ctx, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
     {
         boolean hasLambdaParams = false;
         if (ctx.lambdaParam() != null)
@@ -1367,7 +1367,7 @@ public class DomainParseTreeWalker
         return this.lambdaPipe(ctx.lambdaPipe(), hasLambdaParams ? ctx.lambdaParam(0).getStart() : null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
     }
 
-    private Lambda processSingleParamLambda(DomainParserGrammar.LambdaParamContext paramCtx, DomainParserGrammar.LambdaPipeContext pipeContext, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    private LambdaFunction processSingleParamLambda(DomainParserGrammar.LambdaParamContext paramCtx, DomainParserGrammar.LambdaPipeContext pipeContext, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
     {
         Variable expr = this.lambdaParam(paramCtx, paramCtx.identifier(), typeParametersNames, space);
         expressions.add(expr);
@@ -1493,9 +1493,9 @@ public class DomainParseTreeWalker
         return variable;
     }
 
-    private Lambda lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private LambdaFunction lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
-        Lambda signature = new Lambda();  // Applied Function??
+        LambdaFunction signature = new LambdaFunction();  // Applied Function??
         signature.body = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
         signature.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (Iterate.notEmpty(params))

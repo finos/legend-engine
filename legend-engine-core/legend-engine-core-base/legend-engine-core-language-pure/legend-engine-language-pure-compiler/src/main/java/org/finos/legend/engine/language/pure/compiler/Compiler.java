@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProce
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -59,12 +59,12 @@ public class Compiler
         return new PureModel(model, user, deploymentMode, pureModelProcessParameter, metaData);
     }
 
-    public static ValueSpecification getLambdaRawType(Lambda lambda, PureModel pureModel)
+    public static ValueSpecification getLambdaRawType(LambdaFunction lambda, PureModel pureModel)
     {
         return HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast();
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> buildLambdaRelationType(Lambda lambda, PureModel pureModel)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> buildLambdaRelationType(LambdaFunction lambda, PureModel pureModel)
     {
         ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
         Type type = valueSpecification._genericType()._typeArguments().getFirst()._rawType();
@@ -72,18 +72,18 @@ public class Compiler
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) type;
     }
 
-    public static org.finos.legend.engine.protocol.pure.m3.relation.RelationType getLambdaRelationType(Lambda lambda, PureModel pureModel)
+    public static org.finos.legend.engine.protocol.pure.m3.relation.RelationType getLambdaRelationType(LambdaFunction lambda, PureModel pureModel)
     {
         return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel));
     }
 
-    public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)
+    public static String getLambdaReturnType(LambdaFunction lambda, PureModel pureModel)
     {
         ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
         return HelperModelBuilder.getTypeFullPath(valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
     }
 
-    public static GenericType getLambdaReturnGenericType(Lambda lambda, PureModel pureModel)
+    public static GenericType getLambdaReturnGenericType(LambdaFunction lambda, PureModel pureModel)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel)._genericType();
         Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType protocolGenericType = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(genericType, pureModel.getExecutionSupport());

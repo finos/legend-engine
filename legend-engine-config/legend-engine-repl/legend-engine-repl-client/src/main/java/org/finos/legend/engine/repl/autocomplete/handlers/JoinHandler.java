@@ -23,7 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
@@ -60,14 +60,14 @@ public class JoinHandler extends FunctionHandler
         if (currentFunc.parameters.size() == 4)
         {
             GenericType genericType = currentFunc.parameters.get(1).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext))._genericType()._typeArguments().getFirst();
-            if (currentFunc.parameters.get(3) instanceof Lambda)
+            if (currentFunc.parameters.get(3) instanceof LambdaFunction)
             {
-                processLambda((Lambda)currentFunc.parameters.get(3), leftType._typeArguments().getFirst(), genericType, processingContext, pureModel);
+                processLambda((LambdaFunction)currentFunc.parameters.get(3), leftType._typeArguments().getFirst(), genericType, processingContext, pureModel);
             }
         }
     }
 
-    private static void processLambda(Lambda lambda, GenericType first, GenericType second, ProcessingContext processingContext, PureModel pureModel)
+    private static void processLambda(LambdaFunction lambda, GenericType first, GenericType second, ProcessingContext processingContext, PureModel pureModel)
     {
         if (lambda != null)
         {

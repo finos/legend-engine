@@ -18,7 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
@@ -29,7 +29,6 @@ import org.finos.legend.pure.generated.core_dataquality_generation_dataquality;
 import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,13 +38,13 @@ import java.util.Objects;
 public class DataQualityLambdaGenerator
 {
 
-    public static LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName, Boolean runQuery, Integer resultLimit)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, String validationName, Boolean runQuery, Integer resultLimit)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
         return generateLambda(pureModel, packageableElement, validationName, runQuery, resultLimit);
     }
 
-    public static LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
     {
         if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
         {
@@ -58,7 +57,7 @@ public class DataQualityLambdaGenerator
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
     }
 
-    public static LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName, Boolean runQuery)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambdaForTrial(PureModel pureModel, String qualifiedPath, Integer queryLimit, String validationName, Boolean runQuery)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
         if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
@@ -72,27 +71,27 @@ public class DataQualityLambdaGenerator
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
     }
 
-    private static LambdaFunction generateModelConstraintLambda(PureModel pureModel, Integer queryLimit, Root_meta_external_dataquality_DataQuality packageableElement)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction generateModelConstraintLambda(PureModel pureModel, Integer queryLimit, Root_meta_external_dataquality_DataQuality packageableElement)
     {
         return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, Objects.isNull(queryLimit) ? null : queryLimit.longValue(), pureModel.getExecutionSupport());
     }
 
-    private static LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, String validationName, Boolean runQuery, Integer resultLimit)
     {
         if (Boolean.TRUE.equals(runQuery))
         {
-            return (LambdaFunction<Object>) packageableElement._query();
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) packageableElement._query();
         }
-        return (LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, validationName, Objects.isNull(resultLimit) ? null : resultLimit.longValue(), pureModel.getExecutionSupport());
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, validationName, Objects.isNull(resultLimit) ? null : resultLimit.longValue(), pureModel.getExecutionSupport());
     }
 
-    public static Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
+    public static LambdaFunction transformLambda(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
         Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, extensions.apply(pureModel), pureModel.getExecutionSupport());
-        return transform(protocol, Lambda.class, pureModel);
+        return transform(protocol, LambdaFunction.class, pureModel);
     }
 
-    public static String transformLambdaAsJson(LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
+    public static String transformLambdaAsJson(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)
     {
         Object protocol = transformToVersionedModel(lambda, "vX_X_X", extensions.apply(pureModel), pureModel.getExecutionSupport());
         return transform(protocol, pureModel);
