@@ -49,5 +49,5 @@ runs:
         summary: true
         detailed_summary: true
         include_passed: true
-        check_name: SDT - ${{ inputs.check-name }}
-        job_name: SDT - ${{ inputs.check-name }}
+        check_name: SDT - ${{ inputs.check-name }} - Report
+        job_name: SDT - ${{ inputs.check-name }} - Report
