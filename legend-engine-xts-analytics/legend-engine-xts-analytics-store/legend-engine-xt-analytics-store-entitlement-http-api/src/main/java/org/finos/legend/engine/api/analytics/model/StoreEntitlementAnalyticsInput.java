@@ -17,12 +17,12 @@ package org.finos.legend.engine.api.analytics.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class StoreEntitlementAnalyticsInput
 {
     @JsonProperty
-    public Lambda query;
+    public LambdaFunction query;
     @JsonProperty
     public String runtimePath;
     @JsonProperty
@@ -33,7 +33,7 @@ public class StoreEntitlementAnalyticsInput
     public String clientVersion;
 
     @JsonCreator
-    public StoreEntitlementAnalyticsInput(@JsonProperty("query") Lambda query, @JsonProperty("runtime") String runtimePath, @JsonProperty("mapping") String mappingPath, @JsonProperty("model") PureModelContext model, @JsonProperty("clientVersion") String clientVersion)
+    public StoreEntitlementAnalyticsInput(@JsonProperty("query") LambdaFunction query, @JsonProperty("runtime") String runtimePath, @JsonProperty("mapping") String mappingPath, @JsonProperty("model") PureModelContext model, @JsonProperty("clientVersion") String clientVersion)
     {
         this.query = query;
         this.runtimePath = runtimePath;

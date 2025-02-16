@@ -29,7 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -108,7 +108,7 @@ public class Compile
         try
         {
             PureModelContext model = lambdaReturnTypeInput.model;
-            Lambda lambda = lambdaReturnTypeInput.lambda;
+            LambdaFunction lambda = lambdaReturnTypeInput.lambda;
             String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, identity);
             Map<String, String> result = new HashMap<>();
             long end = System.currentTimeMillis();
@@ -138,7 +138,7 @@ public class Compile
         try
         {
             PureModelContext model = lambdaReturnTypeInput.model;
-            Lambda lambda = lambdaReturnTypeInput.lambda;
+            LambdaFunction lambda = lambdaReturnTypeInput.lambda;
             PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
             RelationType relationType = org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(lambda, pureModel);
             return Response.ok(relationType, MediaType.APPLICATION_JSON_TYPE).build();

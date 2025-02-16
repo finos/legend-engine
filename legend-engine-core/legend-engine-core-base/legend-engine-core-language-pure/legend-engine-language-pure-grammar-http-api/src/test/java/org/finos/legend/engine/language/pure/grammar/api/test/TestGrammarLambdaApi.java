@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
-public class TestGrammarLambdaApi extends TestGrammar<Lambda>
+public class TestGrammarLambdaApi extends TestGrammar<LambdaFunction>
 {
     @Test
     public void testSimple()
@@ -91,12 +91,12 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     private static final JsonToGrammar jsonToGrammar = new JsonToGrammar();
 
     @Override
-    public Class<Lambda> get_Class()
+    public Class<LambdaFunction> get_Class()
     {
-        return Lambda.class;
+        return LambdaFunction.class;
     }
 
-    public static class MyClass extends BatchResult<Lambda>
+    public static class MyClass extends BatchResult<LambdaFunction>
     {
     }
 
@@ -113,7 +113,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     }
 
     @Override
-    public Function2<Lambda, RenderStyle, Response> jsonToGrammar()
+    public Function2<LambdaFunction, RenderStyle, Response> jsonToGrammar()
     {
         return (a, b) -> jsonToGrammar.lambda(a, b, null);
     }
@@ -125,7 +125,7 @@ public class TestGrammarLambdaApi extends TestGrammar<Lambda>
     }
 
     @Override
-    public Function2<Map<String, Lambda>, RenderStyle, Response> jsonToGrammarB()
+    public Function2<Map<String, LambdaFunction>, RenderStyle, Response> jsonToGrammarB()
     {
         return (a, b) -> jsonToGrammar.lambdaBatch(a, b, null);
     }

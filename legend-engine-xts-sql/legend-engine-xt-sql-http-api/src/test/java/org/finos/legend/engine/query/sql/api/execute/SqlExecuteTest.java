@@ -31,7 +31,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
@@ -101,7 +101,7 @@ public class SqlExecuteTest
                 .request()
                 .post(entity).readEntity(String.class);
 
-        Lambda actual = new ObjectMapper().readValue(lambda, Lambda.class);
+        LambdaFunction actual = new ObjectMapper().readValue(lambda, LambdaFunction.class);
         String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
 
         Assert.assertEquals(expected, actualGrammar);

@@ -21,7 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class CompilerTest
     @Test
     public void getLambdaReturnGenericTypeForPrimitive()
     {
-        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|1234");
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|1234");
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, PureModel.getCorePureModel());
         Assert.assertTrue(genericType.rawType instanceof PackageableType);
         Assert.assertEquals("Integer", ((PackageableType) genericType.rawType).fullPath);
@@ -39,7 +39,7 @@ public class CompilerTest
     @Test
     public void getLambdaReturnGenericTypeWithTypeArguments()
     {
-        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|pair(1, '2')");
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|pair(1, '2')");
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, PureModel.getCorePureModel());
         Assert.assertTrue(genericType.rawType instanceof PackageableType);
         Assert.assertEquals("meta::pure::functions::collection::Pair", ((PackageableType) genericType.rawType).fullPath);

@@ -17,13 +17,13 @@ package org.finos.legend.engine.protocol.pure.m3.type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class Unit
 {
     public String name;
     public String measure;
-    public Lambda conversionFunction;
+    public LambdaFunction conversionFunction;
     public SourceInformation sourceInformation;
 
     @Deprecated
@@ -31,7 +31,7 @@ public class Unit
     {
     }
 
-    private Unit(String name, String measure, Lambda conversionFunction, SourceInformation sourceInformation)
+    private Unit(String name, String measure, LambdaFunction conversionFunction, SourceInformation sourceInformation)
     {
         this.name = name;
         this.measure = measure;
@@ -39,7 +39,7 @@ public class Unit
         this.sourceInformation = sourceInformation;
     }
 
-    public static Unit newUnit(String name, String measure, Lambda conversionFunction, SourceInformation sourceInformation)
+    public static Unit newUnit(String name, String measure, LambdaFunction conversionFunction, SourceInformation sourceInformation)
     {
         return new Unit(name, measure, conversionFunction, sourceInformation);
     }
@@ -53,7 +53,7 @@ public class Unit
     public static Unit newUnit(
             @JsonProperty("name") String name,
             @JsonProperty("measure") String measure,
-            @JsonProperty("conversionFunction") Lambda conversionFunction,
+            @JsonProperty("conversionFunction") LambdaFunction conversionFunction,
             @JsonProperty("sourceInformation") SourceInformation sourceInformation,
             // for backward compatibility
             @Deprecated @JsonProperty("_type") String type,

@@ -31,7 +31,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFuncti
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
@@ -50,7 +50,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_Analytics
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
@@ -76,32 +75,32 @@ import java.util.Optional;
 
 public class HelperValueSpecificationBuilder
 {
-    public static LambdaFunction<?> buildLambda(Lambda lambda, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(LambdaFunction lambda, CompileContext context)
     {
         return buildLambda(lambda.body, lambda.parameters, context);
     }
 
-    public static LambdaFunction<?> buildLambda(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambda(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context)
     {
         return buildLambdaWithContext(expressions, parameters, context, new ProcessingContext("build Lambda"));
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(Lambda lambda, CompileContext context, ProcessingContext ctx)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(LambdaFunction lambda, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext(lambda.body, lambda.parameters, context, ctx);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext("", expressions, parameters, context, ctx);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx)
     {
         return buildLambdaWithContext(lambdaId, expressions, parameters, context, ctx, ValueSpecificationBuilder::new);
     }
 
-    public static LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildLambdaWithContext(String lambdaId, List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> expressions, List<Variable> parameters, CompileContext context, ProcessingContext ctx, Function3<CompileContext, MutableList<String>, ProcessingContext, ValueSpecificationBuilder> valueSpecificationBuilderFactory)
     {
         ctx.push("new lambda");
         ctx.addVariableLevel();
@@ -137,7 +136,7 @@ public class HelperValueSpecificationBuilder
             ctx.popMilestoningDatePropagationContext();
         }
 
-        LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
                 ._classifierGenericType(context.newGenericType(context.pureModel.getType(M3Paths.LambdaFunction), FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
@@ -256,7 +255,7 @@ public class HelperValueSpecificationBuilder
                 List<ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
                 final String automapName = "v_automap";
 
-                Lambda automapLambda = new Lambda();
+                LambdaFunction automapLambda = new LambdaFunction();
                 AppliedProperty appliedProperty = new AppliedProperty();
                 appliedProperty.property = property;
                 Variable automapvar = new Variable();
@@ -328,7 +327,7 @@ public class HelperValueSpecificationBuilder
         if (executionContext instanceof AnalyticsExecutionContext)
         {
             AnalyticsExecutionContext analyticsExecutionContext = (AnalyticsExecutionContext) executionContext;
-            LambdaFunction<?> lambda = (LambdaFunction<?>) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) analyticsExecutionContext.toFlowSetFunction.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext(""))))._values().getFirst();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) analyticsExecutionContext.toFlowSetFunction.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext(""))))._values().getFirst();
             return new Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::router::analytics::AnalyticsExecutionContext"))
                     ._queryTimeOutInSeconds(analyticsExecutionContext.queryTimeOutInSeconds)
                     ._enableConstraints(analyticsExecutionContext.enableConstraints)

@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
@@ -64,11 +64,11 @@ public abstract class FunctionExpressionBuilder
     private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
-        boolean isParamFunction = vs instanceof Lambda ||
+        boolean isParamFunction = vs instanceof LambdaFunction ||
                                   (vs instanceof ClassInstance && ((ClassInstance) vs).type.equals("path")) ||
                                   isPackageableElementSubtypeOfFunction(vs, processingContext, pureModel) ||
                                   isVariableSubtypeOfFunction(vs, processingContext, pureModel) ||
-                                  (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || (v instanceof ClassInstance && ((ClassInstance) v).type.equals("path")) || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
+                                  (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof LambdaFunction || (v instanceof ClassInstance && ((ClassInstance) v).type.equals("path")) || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
         boolean isParamEmpty = vs instanceof Collection && ((Collection) vs).values.isEmpty();
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);
     }

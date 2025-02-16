@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
@@ -64,7 +64,7 @@ public class RelationalStoreSQLSourceProvider extends AbstractLegendStoreSQLSour
         String schemaName = source.getArgumentValueAs(ARG_SCHEMA, -1, String.class, true);
         String tableName = source.getArgumentValueAs(ARG_TABLE, -1, String.class, true);
 
-        Lambda lambda = tableToTDS(store, schemaName, tableName);
+        LambdaFunction lambda = tableToTDS(store, schemaName, tableName);
         EngineRuntime runtime = SQLProviderUtils.createRuntime(connection.getPath(), store.getPath());
 
         Collections.addAll(keys, new SQLSourceArgument(ARG_SCHEMA, null, schemaName), new SQLSourceArgument(ARG_TABLE, null, tableName));
@@ -73,7 +73,7 @@ public class RelationalStoreSQLSourceProvider extends AbstractLegendStoreSQLSour
     }
 
 
-    protected static Lambda tableToTDS(Database database, String schemaName, String tableName)
+    protected static LambdaFunction tableToTDS(Database database, String schemaName, String tableName)
     {
         Schema schema = SQLProviderUtils.extractElement("schema", database.schemas, s -> SQLProviderUtils.equalsEscaped(s.name, schemaName));
         Table table = SQLProviderUtils.extractElement("table", schema.tables, t -> SQLProviderUtils.equalsEscaped(t.name, tableName));
