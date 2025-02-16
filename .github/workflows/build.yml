@@ -88,7 +88,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx10g"
         run: |
-          mvn -B -e -DskipTests=true install -pl org.finos.legend.engine:legend-engine-xt-relationalStore-SDT-pure -am
+          mvn -B -e -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -105,17 +105,19 @@ jobs:
         run: |
           mvn -B -e -DskipTests=true deploy -P docker-snapshot
 
+      # Share the build target artifacts, so other jobs don't need to build the project
+      # Done before test, so we don't include the surefire artifacts
       - name: Cache build output artifacts
         uses: actions/cache/save@v4
         with:
           path: "**/target/"
           key: target-outputs-${{ runner.os }}-${{ github.run_id }}
 
-#      - name: Test
-#        env:
-#          MAVEN_OPTS: "-Xmx6g"
-#        run: |
-#          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+      - name: Test
+        env:
+          MAVEN_OPTS: "-Xmx6g"
+        run: |
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -132,69 +134,73 @@ jobs:
           path: ${{ github.event_path }}
 
   sdt:
-    name: SQL Dialect Tests
+    name: SDT - ${{ matrix.test.name }}
     runs-on: ubuntu-latest
     needs:
-      - build
+      - build # required for the target output artifacts, so we don't need to build the project again
+
     strategy:
       matrix:
-        project:
-          - check-name: Postgres SDT Report
+        test:
+          - name: Postgres
             module: legend-engine-xt-relationalStore-SDT-pure
-            test-name: Test_Postgres_SDT
+            test-class: Test_Postgres_SDT
 
-          - check-name: DuckDB SDT Report
+          - name: DuckDB
             module: legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
-            test-name: Test_DuckDB_SDT
+            test-class: Test_DuckDB_SDT
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: ${{ matrix.project.name }}
+      - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
-      - name: ${{ matrix.project.name }}
+      - name: Test
         uses: ./.github/workflows/actions/sdt-test
         with:
-          check-name:  ${{ matrix.project.check-name }}
-          module:  ${{ matrix.project.module }}
-          test-name: ${{ matrix.project.test-name }}
+          check-name:  ${{ matrix.test.name }}
+          module:  ${{ matrix.test.module }}
+          test-class: ${{ matrix.test.test-class }}
 
   pct:
-    name: Pure Compatibility Tests
+    name: PCT - ${{ matrix.test.name }}
     runs-on: ubuntu-latest
-    # only run if previous pass as this can be expensive test...
     needs:
-      - build
-      - sdt
+      - build  # required for the target output artifacts, so we don't need to build the project again
+
     strategy:
       matrix:
-        project:
-          - name: PCT - Relational - Snowflake
+        test:
+          - name: Relational - Snowflake
             module: legend-engine-xt-relationalStore-snowflake-PCT
 
-          - name: PCT - Relational - Databricks
+          - name: Relational - Databricks
             module: legend-engine-xt-relationalStore-databricks-PCT
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: ${{ matrix.project.name }}
+      - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
-      - name: ${{ matrix.project.name }}
+      - name: Test
         uses: ./.github/workflows/actions/pct-test
         with:
-          name: ${{ matrix.project.name }}
-          module: ${{ matrix.project.module }}
+          name: ${{ matrix.test.name }}
+          module: ${{ matrix.test.module }}
 
   cleanup:
+    name: After Test
     runs-on: ubuntu-latest
     if: always()
     needs:
       - build
       - pct
       - sdt
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

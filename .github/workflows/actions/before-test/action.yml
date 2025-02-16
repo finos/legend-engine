@@ -43,7 +43,3 @@ runs:
         path: "**/target/"
         key: target-outputs-${{ runner.os }}-${{ github.run_id }}
         fail-on-cache-miss: true
-
-    - name: Check Java version
-      run: java -version
-      shell: bash
