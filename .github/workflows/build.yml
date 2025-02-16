@@ -17,7 +17,7 @@ name: Build CI
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  MAVEN_OPTS: "-Xmx6g"
+  MAVEN_OPTS: "-Xmx8g"
 
 on:
   push:
@@ -105,15 +105,15 @@ jobs:
         run: |
           mvn -B -e -DskipTests=true deploy -P docker-snapshot
 
-      - name: Test
-        run: |
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
-
       - name: Cache build output artifacts
         uses: actions/cache/save@v4
         with:
           path: "**/target/"
           key: target-outputs-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Test
+        run: |
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
