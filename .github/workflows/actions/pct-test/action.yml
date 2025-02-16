@@ -29,8 +29,8 @@ runs:
   steps:
     - name: Build repository
       env:
-        MAVEN_OPTS: "-Xmx12g"
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T2 -p pct-test
+        MAVEN_OPTS: "-Xmx14g"
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T3 -p pct-test
       shell: bash
 
     - name: Run PCT Test
@@ -55,10 +55,3 @@ runs:
         include_passed: true
         check_name: ${{ inputs.name }}
         job_name: ${{ inputs.name }}
-
-    - name: Upload CI Event
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: event-file-${{ inputs.name }}
-        path: ${{ github.event_path }}
