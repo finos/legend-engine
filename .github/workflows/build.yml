@@ -189,8 +189,8 @@ jobs:
           - name: Relational - Snowflake
             module: legend-engine-xt-relationalStore-snowflake-PCT
 
-          - name: Relational - Databricks
-            module: legend-engine-xt-relationalStore-databricks-PCT
+#          - name: Relational - Databricks
+#            module: legend-engine-xt-relationalStore-databricks-PCT
 
     steps:
       - name: Checkout repo

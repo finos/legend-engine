@@ -27,7 +27,7 @@ runs:
   using: "composite"
   steps:
     - name: Run PCT
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} -p pct-test test
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} --activate-profiles pct-test test
       shell: bash
 
     - name: Upload Test Results
