@@ -1,4 +1,4 @@
-# Copyright 2024 Goldman Sachs
+# Copyright 2025 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Build repository
-      env:
-        MAVEN_OPTS: "-Xmx14g"
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T3 -p pct-test
-      shell: bash
+#    - name: Build repository
+#      env:
+#        MAVEN_OPTS: "-Xmx14g"
+#      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} clean install -am -DskipTests=true -T3 -p pct-test
+#      shell: bash
 
     - name: Run PCT Test
       run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} test -p pct-test
