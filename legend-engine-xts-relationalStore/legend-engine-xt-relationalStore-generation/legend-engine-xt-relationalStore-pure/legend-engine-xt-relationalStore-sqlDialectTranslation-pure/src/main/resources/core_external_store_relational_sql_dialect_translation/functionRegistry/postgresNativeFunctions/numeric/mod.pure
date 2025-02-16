@@ -43,11 +43,15 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       
       sqlFunctionTest(
         simpleFunctionCall('mod', [literal(9), literal(4)]),
-        1.0
+        1
       ),
       sqlFunctionTest(
         simpleFunctionCall('mod', [literal(-9), literal(4)]),
-        -1.0
+        -1
+      ),
+       sqlFunctionTest(
+        simpleFunctionCall('mod', [literal(4), literal(4)]),
+        0
       )
     ]
   )

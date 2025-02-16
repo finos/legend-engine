@@ -57,11 +57,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ),
       sqlFunctionTest(
         simpleFunctionCall('round', [literal(2.8)]),
-        3
+        3.0
       ),
       sqlFunctionTest(
         simpleFunctionCall('round', [literal(2.21)]),
-        2
+        2.0
       )
     ]
   )

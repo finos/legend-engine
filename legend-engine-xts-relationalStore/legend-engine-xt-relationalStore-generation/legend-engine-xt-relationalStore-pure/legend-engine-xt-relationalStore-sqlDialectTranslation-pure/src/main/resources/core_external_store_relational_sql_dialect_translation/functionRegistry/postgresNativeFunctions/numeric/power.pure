@@ -50,8 +50,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         0.125
       ),
       sqlFunctionTest(
-        simpleFunctionCall('power', [literal(2), literal(1/2)]),
-        1.0
+        simpleFunctionCall('power', [literal(2), literal(0.5)]),
+        1.41421356
       )
     ]
   )
