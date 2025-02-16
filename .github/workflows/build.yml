@@ -88,7 +88,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx10g"
         run: |
-          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true install -pl org.finos.legend.engine:legend-engine-xt-relationalStore-SDT-pure -am
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -142,6 +142,7 @@ jobs:
           - check-name: Postgres SDT Report
             module: legend-engine-xt-relationalStore-SDT-pure
             test-name: Test_Postgres_SDT
+
           - check-name: DuckDB SDT Report
             module: legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
             test-name: Test_DuckDB_SDT
@@ -171,6 +172,7 @@ jobs:
         project:
           - name: PCT - Relational - Snowflake
             module: legend-engine-xt-relationalStore-snowflake-PCT
+
           - name: PCT - Relational - Databricks
             module: legend-engine-xt-relationalStore-databricks-PCT
     steps:
@@ -194,6 +196,9 @@ jobs:
       - pct
       - sdt
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Cleanup build output artifact cache
         run: |
           gh cache delete $CACHE_KEY
