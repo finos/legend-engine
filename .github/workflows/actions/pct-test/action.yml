@@ -46,5 +46,5 @@ runs:
         summary: true
         detailed_summary: true
         include_passed: true
-        check_name: PCT - ${{ inputs.name }}
-        job_name: PCT - ${{ inputs.name }}
+        check_name: PCT - ${{ inputs.name }} - Report
+        job_name: PCT - ${{ inputs.name }} - Report
