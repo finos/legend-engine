@@ -46,13 +46,13 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ inputs.check-name }}
-        path: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
+        path: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-name }}*.xml'
 
     - name: Publish Test Results
       uses: mikepenz/action-junit-report@v4
       if: always()
       with:
-        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
+        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-name }}*.xml'
         fail_on_failure: true
         summary: true
         detailed_summary: true
