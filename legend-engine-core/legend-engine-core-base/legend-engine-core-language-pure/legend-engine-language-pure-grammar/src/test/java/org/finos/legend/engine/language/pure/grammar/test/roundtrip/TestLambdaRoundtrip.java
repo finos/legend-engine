@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
@@ -464,12 +464,12 @@ public class TestLambdaRoundtrip
 
     static void testLambda(String text, String formattedText, RenderStyle renderStyle)
     {
-        Lambda postJSON_lambda;
+        LambdaFunction postJSON_lambda;
         try
         {
-            Lambda lambda = new DomainParser().parseLambda(text, "", 0, 0, true);
+            LambdaFunction lambda = new DomainParser().parseLambda(text, "", 0, 0, true);
             String json = objectMapper.writeValueAsString(lambda);
-            postJSON_lambda = objectMapper.readValue(json, Lambda.class);
+            postJSON_lambda = objectMapper.readValue(json, LambdaFunction.class);
         }
         catch (Exception e)
         {

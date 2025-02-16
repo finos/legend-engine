@@ -46,7 +46,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
@@ -240,7 +240,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     }
 
     @Override
-    public String visit(Lambda lambda)
+    public String visit(LambdaFunction lambda)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }

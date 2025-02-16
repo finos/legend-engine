@@ -16,12 +16,12 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class PurePropertyMapping extends PropertyMapping
 {
     public String enumMappingId;
-    public Lambda transform;
+    public LambdaFunction transform;
     public Boolean explodeProperty;
 
     @Override

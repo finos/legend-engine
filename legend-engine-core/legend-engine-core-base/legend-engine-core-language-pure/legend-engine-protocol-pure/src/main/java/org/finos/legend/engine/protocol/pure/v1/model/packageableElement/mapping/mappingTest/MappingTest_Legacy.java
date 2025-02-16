@@ -16,14 +16,14 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.List;
 
 public class MappingTest_Legacy
 {
     public String name;
-    public Lambda query;
+    public LambdaFunction query;
     public List<InputData> inputData;
     @JsonProperty(value = "assert")
     public MappingTestAssert _assert;

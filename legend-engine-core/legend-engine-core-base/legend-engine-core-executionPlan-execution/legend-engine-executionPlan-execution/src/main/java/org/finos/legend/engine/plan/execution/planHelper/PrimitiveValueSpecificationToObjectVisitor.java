@@ -40,7 +40,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
@@ -164,7 +164,7 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
     }
 
     @Override
-    public Object visit(Lambda lambda)
+    public Object visit(LambdaFunction lambda)
     {
         throw new UnsupportedOperationException("Unsupported value specification type");
     }

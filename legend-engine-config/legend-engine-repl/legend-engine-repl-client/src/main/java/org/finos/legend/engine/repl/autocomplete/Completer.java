@@ -36,7 +36,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFuncti
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.autocomplete.handlers.*;
@@ -339,7 +339,7 @@ public class Completer
             final int _column = column;
 
             @Override
-            public ValueSpecification visit(Lambda lambda)
+            public ValueSpecification visit(LambdaFunction lambda)
             {
                 return ListIterate.collect(lambda.body, a -> a.accept(this)).select(Objects::nonNull).getFirst();
             }

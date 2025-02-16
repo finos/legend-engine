@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.servic
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +26,6 @@ public class TestContainer
 {
     public List<ValueSpecification> parametersValues = Collections.emptyList();
     @JsonProperty(value = "assert")
-    public Lambda _assert;
+    public LambdaFunction _assert;
     public SourceInformation sourceInformation;
 }

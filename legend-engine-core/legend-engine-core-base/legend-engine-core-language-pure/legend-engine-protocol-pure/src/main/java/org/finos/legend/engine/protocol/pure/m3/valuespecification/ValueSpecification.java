@@ -39,7 +39,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.Gene
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedClass;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
@@ -60,7 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.depreca
         // Variable
         @JsonSubTypes.Type(value = Variable.class, name = "var"),
         // Core Class Instances (could be moved to classInstance)
-        @JsonSubTypes.Type(value = Lambda.class, name = "lambda"),
+        @JsonSubTypes.Type(value = LambdaFunction.class, name = "lambda"),
         @JsonSubTypes.Type(value = KeyExpression.class, name = "keyExpression"), // Used for new
         // Data Type - Enumeration
         @JsonSubTypes.Type(value = EnumValue.class, name = "enumValue"),

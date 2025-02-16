@@ -18,13 +18,13 @@ package org.finos.legend.engine.api.analytics.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class LineageAnalyticsInput
 {
     public String clientVersion;
     @JsonProperty(required = true)
-    public Lambda function;
+    public LambdaFunction function;
     public String mapping;
     @JsonProperty(required = true)
     public PureModelContext model;

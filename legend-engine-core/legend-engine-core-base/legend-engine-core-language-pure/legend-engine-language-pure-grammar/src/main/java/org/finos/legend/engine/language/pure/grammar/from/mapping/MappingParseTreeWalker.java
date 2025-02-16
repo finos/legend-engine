@@ -47,7 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -219,7 +219,7 @@ public class MappingParseTreeWalker
         return testAssertion;
     }
 
-    private Lambda visitMappingTreeLambda(MappingParserGrammar.CombinedExpressionContext ctx, Mapping mapping)
+    private LambdaFunction visitMappingTreeLambda(MappingParserGrammar.CombinedExpressionContext ctx, Mapping mapping)
     {
         DomainParser parser = new DomainParser();
         // prepare island grammar walker source information
@@ -230,13 +230,13 @@ public class MappingParseTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(mapping.getPath(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionWalkerSourceInformation, null);
-        if (valueSpecification instanceof Lambda)
+        if (valueSpecification instanceof LambdaFunction)
         {
-            return (Lambda) valueSpecification;
+            return (LambdaFunction) valueSpecification;
         }
         // NOTE: If the user just provides the body of the lambda, we will wrap a lambda around it
         // we might want to reconsider this behavior and throw error if this convenience causes any trouble
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = new ArrayList<>();
         lambda.body.add(valueSpecification);
         lambda.parameters = new ArrayList<>();

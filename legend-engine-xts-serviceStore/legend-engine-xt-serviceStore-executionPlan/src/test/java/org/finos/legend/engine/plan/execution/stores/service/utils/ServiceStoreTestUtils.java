@@ -35,7 +35,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
@@ -102,7 +102,7 @@ public class ServiceStoreTestUtils
         Function queryFunctionExpressions = ListIterate.detect(contextData.getElementsOfType(Function.class), f -> "query__Any_1_".equals(f.name));
 
         return PlanGenerator.generateExecutionPlan(
-                HelperValueSpecificationBuilder.buildLambda(((Lambda) queryFunctionExpressions.body.get(0)).body, ((Lambda) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
+                HelperValueSpecificationBuilder.buildLambda(((LambdaFunction) queryFunctionExpressions.body.get(0)).body, ((LambdaFunction) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
                 pureModel.getMapping(mapping),
                 pureModel.getRuntime(runtime),
                 null,

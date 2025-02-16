@@ -40,7 +40,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.data
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictTime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PathElement;
 import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PropertyPathElement;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
@@ -132,7 +132,7 @@ public class HelperValueSpecificationGrammarComposer
 
         // This is to accommodate for cases where the first parameter is a lambda, such as agg(), col(),
         // it would be wrong to use `->` syntax, e.g. `$x|x.prop1->col()`
-        if ((firstArgument instanceof Lambda) || (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && isInfix((AppliedFunction) firstArgument)))
+        if ((firstArgument instanceof LambdaFunction) || (firstArgument instanceof AppliedFunction && !((AppliedFunction) firstArgument).function.equals("minus") && isInfix((AppliedFunction) firstArgument)))
         {
             return renderFunctionName(functionName, transformer) + "("
                     + (transformer.isRenderingPretty() ? transformer.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(transformer, getTabSize(2)) : "")

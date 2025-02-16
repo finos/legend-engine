@@ -16,11 +16,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
-import org.finos.legend.engine.protocol.pure.m3.function.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class XStorePropertyMapping extends PropertyMapping
 {
-    public Lambda crossExpression;
+    public LambdaFunction crossExpression;
 
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)
