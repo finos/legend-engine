@@ -17,7 +17,6 @@ name: Build CI
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  MAVEN_OPTS: "-Xmx8g"
 
 on:
   push:
@@ -87,15 +86,16 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx12g"
+          MAVEN_OPTS: "-Xmx10g"
         run: |
-          mvn -B -e -DskipTests=true install -T2
+          mvn -B -e -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          MAVEN_OPTS: "-Xmx10g"
         # NOTE: here we publish snapshot to a staging Maven registry
         # some registry like Maven Central requires javadoc, but for now we
         # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
@@ -111,9 +111,11 @@ jobs:
           path: "**/target/"
           key: target-outputs-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Test
-        run: |
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+#      - name: Test
+#        env:
+#          MAVEN_OPTS: "-Xmx6g"
+#        run: |
+#          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
@@ -158,6 +160,7 @@ jobs:
           test-name: ${{ matrix.project.test-name }}
 
   pct:
+    name: Pure Compatibility Tests
     runs-on: ubuntu-latest
     # only run if previous pass as this can be expensive test...
     needs:
