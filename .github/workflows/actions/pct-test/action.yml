@@ -22,17 +22,30 @@ inputs:
   module:
     description: 'Project module (ie artifact id)'
     required: true
+  AWS_ACCESS_KEY_ID:
+    description: 'AWS vault access key id'
+    required: false
+    default: ""
+  AWS_SECRET_ACCESS_KEY:
+    description: 'AWS vault secret access key'
+    required: false
+    default: ""
+  # to be removed once this is relocated inside the AWS vault
+  DATABRICKS_API_TOKEN:
+    description: 'Databricks API token'
+    required: false
+    default: ""
 
 runs:
   using: "composite"
   steps:
     - name: Run PCT
-      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} --activate-profiles pct-test test
+      run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} --activate-profiles pct-test process-test-classes test
       shell: bash
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
-        DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        DATABRICKS_API_TOKEN: ${{ inputs.DATABRICKS_API_TOKEN }}
 
     - name: Upload PCT Reports
       uses: actions/upload-artifact@v4
