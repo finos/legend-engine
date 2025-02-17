@@ -47,8 +47,8 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
     {
         Vault.INSTANCE.registerImplementation(
                 new AWSVaultImplementation(
-                        System.getProperty("env.AWS_ACCESS_KEY_ID"),
-                        System.getProperty("env.AWS_SECRET_ACCESS_KEY"),
+                        System.getProperty("AWS_ACCESS_KEY_ID"),
+                        System.getProperty("AWS_SECRET_ACCESS_KEY"),
                         Region.US_EAST_1,
                         "snowflake.INTEGRATION_USER1"
                 )
