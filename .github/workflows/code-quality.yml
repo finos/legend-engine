@@ -39,8 +39,7 @@ jobs:
     # See https://portal.productboard.com/sonarsource/1-sonarcloud/c/50-sonarcloud-analyzes-external-pull-request
     # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
     if: github.repository == 'finos/legend-engine'
-    # NOTE: larger runner is required to run this build
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo

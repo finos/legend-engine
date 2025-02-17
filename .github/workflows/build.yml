@@ -122,7 +122,34 @@ jobs:
     name: Run Unit Tests
     runs-on: ubuntu-latest
     needs:
-      - build # required for the target output artifacts, so we don't need to build the project again
+      - build
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Before Test
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Test
+        env:
+          MAVEN_OPTS: "-Xmx6g"
+        # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
+        run: |
+          mvn -B -e surefire:test -pl '!org.finos.legend.engine:legend-engine-server-http-server,!org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-h2-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-postgres-PCT' -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+  test-http-server:
+    name: Run Http Server Integration Tests
+    runs-on: ubuntu-latest
+    needs:
+      - build
 
     steps:
       - name: Checkout repo
@@ -135,19 +162,13 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx6g"
         run: |
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
-
-      - name: Upload PCT Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: pct-reports-test
-          path: '**/target/classes/pct-reports/*.json'
+          mvn -B -e surefire:test -pl org.finos.legend.engine:legend-engine-server-http-server -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-http-server
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
   sdt:
@@ -186,8 +207,45 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
-      - sdt
+
+    strategy:
+      matrix:
+        test:
+          - name: Platform - Java
+            module: legend-engine-xt-javaPlatformBinding-PCT
+
+          - name: Relational - H2
+            module: legend-engine-xt-relationalStore-h2-PCT
+
+          - name: Relational - DuckDB
+            module: legend-engine-xt-relationalStore-duckdb-PCT
+
+          - name: Relational - Postgres
+            module: legend-engine-xt-relationalStore-postgres-PCT
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Before Test
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Test
+        uses: ./.github/workflows/actions/pct-test
+        with:
+          name: ${{ matrix.test.name }}
+          module: ${{ matrix.test.module }}
+
+  pct-cloud:
+    if: github.repository == 'finos/legend-engine' # needs secrets...
+    name: PCT - ${{ matrix.test.name }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
       - test
+      - test-http-server
+      - sdt
+      - pct
 
     strategy:
       matrix:
@@ -210,14 +268,18 @@ jobs:
         with:
           name: ${{ matrix.test.name }}
           module: ${{ matrix.test.module }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
+          DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
 
   pct-report:
     name: PCT Reports
     runs-on: ubuntu-latest
+    if: ${{ !cancelled() && !failure() }} # even if something is skipped like pct-cloud, run it
     needs:
       - build
       - pct
-      - test
+      - pct-cloud
 
     steps:
       - name: Checkout repo
@@ -232,10 +294,6 @@ jobs:
           path: ./legend-engine-config/legend-engine-server/legend-engine-server-http-server/target/classes/pct-reports/
           pattern: pct-reports-*
           merge-multiple: true
-
-      - name: Debug PCT Reports Artifacts
-        run: |
-          ls ./legend-engine-config/legend-engine-server/legend-engine-server-http-server/target/classes/pct-reports/
 
       - name: Generate PCT Report
         run: |
@@ -259,9 +317,11 @@ jobs:
     if: always()
     needs:
       - build
-      - pct
-      - sdt
       - test
+      - test-http-server
+      - sdt
+      - pct
+      - pct-cloud
       - pct-report
 
     steps:
