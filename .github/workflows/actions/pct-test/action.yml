@@ -29,6 +29,16 @@ runs:
     - name: Run PCT
       run: mvn -B -e -pl org.finos.legend.engine:${{ inputs.module }} --activate-profiles pct-test test
       shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
+        DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
+
+    - name: Upload PCT Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: pct-reports-${{ inputs.name }}
+        path: '**/${{ inputs.module }}/target/classes/pct-reports/*.json'
 
     - name: Upload Test Results
       if: always()

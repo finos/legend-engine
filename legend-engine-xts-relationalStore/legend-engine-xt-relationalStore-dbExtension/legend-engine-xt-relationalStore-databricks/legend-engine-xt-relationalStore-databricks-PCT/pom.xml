@@ -48,6 +48,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
+                            <systemProperties>
+                                <DATABRICKS_API_TOKEN>${env.DATABRICKS_API_TOKEN}></DATABRICKS_API_TOKEN>
+                            </systemProperties>
                         </configuration>
                     </plugin>
                     <plugin>

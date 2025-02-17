@@ -137,6 +137,12 @@ jobs:
         run: |
           mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
+      - name: Upload PCT Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: pct-reports-test
+          path: '**/target/classes/pct-reports/*.json'
+
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -148,7 +154,7 @@ jobs:
     name: SDT - ${{ matrix.test.name }}
     runs-on: ubuntu-latest
     needs:
-      - build # required for the target output artifacts, so we don't need to build the project again
+      - build
 
     strategy:
       matrix:
@@ -179,7 +185,7 @@ jobs:
     name: PCT - ${{ matrix.test.name }}
     runs-on: ubuntu-latest
     needs:
-      - build  # required for the target output artifacts, so we don't need to build the project again
+      - build
       - sdt
       - test
 
@@ -189,8 +195,8 @@ jobs:
           - name: Relational - Snowflake
             module: legend-engine-xt-relationalStore-snowflake-PCT
 
-#          - name: Relational - Databricks
-#            module: legend-engine-xt-relationalStore-databricks-PCT
+          - name: Relational - Databricks
+            module: legend-engine-xt-relationalStore-databricks-PCT
 
     steps:
       - name: Checkout repo
@@ -205,6 +211,48 @@ jobs:
           name: ${{ matrix.test.name }}
           module: ${{ matrix.test.module }}
 
+  pct-report:
+    name: PCT Reports
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - pct
+      - test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Prepare for PCT Report Generation
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Download PCT Reports Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./legend-engine-config/legend-engine-server/legend-engine-server-http-server/target/classes/pct-reports/
+          pattern: pct-reports-*
+          merge-multiple: true
+
+      - name: Debug PCT Reports Artifacts
+        run: |
+          ls ./legend-engine-config/legend-engine-server/legend-engine-server-http-server/target/classes/pct-reports/
+
+      - name: Generate PCT Report
+        run: |
+          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+
+      - name: Upload PCT HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pct-html-report
+          path: target/ok.html
+
+      - name: Preview PCT HTML Report
+        uses: pavi2410/html-preview-action@v4
+        with:
+          html_file: target/ok.html
+          job_summary: true
+
   cleanup:
     name: After Test
     runs-on: ubuntu-latest
@@ -214,6 +262,7 @@ jobs:
       - pct
       - sdt
       - test
+      - pct-report
 
     steps:
       - name: Checkout repo
