@@ -39,9 +39,9 @@ public interface Sink
     @Deprecated
     Field evolveFieldLength(Field evolveFrom, Field evolveTo);
 
-    Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement);
+    Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType);
 
-    Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement);
+    Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType);
 
     @Deprecated
     Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale);

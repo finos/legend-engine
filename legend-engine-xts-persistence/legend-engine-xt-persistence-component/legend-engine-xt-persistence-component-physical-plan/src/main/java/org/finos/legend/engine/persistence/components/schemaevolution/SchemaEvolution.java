@@ -114,25 +114,6 @@ public class SchemaEvolution
         this.ingestMode = ingestMode;
         this.schemaEvolutionCapabilitySet = schemaEvolutionCapabilitySet;
         this.ignoreCase = ignoreCase;
-        this.validateCapabilities();
-    }
-
-    private void validateCapabilities()
-    {
-        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE) && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY))
-        {
-            throw new IllegalArgumentException("Invalid schema evolution capabilities. Select either DATA_TYPE_LENGTH_CHANGE or DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY.");
-        }
-
-        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE) && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY))
-        {
-            throw new IllegalArgumentException("Invalid schema evolution capabilities. Select either DATA_TYPE_SCALE_CHANGE or DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY.");
-        }
-
-        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE) && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE_ALLOW_MANDATORY_TO_OPTIONAL_ONLY))
-        {
-            throw new IllegalArgumentException("Invalid schema evolution capabilities. Select either COLUMN_NULLABILITY_CHANGE or COLUMN_NULLABILITY_CHANGE_ALLOW_MANDATORY_TO_OPTIONAL_ONLY.");
-        }
     }
 
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, SchemaDefinition stagingDataset)
@@ -215,8 +196,8 @@ public class SchemaEvolution
 
         DataTypeEvolutionType dataTypeEvolutionType = getDataTypeEvolutionType(mainDataType, stagingDataType);
         DataType evolveToDataType = getEvolveToDataType(mainDataType, stagingDataType, dataTypeEvolutionType);
-        Optional<Integer> evolveToLength = sink.getEvolveToLength(columnName, mainLength, stagingLength, mainDataType, stagingDataType, dataTypeEvolutionType, !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE));
-        Optional<Integer> evolveToScale = sink.getEvolveToScale(columnName, mainScale, stagingScale, mainDataType, stagingDataType, dataTypeEvolutionType, !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE));
+        Optional<Integer> evolveToLength = sink.getEvolveToLength(columnName, mainLength, stagingLength, mainDataType, stagingDataType, dataTypeEvolutionType);
+        Optional<Integer> evolveToScale = sink.getEvolveToScale(columnName, mainScale, stagingScale, mainDataType, stagingDataType, dataTypeEvolutionType);
         boolean evolveToNullable = stagingField.nullable();
 
         Field evolveTo = matchedMainField
@@ -288,7 +269,7 @@ public class SchemaEvolution
         if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
         {
             if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
-                    || (!(schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE) || schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY))))
+                    || !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE))
             {
                 throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
             }
@@ -297,7 +278,7 @@ public class SchemaEvolution
         if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
         {
             if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                    || (!(schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE) || schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY))))
+                    || !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE))
             {
                 throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
             }
@@ -315,11 +296,7 @@ public class SchemaEvolution
     {
         if (mainDataField.nullable() && !newField.nullable())
         {
-            if (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
-            {
-                throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is changed from nullable to non-nullable, but user capability does not allow it", mainDataField.name()));
-            }
-            // Else means COLUMN_NULLABILITY_CHANGE is selected, we do nothing
+            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" cannot be changed from nullable to non-nullable", mainDataField.name()));
         }
         else if (!mainDataField.nullable() && newField.nullable())
         {
@@ -327,7 +304,7 @@ public class SchemaEvolution
             if (!mainDataField.primaryKey())
             {
                 // Create the alter statement for changing the column nullability
-                if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE) || schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE_ALLOW_MANDATORY_TO_OPTIONAL_ONLY))
+                if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
                 {
                     operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
                     modifiedFields.add(newField);

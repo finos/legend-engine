@@ -183,22 +183,22 @@ public abstract class RelationalSink implements Sink
         return createNewField(evolveTo, evolveFrom, length, scale);
     }
 
-    public Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement)
+    public Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType)
     {
-        return getEvolveToSize(columnName, mainLength, stagingLength, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultLength, failOnDecrement);
+        return getEvolveToSize(columnName, mainLength, stagingLength, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultLength);
     }
 
-    public Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, boolean failOnDecrement)
+    public Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType)
     {
-        return getEvolveToSize(columnName, mainScale, stagingScale, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultScale, failOnDecrement);
+        return getEvolveToSize(columnName, mainScale, stagingScale, mainType, stagingType, dataTypeEvolutionType, this.dataTypeToDefaultSizeMapping::getDefaultScale);
     }
 
-    private Optional<Integer> getEvolveToSize(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction, boolean failOnDecrement)
+    private Optional<Integer> getEvolveToSize(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction)
     {
-        // When both main and staging have size, return the greater one (or fail the process if capability does not allow decrement)
+        // When both main and staging have size, return staging size if it is larger
         if (mainSize.isPresent() && stagingSize.isPresent())
         {
-            return Optional.of(findMaxOrFail(columnName, mainSize.get(), stagingSize.get(), failOnDecrement));
+            return Optional.of(validateAgainstDecrementAndReturnStagingSize(columnName, mainSize.get(), stagingSize.get()));
         }
 
         // When both sides do not have size, return empty size
@@ -207,11 +207,11 @@ public abstract class RelationalSink implements Sink
             return Optional.empty();
         }
 
-        // When either side does not have size, we give the default value to the missing side and return the greater one (or fail the process if capability does not allow decrement)
-        Optional<Integer> maxSizeComparingWithDefault = getDefaultValueForMissingSizeAndReturnMax(columnName, mainSize, stagingSize, mainType, stagingType, dataTypeToDefaultSizeFunction, failOnDecrement);
-        if (maxSizeComparingWithDefault.isPresent())
+        // When either side does not have size, we give the default value to the missing side and return staging size if it is larger
+        Optional<Integer> newStagingSize = getDefaultValueForMissingSizeAndReturnStagingSize(columnName, mainSize, stagingSize, mainType, stagingType, dataTypeToDefaultSizeFunction);
+        if (newStagingSize.isPresent())
         {
-            return maxSizeComparingWithDefault;
+            return newStagingSize;
         }
         else
         {
@@ -230,17 +230,17 @@ public abstract class RelationalSink implements Sink
         }
     }
 
-    private Optional<Integer> getDefaultValueForMissingSizeAndReturnMax(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction, boolean failOnDecrement)
+    private Optional<Integer> getDefaultValueForMissingSizeAndReturnStagingSize(String columnName, Optional<Integer> mainSize, Optional<Integer> stagingSize, DataType mainType, DataType stagingType, Function<DataType, Optional<Integer>> dataTypeToDefaultSizeFunction)
     {
         if (mainSize.isPresent() && !stagingSize.isPresent())
         {
             Optional<Integer> defaultSizeForStaging = dataTypeToDefaultSizeFunction.apply(stagingType);
-            return defaultSizeForStaging.map(size -> findMaxOrFail(columnName, mainSize.get(), size, failOnDecrement));
+            return defaultSizeForStaging.map(size -> validateAgainstDecrementAndReturnStagingSize(columnName, mainSize.get(), size));
         }
         else if (!mainSize.isPresent() && stagingSize.isPresent())
         {
             Optional<Integer> defaultSizeForMain = dataTypeToDefaultSizeFunction.apply(mainType);
-            return defaultSizeForMain.map(size -> findMaxOrFail(columnName, size, stagingSize.get(), failOnDecrement));
+            return defaultSizeForMain.map(size -> validateAgainstDecrementAndReturnStagingSize(columnName, size, stagingSize.get()));
         }
         else
         {
@@ -248,14 +248,14 @@ public abstract class RelationalSink implements Sink
         }
     }
 
-    private int findMaxOrFail(String columnName, int mainSize, int stagingSize, boolean failOnDecrement)
+    private int validateAgainstDecrementAndReturnStagingSize(String columnName, int mainSize, int stagingSize)
     {
-        if (failOnDecrement && stagingSize < mainSize)
+        if (stagingSize < mainSize)
         {
-            throw new IncompatibleSchemaChangeException(String.format("Data type size is decremented from \"%s\" to \"%s\" for column \"%s\", but user capability does not allow it", mainSize, stagingSize, columnName));
+            throw new IncompatibleSchemaChangeException(String.format("Data type size is decremented from \"%s\" to \"%s\" for column \"%s\"", mainSize, stagingSize, columnName));
         }
 
-        return Math.max(mainSize, stagingSize);
+        return stagingSize;
     }
 
     @Deprecated

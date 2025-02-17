@@ -269,7 +269,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
     }
 
-    // Data sizing (length) changes but user capability doesn't allow it --> throws exception
+    // Data sizing (length) changes decrement --> throws exception
     // Alter column
     // DESCRIPTION: VARCHAR(1000) -> VARCHAR(64)
     @Test
@@ -287,8 +287,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE_ALLOW_INCREMENT_ONLY);
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE_ALLOW_INCREMENT_ONLY);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
         try
@@ -298,7 +298,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type size is decremented from \"1000\" to \"64\" for column \"description\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"1000\" to \"64\" for column \"description\"", e.getMessage());
         }
     }
 

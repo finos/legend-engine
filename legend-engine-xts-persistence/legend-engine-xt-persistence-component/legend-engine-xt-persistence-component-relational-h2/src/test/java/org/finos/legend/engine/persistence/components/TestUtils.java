@@ -1722,7 +1722,7 @@ public class TestUtils
                 .addFields(name)
                 .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("char_5").build())
                 .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
-                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(1000), Optional.empty())).fieldAlias("char_100").build())
                 .addFields(digest)
                 .build())
             .build();
@@ -1738,7 +1738,7 @@ public class TestUtils
                 .addFields(name)
                 .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("char_5").build())
                 .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
-                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(100), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(1000), Optional.empty())).fieldAlias("char_100").build())
                 .addFields(digestWithLength)
                 .build())
             .build();
@@ -1755,7 +1755,6 @@ public class TestUtils
                 .addFields(name)
                 .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
                 .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("varchar_10").build())
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("another_varchar_10").build())
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
@@ -1774,7 +1773,6 @@ public class TestUtils
                 .addFields(name)
                 .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias("decimal_10_2").build())
                 .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).fieldAlias("varchar_10").build())
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.STRING, Optional.of(10), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.STRING, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
                 .addFields(digest)
                 .build())
@@ -1791,9 +1789,38 @@ public class TestUtils
                 .addFields(name)
                 .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
                 .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_10").build())
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
                 .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableForImplicitDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForImplicitDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.STRING, Optional.of(10), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
                 .build())
             .build();
     }
@@ -1807,7 +1834,6 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar_64").build())
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
@@ -1824,7 +1850,6 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar_64").build())
                 .addFields(digest)
                 .build())
@@ -1839,9 +1864,38 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar").build())
                 .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_64").build())
                 .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableForSameTypeDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForSameTypeDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
                 .build())
             .build();
     }

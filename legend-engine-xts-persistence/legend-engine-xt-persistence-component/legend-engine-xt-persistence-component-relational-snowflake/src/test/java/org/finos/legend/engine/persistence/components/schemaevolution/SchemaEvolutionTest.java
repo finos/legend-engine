@@ -101,13 +101,15 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
-        Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
+        }
     }
 
     // Data sizing change (length) in main table column and data_type_size_change capability allowed with upper case optimizer enabled
@@ -133,12 +135,15 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
-        Assertions.assertEquals(expectedSchemaEvolutionModifySizeWithUpperCase, sqlsForSchemaEvolution.get(0));
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
+        }
     }
 
     //Data sizing (length) changes but user capability doesn't allow it --> throws exception
@@ -168,7 +173,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\", but user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
         }
     }
 
