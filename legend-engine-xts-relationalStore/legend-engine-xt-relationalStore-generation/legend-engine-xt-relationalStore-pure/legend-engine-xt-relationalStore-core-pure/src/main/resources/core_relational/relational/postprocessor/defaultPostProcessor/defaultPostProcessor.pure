@@ -58,6 +58,7 @@ function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime
 function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Extension[*]->Result<SelectSQLQuery|1>[1]}>[*]
 {
    [
+      meta::relational::postProcessor::cte::collectCommonTableExpressionReferences_SelectSQLQuery_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__Extension_MANY__Result_1_,
       meta::relational::postProcessor::comments::prependSQLComments_SelectSQLQuery_1__Extension_MANY__Result_1_

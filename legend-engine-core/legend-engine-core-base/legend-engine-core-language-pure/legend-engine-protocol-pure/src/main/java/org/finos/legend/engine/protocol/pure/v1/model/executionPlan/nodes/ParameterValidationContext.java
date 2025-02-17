@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = EnumValidationContext.class, name = "enumValidationContext")
+        @JsonSubTypes.Type(value = EnumValidationContext.class, name = "enumValidationContext"),
+        @JsonSubTypes.Type(value = ProtocolObjectValidationContext.class, name = "protocolObjectValidationContext")
 })
 
 // NOTE: due to plan generator producing duplicated _type field, we need to enable this

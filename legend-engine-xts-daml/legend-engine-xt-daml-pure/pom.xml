@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-daml</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.69.3-SNAPSHOT</version>
+        <version>4.70.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -184,6 +184,23 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-haskell-pure</artifactId>
         </dependency>
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
     </dependencies>
 
 </project>

@@ -71,7 +71,7 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
   print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for JsonSchema \n', |''));
 
   let conventions        = $context.conventions;
-  let pureClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+  let pureClass          = $node.resultType.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
   let javaClass          = $conventions->className($pureClass);
   let dependentClass     = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass, true);
   let readableClasses    = $pureClass->concatenate($dependentClass);

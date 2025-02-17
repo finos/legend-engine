@@ -151,6 +151,11 @@ Class meta::protocols::pure::v1_33_0::metamodel::executionPlan::EnumValidationCo
    validEnumValues: String[*];
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::executionPlan::ProtocolObjectValidationContext extends meta::protocols::pure::v1_33_0::metamodel::executionPlan::ParameterValidationContext
+{
+  parameterClassName: String[1];
+}
+
 Class <<typemodifiers.abstract>> meta::protocols::pure::v1_33_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode extends ExecutionNode
 {
    graphFetchTree : meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::GraphFetchTree[1];

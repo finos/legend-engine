@@ -438,7 +438,10 @@ function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func
                                                                             with_T_m__PackageableRuntime_1__T_m_,
                                                                             with_T_m__Mapping_1__PackageableRuntime_1__T_m_,
                                                                             with_T_m__Runtime_1__T_m_,
+                                                                            from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+                                                                            from_FunctionDefinition_1__Runtime_1__T_m_,
                                                                             with_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                            from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
                                                                             from_T_m__Runtime_1__T_m_,
                                                                             from_T_m__Mapping_1__Runtime_1__T_m_,
                                                                             from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
@@ -686,7 +689,7 @@ function meta::pure::functions::meta::resolve(v:VariableExpression[1], vars:Map<
                  |let res = $open.values;
                   $res->match([
                     {pv: meta::pure::executionPlan::PlanVarPlaceHolder[1] |
-                      ^InstanceValue(values=$pv, genericType=^GenericType(rawType=$pv.type), multiplicity=$pv.multiplicity->defaultIfEmpty(ZeroMany)->toOne())->evaluateAndDeactivate();
+                      ^InstanceValue(values=$pv, genericType=$pv.genericType, multiplicity=$pv.multiplicity->defaultIfEmpty(ZeroMany)->toOne())->evaluateAndDeactivate();
                     },
                     {a: Any[*] | 
                       if($res->isEmpty(),

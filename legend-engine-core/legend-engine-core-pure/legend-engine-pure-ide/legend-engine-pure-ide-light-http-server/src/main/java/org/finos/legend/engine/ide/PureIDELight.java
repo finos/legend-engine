@@ -14,15 +14,18 @@
 
 package org.finos.legend.engine.ide;
 
+import java.nio.file.Paths;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
+import org.finos.legend.engine.server.test.shared.MetadataTestServerResource;
+import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
+import org.finos.legend.engine.server.test.shared.ServerTestServerResource;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.MutableFSCodeStorage;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
-
-import java.nio.file.Paths;
 
 public class PureIDELight extends PureIDEServer
 {
@@ -30,7 +33,19 @@ public class PureIDELight extends PureIDEServer
     {
         System.setProperty("legend.test.h2.port", "1975");
         System.setProperty("user.timezone", "GMT");
-        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
+
+        // Uncomment to be able to run   AlloyOny test cases
+        // withAlloyServerSupport();
+
+        new PureIDELight().run(args.length == 0 ? new String[] {"server", "legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json"} : args);
+    }
+
+    private static void withAlloyServerSupport() throws Exception
+    {
+        PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
+        new H2TestServerResource().start();
+        new MetadataTestServerResource().start();
+        new ServerTestServerResource("org/finos/legend/engine/server/test/userTestConfig.json").start();
     }
 
     @Override
@@ -112,6 +127,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-pure", "external-language-java"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-featureBased-pure", "external-language-java-feature-based-generation"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
+                .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-externalFormat-pure", "java-platform-binding-external-format"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-postgresSql/legend-engine-xt-relationalStore-postgresSqlModel-pure", "external-store-relational-postgres-sql-model"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
@@ -128,6 +144,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-SDT-pure", "external-store-relational-sdt"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-duckdb"))
+                .with(this.buildCore("legend-engine-xts-ingest/legend-engine-xt-ingest-pure", "ingest"))
                 ;
     }
 

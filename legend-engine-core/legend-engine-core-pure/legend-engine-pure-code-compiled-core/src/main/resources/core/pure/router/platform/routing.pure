@@ -31,7 +31,8 @@ function meta::pure::router::platform::routing::getPlatformRoutingStrategy():Pla
   ^PlatformRoutingStrategy(processClass    = meta::pure::router::platform::routing::processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
                            processProperty = meta::pure::router::platform::routing::processProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
                            wrapValueSpec   = meta::pure::router::platform::routing::wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
-                           toString        = {strategy:RoutingStrategy[1] | 'PlatformRoutingStrategy'});
+                           toString        = {strategy:RoutingStrategy[1] | 'PlatformRoutingStrategy'}
+  );
 }
 
 function <<access.private>> meta::pure::router::platform::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
@@ -84,7 +85,8 @@ function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecifi
                                                        ^$i(values = $updatedValues);,
                v:VariableExpression[1]               | $v,
                f: FunctionRoutedValueSpecification[1]| $f,
-               e:ExtendedRoutedValueSpecification[1] | $e->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug)
+               e:ExtendedRoutedValueSpecification[1] | $e->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug),
+               nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs
       ]
    );
 }
@@ -150,7 +152,8 @@ function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[
                v:VariableExpression[1]               | $v,
                f: FunctionRoutedValueSpecification[1]| $f,
                e:ExtendedRoutedValueSpecification[1] | $e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug),
-               c:ClusteredValueSpecification[1]      | $c
+               c:ClusteredValueSpecification[1]      | $c,
+               nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs
       ]
    );
 }

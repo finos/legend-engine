@@ -165,7 +165,7 @@ function meta::external::query::sql::transformation::queryToPure::constantPlan(v
     rootExecutionNode = ^ConstantExecutionNode(values = $value->match([
       a:Any[1] | $a,
       a:Any[*] | list($a)
-    ]), resultType = ^DataTypeResultType(type = $value->type())),
+    ]), resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = $value->type()))),
     authDependent = false,
     func = {|$value},
     runtime  = ^meta::core::runtime::Runtime(),

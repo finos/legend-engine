@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
-        <version>4.69.3-SNAPSHOT</version>
+        <version>4.70.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -68,7 +68,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+                        <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -116,7 +116,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+                        <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -168,7 +168,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -628,7 +628,7 @@ function meta::external::store::mongodb::executionTest::executeAndAssert(f: Func
     $extensions
   )->meta::json::parseJSON()->meta::json::toPrettyJSONString();
 
-  assertEquals($expectedResult, $result);
+  assertJsonStringsEqual($expectedResult, $result);
 }
 
 

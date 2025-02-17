@@ -45,9 +45,9 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
 
             // BUG: Column name with special characters is not properly escaped
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
+            one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.tb"),
 
-            one("meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_", "\"AsOfJoins are not supported by H2!\""),
-            one("meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_", "\"AsOfJoins are not supported by H2!\"")
+            pack("meta::pure::functions::relation::tests::asOfJoin", "\"AsOfJoins are not supported by H2!\"")
         );
 
     public static Test suite()
