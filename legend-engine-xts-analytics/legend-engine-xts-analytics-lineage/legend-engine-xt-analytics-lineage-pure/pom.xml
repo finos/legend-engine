@@ -257,12 +257,7 @@
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
             <type>test-jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-FCT-pure</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
+
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>

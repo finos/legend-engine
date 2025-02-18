@@ -25,6 +25,20 @@ Class meta::relational::fct::CSVSetupData extends meta::pure::test::fct::SetupDa
   path:String[1];
 }
 
+function meta::relational::fct::relationalRunTimeMock(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1]
+{
+      $mappingTest.setupData->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
+                                                                                                                      datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
+                                                                                                                      authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+                                                                                                                    ),
+                                                            element = $c.database));
+                                  ] );
+   
+
+
+}
+
+
 
 function   meta::relational::fct::relationalExecuteWrapperExecuteSimple(parameters:meta::pure::test::fct::TestParameters[1]):Boolean[1]
 { 

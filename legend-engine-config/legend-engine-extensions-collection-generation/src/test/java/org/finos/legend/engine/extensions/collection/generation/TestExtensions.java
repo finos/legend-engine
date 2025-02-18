@@ -115,7 +115,6 @@ import org.finos.legend.pure.runtime.java.compiled.serialization.binary.Distribu
 import org.finos.legend.pure.runtime.java.compiled.serialization.binary.DistributedMetadataSpecification;
 import org.junit.Assert;
 import org.junit.Test;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -534,7 +533,6 @@ public class TestExtensions
                 .with("core_analytics_binding")
                 .with("core_analytics_class")
                 .with("core_analytics_function")
-                .with("core_analytics_test_coverage")
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
@@ -604,8 +602,6 @@ public class TestExtensions
                 .with("core_external_store_relational_sql_dialect_translation")
                 .with("core_external_store_relational_sql_dialect_translation_duckdb")
                 .with("core_external_store_relational_postgres_sql_parser")
-                .with("core_relational_fct")
-                .with("core_external_test_connection")
                 ;
     }
 }
