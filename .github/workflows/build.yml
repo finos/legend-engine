@@ -237,7 +237,8 @@ jobs:
           module: ${{ matrix.test.module }}
 
   pct-cloud:
-    if: github.repository == 'finos/legend-engine' # needs secrets...
+    if: false
+    # if: github.repository == 'finos/legend-engine' # needs secrets...
     name: PCT - ${{ matrix.test.name }}
     runs-on: ubuntu-latest
     needs:

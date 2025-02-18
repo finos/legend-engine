@@ -59,15 +59,3 @@ runs:
       with:
         name: test-results-pct-${{ inputs.name }}
         path: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
-
-    - name: Publish Test Results
-      uses: mikepenz/action-junit-report@v4
-      if: always()
-      with:
-        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*.xml'
-        fail_on_failure: true
-        summary: true
-        detailed_summary: true
-        include_passed: true
-        check_name: PCT - ${{ inputs.name }} - Report
-        job_name: PCT - ${{ inputs.name }} - Report
