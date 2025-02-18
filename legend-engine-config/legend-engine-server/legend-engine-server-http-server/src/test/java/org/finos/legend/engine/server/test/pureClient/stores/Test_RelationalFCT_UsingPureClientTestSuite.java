@@ -21,13 +21,13 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
-import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
+import org.finos.legend.pure.code.core.relational.dbSpecific.RelationalFCTReportH2;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReport
+public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReportH2
 {
     public static Test suite()
     {
@@ -35,7 +35,7 @@ public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTRe
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return wrapSuite(
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Function_1_", true, executionSupport),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Boolean_1_", true,false,executionSupport),
                 PureWithEngineHelper::cleanUp
         );
     }
