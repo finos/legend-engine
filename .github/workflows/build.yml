@@ -306,12 +306,6 @@ jobs:
           name: pct-html-report
           path: target/ok.html
 
-      - name: Preview PCT HTML Report
-        uses: pavi2410/html-preview-action@v4
-        with:
-          html_file: target/ok.html
-          job_summary: true
-
   cleanup:
     name: After Test
     runs-on: ubuntu-latest
