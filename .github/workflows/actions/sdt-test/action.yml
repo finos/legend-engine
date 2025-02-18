@@ -39,15 +39,3 @@ runs:
       with:
         name: test-results-sdt-${{ inputs.check-name }}
         path: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-class }}*.xml'
-
-    - name: Publish Test Results
-      uses: mikepenz/action-junit-report@v4
-      if: always()
-      with:
-        report_paths: '**/${{ inputs.module }}/target/surefire-reports/*${{ inputs.test-class }}*.xml'
-        fail_on_failure: true
-        summary: true
-        detailed_summary: true
-        include_passed: true
-        check_name: SDT - ${{ inputs.check-name }} - Report
-        job_name: SDT - ${{ inputs.check-name }} - Report
