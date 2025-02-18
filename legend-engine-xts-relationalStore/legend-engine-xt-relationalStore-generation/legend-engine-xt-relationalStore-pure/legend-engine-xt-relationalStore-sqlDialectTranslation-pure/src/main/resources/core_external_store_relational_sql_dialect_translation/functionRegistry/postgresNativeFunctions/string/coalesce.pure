@@ -29,35 +29,31 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Coalesce
   (
     name = 'coalesce',
-    documentation = 'Right-pads a string with another string, to a certain length.',
+    documentation = 'Returns the first Non-Null value from a set of elements',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [SqlType, SqlType,SqlType,SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        parameterTypes = [SqlType, SqlType, SqlType, SqlType],
+        returnType = SqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = SqlType
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [SqlType, SqlType,SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        parameterTypes = [SqlType, SqlType, SqlType],
+        returnType = SqlType
       )
     ],
-    // need to write proper tests with Null values 
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [literal('null'), literal('Hello'),literal('2'),literal('World')]),
+        simpleFunctionCall('coalesce', [^NullLiteral(), literal('Hello'), literal('2'), literal('World')]),
         'Hello'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('coalesce', [literal('null'), literal('null'),literal('There!')]),
+        simpleFunctionCall('coalesce', [^NullLiteral(), ^NullLiteral(), literal('There!')]),
         'There!'
       )
     ]

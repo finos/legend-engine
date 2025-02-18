@@ -29,15 +29,20 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod
   (
     name = 'mod',
-    documentation = 'Returns the modarithm for a given number.',
     variations = [
-      
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractIntegerSqlType, AbstractIntegerSqlType],
+        returnType = AbstractIntegerSqlType
+      ),
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
-        returnType = AbstractNumericSqlType,
-        documentation = 'Returns the modarithm of a number (1st arg) with specified base (2nd arg).'
+        returnType = AbstractNumericSqlType
       )
+      
+      
+
     ],
     tests = [
       

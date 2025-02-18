@@ -18,41 +18,46 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Char_length extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Least extends PostgresNativeSqlFunction
 [
-  $this.name == 'char_length'
+  $this.name == 'least'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::char_length(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::least(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Char_length
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Least
   (
-    name = 'char_length',
-    documentation = 'Returns the ASCII value for a given character.',
+    name = 'least',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractStringSqlType,
-        returnType = AbstractIntegerSqlType
+        parameterTypes = [SqlType, SqlType, SqlType, SqlType],
+        returnType = SqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType],
+        returnType = SqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType, SqlType],
+        returnType = SqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('char_length', literal(' ABCD ')),
-        6
+        simpleFunctionCall('least', [^NullLiteral(), literal(3), literal(2), literal(-2)]),
+        -2
       ),
       sqlFunctionTest(
-        simpleFunctionCall('char_length', literal('ABCD')),
-        4
+        simpleFunctionCall('least', [literal(6), literal(1), literal(-1), literal(4)]),
+       -1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('char_length', literal('!')),
-        1
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('char_length', literal('  ')),
-        2
+        simpleFunctionCall('least', [literal('def'), literal('abc'), literal('ghi'), literal('xyz')]),
+        'abc'
       )
     ]
   )

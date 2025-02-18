@@ -29,13 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sign
   (
     name = 'sign',
-    documentation = 'Returns the signe for a given number.',
     variations = [
-      ^SqlFunctionVariation
-      (
-        parameterTypes = DoubleSqlType,
-        returnType = DoubleSqlType
-      ),
        ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
@@ -45,15 +39,15 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     tests = [ 
       sqlFunctionTest(
         simpleFunctionCall('sign', literal(10.1)),
-        1.0
+        1
       ),
       sqlFunctionTest(
         simpleFunctionCall('sign', literal(-2)),
-        -1.0
+        -1
       ),
       sqlFunctionTest(
         simpleFunctionCall('sign', literal(0)),
-        0.0
+        0
       )
     ]
   )

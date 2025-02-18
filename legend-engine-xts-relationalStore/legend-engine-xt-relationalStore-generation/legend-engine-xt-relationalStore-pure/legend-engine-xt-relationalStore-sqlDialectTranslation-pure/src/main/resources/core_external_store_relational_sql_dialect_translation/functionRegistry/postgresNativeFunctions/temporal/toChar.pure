@@ -18,36 +18,41 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Replace extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::ToChar extends PostgresNativeSqlFunction
 [
-  $this.name == 'replace'
+  $this.name == 'to_char'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::replace(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toChar(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Replace
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::ToChar
   (
-    name = 'replace',
+    name = 'to_char',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType,AbstractStringSqlType],
+        parameterTypes = [DateSqlType,AbstractStringSqlType],
+        returnType = AbstractStringSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [TimestampSqlType,AbstractStringSqlType],
         returnType = AbstractStringSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('a'),literal('b')]),
-        'bbcd'
+        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'),literal('Day')]),
+        'Wednesday'
       ),
-       sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('ab'),literal('A')]),
-        'Acd'
+      sqlFunctionTest(
+        simpleFunctionCall('to_char', [cast(literal('2002-04-20 17:31:12.66'), 'TIMESTAMP'),literal('HH12:MI:SS')]),
+        '05:31:12'
       ),
-       sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('mno'),literal('A')]),
-        'abcd'
+      sqlFunctionTest(
+        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'),literal('Month')]),
+        'February'
       )
     ]
   )

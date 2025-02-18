@@ -29,13 +29,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Repeat
   (
     name = 'repeat',
-    documentation = 'Right-pads a string with another string, to a certain length.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractIntegerSqlType],
-        returnType = AbstractStringSqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = AbstractStringSqlType
       )
     ],
     tests = [
