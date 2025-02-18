@@ -70,13 +70,12 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
 
         appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
     ),
-    //TODO activate when relation inference is fixed on project
-    // pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
-    //   |
-    //     let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
+    pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
 
-    //     appliedFunction(project_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
-    // ),
+        appliedFunction(project_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
     pair(groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
         let groupByColumns = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
