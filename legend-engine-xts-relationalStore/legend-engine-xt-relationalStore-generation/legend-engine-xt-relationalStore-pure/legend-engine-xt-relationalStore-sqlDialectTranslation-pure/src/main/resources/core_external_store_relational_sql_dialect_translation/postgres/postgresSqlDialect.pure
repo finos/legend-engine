@@ -32,10 +32,10 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   ^SqlDialect
   (
     dbType = 'Postgres',
-    quoteConfig = postgresQuoteConfiguration(),
+    quoteConfig = doubleQuotesConfiguration_default(),
     nodeProcessors = postgresDialectNodeProcessors(),
-    identifierProcessor = postgresIdentifierProcessor(),
-    expressionPrecedenceComparator = postgresExpressionPrecedenceComparator(),
+    identifierProcessor = identifierProcessor_default(),
+    expressionPrecedenceComparator = expressionPrecedenceComparator_default(),
     keywords = postgresKeywords(),
     functionProcessorDispatch = meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap_SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__Map_1_
   )
@@ -63,124 +63,32 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   ]->newMap()->cast(@Map<String, String>)
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresQuoteConfiguration(): QuoteConfiguration[1]
-{
-  ^QuoteConfiguration
-  (
-    start = '"',
-    end = '"',
-    escape = '""'
-  )
-}
+
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
 {
   newMap(
-    postgresDialectStatementProcessors()
+    dialectStatementProcessors_default()
     ->concatenate(
-      postgresDialectRelationProcessors()
+      dialectRelationProcessors_default()
     )
     ->concatenate(
-      postgresDialectExpressionProcessors()
+      dialectExpressionProcessors_default()
     )
     ->concatenate(
-      postgresDialectLiteralProcessors()
+      dialectLiteralProcessors_default()
     )
     ->concatenate(
-      postgresDialectSelectItemProcessors()
+      dialectSelectItemProcessors_default()
     )
     ->concatenate(
-      postgresDialectOtherNodeProcessors()
+      dialectOtherNodeProcessors_default()
     )
     ->map(n | pair($n.nodeType, $n))
   )
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectStatementProcessors(): NodeProcessor<Statement>[*]
-{
-  [
-    queryProcessor_default(),
-    windowProcessor_default()
-  ]
-}
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectRelationProcessors(): NodeProcessor<Relation>[*]
-{
-  [
-    tableProcessor_default(),
-    aliasedRelationProcessor_default(),
-    joinProcessor_default(),
-    querySpecificationProcessor_default(),
-    unionProcessor_default(),
-    tableSubqueryProcessor_default()
-  ]
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
-{
-  [
-    comparisonExpressionNodeProcessor_default(),
-    logicalBinaryExpressionNodeProcessor_default(),
-    notExpressionNodeProcessor_default(),
-    arithmeticExpressionNodeProcessor_default(),
-    qualifiedNameReferenceNodeProcessor_default(),
-    isNullPredicateNodeProcessor_default(),
-    isNotNullPredicateNodeProcessor_default(),
-    negativeNodeProcessor_default(),
-    currentTimeNodeProcessor_default(),
-    whenClauseNodeProcessor_default(),
-    searchedCaseExpressionNodeProcessor_default(),
-    columnTypeProcessor_default(),
-    castProcessor_default(),
-    inListExpressionProcessor_default(),
-    inPredicateProcessor_default(),
-    extractProcessor_default(),
-    betweenPredicateProcessor_default(),
-    functionCallProcessor_default(),
-    subQueryExpressionProcessor_default()
-  ]
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectLiteralProcessors(): NodeProcessor<Literal>[*]
-{
-  [
-    integerLiteralNodeProcessor_default(),
-    stringLiteralNodeProcessor_default(),
-    booleanLiteralNodeProcessor_default(),
-    longLiteralNodeProcessor_default(),
-    doubleLiteralNodeProcessor_default(),
-    nullLiteralNodeProcessor_default()
-  ]
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
-{
-  [
-    allColumnsNodeProcessor_default(),
-    singleColumnNodeProcessor_default()
-  ]
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectOtherNodeProcessors(): NodeProcessor<Node>[*]
-{
-  [
-    sortItemProcessor_default(),
-    selectProcessor_default()
-  ]
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresIdentifierProcessor(): IdentifierProcessor[1]
-{
-  identifierProcessor_default()
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
-{
-  ^ExpressionPrecedenceComparator(
-    findOperatorType = findOperatorType_default_Expression_1__String_1_,
-    operatorPrecedence = operatorPrecedence_default()
-  )
-}
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]
 {
@@ -314,10 +222,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Tan, simpleFunctionProcessor('tan')),
     pair(Power, simpleFunctionProcessor('power')),
-    pair(Sign, simpleFunctionProcessor('sign')),
-    pair(Mod,simpleFunctionProcessor('mod')),
-    pair(Round,simpleFunctionProcessor('round')),
-
+    pair(Sign, argTransformFunctionProcessor('sign','cast(sign(%s) as int)')),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(Greatest, simpleFunctionProcessor('greatest')),
+    pair(Least, simpleFunctionProcessor('least')),
 
 
     // String
@@ -328,18 +237,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Ascii, simpleFunctionProcessor('ascii')),
     pair(Lower, simpleFunctionProcessor('lower')),
     pair(Upper, simpleFunctionProcessor('upper')),
-    pair(Repeat,simpleFunctionProcessor('repeat')),
-    pair(Replace,simpleFunctionProcessor('replace')),
-     pair(Md5,simpleFunctionProcessor('md5')),
-    pair(Char_length,simpleFunctionProcessor('char_length')),
-    pair(Chr,simpleFunctionProcessor('chr')),
-    pair(meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Trim,argTransformFunctionProcessor('trim','trim(%s)',{p:String[*]|if($p->size()==1,|$p->at(0),|$p->at(0)->replace('\'','')+' '+$p->at(1)+' from '+$p->at(2))})),
-    pair(Left,simpleFunctionProcessor('left')),
-    pair(Right,simpleFunctionProcessor('right')),
-    pair(Strpos,simpleFunctionProcessor('strpos')),
-    pair(Concat,simpleFunctionProcessor('concat')),
-    pair(Coalesce,argTransformFunctionProcessor('coalesce','coalesce(%s,%s,%s,%s)',{p:String[*]|$p->concatArgumentHandlerForPostgres()->map(e|if($e->replace('\'','')=='null',|$e->replace('\'',''),|$e)) })),
-
+    pair(Repeat, simpleFunctionProcessor('repeat')),
+    pair(Replace, simpleFunctionProcessor('replace')),
+    pair(Md5, simpleFunctionProcessor('md5')),
+    pair(CharLength, simpleFunctionProcessor('char_length')),
+    pair(Chr, simpleFunctionProcessor('chr')),
+    pair(Left, simpleFunctionProcessor('left')),
+    pair(Right, simpleFunctionProcessor('right')),
+    pair(StrPos, simpleFunctionProcessor('strpos')),
+    pair(Concat, simpleFunctionProcessor('concat')),
+    pair(Coalesce, simpleFunctionProcessor('coalesce')),
+   
 
     // Boolean
     pair(RegexpLike, argTransformFunctionProcessor('regexp_like', regexpPattern('~'), {p:String[*]|$p->transformRegexpParams()})),
@@ -349,19 +257,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, argTransformFunctionProcessor('date_part', 'cast(floor(date_part(%s, %s)) as integer)')), // Postgres returns double for some reason, also, date_part to second includes milliseconds, which is non-standard.
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, simpleFunctionProcessor('to_date')),
-    pair(ToTimestamp, simpleFunctionProcessor('to_timestamp'))
+    pair(ToTimestamp, simpleFunctionProcessor('to_timestamp')),
+    pair(ToChar, argTransformFunctionProcessor('to_char','trim(to_char(%s,%s))'))
   ])
 }
 
-function meta::external::store::relational::sqlDialectTranslation::postgres::concatArgumentHandlerForPostgres(p:String[*]): String[*]
-{
- if($p->size()==2,|
-   $p->concatenate('null')->concatenate('null'),|
-   if($p->size()==3,|
-   $p->concatenate('null'),|
-   $p
-   )
- );
-}
+
 
 // --------------------------------------------------------------------------

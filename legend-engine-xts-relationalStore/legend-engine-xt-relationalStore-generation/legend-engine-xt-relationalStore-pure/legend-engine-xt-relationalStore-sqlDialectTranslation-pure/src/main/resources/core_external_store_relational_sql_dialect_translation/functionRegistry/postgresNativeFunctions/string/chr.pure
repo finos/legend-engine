@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Chr
   (
     name = 'chr',
-    documentation = 'Returns the given string in Chr case.',
+    documentation = 'Returns the corresponding  Character  for a given Integer in ASCII',
     variations = [
       ^SqlFunctionVariation
       (

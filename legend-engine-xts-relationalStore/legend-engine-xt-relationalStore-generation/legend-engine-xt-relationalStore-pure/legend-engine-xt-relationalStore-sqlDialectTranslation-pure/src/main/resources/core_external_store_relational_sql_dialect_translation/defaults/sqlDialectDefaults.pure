@@ -760,3 +760,115 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   regexpPattern('~')->format($processedArgs->transformRegexpParams());
 }
+
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::doubleQuotesConfiguration_default():QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '"',
+    end = '"',
+    escape = '""'
+  )
+}
+
+
+function  meta::external::store::relational::sqlDialectTranslation::defaults::dialectStatementProcessors_default(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dialectRelationProcessors_default(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
+  ]
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dialectLiteralProcessors_default(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default()
+  ]
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dialectSelectItemProcessors_default(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dialectOtherNodeProcessors_default(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default()
+  ]
+}
+
+
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::expressionPrecedenceComparator_default(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
+
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dialectExpressionProcessors_default(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_default(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessor_default(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default()
+  ]
+}
+
+
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::trimProcessor_default(): NodeProcessor<Trim>[1]
+{
+  nodeProcessor(
+    Trim,
+    {sqlDialect, t, state, config |
+     ' TRIM( ' + if($t.mode==TrimMode.BOTH,|'BOTH',|if($t.mode==TrimMode.LEADING,|'LEADING',|'TRAILING')) + ' ' + if($t.characters->isEmpty(),|' ',| $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('FROM', $state, $config) + ' ' 
+      + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +' )'
+    }
+  )
+}
+

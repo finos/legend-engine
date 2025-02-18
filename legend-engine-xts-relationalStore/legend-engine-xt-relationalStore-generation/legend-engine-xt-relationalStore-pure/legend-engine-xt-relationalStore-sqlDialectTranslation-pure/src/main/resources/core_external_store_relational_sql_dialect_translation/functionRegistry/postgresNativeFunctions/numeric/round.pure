@@ -29,20 +29,17 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Round
   (
     name = 'round',
-    documentation = 'Returns the modarithm for a given number.',
     variations = [
       
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractNumericSqlType, AbstractIntegerSqlType],
-        returnType = AbstractNumericSqlType,
-        documentation = 'Returns the modarithm of a number (1st arg) with specified base (2nd arg).'
+        returnType = AbstractNumericSqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractIntegerSqlType,
-        documentation = 'Returns the modarithm of a number (1st arg) with specified base (2nd arg).'
+        returnType = AbstractNumericSqlType
       )
     ],
     tests = [

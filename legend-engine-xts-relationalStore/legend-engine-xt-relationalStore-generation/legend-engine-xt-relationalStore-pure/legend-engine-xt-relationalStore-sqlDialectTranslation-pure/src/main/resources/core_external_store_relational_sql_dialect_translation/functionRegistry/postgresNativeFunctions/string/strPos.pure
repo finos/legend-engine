@@ -18,24 +18,22 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Strpos extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::StrPos extends PostgresNativeSqlFunction
 [
   $this.name == 'strpos'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strpos(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Strpos
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::StrPos
   (
     name = 'strpos',
-    documentation = 'Right-pads a string with another string, to a certain length.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractStringSqlType  ],
-        returnType = AbstractStringSqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [

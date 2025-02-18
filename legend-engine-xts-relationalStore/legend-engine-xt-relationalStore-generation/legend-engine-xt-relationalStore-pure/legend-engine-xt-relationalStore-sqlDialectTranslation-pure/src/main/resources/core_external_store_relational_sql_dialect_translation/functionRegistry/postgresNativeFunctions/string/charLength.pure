@@ -18,41 +18,42 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::To_char extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::CharLength extends PostgresNativeSqlFunction
 [
-  $this.name == 'to_char'
+  $this.name == 'char_length'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::to_char(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::charLength(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::To_char
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::CharLength
   (
-    name = 'to_char',
+    name = 'char_length',
+    documentation = 'Returns the length of a String .',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [DateSqlType,AbstractStringSqlType],
-        returnType = AbstractStringSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [TimestampSqlType,AbstractStringSqlType],
-        returnType = AbstractStringSqlType
+        parameterTypes = AbstractStringSqlType,
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'),literal('Day')]),
-        'Wednesday'
+        simpleFunctionCall('char_length', literal(' ABCD ')),
+        6
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_char', [cast(literal('2002-04-20 17:31:12.66'), 'TIMESTAMP'),literal('HH12:MI:SS')]),
-        '05:31:12'
+        simpleFunctionCall('char_length', literal('ABCD')),
+        4
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('char_length', literal('!')),
+        1
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('char_length', literal('  ')),
+        2
       )
     ]
   )
 }
-
-
-//TimestampSqlType

@@ -29,7 +29,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Md5
   (
     name = 'md5',
-    documentation = 'Returns the given string in Md5 case.',
     variations = [
       ^SqlFunctionVariation
       (

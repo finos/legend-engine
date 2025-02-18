@@ -18,47 +18,46 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Trim extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Greatest extends PostgresNativeSqlFunction
 [
-  $this.name == 'trim'
+  $this.name == 'greatest'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::trim(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::greatest(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Trim
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Greatest
   (
-    name = 'trim',
-    documentation = 'Returns the given string in Trim case.',
+    name = 'greatest',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType],
-        returnType = AbstractStringSqlType
+        parameterTypes = [SqlType, SqlType, SqlType, SqlType],
+        returnType = SqlType
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType,AbstractStringSqlType,AbstractStringSqlType],
-        returnType = AbstractStringSqlType
+        parameterTypes = [SqlType, SqlType],
+        returnType = SqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType, SqlType],
+        returnType = SqlType
       )
     ],
     tests = [
-      
       sqlFunctionTest(
-        simpleFunctionCall('trim', [literal('both'),literal('abc'),literal('abDEFab')] ),
-        'DEF'
+        simpleFunctionCall('greatest', [^NullLiteral(), literal(3), literal(2), literal(-2)]),
+        3
       ),
       sqlFunctionTest(
-        simpleFunctionCall('trim', literal('  abcd  ') ),
-        'abcd'
+        simpleFunctionCall('greatest', [literal(6), literal(1), literal(-1), literal(4)]),
+        6
       ),
       sqlFunctionTest(
-        simpleFunctionCall('trim', [literal('leading'),literal('abc'),literal('abDEFab')] ),
-        'DEFab'
-      ),
-       sqlFunctionTest(
-        simpleFunctionCall('trim', [literal('trailing'),literal('abc'),literal('abDEFab')] ),
-        'abDEF'
+        simpleFunctionCall('greatest', [literal('def'), literal('abc'), literal('ghi'), literal('xyz')]),
+        'xyz'
       )
     ]
   )

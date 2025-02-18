@@ -29,38 +29,37 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Concat
   (
     name = 'concat',
-    documentation = 'Right-pads a string with another string, to a certain length.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType],
+        returnType = AbstractStringSqlType
+       
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType, SqlType],
         returnType = AbstractStringSqlType,
         documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [SqlType, SqlType,SqlType],
-        returnType = AbstractStringSqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [SqlType, SqlType,SqlType,SqlType],
+        parameterTypes = [SqlType, SqlType, SqlType, SqlType],
         returnType = AbstractStringSqlType,
         documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('concat', [literal('Hello'), literal('!'),literal(2),literal('World')]),
+        simpleFunctionCall('concat', [literal('Hello'), literal('!'), literal(2), literal('World')]),
         'Hello!2World'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('concat', [literal('Hi'), literal(' '),literal('There!')]),
+        simpleFunctionCall('concat', [literal('Hi'), literal(' '), literal('There!')]),
         'Hi There!'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('concat', [literal('Hello'),literal('World')]),
+        simpleFunctionCall('concat', [literal('Hello'), literal('World')]),
         'HelloWorld'
       )
     ]
