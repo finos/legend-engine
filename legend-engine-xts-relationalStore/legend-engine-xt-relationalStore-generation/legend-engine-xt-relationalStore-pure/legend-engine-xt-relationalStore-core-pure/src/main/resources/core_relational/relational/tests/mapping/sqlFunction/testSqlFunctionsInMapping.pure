@@ -681,9 +681,8 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatRemResult : Integer[1];
 
    string2Date: Date[1];
-   string2DateUserDefinedFormat1: Date[1];
-   string2DateUserDefinedFormat2: Date[1];
-   string2DateUserDefinedFormat3: Date[1];
+   string2DateUserDefinedFormatDDMMMYYYY: Date[1];
+   string2DateUserDefinedFormatDDMONYYYY: Date[1];
    string2TimestampStr: String[1];
    string2TimestampFormat : Date[1];
    string2DateTime: DateTime[1];
@@ -796,9 +795,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           string2Decimal : parseDecimal(string2Decimal),
           string2decimal: trim(string2Decimal),
           string2Date  : parseDate(string2date),
-          string2DateUserDefinedFormat1  : parseDate(string2date, 'DDMMMYYYY'),
-          string2DateUserDefinedFormat2  : parseDate(string2date, 'DDMONYYYY'),
-          string2DateUserDefinedFormat3  : parseDate(string2date, 'DDMMMMYYYY'),
+          string2DateUserDefinedFormatDDMMMYYYY  : parseDate(string2date, 'DDMMMYYYY'),
+          string2DateUserDefinedFormatDDMONYYYY  : parseDate(string2date, 'DDMONYYYY'),
           string2TimestampStr : string2date,
           string2TimestampFormat : toTimestamp(stringDateTimeFormat,'YYYY-MM-DD HH24:MI:SS'),
           string2Integer  : parseInteger(string2Integer),

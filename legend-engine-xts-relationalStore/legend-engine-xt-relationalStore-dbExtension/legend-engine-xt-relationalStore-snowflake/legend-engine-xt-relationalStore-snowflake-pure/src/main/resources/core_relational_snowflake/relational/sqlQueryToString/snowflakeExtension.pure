@@ -307,7 +307,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::dateFormatsSnowFlake():String[*]
 {
-   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'DDMMMYYYY', 'DDMONYYYY', 'DDMMMMYYYY', 'DD/MM/YYYY', 'YYYY/MM/DD'];
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'DDMMMYYYY', 'DDMONYYYY', 'DD/MM/YYYY', 'YYYY/MM/DD'];
 }
 
 
