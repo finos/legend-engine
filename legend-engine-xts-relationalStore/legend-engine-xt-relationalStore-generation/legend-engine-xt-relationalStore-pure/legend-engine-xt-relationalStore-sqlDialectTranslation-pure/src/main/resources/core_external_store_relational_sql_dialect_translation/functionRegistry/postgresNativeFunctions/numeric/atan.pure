@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,32 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Degrees extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan extends PostgresNativeSqlFunction
 [
-  $this.name == 'degrees'
+  $this.name == 'atan'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::degrees(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::atan(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Degrees
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan
   (
-    name = 'degrees',
+    name = 'atan',
+    documentation = 'Returns the inverse tangent for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
+        parameterTypes = DoubleSqlType,
         returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('degrees', literal(pi())),
-        180.0
+        simpleFunctionCall('atan', literal(0.0)),
+        0.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('degrees', literal(0.5)),
-        28.64788976
+        simpleFunctionCall('atan', literal(1.0)),
+        0.78539816
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('atan', literal(0.1234)),
+        0.1227793
       )
     ]
   )

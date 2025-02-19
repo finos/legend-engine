@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,32 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::Log10 extends ExtensionSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sin extends PostgresNativeSqlFunction
 [
-  $this.name == 'log10'
+  $this.name == 'sin'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::log10(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sin(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::Log10
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sin
   (
-    name = 'log10',
+    name = 'sin',
+    documentation = 'Returns the sine for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        parameterTypes = DoubleSqlType,
+        returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('log10', literal(10)),
+        simpleFunctionCall('sin', literal(pi()/2)),
         1.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('log10', literal(100.0)),
-        2.0
+        simpleFunctionCall('sin', literal(0.0)),
+        0.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('sin', literal(0.123715)),
+        0.12339966
       )
     ]
   )
