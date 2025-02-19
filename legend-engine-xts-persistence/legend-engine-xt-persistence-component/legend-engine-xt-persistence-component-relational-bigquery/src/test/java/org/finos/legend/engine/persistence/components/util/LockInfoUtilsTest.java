@@ -94,7 +94,7 @@ public class LockInfoUtilsTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.`last_used_ts_utc` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')";
+        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.`last_used_ts_utc` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') WHERE 1 = 1";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -106,7 +106,7 @@ public class LockInfoUtilsTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get(), transformOptions);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.`batch_id` = 10";
+        String expectedSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.`batch_id` = 10 WHERE 1 = 1";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
