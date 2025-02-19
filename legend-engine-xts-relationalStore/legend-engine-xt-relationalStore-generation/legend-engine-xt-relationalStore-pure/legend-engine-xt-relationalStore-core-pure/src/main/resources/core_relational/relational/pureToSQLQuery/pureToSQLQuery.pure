@@ -3055,13 +3055,12 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    assert(!$mainSelect.columns->map(col | $col->extractColumnName())->contains($newColumnName), | 'Attempting to reuse the same column name: '+ $newColumnName);
 
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
-   let sortElement = if($sortInfo->isNotEmpty(),|findAliasOrFail($sortInfo.column->toOne(), $mainSelect).relationalElement,|[]);
-   let sortDirection=if($sortInfo->isNotEmpty(),|if ($sortInfo.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC),|[]);
-
+   let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement, 
+                                                    sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC)));                                
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,
       func=^DynaFunction(name='PLACEHOLDER'),
-      window = ^meta::relational::metamodel::Window(partition=$windowElement, sortBy=$sortElement, sortDirection=$sortDirection)
+      window = ^meta::relational::metamodel::Window(partition=$windowElement, sortBy=$sortElements)
    );
 
    let func = $aggSpec->match(
@@ -6223,12 +6222,12 @@ function meta::relational::functions::pureToSqlQuery::processWindowColumns(cols:
                            let processedFunctions =  $olapPartitionFuncs->concatenate($olapSortFunc)->concatenate($olapMapFunc).element->cast(@SelectWithCursor).select->map(p|$p->manageIsolation([], [], $nodeId, false, ^$state(processingProjectionThread=true), $context, $extensions));
                            let newMerge = ^$mainSelect(columns=[])->concatenate($processedFunctions)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
                            let partitionCol = $newMerge.columns->cast(@Alias)->filter(a|$a.name->startsWith('"PartitionFunc')).relationalElement;
-                           let sortByCol = $newMerge.columns->cast(@Alias)->filter(a|$a.name->startsWith('"sortBy"')).relationalElement;
+                           let sortByCols = $newMerge.columns->cast(@Alias)->filter(a|$a.name->startsWith('"sortBy"')).relationalElement->map(c|^meta::relational::metamodel::SortByInfo(sortByElement = $c, sortDirection = if ($wc.sortInfo.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC)));
                            let mapCol = $newMerge.columns->cast(@Alias)->filter(a|$a.name->startsWith('"mapFunc"')).relationalElement;
                            assert($wc.func->extractOperation()->isSupported(), | 'The function you have specified ('+ $wc.func->extractOperation().expressionSequence->cast(@FunctionExpression).functionName->toOne()+') is not supported. The supported window functions are: '+ olapFuncs()->joinStrings(',')+' .');
                            let windowFunc = $wc.func->extractOperation().expressionSequence->toOne()->processAggFn(if($wc.func->instanceOf(OlapRank),|[],|$mapCol->toOne()), $state);
                            let windowColumn = ^Alias(name ='"'+$wc.name+'"',relationalElement =  ^meta::relational::metamodel::WindowColumn(columnName = $wc.name,func=$windowFunc->cast(@DynaFunction)->toOne(),
-                                                                                         window = ^meta::relational::metamodel::Window(partition=$partitionCol,sortBy=$sortByCol, sortDirection=if ($wc.sortInfo.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC))));
+                                                                                         window = ^meta::relational::metamodel::Window(partition=$partitionCol, sortBy=$sortByCols)));
                            let newMergeWithWindow = ^$newMerge(columns=[]->concatenate($windowColumn));
                            $newMergeWithWindow;
                            );
@@ -8128,7 +8127,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                         cn:ColumnName[1] | $cn,
                         wc:WindowColumn[1]|let window=$wc.window;
                                             let wf = $wc.func ;
-                                            ^$wc(window=^$window(partition=$window.partition->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement), sortBy=$window.sortBy->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement),sortDirection=$window.sortDirection), func=$wf->reprocessAliases($map, $oldColumnToNewColumn)->cast(@DynaFunction));,
+                                            ^$wc(window=^$window(partition=$window.partition->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement), sortBy = $window.sortBy->map(p|^$p(sortByElement = $p.sortByElement->reprocessAliases($map, $oldColumnToNewColumn)))), func=$wf->reprocessAliases($map, $oldColumnToNewColumn)->cast(@DynaFunction));,
                         s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), property = $s.property->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->map(i | $i->reprocessAliases($map, $oldColumnToNewColumn))),
                         s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->reprocessAliases($map, $oldColumnToNewColumn), index = $s.index->reprocessAliases($map, $oldColumnToNewColumn)),
                         s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($map, $oldColumnToNewColumn)),
@@ -8263,7 +8262,7 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               n:ColumnName[1]|[],
                               r:RelationalOperationElementWithJoin[1]|$r.relationalOperationElement->extractTableAliasColumns()->concatenate($r.joinTreeNode->extractTableAliasColumns()),
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns()->concatenate($wc.func->extractTableAliasColumns()),
-                              w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy->extractTableAliasColumns()),
+                              w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy.sortByElement->extractTableAliasColumns()),
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),

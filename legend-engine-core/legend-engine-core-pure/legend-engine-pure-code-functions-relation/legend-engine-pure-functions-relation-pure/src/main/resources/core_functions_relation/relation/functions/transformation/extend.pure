@@ -811,6 +811,75 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAg
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name, height
+                  1, 2, A, 11
+                  2, 1, B, 12
+                  3, 3, C, 12
+                  4, 3, B, 11
+                  5, 2, B, 13
+                  6, 1, C, 12
+                  7, 3, A, 13
+                  8, 1, B, 14
+                  9, 1, C, 11
+                  10, 2, D,11
+                #->extend(over(~grp, [~name->ascending(), ~height->ascending()]), ~[newCol:{p,w,r|$p->lead($r).id}, other:{p,w,r| $p->first($w, $r).name}])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,height,newCol,other\n'+
+                  '   7,3,A,13,4,A\n'+
+                  '   4,3,B,11,3,A\n'+
+                  '   3,3,C,12,null,A\n'+
+                  '   1,2,A,11,5,A\n'+
+                  '   5,2,B,13,10,A\n'+
+                  '   10,2,D,11,null,A\n'+
+                  '   2,1,B,12,8,B\n'+
+                  '   8,1,B,14,9,B\n'+
+                  '   9,1,C,11,6,B\n'+
+                  '   6,1,C,12,null,B\n'+
+                  '#', $res->sort([~grp->descending(), ~name->ascending(), ~height->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name, height
+                  1, 2, A, 11
+                  2, 1, B, 12
+                  3, 3, C, 12
+                  4, 3, B, 11
+                  5, 2, B, 13
+                  6, 1, C, 12
+                  7, 3, A, 13
+                  8, 1, B, 14
+                  9, 1, C, 11
+                  10, 2, D,11
+                #->filter(x | $x.id<9)
+                ->extend(over(~grp, [~name->ascending(), ~height->ascending()]), ~[newCol:{p,w,r|$p->lead($r).id}, other:{p,w,r| $p->first($w, $r).name}])
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,height,newCol,other\n'+
+                  '   7,3,A,13,4,A\n'+
+                  '   4,3,B,11,3,A\n'+
+                  '   3,3,C,12,null,A\n'+
+                  '   1,2,A,11,5,A\n'+
+                  '   5,2,B,13,null,A\n'+
+                  '   2,1,B,12,8,B\n'+
+                  '   8,1,B,14,6,B\n'+
+                  '   6,1,C,12,null,B\n'+
+                  '#', $res->sort([~grp->descending(), ~name->ascending(), ~height->ascending()])->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
