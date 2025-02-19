@@ -77,7 +77,7 @@ public class LockInfoUtils
     {
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
-        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
+        Update update = Update.builder().dataset(dataset).whereCondition(Equals.of(NumericalValue.of(1L), NumericalValue.of(1L))).addAllKeyValuePairs(keyValuePairs).build();
         return update;
     }
 
@@ -94,7 +94,7 @@ public class LockInfoUtils
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
         NumericalValue batchIdValue = NumericalValue.of(batchId);
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
-        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
+        Update update = Update.builder().dataset(dataset).whereCondition(Equals.of(NumericalValue.of(1L), NumericalValue.of(1L))).addAllKeyValuePairs(keyValuePairs).build();
         return LogicalPlan.of(Arrays.asList(update));
     }
 
