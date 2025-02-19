@@ -40,7 +40,7 @@
 
     <profiles>
         <profile>
-            <id>run-cloud-tests</id>
+            <id>pct-test</id>
             <build>
                 <plugins>
                     <plugin>
@@ -48,6 +48,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
+                            <systemProperties>
+                                <DATABRICKS_API_TOKEN>${env.DATABRICKS_API_TOKEN}></DATABRICKS_API_TOKEN>
+                            </systemProperties>
                         </configuration>
                     </plugin>
                     <plugin>

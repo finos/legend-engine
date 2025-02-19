@@ -45,7 +45,7 @@ public class DatabricksTestConnectionIntegration implements TestConnectionIntegr
     public void setup()
     {
         Properties properties = new Properties();
-        properties.put("DATABRICKS_API_TOKEN",System.getProperty("env.DATABRICKS_API_TOKEN"));
+        properties.put("DATABRICKS_API_TOKEN", System.getProperty("DATABRICKS_API_TOKEN"));
         Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
     }
 
