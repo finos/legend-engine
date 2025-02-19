@@ -665,6 +665,36 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataForExplicit(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, char_5, char, char_100, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", \"char_5\", \"char\", \"char_100\", digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, char_5, char, char_100, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForImplicit(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, decimal_10_2, varchar_10, another_varchar_10, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", \"decimal_10_2\", \"varchar_10\", \"another_varchar_10\", digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, decimal_10_2, varchar_10, another_varchar_10, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForSame(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, varchar_64, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", \"varchar_64\", digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, varchar_64, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected static void validateFileExists(String path) throws Exception
     {
         File f = new File(path);

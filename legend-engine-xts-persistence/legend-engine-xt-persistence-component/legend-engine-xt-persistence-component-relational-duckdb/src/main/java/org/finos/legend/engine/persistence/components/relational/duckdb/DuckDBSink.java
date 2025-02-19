@@ -50,6 +50,7 @@ import org.finos.legend.engine.persistence.components.relational.api.IngestorRes
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.duckdb.jdbc.DuckDBJdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.DuckDBJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.duckdb.sql.visitor.CastFunctionVisitor;
@@ -176,6 +177,7 @@ public class DuckDBSink extends AnsiSqlSink
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
+            new DuckDBDataTypeToDefaultSizeMapping(),
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
@@ -197,6 +199,7 @@ public class DuckDBSink extends AnsiSqlSink
         }
     }
 
+    @Deprecated
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {

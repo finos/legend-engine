@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.execut
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
@@ -170,6 +171,7 @@ public class BigQuerySink extends AnsiSqlSink
                 CAPABILITIES,
                 IMPLICIT_DATA_TYPE_MAPPING,
                 EXPLICIT_DATA_TYPE_MAPPING,
+                new BigQueryDataTypeToDefaultSizeMapping(),
                 SqlGenUtils.BACK_QUOTE_IDENTIFIER,
                 LOGICAL_PLAN_VISITOR_BY_CLASS,
                 (executor, sink, dataset) -> sink.doesTableExist(dataset),
@@ -193,6 +195,7 @@ public class BigQuerySink extends AnsiSqlSink
 
     //evolve to = field to replace main column (datatype)
     //evolve from = reference field to compare sizing/nullability requirements
+    @Deprecated
     @Override
     public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
@@ -237,6 +240,7 @@ public class BigQuerySink extends AnsiSqlSink
         return value;
     }
 
+    @Deprecated
     @Override
     public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {

@@ -132,10 +132,12 @@ public class TestUtils
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
+    public static Field nameWithShorterLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 32, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
-    public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
+    public static Field decimalIncomeWithShorterScale = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
+    public static Field decimalIncomeWithMoreScale = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 4)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field startTimeNonPk = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startTimeName).build();
     public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, 6, null)).primaryKey(true).fieldAlias(startTimeName).build();
@@ -255,6 +257,24 @@ public class TestUtils
                 .addFields(id)
                 .addFields(name)
                 .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableWithBatchUpdateTimeFieldWithDecimalIncome()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncomeWithMoreScale)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -1446,7 +1466,7 @@ public class TestUtils
                 .schema(SchemaDefinition.builder()
                         .addFields(id)
                         .addFields(name)
-                        .addFields(decimalIncome)
+                        .addFields(decimalIncomeWithShorterScale)
                         .addFields(startTimeTimestamp)
                         .addFields(expiryDate)
                         .addFields(digestWithLength)
@@ -1472,7 +1492,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionDataTypeSizeChangeStagingTable()
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthIncrementStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -1488,11 +1508,59 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionDataTypeLengthDecrementStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nameWithShorterLength)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeScaleDecrementStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncomeWithShorterScale)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionColumnNullabilityChangeStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nullableName)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionColumnOptionalToMandatoryMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(nullableName)
@@ -1530,7 +1598,7 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(decimalIncome)
+                .addFields(decimalIncomeWithShorterScale)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -1622,6 +1690,213 @@ public class TestUtils
             .addFields(startTimeNonPk)
             .addFields(version)
             .addFields(digest)
+            .build();
+    }
+
+    // Schema Evolution: explicit
+    public static DatasetDefinition getMainTableForExplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.CHAR, Optional.of(5), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.CHAR, Optional.empty(), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.CHAR, Optional.of(100), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForExplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(1000), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableForExplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("char_5").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("char_5").build())
+                .addFields(Field.builder().name("char").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("char").build())
+                .addFields(Field.builder().name("char_100").type(FieldType.of(DataType.VARCHAR, Optional.of(1000), Optional.empty())).fieldAlias("char_100").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    // Schema Evolution: implicit
+    public static DatasetDefinition getMainTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(10), Optional.empty())).fieldAlias("another_varchar_10").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.STRING, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableForImplicit()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("decimal_10_2").type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias("decimal_10_2").build())
+                .addFields(Field.builder().name("varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_10").build())
+                .addFields(Field.builder().name("another_varchar_10").type(FieldType.of(DataType.VARCHAR, Optional.of(20), Optional.empty())).fieldAlias("another_varchar_10").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableForImplicitDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForImplicitDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.STRING, Optional.of(10), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    // Schema Evolution: same type
+    public static DatasetDefinition getMainTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getExpectedMainTableForSameType()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar_64").type(FieldType.of(DataType.VARCHAR, Optional.of(1000000000), Optional.empty())).fieldAlias("varchar_64").build())
+                .addFields(digestWithLength)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getMainTableForSameTypeDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableForSameTypeDecrement()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(Field.builder().name("varchar").type(FieldType.of(DataType.VARCHAR, Optional.of(64), Optional.empty())).fieldAlias("varchar").build())
+                .addFields(digest)
+                .build())
             .build();
     }
 

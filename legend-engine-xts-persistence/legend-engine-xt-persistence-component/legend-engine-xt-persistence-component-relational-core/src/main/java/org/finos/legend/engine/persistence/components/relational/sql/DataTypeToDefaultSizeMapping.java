@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.util;
+package org.finos.legend.engine.persistence.components.relational.sql;
 
-public enum SchemaEvolutionCapability
+import org.finos.legend.engine.persistence.components.executor.TypeMapping;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+
+import java.util.Optional;
+
+public interface DataTypeToDefaultSizeMapping extends TypeMapping
 {
-    ADD_COLUMN,
-    DATA_TYPE_CONVERSION,
-    DATA_TYPE_LENGTH_CHANGE,
-    DATA_TYPE_SCALE_CHANGE,
-    COLUMN_NULLABILITY_CHANGE,
-    MARK_MISSING_COLUMN_AS_NULLABLE
+    Optional<Integer> getDefaultLength(DataType type);
+
+    Optional<Integer> getDefaultScale(DataType type);
 }
