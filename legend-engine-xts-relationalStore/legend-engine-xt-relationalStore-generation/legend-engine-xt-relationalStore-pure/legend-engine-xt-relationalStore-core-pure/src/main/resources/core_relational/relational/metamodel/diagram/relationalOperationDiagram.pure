@@ -220,18 +220,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_1(
-        type=meta::relational::metamodel::SQLQuery,
-        position=(70.57300, -269.83174),
-        width=134.90918,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView a214a6b5_8043_43e2_9132_36d426495517(
         type=meta::relational::functions::pureToSqlQuery::SelectWithCursor,
         position=(172.63134, -255.58902),
@@ -297,30 +285,6 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         position=(1090.16777, -285.59340),
         width=142.85303,
         height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_21(
-        type=meta::relational::metamodel::RelationalOperationElement,
-        position=(-549.67324, -629.18170),
-        width=2009.36906,
-        height=275.81067,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_28(
-        type=meta::relational::metamodel::join::JoinTreeNode,
-        position=(1224.49416, -187.04295),
-        width=327.43066,
-        height=114.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -436,9 +400,21 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_26(
+        type=meta::relational::metamodel::Window,
+        position=(1300.81660, -298.82750),
+        width=231.47070,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     TypeView cview_29(
         type=meta::relational::metamodel::SortByInfo,
-        position=(1472.41306, -350.27204),
+        position=(1501.58413, -382.48868),
         width=192.36377,
         height=44.00000,
         stereotypesVisible=true,
@@ -448,11 +424,35 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_26(
-        type=meta::relational::metamodel::Window,
-        position=(1282.69913, -292.53056),
-        width=192.37313,
+    TypeView cview_1(
+        type=meta::relational::metamodel::SQLQuery,
+        position=(38.91428, -317.29700),
+        width=134.90918,
         height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::relational::metamodel::RelationalOperationElement,
+        position=(-552.59924, -628.59650),
+        width=2009.36906,
+        height=275.81067,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::relational::metamodel::join::JoinTreeNode,
+        position=(1213.47191, -196.22816),
+        width=327.43066,
+        height=114.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -463,7 +463,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_0(
         source=cview_4,
         target=cview_1,
-        points=[(109.16583,229.18625),(138.02759,-247.83174)],
+        points=[(109.16583,229.18625),(106.36888,-295.29700)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -589,7 +589,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_14(
         source=cview_3,
         target=cview_21,
-        points=[(552.69583,72.15156),(552.75888,-425.92167)],
+        points=[(552.69583,72.15156),(549.83288,-425.33647)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -598,7 +598,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_15(
         source=cview_1,
         target=cview_21,
-        points=[(138.02759,-247.83174),(112.45626,-433.45675)],
+        points=[(106.36888,-295.29700),(105.92802,-365.48718)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -607,7 +607,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_16(
         source=a506bda3_8f16_4758_a31f_8ed7bd12abc5,
         target=cview_21,
-        points=[(-512.84963,65.35156),(-513.36723,-458.82040)],
+        points=[(-512.84963,65.35156),(-516.29323,-458.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -616,7 +616,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_17(
         source=7cfb8e3c_3443_4083_927f_dba741c047d4,
         target=cview_21,
-        points=[(-452.01726,-303.18768),(-451.36723,-430.82040)],
+        points=[(-452.01726,-303.18768),(-454.29323,-430.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -625,7 +625,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_18(
         source=46b8df2a_6e2b_41f7_88d3_cc6491c09ca7,
         target=cview_21,
-        points=[(-354.43028,-210.26976),(-351.36723,-479.82040)],
+        points=[(-354.43028,-210.26976),(-354.29323,-479.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -634,7 +634,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_19(
         source=fa1f5284_e7f5_4cac_9261_a7a42d7f7e2a,
         target=cview_21,
-        points=[(-394.45353,-271.96942),(-393.36723,-463.82040)],
+        points=[(-394.45353,-271.96942),(-396.29323,-463.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -643,7 +643,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_20(
         source=b40cd3a1_5c99_4ff9_a300_c6d931fb4d0e,
         target=cview_21,
-        points=[(-297.03239,-245.64010),(-295.36723,-450.82040)],
+        points=[(-297.03239,-245.64010),(-298.29323,-450.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -652,7 +652,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_21(
         source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
         target=cview_21,
-        points=[(1197.47290,-253.89519),(1200.17823,-453.02040)],
+        points=[(1197.47290,-253.89519),(1197.25223,-452.43520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -661,7 +661,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_22(
         source=a214a6b5_8043_43e2_9132_36d426495517,
         target=cview_21,
-        points=[(209.11518,-230.46976),(209.17823,-430.02040)],
+        points=[(209.11518,-230.46976),(206.25223,-429.43520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -670,7 +670,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_23(
         source=2c4e94b0_900b_487c_a510_cda429934ec8,
         target=cview_21,
-        points=[(-194.80321,-301.35459),(-195.36723,-444.82040)],
+        points=[(-194.80321,-301.35459),(-198.29323,-444.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -679,7 +679,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_24(
         source=605b06a1_462a_431a_9763_1165fd93b644,
         target=cview_21,
-        points=[(756.79610,-181.72897),(757.75888,-430.92167)],
+        points=[(756.79610,-181.72897),(754.83288,-430.33647)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -697,7 +697,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_26(
         source=cview_22,
         target=cview_21,
-        points=[(-40.42389,-193.26976),(-39.36723,-463.82040)],
+        points=[(-40.42389,-193.26976),(-42.29323,-463.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -706,7 +706,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_27(
         source=cview_23,
         target=cview_21,
-        points=[(-94.75743,-244.26976),(-92.36723,-451.82040)],
+        points=[(-94.75743,-244.26976),(-95.29323,-451.23520)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -733,7 +733,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_30(
         source=cview_26,
         target=cview_21,
-        points=[(1325.69913,-273.53056),(1324.27824,-389.54235)],
+        points=[(1363.36538,-272.82750),(1361.48513,-376.31415)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -742,7 +742,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_31(
         source=cview_27,
         target=cview_21,
-        points=[(993.79375,-107.64495),(997.69583,-369.37103)],
+        points=[(993.79375,-107.64495),(994.76983,-368.78583)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -751,7 +751,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
     GeneralizationView gview_32(
         source=cview_29,
         target=cview_21,
-        points=[(1474.58740,-320.27546),(1410.86186,-320.27546),(1410.86186,-361.14293)],
+        points=[(1597.76602,-360.48868),(1448.40014,-361.96128)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -887,7 +887,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::relation::Relation.columns,
         source=cview_3,
         target=cview_21,
-        points=[(1525.29818,68.07017),(2000.29818,69.63267),(1990.54818,-600.24233),(1442.69583,-605.37103)],
+        points=[(1525.29818,68.07017),(2000.29818,69.63267),(1990.54818,-600.24233),(1439.76983,-604.78583)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -901,7 +901,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::relation::SelectSQLQuery.filteringOperation,
         source=cview_4,
         target=cview_21,
-        points=[(54.90574,308.25118),(-653.08018,300.46838),(-655.86358,-416.82269),(-213.50598,-418.53899)],
+        points=[(54.90574,308.25118),(-653.08018,300.46838),(-655.86358,-416.82269),(-216.43198,-417.95379)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -915,7 +915,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::relation::SelectSQLQuery.groupBy,
         source=cview_4,
         target=cview_21,
-        points=[(72.97026,366.31570),(-705.66234,356.80641),(-709.64509,-467.24286),(-215.38391,-470.18217)],
+        points=[(72.97026,366.31570),(-705.66234,356.80641),(-709.64509,-467.24286),(-218.30991,-469.59697)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -929,7 +929,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::relation::SelectSQLQuery.havingOperation,
         source=cview_4,
         target=cview_21,
-        points=[(58.77671,442.44473),(-750.73276,435.67965),(-758.38459,-526.06639),(-189.09283,-527.45917)],
+        points=[(58.77671,442.44473),(-750.73276,435.67965),(-758.38459,-526.06639),(-192.01883,-526.87397)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -943,7 +943,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::relation::SelectSQLQuery.extraFilteringOperation,
         source=cview_4,
         target=cview_21,
-        points=[(54.90574,531.47699),(-816.46046,523.94256),(-818.88879,-569.76386),(-213.50598,-566.89579)],
+        points=[(54.90574,531.47699),(-816.46046,523.94256),(-818.88879,-569.76386),(-216.43198,-566.31059)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -999,7 +999,7 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         property=meta::relational::metamodel::DynaFunction.parameters,
         source=cview_25,
         target=cview_21,
-        points=[(1713.58559,-225.77778),(1838.69583,-225.37103),(1837.54818,-452.24233),(1437.69583,-452.37103)],
+        points=[(1713.58559,-225.77778),(1838.69583,-225.37103),(1837.54818,-452.24233),(1434.76983,-451.78583)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -1024,10 +1024,10 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_19(
-        property=meta::relational::metamodel::Window.partition,
-        source=cview_26,
-        target=cview_21,
-        points=[(1469.36590,-259.42226),(1669.10191,-258.24127),(1668.05068,-409.61835),(1420.69583,-409.37103)],
+        property=meta::relational::metamodel::WindowColumn.window,
+        source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
+        target=cview_26,
+        points=[(1219.69697,-270.37103),(1416.55194,-269.82750)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -1038,10 +1038,10 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_20(
-        property=meta::relational::metamodel::WindowColumn.window,
-        source=cd0b14d7_1cbd_4a5e_a28d_d062a404ab7d,
-        target=cview_26,
-        points=[(1219.69697,-270.37103),(1378.88569,-270.53056)],
+        property=meta::relational::metamodel::RelationalOperationElementWithJoin.relationalOperationElement,
+        source=cview_27,
+        target=cview_21,
+        points=[(1088.69583,-72.37103),(1893.54825,-70.80437),(1890.54818,-499.24233),(1452.76983,-498.78583)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -1052,10 +1052,10 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_21(
-        property=meta::relational::metamodel::RelationalOperationElementWithJoin.relationalOperationElement,
+        property=meta::relational::metamodel::RelationalOperationElementWithJoin.joinTreeNode,
         source=cview_27,
-        target=cview_21,
-        points=[(1088.69583,-72.37103),(1893.54818,-65.24233),(1890.54818,-499.24233),(1455.69583,-499.37103)],
+        target=cview_28,
+        points=[(1113.69583,-126.37103),(1222.67996,-126.55624)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -1066,10 +1066,10 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_22(
-        property=meta::relational::metamodel::RelationalOperationElementWithJoin.joinTreeNode,
-        source=cview_27,
-        target=cview_28,
-        points=[(1113.69583,-126.37103),(1233.70221,-117.37103)],
+        property=meta::relational::metamodel::SortByInfo.sortByElement,
+        source=cview_29,
+        target=cview_21,
+        points=[(1597.76602,-360.48868),(1597.29119,-403.69963),(1452.57975,-403.11443)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -1079,5 +1079,17 @@ Diagram meta::relational::metamodel::RelationalOperationDiagram(width=0.0, heigh
         nameVisible=true,
         lineStyle=SIMPLE)
 
-
+    PropertyView pview_23(
+        property=meta::relational::metamodel::Window.sortBy,
+        source=cview_26,
+        target=cview_29,
+        points=[(1416.55195,-269.82750),(1598.57723,-268.34436),(1597.76602,-360.48868)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 }
