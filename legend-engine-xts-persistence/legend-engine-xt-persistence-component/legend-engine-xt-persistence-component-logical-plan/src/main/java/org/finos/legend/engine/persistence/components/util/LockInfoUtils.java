@@ -31,7 +31,6 @@ import java.util.Optional;
 
 public class LockInfoUtils
 {
-    public static final Selection SELECT_1_TABLE = Selection.builder().addFields(NumericalValue.of(1L)).alias("X").build();
     private final LockInfoDataset lockInfoDataset;
     private final Dataset dataset;
 
@@ -48,7 +47,7 @@ public class LockInfoUtils
         List<Value> insertFields = Arrays.asList(insertTimeField);
         List<Value> selectFields = Arrays.asList(batchStartTimestamp);
         Condition condition = Not.of(Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build()));
-        return Insert.of(dataset, Selection.builder().source(SELECT_1_TABLE).addAllFields(selectFields).condition(condition).build(), insertFields);
+        return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
     }
 
     public List<Operation> initializeLockInfoForMultiIngest(Optional<Long> batchId, BatchStartTimestamp batchStartTimestamp)
@@ -65,7 +64,7 @@ public class LockInfoUtils
         Condition notExistsCondition = Not.of(existsCondition);
         Pair<FieldValue, Value> keyValuePairs = Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue);
 
-        operations.add(Insert.of(dataset, Selection.builder().source(SELECT_1_TABLE).addAllFields(selectFields).condition(notExistsCondition).build(), insertFields));
+        operations.add(Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(notExistsCondition).build(), insertFields));
         if (batchId.isPresent())
         {
             operations.add(Update.builder().dataset(dataset).addKeyValuePairs(keyValuePairs).whereCondition(updateCondition).build());
@@ -77,7 +76,7 @@ public class LockInfoUtils
     {
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
-        Update update = Update.builder().dataset(dataset).whereCondition(Equals.of(NumericalValue.of(1L), NumericalValue.of(1L))).addAllKeyValuePairs(keyValuePairs).build();
+        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
         return update;
     }
 
@@ -94,7 +93,7 @@ public class LockInfoUtils
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
         NumericalValue batchIdValue = NumericalValue.of(batchId);
         keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.batchIdField()).build(), batchIdValue));
-        Update update = Update.builder().dataset(dataset).whereCondition(Equals.of(NumericalValue.of(1L), NumericalValue.of(1L))).addAllKeyValuePairs(keyValuePairs).build();
+        Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
         return LogicalPlan.of(Arrays.asList(update));
     }
 
