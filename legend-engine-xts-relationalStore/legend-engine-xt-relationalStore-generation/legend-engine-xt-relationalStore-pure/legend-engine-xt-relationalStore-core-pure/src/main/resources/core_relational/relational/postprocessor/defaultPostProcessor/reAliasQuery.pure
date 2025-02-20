@@ -212,7 +212,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                          func=$transformedFunc->cast(@DynaFunction));,
       
                 w:meta::relational::metamodel::Window[1]|let transformedPartition = $w.partition->map(w | $w->transformAliasName($m));
-                                                         let transformedSort = $w.sortBy->map(s | $s->transformAliasName($m));
+                                                          let transformedSort = $w.sortBy->map(s | ^$s(sortByElement = $s.sortByElement->transformAliasName($m)));
                                                          ^$w(partition=$transformedPartition,
                                                              sortBy=$transformedSort);,
                                                                                

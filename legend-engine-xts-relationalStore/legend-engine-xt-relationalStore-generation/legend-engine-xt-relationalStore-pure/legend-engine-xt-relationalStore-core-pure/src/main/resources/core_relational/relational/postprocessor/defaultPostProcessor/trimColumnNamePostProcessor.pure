@@ -139,7 +139,7 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
                 va:VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->replace($m)));,
                 d:DynaFunction[1] |  ^$d(parameters=$d.parameters->map(p | $p->replace($m)));,
                 wc:WindowColumn[1] |^$wc(window = $wc.window->replace($m)->cast(@meta::relational::metamodel::Window),func=$wc.func->replace($m)->cast(@DynaFunction));,
-                w:meta::relational::metamodel::Window[1]|^$w(partition=$w.partition->map(p|$p->replace($m)), sortBy=$w.sortBy->map(p|$p->replace($m)));,
+                w:meta::relational::metamodel::Window[1]|^$w(partition=$w.partition->map(p|$p->replace($m)), sortBy=$w.sortBy->map(p|^$p(sortByElement = $p.sortByElement->replace($m))));,
                 j:JoinStrings[1] |  ^$j(strings=$j.strings->map(v | $v->replace($m)),
                                          prefix=if($j.prefix->isEmpty(), | [], | $j.prefix->toOne()->replace($m)),
                                          separator=if($j.separator->isEmpty(), | [], | $j.separator->toOne()->replace($m)),

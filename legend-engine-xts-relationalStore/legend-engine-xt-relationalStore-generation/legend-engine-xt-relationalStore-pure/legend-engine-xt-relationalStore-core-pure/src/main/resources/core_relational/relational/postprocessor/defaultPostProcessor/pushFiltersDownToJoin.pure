@@ -265,7 +265,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::ext
     {wc: Literal[1] | collection(true, [])},
     {wc: LiteralList[1] | collection(true, [])},
     {wc: VarPlaceHolder[1] | collection(true, [])},
-    {w: meta::relational::metamodel::Window[1] | $w.partition->concatenate($w.sortBy)->extractRelationalElements($recurseSubQueries)},
+    {w: meta::relational::metamodel::Window[1] | $w.partition->concatenate($w.sortBy.sortByElement)->extractRelationalElements($recurseSubQueries)},
     {js: JoinStrings[1] | $js.strings->concatenate($js.prefix)->concatenate($js.separator)->concatenate($js.suffix)->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
     {s: SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->extractRelationalElements($recurseSubQueries)},
