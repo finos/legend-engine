@@ -32,32 +32,55 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [SqlType, SqlType, SqlType, SqlType],
-        returnType = SqlType
+        parameterTypes = [AbstractIntegerSqlType, AbstractIntegerSqlType],
+        returnType = AbstractIntegerSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType],
+        returnType = AbstractStringSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [DoubleSqlType, DoubleSqlType],
+        returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [DateSqlType, DateSqlType],
+        returnType = DateSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [TimestampSqlType, TimestampSqlType],
+        returnType = TimestampSqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType],
         returnType = SqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [SqlType, SqlType, SqlType],
-        returnType = SqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('least', [^NullLiteral(), literal(3), literal(2), literal(-2)]),
-        -2
+        simpleFunctionCall('least', [literal(3), literal(2)]),
+        2
       ),
       sqlFunctionTest(
-        simpleFunctionCall('least', [literal(6), literal(1), literal(-1), literal(4)]),
-       -1
+        simpleFunctionCall('least', [literal(2.8), literal(2.851)]),
+        2.8
       ),
       sqlFunctionTest(
-        simpleFunctionCall('least', [literal('def'), literal('abc'), literal('ghi'), literal('xyz')]),
+        simpleFunctionCall('least', [literal('def'), literal('abc')]),
         'abc'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('least', [cast(literal('2025-02-12 12:30:01'), 'TIMESTAMP'), cast(literal('2025-02-12 12:31:01'), 'TIMESTAMP')]),
+        %2025-02-12T12:30:01.000000000+0000
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('least', [cast(literal('2025-02-12'), 'DATE'), cast(literal('2025-02-11'), 'DATE')]),
+        %2025-02-11
       )
     ]
   )

@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
@@ -288,7 +289,6 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
     pair(Rpad, argTransformFunctionProcessor('rpad', 'rpad(%s)', {p:String[*]| if($p->size() == 2, |$p->concatenate('\' \''), |$p)->joinStrings(', ')})),
     pair(Ltrim, argTransformFunctionProcessor('ltrim','regexp_replace(%s,\'^[%s]+\',\'\')',{p:String[*]| if($p->size()==1,|[$p->at(0),' '],| $p->transformRegexpParams() ) } )),
     pair(Rtrim, argTransformFunctionProcessor('rtrim','regexp_replace(%s,\'[%s]+$\',\'\')',{p:String[*]| if($p->size()==1,|[$p->at(0),' '],| $p->transformRegexpParams() ) } )),
-
     pair(Ascii, simpleFunctionProcessor('ascii')),
     pair(Lower, simpleFunctionProcessor('lower')),
     pair(Upper, simpleFunctionProcessor('upper')),
@@ -302,6 +302,9 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
     pair(StrPos, argTransformFunctionProcessor('strpos','locate(%s,%s)',{p:String[*]|[$p->at(1),$p->at(0)]})),
     pair(Concat, simpleFunctionProcessor('concat')),
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
+    pair(Sha1, argTransformFunctionProcessor('sha1', 'hash(\'SHA-1\',%s)')),
+    pair(Sha256, argTransformFunctionProcessor('sha256', 'hash(\'SHA-256\',%s)')),
+
 
 
     // Boolean
@@ -313,7 +316,9 @@ function meta::external::store::relational::sqlDialectTranslation::h2::functionP
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, argTransformFunctionProcessor('to_date', 'cast(parsedatetime(%s, %s) as date)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForH2())})),
     pair(ToTimestamp, argTransformFunctionProcessor('to_timestamp', '%s', {p:String[*]|$p->toTimestampForH2()})),
-    pair(ToChar, argTransformFunctionProcessor('to_char', 'formatdatetime(%s, %s)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForH2())}))
+    pair(ToChar, argTransformFunctionProcessor('to_char', 'formatdatetime(%s, %s)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForH2())})),
+    pair(DateDiff, simpleFunctionProcessor('datediff'))
+
 
   ])
 }

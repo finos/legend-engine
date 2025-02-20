@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::postgres::*;
@@ -61,7 +62,11 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
 function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-   
+    pair('FuncTests - sha1(0/1)', 'Current Version of DuckDB does not support sha1'),
+    pair('FuncTests - sha1(1/1)', 'Current Version of DuckDB does not support sha1'),
+    pair('FuncTests - sha256(0/1)', 'Current Version of DuckDB does not support sha256'),
+    pair('FuncTests - sha256(1/1)', 'Current Version of DuckDB does not support sha256')
+    
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -282,7 +287,8 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::funct
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, argTransformFunctionProcessor('to_date', 'cast(strptime(%s, %s) as date)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForDuckDB())})),
     pair(ToTimestamp, argTransformFunctionProcessor('to_timestamp', '%s', {p:String[*]|$p->toTimestampForDuckDB()})),
-    pair(ToChar, argTransformFunctionProcessor('to_char', 'strftime(%s, %s)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForDuckDB())}))
+    pair(ToChar, argTransformFunctionProcessor('to_char', 'strftime(%s, %s)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForDuckDB())})),
+    pair(DateDiff, argTransformFunctionProcessor('datediff', '%s', {p:String[*]|if($p->at(0)->removeQuotes()=='week', |'cast(datediff(\'day\', '+$p->at(1)+', '+$p->at(2)+')//7 as int)', |'datediff('+$p->at(0)+', '+$p->at(1)+', '+$p->at(2)+')')}))
 
   ])
 }
