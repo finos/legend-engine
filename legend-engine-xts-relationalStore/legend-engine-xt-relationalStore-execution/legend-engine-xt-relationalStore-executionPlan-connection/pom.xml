@@ -48,6 +48,17 @@
                 </configuration>
             </plugin>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
