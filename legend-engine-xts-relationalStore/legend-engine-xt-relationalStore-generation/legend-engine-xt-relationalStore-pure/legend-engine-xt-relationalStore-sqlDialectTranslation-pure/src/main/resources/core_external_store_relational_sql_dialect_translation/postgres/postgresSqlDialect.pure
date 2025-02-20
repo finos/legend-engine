@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
@@ -222,7 +223,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Tan, simpleFunctionProcessor('tan')),
     pair(Power, simpleFunctionProcessor('power')),
-    pair(Sign, argTransformFunctionProcessor('sign','cast(sign(%s) as int)')),
+    pair(Sign, argTransformFunctionProcessor('sign','cast(sign(%s) as int)')), //explicit casting was needed since postgres was returning decimal,which is non-standard
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
@@ -247,7 +248,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StrPos, simpleFunctionProcessor('strpos')),
     pair(Concat, simpleFunctionProcessor('concat')),
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
-   
+    pair(Sha1, argTransformFunctionProcessor('sha1', 'encode(digest(%s, \'sha1\'), \'hex\')')),
+    pair(Sha256, argTransformFunctionProcessor('sha256', 'encode(digest(%s, \'sha256\'), \'hex\')')),
+
 
     // Boolean
     pair(RegexpLike, argTransformFunctionProcessor('regexp_like', regexpPattern('~'), {p:String[*]|$p->transformRegexpParams()})),
@@ -258,10 +261,57 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, simpleFunctionProcessor('to_date')),
     pair(ToTimestamp, simpleFunctionProcessor('to_timestamp')),
-    pair(ToChar, argTransformFunctionProcessor('to_char','trim(to_char(%s,%s))'))
+    pair(ToChar, argTransformFunctionProcessor('to_char', 'trim(to_char(%s,%s))')), // trim was needed to handle the extra spaces  that are appended to result to match September's length.
+    pair(DateDiff, argTransformFunctionProcessor('dateDiff', '%s', {p:String[*]|$p->dateDiffHandlerForPostgres()}))
   ])
 }
 
+function meta::external::store::relational::sqlDialectTranslation::postgres::dateDiffHandlerForPostgres(p:String[*]): String[1]
+{
+  
+  let timeUnits=['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
+  let indexOfUnit=$timeUnits->indexOf($p->at(0)->replace('\'', ''));
+  let unitFunctionsList=[
 
+    { | format('(%s)', [
+        'cast((extract(\'year\' from %s) - extract(\'year\' from %s)) as int)'
+     ])},
+    
+    { | format('(%s * 12 + (%s))', [
+        ['year', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres(),
+        'cast((extract(\'month\' from %s) - extract(\'month\' from %s)) as int)'
+     ])},
 
-// --------------------------------------------------------------------------
+    { | format('(%s)', [
+        '(cast(%s as date) - cast(%s as date))'
+     ])},
+
+    { | format('(cast(%s/7 as int))', [
+        ['day', '%s', '%s']->dateDiffHandlerForPostgres()
+     ])},
+    
+    { | format('cast((%s * 24 + (%s)) as int)', [
+        ['day', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres(),
+        'cast((extract(\'hour\' from %s) - extract(\'hour\' from %s)) as int)'
+     ])},
+
+    { | format('cast((%s * 60 + (%s)) as int)', [
+        ['hour', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres(),
+        'cast((extract(\'minute\' from %s) - extract(\'minute\' from %s)) as int)'
+     ])},
+
+    { | format('cast((%s * 60 + (%s)) as int)', [
+        ['minute', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres(),
+        'cast((extract(\'second\' from %s) - extract(\'second\' from %s)) as int)'
+     ])},
+
+    { | format('cast((%s * 1000 + (%s)) as int)', [
+        ['second', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres(),
+        'cast((extract(\'millisecond\' from %s) - extract(\'millisecond\' from %s)) as int)'
+     ])}
+
+  ];
+
+  format($unitFunctionsList->at($indexOfUnit)->eval(), [$p->at(2), $p->at(1)]);
+
+}

@@ -139,11 +139,21 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 
     
     // Extension Functions
+
     // Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::log10(),
 
     // Boolean functions
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike()
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike(),
+
+    //String functions
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
+
+    //Temporal functions
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::dateDiff()
+
+
   ]
   ->groupBy(x | $x.name->joinStrings('.')->toLower())->keyValues()
   ->map({kv |

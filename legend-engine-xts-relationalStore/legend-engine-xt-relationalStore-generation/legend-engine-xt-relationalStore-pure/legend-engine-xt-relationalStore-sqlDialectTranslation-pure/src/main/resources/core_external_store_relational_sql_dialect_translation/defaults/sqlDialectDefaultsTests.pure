@@ -1003,3 +1003,42 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     '    103 < 104\n' +
     ')', $dialect->executeNodeProcessor(^TableSubquery(query = ^Query(queryBody = $q1)), $state, $config));
 }
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTrimProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let q1 = ^Trim(
+    value=literal('adefa'),
+    characters=literal('a'),
+    mode=TrimMode.BOTH
+  );
+
+  assertEquals('TRIM(BOTH \'a\' FROM \'adefa\')', $dialect->executeNodeProcessor($q1, $state, $config));
+
+  let q2 = ^Trim(
+    value=literal('adefad'),
+    characters=literal('ad'),
+    mode=TrimMode.TRAILING
+  );
+  assertEquals('TRIM(TRAILING \'ad\' FROM \'adefad\')', $dialect->executeNodeProcessor($q2, $state, $config));
+
+  let q3 = ^Trim(
+    value=literal('adefad'),
+    characters=literal('ad'),
+    mode=TrimMode.LEADING
+  );
+  assertEquals('TRIM(LEADING \'ad\' FROM \'adefad\')', $dialect->executeNodeProcessor($q3, $state, $config));
+
+  let q4 = ^Trim(
+    value=literal('adefad'),
+    characters=[],
+    mode=TrimMode.BOTH
+  );
+  assertEquals('TRIM(BOTH FROM \'adefad\')', $dialect->executeNodeProcessor($q4, $state, $config));
+
+}  
+
+

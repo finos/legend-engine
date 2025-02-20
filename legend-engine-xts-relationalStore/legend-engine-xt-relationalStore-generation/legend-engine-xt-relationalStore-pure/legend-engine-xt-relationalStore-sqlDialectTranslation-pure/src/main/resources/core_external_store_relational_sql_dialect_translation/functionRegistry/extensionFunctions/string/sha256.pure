@@ -18,47 +18,32 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Round extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::Sha256 extends ExtensionSqlFunction
 [
-  $this.name == 'round'
+  $this.name == 'sha256'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::round(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Round
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::Sha256
   (
-    name = 'round',
+    name = 'sha256',
     variations = [
-      
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractNumericSqlType, AbstractIntegerSqlType],
-        returnType = AbstractNumericSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
+        parameterTypes = [AbstractStringSqlType],
+        returnType = AbstractStringSqlType
       )
     ],
     tests = [
-      
       sqlFunctionTest(
-        simpleFunctionCall('round', [literal(2.1289), literal(3)]),
-        2.129
+        simpleFunctionCall('sha256', [literal('abc')]),
+        'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('round', [literal(2.1283), literal(3)]),
-        2.128
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('round', [literal(2.8)]),
-        3.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('round', [literal(2.21)]),
-        2.0
+        simpleFunctionCall('sha256', [literal('Hello World')]),
+        'a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e'
       )
     ]
   )
