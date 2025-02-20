@@ -35,5 +35,7 @@
         <module>legend-engine-xt-relationalStore-generation</module>
         <module>legend-engine-xt-relationalStore-PCT</module>
         <module>legend-engine-xt-relationalStore-connection-http-api</module>
+        <module>legend-engine-xt-relationalStore-FCT-pure</module>
+
     </modules>
 </project>

@@ -42,11 +42,13 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -85,6 +87,13 @@ public class SchemaEvolution
 
         @Parameter(order = 1)
         Dataset evolvedDataset();
+    }
+
+    public enum DataTypeEvolutionType
+    {
+        SAME_DATA_TYPE,
+        IMPLICIT_DATATYPE_CONVERSION,
+        EXPLICIT_DATATYPE_CONVERSION
     }
 
     private final Sink sink;
@@ -136,143 +145,174 @@ public class SchemaEvolution
     private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset, SchemaDefinition stagingDataset, Set<String> fieldsToIgnore, Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
-        List<Field> mainFields = mainDataset.schema().fields();
-        List<Field> stagingFields = stagingDataset.fields();
-        List<Field> filteredFields = stagingFields.stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList());
-        for (Field stagingField : filteredFields)
+
+        for (Field stagingField : stagingDataset.fields().stream().filter(field -> !collectionContainsElement(fieldsToIgnore, field.name())).collect(Collectors.toList()))
         {
-            String stagingFieldName = stagingField.name();
-            Field matchedMainField = mainFields.stream().filter(mainField -> areEqual(mainField.name(), stagingFieldName)).findFirst().orElse(null);
+            Field matchedMainField = mainDataset.schema().fields().stream().filter(mainField -> areEqual(mainField.name(), stagingField.name())).findFirst().orElse(null);
             if (matchedMainField == null)
             {
-                // Add the new column in the main table if database supports ADD_COLUMN capability and
-                // if user capability supports ADD_COLUMN
-                if (sink.capabilities().contains(Capability.ADD_COLUMN)
-                        && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN)))
-                {
-                    if (stagingField.nullable())
-                    {
-                        operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
-                        modifiedFields.add(stagingField);
-                    }
-                    else
-                    {
-                        throw new IncompatibleSchemaChangeException(String.format("Non-nullable field \"%s\" in staging dataset cannot be added, as it is backward-incompatible change.", stagingFieldName));
-                    }
-                }
-                else
-                {
-                    throw new IncompatibleSchemaChangeException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingFieldName));
-                }
+                addColumn(mainDataset, modifiedFields, operations, stagingField);
             }
             else
             {
-                FieldType stagingFieldType = stagingField.type();
-                if (!matchedMainField.type().equals(stagingFieldType))
-                {
-                    if (!matchedMainField.type().dataType().equals(stagingFieldType.dataType()))
-                    {
-                        // If the datatype is an implicit change, we let the database handle the change.
-                        // We only alter the length if required (pick the maximum length)
-                        if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
-                                && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
-                        {
-                            Field newField = sink.evolveFieldLength(stagingField, matchedMainField);
-                            evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                        }
-                        // If the datatype is a non-breaking change, we alter the datatype.
-                        // We also alter the length if required (pick the maximum length)
-                        else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
-                                && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
-                        {
-                            if (sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
-                            {
-                                //Modify the column in main table
-                                Field newField = sink.evolveFieldLength(matchedMainField, stagingField);
-                                evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                            }
-                            else
-                            {
-                                throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
-                            }
-                        }
-                        //Else, no operations is allowed, we throw an exception
-                        else
-                        {
-                            throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since sink/user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
-                        }
-                    }
-                    //If data types are same, we check if length requires any evolution
-                    else
-                    {
-                        Field newField = sink.evolveFieldLength(stagingField, matchedMainField);
-                        evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                    }
-                }
-                //If Field types are same, we check to see if nullability needs any evolution
-                else
-                {
-                    if (!matchedMainField.nullable() && stagingField.nullable())
-                    {
-                        Field newField = sink.createNewField(matchedMainField, stagingField, matchedMainField.type().length(), matchedMainField.type().scale());
-                        evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                    }
-                }
+                evolveColumn(mainDataset, modifiedFields, operations, matchedMainField, stagingField);
             }
         }
         return operations;
     }
 
-    //Create alter statements if newField is different from mainDataField
-    private void evolveDataType(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
+    private void addColumn(Dataset mainDataset, Set<Field> modifiedFields, List<Operation> operations, Field stagingField)
     {
-        if (!mainDataField.equals(newField))
+        // Add the new column in the main table if database supports ADD_COLUMN capability and if user capability supports ADD_COLUMN
+        if (sink.capabilities().contains(Capability.ADD_COLUMN)
+            && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN)))
         {
-            // If there are any data type length changes, make sure sink/user capability allows it before creating the alter statement
-            if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
+            if (stagingField.nullable())
             {
-                if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE)))
+                operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
+                modifiedFields.add(stagingField);
+            }
+            else
+            {
+                throw new IncompatibleSchemaChangeException(String.format("Non-nullable field \"%s\" in staging dataset cannot be added, as it is backward-incompatible change.", stagingField.name()));
+            }
+        }
+        else
+        {
+            throw new IncompatibleSchemaChangeException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingField.name()));
+        }
+    }
+
+    private void evolveColumn(Dataset mainDataset, Set<Field> modifiedFields, List<Operation> operations, Field matchedMainField, Field stagingField)
+    {
+        String columnName = matchedMainField.name();
+
+        DataType mainDataType = matchedMainField.type().dataType();
+        Optional<Integer> mainLength = matchedMainField.type().length();
+        Optional<Integer> mainScale = matchedMainField.type().scale();
+        DataType stagingDataType = stagingField.type().dataType();
+        Optional<Integer> stagingLength = stagingField.type().length();
+        Optional<Integer> stagingScale = stagingField.type().scale();
+
+        DataTypeEvolutionType dataTypeEvolutionType = getDataTypeEvolutionType(mainDataType, stagingDataType);
+        DataType evolveToDataType = getEvolveToDataType(mainDataType, stagingDataType, dataTypeEvolutionType);
+        Optional<Integer> evolveToLength = sink.getEvolveToLength(columnName, mainLength, stagingLength, mainDataType, stagingDataType, dataTypeEvolutionType);
+        Optional<Integer> evolveToScale = sink.getEvolveToScale(columnName, mainScale, stagingScale, mainDataType, stagingDataType, dataTypeEvolutionType);
+        boolean evolveToNullable = stagingField.nullable();
+
+        Field evolveTo = matchedMainField
+            .withType(FieldType.builder().dataType(evolveToDataType).length(evolveToLength).scale(evolveToScale).build())
+            .withNullable(evolveToNullable);
+
+        createAlterColumnStatements(evolveTo, matchedMainField, mainDataset, operations, modifiedFields);
+    }
+
+    private DataTypeEvolutionType getDataTypeEvolutionType(DataType mainDataType, DataType stagingDataType)
+    {
+        if (mainDataType.equals(stagingDataType))
+        {
+            return DataTypeEvolutionType.SAME_DATA_TYPE;
+        }
+        else
+        {
+            if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
+                && sink.supportsImplicitMapping(mainDataType, stagingDataType))
+            {
+                return DataTypeEvolutionType.IMPLICIT_DATATYPE_CONVERSION;
+            }
+            else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
+                && schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
+            {
+                if (sink.supportsExplicitMapping(mainDataType, stagingDataType))
                 {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
+                    return DataTypeEvolutionType.EXPLICIT_DATATYPE_CONVERSION;
+                }
+                else
+                {
+                    throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", mainDataType, stagingDataType));
                 }
             }
-            // If there are any data type scale changes, make sure sink/user capability allows it before creating the alter statement
-            if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
+            else
             {
-                if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE)))
-                {
-                    throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
-                }
-            }
-            // Create the alter statement for changing the data type and sizing as required
-            if (!mainDataField.type().equals(newField.type()))
-            {
-                operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
-                modifiedFields.add(newField);
-            }
-            // Create the alter statement for changing the column nullability
-            if (mainDataField.nullable() != newField.nullable())
-            {
-                alterColumnWithNullable(newField, mainDataset, operations, modifiedFields);
+                throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since sink/user capability does not allow it", mainDataType, stagingDataType));
             }
         }
     }
 
-    private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
+    private DataType getEvolveToDataType(DataType mainDataType, DataType stagingDataType, DataTypeEvolutionType dataTypeEvolutionType)
     {
-        // We do not allow changing nullability for PKs
-        if (!newField.primaryKey())
+        switch (dataTypeEvolutionType)
         {
-            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+            case SAME_DATA_TYPE:
+            case IMPLICIT_DATATYPE_CONVERSION:
+                return mainDataType;
+            case EXPLICIT_DATATYPE_CONVERSION:
+                return stagingDataType;
+            default:
+                throw new IllegalStateException("Unexpected value: " + dataTypeEvolutionType);
+        }
+    }
+
+    //Create alter statements if newField is different from mainDataField
+    private void createAlterColumnStatements(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
+    {
+        if (!mainDataField.equals(newField))
+        {
+            createAlterColumnTypeAndSizeStatements(newField, mainDataField, mainDataset, operations, modifiedFields);
+            createAlterColumnNullabilityStatements(newField, mainDataField, mainDataset, operations, modifiedFields);
+        }
+    }
+
+    private void createAlterColumnTypeAndSizeStatements(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
+    {
+        // If there are any data type length changes, make sure sink/user capability allows it before creating the alter statement
+        if (!Objects.equals(mainDataField.type().length(), newField.type().length()))
+        {
+            if (!sink.capabilities().contains(Capability.DATA_TYPE_LENGTH_CHANGE)
+                    || !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE))
             {
-                operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
-                modifiedFields.add(newField);
+                throw new IncompatibleSchemaChangeException(String.format("Data type length changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
             }
-            else
+        }
+        // If there are any data type scale changes, make sure sink/user capability allows it before creating the alter statement
+        if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
+        {
+            if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
+                    || !schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE))
             {
-                throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made nullable since user capability does not allow it", newField.name()));
+                throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since sink/user capability does not allow it", newField.name()));
+            }
+        }
+
+        // Create the alter statement for changing the data type and sizing as required
+        if (!mainDataField.type().equals(newField.type()))
+        {
+            operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
+            modifiedFields.add(newField);
+        }
+    }
+
+    private void createAlterColumnNullabilityStatements(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
+    {
+        if (mainDataField.nullable() && !newField.nullable())
+        {
+            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" cannot be changed from nullable to non-nullable", mainDataField.name()));
+        }
+        else if (!mainDataField.nullable() && newField.nullable())
+        {
+            // We do not allow changing nullability for PKs
+            if (!mainDataField.primaryKey())
+            {
+                // Create the alter statement for changing the column nullability
+                if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+                {
+                    operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
+                    modifiedFields.add(newField);
+                }
+                else
+                {
+                    throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made nullable since user capability does not allow it", newField.name()));
+                }
             }
         }
     }
@@ -290,8 +330,16 @@ public class SchemaEvolution
                 //Modify the column to nullable in main table
                 if (!mainField.nullable())
                 {
-                    mainField = mainField.withNullable(true);
-                    alterColumnWithNullable(mainField, mainDataset, operations, modifiedFields);
+                    if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE))
+                    {
+                        mainField = mainField.withNullable(true);
+                        operations.add(Alter.of(mainDataset, AlterAbstract.AlterOperation.NULLABLE_COLUMN, mainField, Optional.empty()));
+                        modifiedFields.add(mainField);
+                    }
+                    else
+                    {
+                        throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" is missing from incoming schema, but user capability does not allow marking it to nullable", mainField.name()));
+                    }
                 }
             }
         }

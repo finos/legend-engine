@@ -46,7 +46,7 @@ public class FunctionValidator
                 .forEach(_func -> validateFunction(_func, compileContext));
     }
 
-    public void validateFunction(Function func, CompileContext compileContext)
+    private void validateFunction(Function func, CompileContext compileContext)
     {
         if (func.tests != null && !func.tests.isEmpty())
         {
@@ -67,7 +67,7 @@ public class FunctionValidator
         }
     }
 
-    public static void validateFunctionTestParameterValues(CompileContext context, List<Root_meta_legend_function_metamodel_ParameterValue> parameterValues, RichIterable<? extends VariableExpression> parameters, SourceInformation sourceInformation)
+    private static void validateFunctionTestParameterValues(CompileContext context, List<Root_meta_legend_function_metamodel_ParameterValue> parameterValues, RichIterable<? extends VariableExpression> parameters, SourceInformation sourceInformation)
     {
         Set<String> processedParams = parameterValues.stream().map(e -> e._name()).collect(Collectors.toSet());
         for (VariableExpression param : parameters)

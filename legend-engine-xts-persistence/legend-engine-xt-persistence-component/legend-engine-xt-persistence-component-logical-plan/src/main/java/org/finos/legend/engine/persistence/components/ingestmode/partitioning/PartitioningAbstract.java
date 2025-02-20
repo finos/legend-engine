@@ -65,6 +65,11 @@ public interface PartitioningAbstract extends PartitioningStrategy
     @Value.Check
     default void validate()
     {
+        if (partitionFields().isEmpty())
+        {
+            throw new IllegalStateException("Can not build Partitioning, partitionFields cannot be empty");
+        }
+
         if (!partitionValuesByField().isEmpty() && !partitionSpecList().isEmpty())
         {
             throw new IllegalStateException("Can not build Partitioning, Provide either partitionValuesByField or partitionSpecList, both not supported together");
@@ -98,6 +103,7 @@ public interface PartitioningAbstract extends PartitioningStrategy
             }
         }
 
+        // All the keys in partitionSpecList must exactly match the fields in partitionFields
         if (!partitionSpecList().isEmpty())
         {
             for (Map<String, Object> partitionSpec : partitionSpecList())

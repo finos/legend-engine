@@ -19,7 +19,6 @@ package org.finos.legend.engine.test.fct;
 import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.util.GlobalTracer;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import junit.framework.Test;
@@ -37,41 +36,38 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.profile.Profile;
-import org.finos.legend.pure.m3.pct.shared.PCTTools;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.FunctionProcessor;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.junit.Assert;
-import static org.finos.legend.pure.generated.core_pure_test_fct.Root_meta_pure_fct_tests_testRunnerAssertion_Function_1__Function_1__Function_1__AssertionRun_MANY_;
+import static org.finos.legend.pure.generated.core_pure_test_fct.Root_meta_pure_fct_tests_testRunnerAssertionH2_Function_1__Function_1__Function_1__AssertionRun_MANY_;
 import static org.junit.Assert.fail;
 
 public class FCTTestSuitBuilder extends PureTestBuilder
 {
 
-    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
+    public static TestSuite buildFCTTestSuiteWithExecutorFunctionFromList(ImmutableList<FCTTestCollection> collection, MutableMap<String, String> exclusions, String function, boolean includeBeforeAndAfter, boolean useMockRuntime, ExecutionSupport executionSupport)
     {
         TestSuite suite = new PureTestBuilderCompiled();
-        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
+
+        collection.forEach(c -> suite.addTest(buildFCTSuite(c,function,c.getRuntimeFunction(useMockRuntime), c.getSetupFunction(), includeBeforeAndAfter, executionSupport)));
         return suite;
     }
 
-    private static Object fctExecuteFn(CoreInstance coreInstance, CoreInstance executor,  MutableMap<String, String> exclusions, ExecutionSupport executionSupport, MutableList<Object> paramList) throws Throwable
+    private static Object fctExecuteFn(CoreInstance toEval, CoreInstance testParameter,  MutableMap<String, String> exclusions, ExecutionSupport executionSupport, MutableList<Object> paramList) throws Throwable
     {
 
-        Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(coreInstance.getSourceInformation()));
-        if (isFCTTest(coreInstance, ((CompiledExecutionSupport) executionSupport).getProcessorSupport()))
-        {
-            paramList.add(executor);
-        }
+        Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(toEval.getSourceInformation()));
+
+        paramList.add(testParameter);
         paramList = paramList.with(executionSupport);
         Object[] params = paramList.toArray();
-        String methodName = FunctionProcessor.functionNameToJava(coreInstance);
+        String methodName = FunctionProcessor.functionNameToJava(toEval);
         Method method = params.length == 1 ? _class.getMethod(methodName, ExecutionSupport.class)
                 : ArrayIterate.detect(_class.getMethods(), m -> methodName.equals(m.getName()));
 
@@ -79,35 +75,20 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         // See https://github.com/opentracing/opentracing-java/issues/170
         // See https://github.com/opentracing/opentracing-java/issues/364
         GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+        //TODO: Clean up error management to handle expected errors
         try
         {
             Object res = method.invoke(null, params);
-            // Ensure we didn't expect an error
-            String message = exclusions.get(PackageableElement.getUserPathForPackageableElement(coreInstance, "::"));
-            if (message != null)
-            {
-                PCTTools.displayExpectedErrorFailMessage(message, coreInstance, "");
-            }
             return res;
         }
-        catch (InvocationTargetException e)
+        catch (Error e)
         {
-            // Check if the error was expected
-            String message = exclusions.get(PackageableElement.getUserPathForPackageableElement(coreInstance, "::"));
             Throwable thrown = e.getCause().getMessage().contains("Unexpected error executing function with params") && e.getCause().getCause() != null ? e.getCause().getCause() : e.getCause();
-            if (message != null && thrown.getMessage().contains(message))
+            if (thrown instanceof PureAssertFailException)
             {
-                return null;
+                fail(thrown.getMessage());
             }
-            else
-            {
-                PCTTools.displayErrorMessage(message, coreInstance, "", ((CompiledExecutionSupport) executionSupport).getProcessorSupport(), thrown);
-                if (thrown instanceof PureAssertFailException)
-                {
-                    fail(thrown.getMessage());
-                }
-                throw thrown;
-            }
+            throw thrown;
         }
         finally
         {
@@ -126,26 +107,20 @@ public class FCTTestSuitBuilder extends PureTestBuilder
     }
 
 
-    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction, ProcessorSupport processorSupport)
+    public static FCTTestCollection buildFCTTestCollection(String path, String runtimeFunction, String setupFunction,  String mockRuntime, ProcessorSupport processorSupport)
     {
 
-        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport);
+        return new FCTTestCollection(processorSupport.package_getByUserPath(path), runtimeFunction, setupFunction,processorSupport,mockRuntime);
     }
 
-    public static boolean isFCTTest(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "test", processorSupport);
-    }
+
 
     public static boolean isFCTTestCollection(CoreInstance node, ProcessorSupport processorSupport)
     {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "testCollection", processorSupport);
+        return Profile.hasStereotype(node, "meta::pure::test::fct::model::FCT", "testCollection", processorSupport);
     }
 
-    public static boolean isFCTAdaptor(CoreInstance node, ProcessorSupport processorSupport)
-    {
-        return Profile.hasStereotype(node, "meta::pure::test::fct::FCT", "adapter", processorSupport);
-    }
+
 
     public static TestSuite buildFCTSuite(FCTTestCollection testCollection,   String toEval, String runtimeFunction, String setupFunction, boolean includeBeforeAndAfter, ExecutionSupport executionSupport)
     {
@@ -154,11 +129,12 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         {
             subSuites.add(buildFCTSuite(collection,  toEval, runtimeFunction, setupFunction, includeBeforeAndAfter, executionSupport));
         }
+
         return buildFCTSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
                 toEval,
                 runtimeFunction,
                 setupFunction,
-                testCollection.getAllTestFunctions(),
+                testCollection.getTestFunctions(),
                 subSuites,
                 executionSupport,
                 includeBeforeAndAfter
@@ -179,6 +155,7 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         {
             suite.addTest(subSuite);
         }
+
         for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
         {
 
@@ -186,17 +163,19 @@ public class FCTTestSuitBuilder extends PureTestBuilder
             {
                 Function<?>  setup = ((Function<?>) _Package.getByUserPath(setupFunction, ((CompiledExecutionSupport) executionSupport).getProcessorSupport()));
                 PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> setupExecutor = (a, b) -> fctExecuteFn(a, testFunc,org.eclipse.collections.impl.factory.Maps.mutable.empty(),executionSupport, b);
-                suite.addTest(new FCTPureTestCase(setup, setupExecutor, executionSupport, Lists.mutable.with(testFunc)));
+                suite.addTest(new FCTPureTestCase(setup, setupExecutor, executionSupport, Lists.mutable.empty(),"setup.getName()"));
             }
 
             Function<?>  runtimeFunctionInstance =  (Function<?>)  _Package.getByUserPath(runtimeFunction, ((CompiledExecutionSupport) executionSupport).getProcessorSupport());
-            Function<?>  testEval = ((Function<?>) _Package.getByUserPath(toEval, ((CompiledExecutionSupport) executionSupport).getProcessorSupport()));
-            RichIterable<? extends Root_meta_pure_fct_AssertionRun> functions = Root_meta_pure_fct_tests_testRunnerAssertion_Function_1__Function_1__Function_1__AssertionRun_MANY_((Function<?>) testEval,runtimeFunctionInstance,(Function<?>) testFunc,executionSupport);
+             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object>   testEval = (Function<? extends Object>) _Package.getByUserPath(toEval, ((CompiledExecutionSupport) executionSupport).getProcessorSupport());
+            RichIterable<? extends Root_meta_pure_fct_AssertionRun> functions = Root_meta_pure_fct_tests_testRunnerAssertionH2_Function_1__Function_1__Function_1__AssertionRun_MANY_((Function<?>) testEval,runtimeFunctionInstance,(Function<?>) testFunc,executionSupport);
+
 
             for (Root_meta_pure_fct_AssertionRun assertionRun: functions)
                  {
-                     PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> testExecutor = (a, b) -> fctExecuteFn(a, assertionRun._evalFn(),org.eclipse.collections.impl.factory.Maps.mutable.empty(),executionSupport, b);
-                     Test theTest = new FCTPureTestCase(assertionRun._testFn(),testExecutor, executionSupport,Lists.mutable.empty());
+                     //simplify this
+                     PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> testExecutor = (a, b) -> fctExecuteFn(a,assertionRun._parameter(),org.eclipse.collections.impl.factory.Maps.mutable.empty(),executionSupport, b);
+                     Test theTest = new FCTPureTestCase(assertionRun._evalFn(),testExecutor, executionSupport,Lists.mutable.empty(),   assertionRun._parameter()._test().getName());
                      suite.addTest(theTest);
 
                  }
@@ -217,13 +196,13 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         {
         }
 
-        FCTPureTestCase(CoreInstance coreInstance,  F2<CoreInstance, MutableList<Object>, Object> executor, ExecutionSupport executionSupport, MutableList<Object> parameters)
+        FCTPureTestCase(CoreInstance coreInstance,  F2<CoreInstance, MutableList<Object>, Object> executor, ExecutionSupport executionSupport, MutableList<Object> parameters, String name)
         {
             this.coreInstance = coreInstance;
             this.executionSupport = executionSupport;
             this.executor = executor;
             this.parameters = parameters;
-            this.setName(coreInstance.getName());
+            this.setName(name);
         }
 
         @Override

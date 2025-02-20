@@ -159,6 +159,7 @@
                         <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
@@ -256,7 +257,7 @@
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
             <type>test-jar</type>
         </dependency>
-        <!-- ENGINE -->
+
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>

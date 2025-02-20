@@ -92,7 +92,7 @@ public class ClassValidator
     /**
      * Validate if there is a cycle in class supertype/generalization hierarchy
      */
-    public void validateGeneralization(PureModel pureModel, Map<String, Class> classes)
+    private void validateGeneralization(PureModel pureModel, Map<String, Class> classes)
     {
         // Detect cycle in directed graph (using DFS), here the edge is from a class to its supertypes -- O(V+E)
         // See https://stackoverflow.com/a/53995651
