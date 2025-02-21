@@ -120,7 +120,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('monthNumber',               $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',       $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) > 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                       $allStates,            ^ToSql(format='now()')),
-    dynaFnToSql('parseFloat',                $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',                $allStates,            ^ToSql(format='%s :> DOUBLE')),
     dynaFnToSql('parseInteger',              $allStates,            ^ToSql(format='cast(%s as signed integer)')),
     dynaFnToSql('position',                  $allStates,            ^ToSql(format='LOCATE(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',         $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
@@ -190,8 +190,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   let msqlDate = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
   format('TO_CHAR(CONVERT_TZ(%s,\'%s\',%s),%s)',[$params->at(0),$sourceTZ,$params->at(1),$msqlDate]);
 }
-
-
 
 function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
 {
