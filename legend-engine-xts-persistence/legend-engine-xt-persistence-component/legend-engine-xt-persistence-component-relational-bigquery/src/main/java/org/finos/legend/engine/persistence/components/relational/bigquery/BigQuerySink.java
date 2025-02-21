@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
@@ -33,6 +34,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -62,8 +64,10 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ExternalDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLDropVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetVisitor;
@@ -119,6 +123,8 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(ClusterKey.class, new ClusterKeyVisitor());
         logicalPlanVisitorByClass.put(PartitionKey.class, new PartitionKeyVisitor());
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
+        logicalPlanVisitorByClass.put(Selection.class, new SelectionVisitor());
+        logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         logicalPlanVisitorByClass.put(Delete.class, new DeleteVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(Truncate.class, new TruncateVisitor());
