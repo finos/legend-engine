@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
 import java.util.List;
@@ -22,10 +23,13 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Numeric
 
 public class SelectionVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SelectionVisitor
 {
+
+    private static final String SELECT_1_ALIAS = "legend_persistence_X";
+
     /*
-    SELECTION with WHERE always needs A FROM CLAUSE IN BigQuery
-    If the source is not provided, default source is SELECT 1 as X
-    */
+            SELECTION with WHERE always needs A FROM CLAUSE IN BigQuery
+            If the source is not provided, default source is SELECT 1 as X
+            */
     @Override
     public void visitSource(Selection current, List<LogicalPlanNode> logicalPlanNodeList, List<Condition> whereConditions)
     {
@@ -35,7 +39,7 @@ public class SelectionVisitor extends org.finos.legend.engine.persistence.compon
         }
         else
         {
-            Dataset dataset = Selection.builder().addFields(NumericalValue.of(1L)).alias("X").build();
+            Dataset dataset = Selection.builder().addFields(NumericalValue.of(1L)).alias(SELECT_1_ALIAS).build();
             logicalPlanNodeList.add(dataset);
         }
     }
