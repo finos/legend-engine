@@ -25,7 +25,7 @@ public class SQLUpdateVisitor extends org.finos.legend.engine.persistence.compon
 {
 
     /*
-    UODATE always needs A WHERE CLAUSE IN BigQuery
+    UPDATE always needs A WHERE CLAUSE IN BigQuery
     If the condition is not provided, default condition used: 1 = 1
     */
     @Override
