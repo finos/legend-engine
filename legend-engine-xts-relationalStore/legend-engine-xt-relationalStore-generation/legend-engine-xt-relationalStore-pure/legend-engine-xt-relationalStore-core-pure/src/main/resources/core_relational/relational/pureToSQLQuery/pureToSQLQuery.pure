@@ -564,8 +564,6 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                            )
                                                 );
                                       print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: '+$res.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
-                                      // let node = ^RootJoinTreeNode(alias = ^TableAlias(name='dbAccessor', relationalElement=$relation));
-                                      // ^$operation(select = ^TdsSelectSqlQuery(data = $node), currentTreeNode = $node);
                                       $res;,
                                   a:Any[1] | ^ClassInstanceHolder(value=$a);
                              ])) );
@@ -606,14 +604,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
 
 function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relation[1], name:String[1]):RelationalOperationElement[0..1]
 {
-  $relation.columns->filter(c | let colName = $c->match([
-                                                    col:Column[1]|$col.name,
-                                                    a:Alias[1]|$a.name,
-                                                    tcn: TableAliasColumn[1]|$tcn.columnName
-                                                  ]
-                                                );
-                                $colName->map(x | $x->stripMatchingQuotes()) == $name->stripMatchingQuotes();
-                     )->first();
+  $relation.columns->filter(c|$c->extractColumnName()->quoteSafeEqual($name))->first();
 }
 
 function meta::relational::functions::pureToSqlQuery::processPropertyFunctionExpression(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
@@ -1142,8 +1133,8 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
    let allNestedColumns = $nestedColumns->concatenate($nestedSelect.columns->cast(@Alias));
 
    //Give unique names to any columns with the same name
-   let aliasNames = $allNestedColumns->map(a | $a.name->toLower())->removeDuplicates();
-   let nestedColumnsReprocessed = $aliasNames->map(n | let matches = $allNestedColumns->filter(d | $d.name->toLower() == $n);
+   let aliasNames = $allNestedColumns->map(a | $a.name->toLower()->stripMatchingQuotes())->removeDuplicates();
+   let nestedColumnsReprocessed = $aliasNames->map(n | let matches = $allNestedColumns->filter(d | $d.name->toLower()->quoteSafeEqual($n));
                                                        if ($matches->size() == 1,
                                                            | pair($matches->toOne(), $matches->toOne()),
                                                            | incrementAliasRecursively($matches->head()->toOne(), $matches->tail())
@@ -1274,8 +1265,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::extract
 {
    $col->match([a:Alias[1]|$a.name,
                 c:ColumnName[1]|$c.name,
-                w:WindowColumn[1]| $w.columnName,
-                tac:TableAliasColumn[1] | $tac.columnName->defaultIfEmpty($tac.column.name)->toOne()
+                w:WindowColumn[1]|$w.columnName,
+                tac:TableAliasColumn[1]|$tac.columnName->defaultIfEmpty($tac.column.name)->toOne(),
+                c:Column[1]|$c.name,
+                r:RelationalOperationElement[1]|fail('Extracting column name from ' + $r->type().name->toOne() + ' not supported yet!'); '';
               ]);
 }
 
@@ -1289,21 +1282,20 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
 
                               let alias = $currentTreeNode.alias;
                               let relationalElement = $alias.relationalElement;
+                              let column = $t.column;
 
                               // Make sure the column is available a potentially SQL
-                              let newSrcOperation = $relationalElement->match([
-                                 s:SelectSQLQuery[1] | if ($s.columns->map(c|$c->match([t:TableAliasColumn[1]|$t.column.name,
-                                                                                       a:Alias[1]|$a.relationalElement->match([t:TableAliasColumn[1]|$t.column.name, d:DynaFunction[1]|$d.name, l:Literal[1]|$a.name, c:ColumnName[1]|$c.name, wc:WindowColumn[1]|$wc.columnName, x:Any[1]|$a.name])
-                                                                                      ])->stripMatchingQuotes()
-                                                                      )->contains($t.column.name->stripMatchingQuotes()),
-                                                         | $srcOperation;,
+                              let result = $relationalElement->match([
+                                 s:SelectSQLQuery[1] |  let foundColumn = $s->findColumn($t.column.name);
+                                                        if ($foundColumn->isNotEmpty(),
+                                                         | pair($srcOperation, ^$column(name=$foundColumn->toOne()->extractColumnName()));,
                                                          |// Add the missing columns in the nested select (coming most likely from isolation)
                                                           // 1. find the right alias within the nested SQL ...
                                                           // the alias we are trying to find might be from a view
                                                           let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
                                                           let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);
                                                           assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions));
-                                                          let newSQL = ^$s(columns+=^Alias(name=$t.column.name, relationalElement=$aliasesToUse->toOne()));
+                                                          let newSQL = ^$s(columns+=^Alias(name=$aliasesToUse->toOne().column.name, relationalElement=$aliasesToUse->toOne()));
                                                           let newTreeNode = ^$currentTreeNode(alias = ^$alias(relationalElement = $newSQL));
                                                           let newData = if ($currentTreeNode->instanceOf(RootJoinTreeNode),
                                                                                |$newTreeNode,
@@ -1312,7 +1304,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                                           let oldToNew = $srcOperation.select.data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias->zip($newData->getAllNodes()->cast(@RelationalTreeNode).alias)->map(o|^OldAliasToNewAlias(first=$o.first.name, second=$o.second));
                                                           let opSelect = $srcOperation.select;
 
-                                                          ^$srcOperation(
+                                                          let operation = ^$srcOperation(
                                                                 select = ^$opSelect(
                                                                                data = $newData->cast(@RootJoinTreeNode),
                                                                                leftSideOfFilter = if($opSelect.leftSideOfFilter->isEmpty(),|[],|$opSelect.leftSideOfFilter->toOne()->findOneNode($opSelect.data->toOne(), $newData)),
@@ -1321,15 +1313,17 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                                                 positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($opSelect.data->toOne(), $newData)),
                                                                 currentTreeNode = $newTreeNode
                                                           );
+                                                          pair($operation, $column);
                                                       );
                                                       ,
-                                 a:Any[1]|$srcOperation
+                                 a:Any[1]|pair($srcOperation, $column)
                               ]);
 
+                              let newSrcOperation = $result.first;
                               let newOpSelect = $newSrcOperation.select;
-                              let column = ^TableAliasColumn(alias=$newSrcOperation.alias->toOne(), column=$t.column);
+                              let newColumn = ^TableAliasColumn(alias=$newSrcOperation.alias->toOne(), column=$result.second);
                               ^$newSrcOperation(
-                                    select = $state.inFilter->if(|^$newOpSelect(filteringOperation = $column),|^$newOpSelect(columns = $column))
+                                select = $state.inFilter->if(|^$newOpSelect(filteringOperation = $newColumn),|^$newOpSelect(columns = $newColumn))
                               );,
                   d:DynaFunction[1]| let newSelect = if ($d.parameters->isEmpty(),
                                                       | let select = $srcOperation.select;
@@ -1395,15 +1389,24 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
 
 function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
 {
-   let aliasesToUse = $nodes->filter(n| let relElements = $n.alias.relationalElement->match([
-         v:ViewSelectSQLQuery[1]| $v.view,
-         s:SelectSQLQuery[1]|
-            let relationsSupportingProjectedColumn = $s.columns->filter(c|$c->extractColumnName()->toOne()->stripMatchingQuotes() == $column.name)->extractTableAliasColumns().alias.relation;
-            print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
-            $relationsSupportingProjectedColumn->concatenate($s);,
-         a:Any[1]| $a]);
-      $relElements->contains($relationalElement);).alias;
-   $aliasesToUse->map(a| ^TableAliasColumn(alias=$a, columnName=$column.name, column=$column));
+   let aliasesToUse = $nodes->map(n|let res = $n.alias.relationalElement->match([
+                                                v:ViewSelectSQLQuery[1]| pair(list($v.view), $column.name),
+                                                s:SelectSQLQuery[1]|
+                                                  let foundColumn = $s->findColumn($column.name);
+                                                  if($foundColumn->isNotEmpty(),
+                                                    | let relationsSupportingProjectedColumn = $foundColumn->extractTableAliasColumns().alias.relation;
+                                                      print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
+                                                      pair(list($relationsSupportingProjectedColumn->concatenate($s)), $foundColumn->toOne()->extractColumnName());,
+                                                    | []->cast(@Pair<List<Any>, String>)
+                                                  );,
+                                                a:Any[1]| pair(list($a), $column.name)
+                                              ]);
+
+                                    if($res.first.values->contains($relationalElement),
+                                      | ^TableAliasColumn(alias=$n.alias, columnName=$res.second->toOne(), column=^$column(name=$res.second->toOne()));,
+                                      | [];
+                                    );
+                                  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processProperty(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], srcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1],
@@ -2700,8 +2703,7 @@ function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], columns:RelationalOperationElement[*]):Alias[1]
 {
-   let ps = $columnName->addQuotesIfNecessary();  
-   let column = $columns->filter(c|$c->extractColumnName()->addQuotesIfNoQuotes() == $ps);
+   let column = $columns->filter(c|$c->extractColumnName()->quoteSafeEqual($columnName));
    assertNotEmpty($column,{|'The column \''+$columnName+'\' can\'t be found ('+ $columns->map(c|$c->extractColumnName())->joinStrings(',')+')'});
    $column->toOne()->match([
     a: Alias[1] | $a,
@@ -5173,7 +5175,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
       select = ^TdsSelectSqlQuery(
                       data =$joinTreeNode,
                       columns = $mainTable.columns->map(c |   let column = $c->cast(@Column);
-                                                              let aliasName = $column.name->toOne()->addQuotesIfNoQuotes();
+                                                              let aliasName = $column.name->toOne()->addQuotesIfNecessary();
                                                               let tableAliasColumn = ^TableAliasColumn(alias=$mainTableAliasTDS, columnName=$column.name, column=$column);
                                                               ^Alias(name=$aliasName, relationalElement=$tableAliasColumn);),
                       paths = $mainTable.columns ->map(c |pair($c->cast(@Column).name, ^PathInformation(type=$c->cast(@Column).type->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType(),
@@ -5254,6 +5256,10 @@ function meta::relational::functions::pureToSqlQuery::addQuotesIfNecessary(s:Str
    if($s->startsWith('"') && $s->endsWith('"'), | $s, | '"' + $s + '"');
 }
 
+function meta::relational::functions::pureToSqlQuery::quoteSafeEqual(s1:String[1], s2:String[1]):Boolean[1]
+{
+  $s1->stripMatchingQuotes() == $s2->stripMatchingQuotes();
+}
 
 function meta::relational::functions::pureToSqlQuery::processTdsRestrict(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
@@ -5362,7 +5368,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    if($noSubSelectReqiured
       ,|
          //The query has no group bys, or they are all being projected with at least one agg remaining
-         ^$nestedQuery(select = ^$origSelect(columns = $newCols, paths = $projectColNames->map(p|$origSelect.paths->filter(z|$z.first->stripMatchingQuotes() == $p->stripMatchingQuotes()))));
+         ^$nestedQuery(select = ^$origSelect(columns = $newCols, paths = $projectColNames->map(p|$origSelect.paths->filter(z|$z.first->quoteSafeEqual($p)))));
       ,|
          //Drop unnecessary aggregation columns from the sub query to be created
          let newSubCols = if ($origSelect.distinct == true && $origGroupByByName->isEmpty(),
@@ -5386,7 +5392,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                                 ^Alias(name=$tac.column.name, relationalElement=$tac);
                                              ),
                                     groupBy = []->cast(@Alias),
-                                    paths = $projectColNames->map(p|$origSelect.paths->filter(z|$z.first->stripMatchingQuotes() == $p->stripMatchingQuotes()))
+                                    paths = $projectColNames->map(p|$origSelect.paths->filter(z|$z.first->quoteSafeEqual($p)))
                                ),
                   currentTreeNode = if($nestedQuery.currentTreeNode->isEmpty(), | $nestedQuery.currentTreeNode, | $nestedQuery.currentTreeNode->toOne()->findOneNode($nestedQuery.select.data->toOne(), $newData))
             );
@@ -5475,7 +5481,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoin(asOfJoin:Bo
                                      data = $newData,
                                      columns = $leftAliasWithColumns->concatenate($aliases2)->map(cl| let als = $cl->cast(@Alias);
                                                                                                      let col = $als.relationalElement->cast(@TableAliasColumn).column;
-                                                                                                     ^Alias(name=if($Q1isVarSetPlaceHolder,|$als.name->addQuotesIfNoQuotes(),|$als.name), relationalElement=^TableAliasColumn(alias=$newAlias, column=^$col(name=$als.name)));),
+                                                                                                     ^Alias(name=if($Q1isVarSetPlaceHolder,|$als.name->addQuotesIfNecessary(),|$als.name), relationalElement=^TableAliasColumn(alias=$newAlias, column=^$col(name=$als.name)));),
                                      paths = $paths
                       ),
            currentTreeNode = $swc1->concatenate($swc2)->filter(q|$q.currentTreeNode->isNotEmpty())->map(q|$q.currentTreeNode->toOne()->findNode($q.select.data->toOne(), $newData))->first()
@@ -5559,8 +5565,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoinOnColumns(f:
    let root = ^RootJoinTreeNode(alias=$leftAlias, childrenData=$child);
 
    let newColumns = if($type == JoinType.RIGHT_OUTER,
-                       | $aliases1->filter(a|!if($Q1isVarSetPlaceHolder,|$a.name->addQuotesIfNoQuotes(),|$a.name)->in($aliases2.name))->concatenate($aliases2),
-                       | $aliases1->concatenate($aliases2->filter(a|!if($Q1isVarSetPlaceHolder,|$a.name->addQuotesIfNoQuotes(),|$a.name)->in($aliases1.name)))
+                       | $aliases1->filter(a|!if($Q1isVarSetPlaceHolder,|$a.name->addQuotesIfNecessary(),|$a.name)->in($aliases2.name))->concatenate($aliases2),
+                       | $aliases1->concatenate($aliases2->filter(a|!if($Q1isVarSetPlaceHolder,|$a.name->addQuotesIfNecessary(),|$a.name)->in($aliases1.name)))
                        );
 
 
@@ -5573,7 +5579,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoinOnColumns(f:
                                     columns =$newColumns->map(cl|if($Q1isVarSetPlaceHolder,
                                                                   |let als = $cl->cast(@Alias);
                                                                    let col = $als.relationalElement->cast(@TableAliasColumn).column;
-                                                                   ^Alias(name=$als.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$newAlias, column=^$col(name=$als.name)));
+                                                                   ^Alias(name=$als.name->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias=$newAlias, column=^$col(name=$als.name)));
                                                                 , |$newAlias->switchAliasForColumns($cl) )),
                                      paths = if($type == JoinType.RIGHT_OUTER,
                                                | $query2.select->cast(@RelationalTds).paths->concatenate($leftQueryProcessed->cast(@RelationalTds).paths->filter(p|!$p.first->in($query2.select->cast(@RelationalTds).paths.first))),
@@ -5691,7 +5697,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnProjectionsFr
                     relation = $relationParameter,
                     distinct = $distinct->isEmpty()->if(|[],|$distinct->toOne()),
                     toRow = $limit->isEmpty()->if(|[],|$limit->toOne()),
-                    columns = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$innerAlias, column=^Column(name=$colNameGenerationFunction->eval($x), type=$x.type)))),
+                    columns = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias=$innerAlias, column=^Column(name=$colNameGenerationFunction->eval($x), type=$x.type)))),
                     data = ^RootJoinTreeNode
                             (
                                alias = $innerAlias
@@ -5787,11 +5793,6 @@ function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(
                          )
                    );
        });
-}
-
-function meta::relational::functions::pureToSqlQuery::addQuotesIfNoQuotes(aliasName:String[1]):String[1]
-{
-    if($aliasName->startsWith('"'),| $aliasName ,|'"'+$aliasName+'"');
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumExprPropertyMapping(f:FunctionExpression[1], paths:Pair<String, PathInformation>[*]):RelationalPropertyMapping[*]
@@ -6847,7 +6848,14 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
 
 function meta::relational::functions::pureToSqlQuery::incrementAliasRecursively(head:Alias[1], tail:Alias[*]):Pair<Alias,Alias>[*]
 {
-   if ($tail->isEmpty(), | pair($head, $head), | pair($head, ^$head(name= $head.name + '_' + $tail->size()->toString()))->concatenate(incrementAliasRecursively($tail->head()->toOne(), $tail->tail())))
+  if ($tail->isEmpty(), 
+    | pair($head, $head), 
+    | let headName =  if($head.name->contains('"'),
+                        | ($head.name->stripMatchingQuotes() + '_' + $tail->size()->toString())->addQuotesIfNecessary(),
+                        | $head.name + '_' + $tail->size()->toString()
+                      );
+      pair($head, ^$head(name=$headName))->concatenate(incrementAliasRecursively($tail->head()->toOne(), $tail->tail()));
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::replaceJoin(currentJoin:RelationalTreeNode[1], joinToReplace:JoinTreeNode[1], newJoin:JoinTreeNode[1]):RelationalTreeNode[1]
@@ -7724,9 +7732,7 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
 function meta::relational::functions::pureToSqlQuery::addExtraJoinColumns(tableAlias: TableAlias[1], j:Join[1]):TableAlias[1]
 {
    let joinTableAliasColumns = $j.operation->extractTableAliasColumns()->filter(c|$c.alias==$tableAlias)->removeDuplicates();
-   let updatedRelationalElement = $tableAlias.relationalElement->match([s:SelectSQLQuery[1] | let existingCols = $s.columns->map(col| $col->match([tac:TableAliasColumn[1] | $tac.column.name,
-                                                                                                                                                   a:Alias[1] | $a.name
-                                                                                                                                             ])->stripMatchingQuotes());
+   let updatedRelationalElement = $tableAlias.relationalElement->match([s:SelectSQLQuery[1] | let existingCols = $s.columns->map(col| $col->extractColumnName()->stripMatchingQuotes());
                                                                                               //join alias is vs select, not safe to use the same alias within the select's join tree nodes, since it will likely match with the root (CorrelatedSubQuery), but the subselect could have many nodes
                                                                                               let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
                                                                                               let nodeAliasNameToRelation = $allNodes->map(n|pair($n.alias.name, $n.alias.relation))->newMap();
@@ -8162,7 +8168,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessTableAliasColumns
                         s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessTableAliasColumns($map)),
                         s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->reprocessTableAliasColumns($map)->cast(@TableAliasColumn))
                     ]
-                 )
+                 );
 }
 
 function meta::relational::functions::pureToSqlQuery::usePropertyName(element:RelationalOperationElement[1], property:AbstractProperty<Any>[1], relationalPropertyMappings:RelationalPropertyMapping[*], state: State[1], extensions:Extension[*]):RelationalOperationElement[1]
