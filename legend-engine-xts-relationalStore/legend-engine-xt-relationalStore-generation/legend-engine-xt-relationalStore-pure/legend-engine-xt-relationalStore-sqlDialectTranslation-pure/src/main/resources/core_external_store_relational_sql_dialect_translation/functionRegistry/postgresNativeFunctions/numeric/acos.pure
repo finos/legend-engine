@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,45 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceil extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Acos extends PostgresNativeSqlFunction
 [
-  $this.name == 'ceil'
+  $this.name == 'acos'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::ceil(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::acos(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceil
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Acos
   (
-    name = 'ceil',
+    name = 'acos',
+    documentation = 'Returns the inverse cosine for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = DoubleSqlType,
         returnType = DoubleSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('ceil', literal(17)),
-        17.0
+        simpleFunctionCall('acos', literal(1.0)),
+        0.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ceil', literal(17.4)),
-        18.0
+        simpleFunctionCall('acos', literal(0.0)),
+        1.57079633
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ceil', literal(42.2)),
-        43.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('ceil', literal(-42.2)),
-        -42.0
+        simpleFunctionCall('acos', literal(0.1234)),
+        1.44708098
       )
     ]
   )
