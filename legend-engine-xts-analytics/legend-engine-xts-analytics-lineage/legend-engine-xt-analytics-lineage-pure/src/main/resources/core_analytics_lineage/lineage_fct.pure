@@ -1,4 +1,4 @@
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 import meta::protocols::pure::vX_X_X::metamodel::v3::valueSpecification::raw::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
 import meta::relational::extension::*;
@@ -45,13 +45,13 @@ function meta::analytics::lineage::reportLineageToPureReportLineage(report:meta:
 }
 
 
-function   meta::analytics::lineage::lineageAssertion(lineage:meta::analytics::lineage::FunctionAnalytics[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]
+function   meta::analytics::lineage::lineageAssertion(lineage:meta::analytics::lineage::FunctionAnalytics[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
 { 
     let store = $lineage.databaseLineage.nodes.data.id->sort();
     let class =  $lineage.classLineage.nodes.data.id->sort();
     let report = meta::pure::lineage::analytics::reportLineageToString($lineage.reportLineage->meta::analytics::lineage::reportLineageToPureReportLineage());
     let vs = meta::pure::test::fct::expectedLineage($store,$class,$report)->deactivate()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], [pair('store',list($store)),pair('class',list($class)),pair('report',list($report))]->newMap()   , true, true, relationalExtensions())->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction);
-    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='expectedLineageResult'),expression=$vs);
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='expectedLineageResult'),expression=$vs);
 
 }
 
