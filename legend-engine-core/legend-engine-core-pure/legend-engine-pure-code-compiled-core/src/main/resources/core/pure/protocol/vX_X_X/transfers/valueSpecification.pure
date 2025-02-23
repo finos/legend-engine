@@ -917,7 +917,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   }),
                   ^meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->String[1]}>>(first = new_Class_1__String_1__KeyExpression_MANY__T_1_, second = {|
                   let p1 = $state->toPure( $af.parameters->at(0));
-                  let keys = $af.parameters->at(2)->match([c:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection[1] | $c.values->map(v| $state->toPure($v) )->joinStrings(','),
+                  let keys = $af.parameters->at(2)->match([c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | $c.values->map(v| $state->toPure($v) )->joinStrings(','),
                                                            v: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*] | $state->toPure($v)]);
                   '^%s(%s)'->format([$p1,$keys]);
                   })
@@ -1068,7 +1068,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                                                     | $ev.fullPath
                                                      ),
 
-         k:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]  |  $k.key->cast(@CString).value + '='  + toPure($state,$k.expression)   + if($state.keyExpressionsOnNewLine,|'\n',|'') ;
+         k:meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]  |  $k.key->cast(@CString).value + '='  + toPure($state,$k.expression)   + if($state.keyExpressionsOnNewLine,|'\n',|'') ;
          ]);
       )->joinStrings('', ';\n', if($vs->size() <= 1, | '', | ';'));
 }
