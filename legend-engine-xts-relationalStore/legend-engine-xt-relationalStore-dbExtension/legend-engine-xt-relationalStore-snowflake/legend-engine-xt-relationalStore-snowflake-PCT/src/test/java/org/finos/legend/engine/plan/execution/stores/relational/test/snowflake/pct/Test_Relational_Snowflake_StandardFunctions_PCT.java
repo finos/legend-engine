@@ -52,7 +52,17 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "class org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl cannot be cast to class java.lang.Boolean (org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl is in unnamed module of loader 'app'; java.lang.Boolean is in module java.base of loader 'bootstrap')"),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::in(Firm[*],Firm[*])'"),
-            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]")
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"),
+
+            // Max
+            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "\"Cast exception: Class cannot be cast to Number\""),
+            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "\"Cast exception: Class cannot be cast to Number\""),
+            one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
+
+            // Min
+            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"Cast exception: Class cannot be cast to Number\""),
+            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "\"Cast exception: Class cannot be cast to Number\""),
+            one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"")
     );
 
     public static Test suite()
