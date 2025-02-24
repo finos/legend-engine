@@ -128,7 +128,6 @@ public class DuckDBSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
-        // TODO: These two mappings have not been confirmed, to do with schema evolution
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.REAL, DataType.NUMERIC)));
         implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.REAL, DataType.DECIMAL, DataType.NUMERIC)));
