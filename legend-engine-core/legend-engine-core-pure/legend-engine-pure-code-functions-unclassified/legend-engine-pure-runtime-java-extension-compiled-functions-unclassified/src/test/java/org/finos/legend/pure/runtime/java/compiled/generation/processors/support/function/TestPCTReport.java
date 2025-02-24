@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct;
+package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function;
 
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCRReport
+public class TestPCTReport
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals("Native, Databricks", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(3, PCTReportProviderLoader.gatherReports().size());
     }
 }
