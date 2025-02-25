@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,45 +18,29 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceiling extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan2 extends PostgresNativeSqlFunction
 [
-  $this.name == 'ceiling'
+  $this.name == 'atan2'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::ceiling(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::atan2(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceiling
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Atan2
   (
-    name = 'ceiling',
+    name = 'atan2',
+    documentation = 'Returns the inverse tangent using the y and x co-ordinates.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = DoubleSqlType,
+        parameterTypes = [DoubleSqlType, DoubleSqlType],
         returnType = DoubleSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(17)),
-        17.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(17.4)),
-        18.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(42.2)),
-        43.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(-42.2)),
-        -42.0
+        simpleFunctionCall('atan2', [literal(2.1), literal(1.53)]),
+        0.94115114
       )
     ]
   )
