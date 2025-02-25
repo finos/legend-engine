@@ -86,7 +86,7 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx10g"
+          MAVEN_OPTS: "-Xmx8g"
         run: |
           mvn -B -e -DskipTests=true install
 
@@ -95,7 +95,7 @@ jobs:
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: "-Xmx10g"
+          MAVEN_OPTS: "-Xmx8g"
         # NOTE: here we publish snapshot to a staging Maven registry
         # some registry like Maven Central requires javadoc, but for now we
         # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
@@ -133,7 +133,7 @@ jobs:
 
       - name: Test
         env:
-          MAVEN_OPTS: "-Xmx6g"
+          MAVEN_OPTS: "-Xmx4g"
         # exclude some modules by -pl !_MODULE_, as these modules are tested in other parallel jobs
         run: |
           mvn -B -e surefire:test -pl '!org.finos.legend.engine:legend-engine-server-http-server,!org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-h2-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-PCT,!org.finos.legend.engine:legend-engine-xt-relationalStore-postgres-PCT' -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
@@ -160,7 +160,7 @@ jobs:
 
       - name: Test
         env:
-          MAVEN_OPTS: "-Xmx6g"
+          MAVEN_OPTS: "-Xmx4g"
         run: |
           mvn -B -e surefire:test -pl org.finos.legend.engine:legend-engine-server-http-server -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
@@ -309,6 +309,9 @@ jobs:
   cleanup:
     name: After Test
     runs-on: ubuntu-latest
+    permissions:
+      actions: write # required to delete caches
+      contents: read
     if: always()
     needs:
       - build
