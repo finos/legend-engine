@@ -103,13 +103,18 @@ public class SQLUpdateVisitor implements LogicalPlanVisitor<Update>
         }
         else
         {
-            if (current.whereCondition().isPresent())
-            {
-                logicalPlanNodeList.add(current.whereCondition().get());
-            }
+            visitWhereCondition(current, logicalPlanNodeList);
             logicalPlanNodeList.addAll(current.keyValuePairs());
         }
 
         return new VisitorResult(updateStatement, logicalPlanNodeList);
+    }
+
+    public void visitWhereCondition(Update current, List<LogicalPlanNode> logicalPlanNodeList)
+    {
+        if (current.whereCondition().isPresent())
+        {
+            logicalPlanNodeList.add(current.whereCondition().get());
+        }
     }
 }
