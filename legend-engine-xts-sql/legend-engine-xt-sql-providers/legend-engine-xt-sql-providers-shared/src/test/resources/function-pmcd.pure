@@ -16,6 +16,28 @@ function simple::func::simpleFunction(lastNames:String[*]):meta::pure::tds::Tabu
     ])
 }
 
+function simple::func::relationFunction(lastNames:String[*]):meta::pure::metamodel::relation::Relation<('first name':String, 'last name':String)>[1]
+{
+  simple::model::Person.all()
+    ->filter(p | $p.lastName->in($lastNames))
+    ->project(~[
+        'first name': x | $x.firstName,
+        'last name': x | $x.lastName
+    ])
+}
+
+function apps::pure::dsb::sample::domain::Trade_QueryFunctionRelation(): meta::pure::metamodel::relation::Relation<(Client:String, Factor:Float, Quantity:Float)>[1]
+{
+  apps::pure::dsb::sample::domain::Trade.all()->project(~[
+    Client: x | $x.clientName,
+    Factor: x | $x.factor,
+    Quantity: x | $x.quantity
+  ])->from(
+    apps::pure::dsb::sample::mapping::DsbSampleMapping,
+    apps::pure::dsb::sample::store::runtime::PROD
+  )
+}
+
 function simple::func::nonTdsFunction():String[1]
 {
     ''

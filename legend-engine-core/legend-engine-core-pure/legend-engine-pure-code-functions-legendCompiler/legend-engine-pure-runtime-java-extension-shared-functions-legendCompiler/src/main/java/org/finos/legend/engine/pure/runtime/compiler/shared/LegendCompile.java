@@ -17,13 +17,17 @@ package org.finos.legend.engine.pure.runtime.compiler.shared;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -90,5 +94,30 @@ public class LegendCompile
                     Assert.assertTrue(graphElement != null, () -> "Element " + elementId + " can't be found in package " + x._package + " children: " + elementGraphPackage._children().collect(ModelElementAccessor::_name).makeString(", "));
                     return graphElement;
                 });
+    }
+
+    public static ValueSpecification doCompileVS(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs, Metadata metadata)
+    {
+        return doCompileVS(vs, PureModelContextData.newPureModelContextData(), metadata);
+    }
+
+    public static ValueSpecification doCompileVS(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs, PureModelContextData base, Metadata metadata)
+    {
+        Function f = new Function();
+        f._package = "a";
+        f.name = "f";
+        f.body = FastList.newListWith(vs);
+        f.parameters = FastList.newList();
+        f.returnGenericType = new GenericType();
+        f.returnGenericType.rawType = new PackageableType("Any");
+        f.returnMultiplicity = Multiplicity.PURE_ONE;
+
+        // Build
+        PureModelContextData data = PureModelContextData.newBuilder().withPureModelContextData(base).withElement(f).build();
+        // Compile
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", metadata);
+
+        // Extract Compiled created elements
+        return pm.getConcreteFunctionDefinition_safe("a::f__Any_1_")._expressionSequence().getFirst();
     }
 }
