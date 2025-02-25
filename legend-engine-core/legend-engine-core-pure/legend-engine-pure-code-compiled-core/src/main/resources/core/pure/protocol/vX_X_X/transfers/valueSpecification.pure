@@ -974,7 +974,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
             );
          },
          ap : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty[1]|
-            $state->toPure($ap.parameters->at(0)) + '.' + $ap.property + if($ap.parameters->tail()->isEmpty(),|'',| $ap.parameters->tail()->map(p|$state->toPure($p))->joinStrings('(', ',',')')),
+            $state->toPure($ap.parameters->at(0)) + '.' + escape($ap.property) + if($ap.parameters->tail()->isEmpty(),|'',| $ap.parameters->tail()->map(p|$state->toPure($p))->joinStrings('(', ',',')')),
          ci : CInteger[1]|'%s'->format($ci.value),
          ci : CDecimal[1]|'%s'->format($ci.value),
          ci : CFloat[1]|'%s'->format($ci.value),
@@ -997,7 +997,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          l : Lambda[1]|
             let pStr = $l.parameters->map(p|$p->match([
                v : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]|
-               if ($v.genericType->isEmpty(),
+               if ($v.genericType->isEmpty() || $v.genericType.rawType->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType),
                    |$v.name,
                    |let cName = if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->in([Float, Any, String, Integer, Boolean, Date, DateTime, StrictDate]->map(x|$x->makeString())),
                      | $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->makeString(),
@@ -1008,7 +1008,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                      )->toOne();
                     let m = $v.multiplicity->toOne()->mapToString();
                     '%s:%s[%s]'->format([$v.name, $cName, $m]);
-                )
+                );
                ]))->joinStrings(', ');
 
             let bStr = $state->toPure($l.body);
@@ -1031,7 +1031,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                      a :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Whatever[1]|fail('Unsupported type in alloy protocol ' + $a.class);'';,
                      r : RuntimeInstance[1]|'',
                      e : ExecutionContextInstance[1]|'',
-                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(', ')),
+                     c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(',')),
                      c : meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1] | $c->colSpecToPure(false, $state),
                      pv : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair[1]|
                                             let tMatcher = {val:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]| $val->match([
@@ -1062,9 +1062,16 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
       )->joinStrings('', ';\n', if($vs->size() <= 1, | '', | ';'));
 }
 
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::escape(name:String[1]):String[1]
+{
+  let escape = [' ', '(', ')', '[', ']', '{', '}', '/', '\\'];
+
+  if ($escape->exists(e | $name->contains($e)), | '\''+$name+'\'', |$name);
+}
+
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::colSpecToPure(c:meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1], inArray:Boolean[1], state : AlloyToPureState[1]):String[1]
 {
-  let name = if($c.name->contains(' '),|'\''+$c.name+'\'',|$c.name);
+  let name = escape($c.name);
 
   let prefix = if ($inArray, | '', | '~');
 

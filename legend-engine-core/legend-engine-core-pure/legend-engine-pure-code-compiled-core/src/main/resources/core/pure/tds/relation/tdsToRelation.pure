@@ -70,6 +70,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
 
         appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
     ),
+    //TODO activate when relation inference is fixed on project
     pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
         let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
@@ -217,6 +218,8 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
       | transformOlapGroupBySortOpString($a, $extensions)
     )
   ]->concatenate([
+      swap(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, $a, $extensions),
+      swap(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, drop_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, drop_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, slice_Relation_1__Integer_1__Integer_1__Relation_1_, $a, $extensions),
       swap(limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
@@ -238,6 +241,11 @@ function meta::pure::tds::toRelation::getExtensions(a:AppliedFunction[1], extens
 function meta::pure::tds::toRelation::swap(f:Function<Any>[1], o:Function<Any>[1], a:AppliedFunction[1], extensions:Extension[*]):meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[1]
 {
   pair($f, | appliedFunction($o, $a.parameters->map(p | $p->transform($extensions))))
+}
+
+function meta::pure::tds::toRelation::fail(f:Function<Any>[1]):meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[1]
+{
+  pair($f, | fail('currently no translation for function ' + $f.name->toOne()); appliedFunction($f, []);)
 }
 
 function meta::pure::tds::toRelation::colsToColSpecArrayInstance(params:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], extensions:Extension[*]):ClassInstance[1]
