@@ -25,7 +25,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ope
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -51,7 +50,7 @@ public class LockInfoUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO main_table_lock (`insert_ts_utc`) " +
-                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') FROM (SELECT 1) as X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') FROM (SELECT 1) as legend_persistence_X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -65,7 +64,7 @@ public class LockInfoUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedInsertSql = "INSERT INTO main_table_lock (`insert_ts_utc`, `batch_id`) " +
-                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),0 FROM (SELECT 1) as X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),0 FROM (SELECT 1) as legend_persistence_X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
         Assertions.assertEquals(expectedInsertSql, list.get(0));
     }
 
@@ -80,7 +79,7 @@ public class LockInfoUtilsTest
         List<String> list = physicalPlan.getSqlList();
         String expectedUpdateSql = "UPDATE main_table_lock as main_table_lock SET main_table_lock.`batch_id` = 50 WHERE main_table_lock.`batch_id` IS NULL";
         String expectedInsertSql = "INSERT INTO main_table_lock (`insert_ts_utc`, `batch_id`) " +
-                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),50 FROM (SELECT 1) as X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
+                "(SELECT PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),50 FROM (SELECT 1) as legend_persistence_X WHERE NOT (EXISTS (SELECT * FROM main_table_lock as main_table_lock)))";
         Assertions.assertEquals(expectedInsertSql, list.get(0));
         Assertions.assertEquals(expectedUpdateSql, list.get(1));
     }
