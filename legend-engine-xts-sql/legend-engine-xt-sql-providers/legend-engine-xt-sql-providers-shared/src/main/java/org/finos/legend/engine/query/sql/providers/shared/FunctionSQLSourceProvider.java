@@ -56,8 +56,10 @@ public class FunctionSQLSourceProvider implements SQLSourceProvider
     private static final String FUNCTION = "func";
     private static final String PATH = "path";
 
-    private static final ImmutableSet<String> TABULAR_TYPES = Sets.immutable.of(
-            "meta::pure::tds::TabularDataSet"
+    private static final ImmutableSet<String> SUPPORTED_TYPES = Sets.immutable.of(
+            "meta::pure::tds::TabularDataSet",
+            "meta::relational::mapping::TableTDS",
+            "meta::pure::metamodel::relation::Relation"
     );
 
     private final ProjectCoordinateLoader projectCoordinateLoader;
@@ -85,9 +87,9 @@ public class FunctionSQLSourceProvider implements SQLSourceProvider
 
             Function function = SQLProviderUtils.extractElement("function", Function.class, resolvedProject.getData(), f -> path.equals(f.getPath()));
 
-            if (!TABULAR_TYPES.contains(((PackageableType) function.returnGenericType.rawType).fullPath))
+            if (!SUPPORTED_TYPES.contains(((PackageableType) function.returnGenericType.rawType).fullPath))
             {
-                throw new EngineException("Function " + path + " does not return Tabular data type");
+                throw new EngineException("Function " + path + " does not return a supported data type. Supported types: [" + String.join(", ", SUPPORTED_TYPES) + "]");
             }
 
             Lambda lambda = new Lambda();

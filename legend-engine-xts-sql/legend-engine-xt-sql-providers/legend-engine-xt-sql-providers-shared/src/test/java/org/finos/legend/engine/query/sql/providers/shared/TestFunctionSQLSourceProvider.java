@@ -97,8 +97,17 @@ public class TestFunctionSQLSourceProvider
     @Test
     public void testCoordinates()
     {
-        String functionName = "simple::func::simpleFunction_String_MANY__TabularDataSet_1_";
+        testCoordinates("simple::func::simpleFunction_String_MANY__TabularDataSet_1_");
+    }
 
+    @Test
+    public void testRelation()
+    {
+        testCoordinates("simple::func::relationFunction_String_MANY__Relation_1_");
+    }
+
+    private void testCoordinates(String functionName)
+    {
         ProjectCoordinateWrapper coordinates = ProjectCoordinateWrapper.coordinates("proj1:art:1.0.0");
 
         PureModelContextData pmcd = loadPureModelContextFromResource("function-pmcd.pure", this.getClass());
@@ -152,7 +161,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("coordinates", null, "proj1:art:1.0.0")
         );
 
-        testException(tableSource, EngineException.class, "Function " + functionName + " does not return Tabular data type");
+        testException(tableSource, EngineException.class, "Function " + functionName + " does not return a supported data type. Supported types: [meta::pure::tds::TabularDataSet, meta::relational::mapping::TableTDS, meta::pure::metamodel::relation::Relation]");
     }
 
     private <T extends Throwable> void testException(TableSource tableSource, Class<T> throwable, String expected)

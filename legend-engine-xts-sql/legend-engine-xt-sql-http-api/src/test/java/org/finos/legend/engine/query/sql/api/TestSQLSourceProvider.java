@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.test.GrammarParseTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -44,25 +45,8 @@ import java.util.stream.Collectors;
 
 public class TestSQLSourceProvider implements SQLSourceProvider
 {
-    private static final PureModelContextData pureModelContextData;
+    private static final PureModelContextData pureModelContextData = GrammarParseTestUtils.loadPureModelContextFromResource("proj-1.pure", TestSQLSourceProvider.class);
     private static final String service = "service";
-
-    static
-    {
-
-        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("proj-1.pure");
-             InputStreamReader pureProjectReader = new InputStreamReader(Objects.requireNonNull(pureProjectInputStream), StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(pureProjectReader))
-        {
-            String pureProject1Contents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            pureModelContextData = PureModelContextData.newBuilder().withOrigin(null).withSerializer(null).withPureModelContextData(PureGrammarParser.newInstance().parseModel(pureProject1Contents)).build();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-    }
 
     @Override
     public String getType()

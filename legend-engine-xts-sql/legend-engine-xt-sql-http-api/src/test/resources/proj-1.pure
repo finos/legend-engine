@@ -71,6 +71,29 @@ Service demo::H2DemoService
   }
 }
 
+###Service
+Service demo::H2DemoServiceRelation
+{
+  pattern: '/testServiceRelation';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(~[
+        Id: x | $x.id,
+        Name: x | $x.name,
+        'Employee Type': x | $x.type
+    ]);
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 Service demo::H2PersonService
 {
   pattern: '/personService';
@@ -99,6 +122,30 @@ Service demo::H2PersonService
         'Derived Name'
       ]
     );
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceRelation
+{
+  pattern: '/personServiceRelation';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(~[
+        Id: x | $x.id,
+        Name: x | $x.name,
+        'Employee Type': x | $x.type,
+        'Full Name': x | $x.name + ' Smith',
+        'Derived Name': x | $x.derivedName
+    ]);
     mapping: demo::DemoRelationalMapping;
     runtime: demo::H2DemoRuntime;
   }
@@ -133,6 +180,29 @@ Service demo::H2PersonRatings
   }
 }
 
+
+Service demo::H2PersonRatingsRelation
+{
+  pattern: '/personRatingsRelation';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(~[
+        Id: x | $x.id,
+        Name: x | $x.name,
+        Ratings: x | $x.ratings
+    ]);
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 Service demo::H2PersonServiceParameterized
 {
   pattern: '/personServiceForNames';
@@ -162,6 +232,30 @@ Service demo::H2PersonServiceParameterized
   }
 }
 
+Service demo::H2PersonServiceParameterizedRelation
+{
+  pattern: '/personServiceForNamesRelation';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {names:String[*]|demo::employee.all()->filter(p | $names->isEmpty() || $p.name->in($names))->project(
+      ~[
+        Id: x | $x.id,
+        Name: x | $x.name,
+        'Employee Type': x | $x.type
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 Service demo::H2PersonServiceDateParameterized
 {
   pattern: '/personServiceForStartDate/{date}';
@@ -184,6 +278,30 @@ Service demo::H2PersonServiceDateParameterized
         'Id',
         'Name',
         'Employee Type'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceDateParameterizedRelation
+{
+  pattern: '/personServiceForStartDateRelation/{date}';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {date:Date[1], type:demo::employeeType[0..1] |demo::employee.all()->filter(p | $p.startDate == $date && ($type->isEmpty() || $p.type == $type))->project(
+      ~[
+        Id: x | $x.id,
+        Name: x | $x.name,
+        'Employee Type': x | $x.type
       ]
     )};
     mapping: demo::DemoRelationalMapping;

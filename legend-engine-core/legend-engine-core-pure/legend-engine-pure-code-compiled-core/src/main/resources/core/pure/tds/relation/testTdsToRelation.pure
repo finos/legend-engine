@@ -410,6 +410,21 @@ function <<test.Test>> meta::pure::tds::toRelation::testOlap():Boolean[1]
   )
 }
 
+function <<test.Test>> meta::pure::tds::toRelation::testFrom():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    }
+  );
+}
+
 function meta::pure::tds::toRelation::test(inputs:LambdaFunction<Any>[*], expected:LambdaFunction<Any>[1]):Boolean[1]
 {
   test($inputs, $expected, [])
