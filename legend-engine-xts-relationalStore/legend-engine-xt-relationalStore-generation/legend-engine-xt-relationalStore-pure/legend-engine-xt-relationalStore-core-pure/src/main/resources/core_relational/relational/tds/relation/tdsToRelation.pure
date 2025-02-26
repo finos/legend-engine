@@ -51,9 +51,7 @@ function meta::pure::tds::toRelation::tdsToRelationExtension():TdsToRelationExte
                 let func = $a.parameters->at(3)->transform($extensions);
 
                 appliedFunction(join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_, [$left, $right, $joinKind, $func]);
-            ),
-            fail(tableToTDS_Table_1__TableTDS_1_),
-            fail(meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_)
+            )
           ]
         }
       )

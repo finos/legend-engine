@@ -237,11 +237,14 @@ public class SQLExecutor
 
         if (result._plan() == null)
         {
-            Lambda lambda = read(result._lambda(), Lambda.class);
-            FunctionDefinition<?> func = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
-            FunctionDefinition<?> func2 = core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(func, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-            Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
-            result._plan(plan);
+            TraceUtils.trace("generating plan", span ->
+            {
+                Lambda lambda = read(result._lambda(), Lambda.class);
+                FunctionDefinition<?> func = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
+                FunctionDefinition<?> func2 = core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(func, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+                Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
+                result._plan(plan);
+            });
         }
         else
         {
