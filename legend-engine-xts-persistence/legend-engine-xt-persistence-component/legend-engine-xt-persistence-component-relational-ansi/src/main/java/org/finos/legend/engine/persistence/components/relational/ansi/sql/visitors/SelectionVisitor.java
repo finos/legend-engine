@@ -44,34 +44,7 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
         List<Condition> whereConditions = new ArrayList<>();
         current.condition().ifPresent(whereConditions::add);
 
-        if (current.source().isPresent())
-        {
-            Dataset dataset = current.source().get();
-            /* Optimize Scenarios where using Derived Dataset:
-                Convert unnecessary inner queries like this
-                select id from (select * from table where condition)
-                    to
-                select id from table where condition
-            */
-            if (dataset instanceof DerivedDataset)
-            {
-                DerivedDataset derivedDataset = (DerivedDataset) dataset;
-                Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
-                whereConditions.add(filterCondition);
-                logicalPlanNodeList.add(derivedDataset.datasetReference());
-            }
-            else if (dataset instanceof FilteredDataset)
-            {
-                FilteredDataset filteredDataset = (FilteredDataset) dataset;
-                Condition filterCondition = filteredDataset.filter();
-                whereConditions.add(filterCondition);
-                logicalPlanNodeList.add(filteredDataset.datasetReference());
-            }
-            else
-            {
-                logicalPlanNodeList.add(dataset);
-            }
-        }
+        visitSource(current, logicalPlanNodeList, whereConditions);
 
         if (current.fields().isEmpty())
         {
@@ -100,5 +73,37 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
         current.quantifier().ifPresent(logicalPlanNodeList::add);
 
         return new VisitorResult(selectStatement, logicalPlanNodeList);
+    }
+
+    public void visitSource(Selection current, List<LogicalPlanNode> logicalPlanNodeList, List<Condition> whereConditions)
+    {
+        if (current.source().isPresent())
+        {
+            Dataset dataset = current.source().get();
+            /* Optimize Scenarios where using Derived Dataset:
+                Convert unnecessary inner queries like this
+                select id from (select * from table where condition)
+                    to
+                select id from table where condition
+            */
+            if (dataset instanceof DerivedDataset)
+            {
+                DerivedDataset derivedDataset = (DerivedDataset) dataset;
+                Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
+                whereConditions.add(filterCondition);
+                logicalPlanNodeList.add(derivedDataset.datasetReference());
+            }
+            else if (dataset instanceof FilteredDataset)
+            {
+                FilteredDataset filteredDataset = (FilteredDataset) dataset;
+                Condition filterCondition = filteredDataset.filter();
+                whereConditions.add(filterCondition);
+                logicalPlanNodeList.add(filteredDataset.datasetReference());
+            }
+            else
+            {
+                logicalPlanNodeList.add(dataset);
+            }
+        }
     }
 }
