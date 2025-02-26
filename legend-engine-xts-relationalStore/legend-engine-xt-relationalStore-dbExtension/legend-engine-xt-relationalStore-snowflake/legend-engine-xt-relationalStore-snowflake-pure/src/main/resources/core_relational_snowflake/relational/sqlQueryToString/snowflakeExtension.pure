@@ -282,7 +282,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    assert($params->size()==1 || dateFormatsSnowFlake()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
    let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',
                                               |//DDMMMYYYY is the same format as DDMONYYYY aligned with SybaseIQ, need to be removed and find better way for format translation
-                                               if($params->at(1) == '\'DDMMMYYYY\'',| '\'DDMONYYYY\'',| $params->at(1));
+                                               if($params->at(1) == '\'ddMMMyyyy\'',| '\'ddMONyyyy\'',| $params->at(1));
                                               );
    //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
    'to_date('+$params->at(0)+','+$dateFormat +')';
@@ -308,7 +308,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::dateFormatsSnowFlake():String[*]
 {
-   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'DDMMMYYYY', 'DDMONYYYY', 'DD/MM/YYYY', 'YYYY/MM/DD'];
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'ddMMMyyyy', 'ddMONyyyy', 'DD/MM/YYYY', 'YYYY/MM/DD'];
 }
 
 
