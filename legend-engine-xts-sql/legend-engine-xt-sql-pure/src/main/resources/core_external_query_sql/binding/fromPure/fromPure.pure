@@ -215,7 +215,7 @@ function meta::external::query::sql::transformation::queryToPure::getSchemaFromS
 
 function meta::external::query::sql::transformation::queryToPure::getSchema(context:SqlTransformContext[1]): meta::external::query::sql::schema::metamodel::Schema[1]
 {
-  meta::external::query::sql::toSchema($context.columns(), $context.positionals);
+  meta::external::query::sql::toSchema($context.columns, $context.positionals);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processRootQuery(
@@ -294,7 +294,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
-  ^$context(expression = $newExp, contexts = [$left, $right], aliases = $aliases);
+  clone(^$context(expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -345,12 +345,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let currentSchema = $query.columns.name;
 
-  let restrict = ^$query(expression = processRestrict($expectedWithRealias.actual, $query));
+  let restrict = clone(^$query(expression = processRestrict($expectedWithRealias.actual, $query)), $query);
 
   let restrictSchema = $restrict.columns.name;
 
   let final = if ($expected.alias != $restrictSchema,
-    | ^$restrict(expression = processRename($expected->filter(e | !$e.alias->in($restrictSchema)), $restrict)),
+    | clone(^$restrict(expression = processRename($expected->filter(e | !$e.alias->in($restrictSchema)), $restrict)), $restrict),
     | $restrict);
 
   let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name = $c));
@@ -455,22 +455,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                   | $context.expression->toOne());
 
   let extend = if ($extendRequired,
-                  | processExtend($extensions, $usedColumns, ^$context(expression = $project)),
+                  | processExtend($extensions, $usedColumns, clone(^$context(expression = $project), $context)),
                   | $project);
 
   let group = if ($isAggregate || $havingExtensions->isNotEmpty(),
-                  | processGroupBy($select, $groupBy, $windows, $extensions, $havingExtensions, ^$context(expression = $extend)),
+                  | processGroupBy($select, $groupBy, $windows, $extensions, $havingExtensions, clone(^$context(expression = $extend), $context)),
                   | $extend);
 
   let olapGroupBy = if ($isWindow,
-                  | processOlapGroupBy($windows, $select, $extensions, $havingExtensions, $groupByExtensions, ^$context(expression = $group)),
+                  | processOlapGroupBy($windows, $select, $extensions, $havingExtensions, $groupByExtensions, clone(^$context(expression = $group), $context)),
                   | $group);
 
   let distinctExp = if($select.distinct,
     | ^TDSBuilder().distinct($olapGroupBy, $context.relation->isTrue()),
     | $olapGroupBy);
 
-  let newContext = ^$context(expression = $distinctExp);
+  let newContext = clone(^$context(expression = $distinctExp), $context);
 
   let newColumns = $newContext.columns.name;
 
@@ -507,7 +507,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOlapGroupBy(windows:SelectItem[*], select: Select[1], extensions:SelectItem[*], havingExtensions:SelectItem[*], groupByExtensions:SelectItem[*], context: SqlTransformContext[1]):FunctionExpression[1]
 {
-  let rename = ^$context(expression = processRename($select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn), $context));
+  let rename = clone(^$context(expression = processRename($select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn), $context)), $context);  
 
   $windows->cast(@SingleColumn)->fold({item, acc | processWindowSingleColumn($item, $acc, $rename)}, $rename.expression->toOne());
 }
@@ -574,13 +574,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                             | if ($allGroupByColumns->isNotEmpty() && $aggregations->isEmpty(),
                                 |
                                   //group by with no aggregates is not compilable pure, so we simplify to restrict, distinct
-                                  let restrict = processRestrict($allGroupByColumns, ^$context(expression = $rename));
+                                  let restrict = processRestrict($allGroupByColumns, clone(^$context(expression = $rename), $context));
                                   ^TDSBuilder().distinct($restrict, $context.relation->isTrue());,
                                 | ^TDSBuilder().groupBy($rename, $allGroupByColumns, $aggregations, $context.relation->isTrue())
                               )
                           );
 
-  if ($aggExtensions->isNotEmpty(), | processExtend($aggExtensions, [], ^$context(expression = $groupByExpression)), | $groupByExpression);
+  if ($aggExtensions->isNotEmpty(), | processExtend($aggExtensions, [], clone(^$context(expression = $groupByExpression), $context)), | $groupByExpression);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createAggregation(column:SingleColumn[1], name:String[1], aggregationFunctionCall:FunctionCall[1], context:SqlTransformContext[1]):Any[1]
@@ -719,44 +719,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     );
 }
 
-// function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWindowSingleColumn(s:SingleColumn[1], tds:FunctionExpression[1], context: SqlTransformContext[1]):FunctionExpression[1]
-// {
-//   let name = extractNameFromSingleColumn($s, $context);
-//   assert($s.expression->instanceOf(FunctionCall), | 'expression must be function call');
-//   assert($s.expression->cast(@FunctionCall).window->isNotEmpty(), | 'window function must not be empty');
-
-//   let functionCall = $s.expression->cast(@FunctionCall);
-//   let window = $functionCall.window;
-
-//   assert($window.orderBy->size() <= 1, | 'multiple window sort items not yet supported');
-//   assert($window.windowFrame->isEmpty(), | 'window frame not yet supported');
-
-//   let processor = functionProcessor($functionCall.name);
-
-//   let func = if ($processor.isAggregate,
-//     | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []));
-//       let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
-
-//       let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
-//       assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
-
-//       let map = $extacted.map->match([
-//         q:QualifiedNameReference[1] | $q.name.parts->joinStrings(''),
-//         e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression')
-//       ]);
-//       sfe(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_, [iv($map), iv($aggregation)]);,
-//     | let aggregation = processAggregationLambda(^$functionCall(window = []), TDSRow, $context);
-//       sfe(func_FunctionDefinition_1__TdsOlapRank_1_, iv($aggregation)););
-
-//   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
-
-//   let sort = $window.orderBy->map(si | $si->createSortItemFunction($context));
-
-//   appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
-//     list(iv($partitions)), list(iv($sort)), list($func), list(iv($name))
-//   ]);
-// }
-
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunctionArgument(e:meta::external::query::sql::metamodel::Expression[0..1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
   $e->match([
@@ -881,7 +843,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     ]))->processSelectItems($context, true).second->processRestrict($context),
   | $context.expression);
 
-  $select.selectItems->cast(@SingleColumn)->processRename(^$context(expression = $restricted));
+  $select.selectItems->cast(@SingleColumn)->processRename(clone(^$context(expression = $restricted), $context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRestrict(columns:String[*], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -999,7 +961,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           | $a);
       );
 
-      ^$context(expression = $expression, aliases = $aliases);,
+      clone(^$context(expression = $expression, aliases = $aliases), $context);,
     | $context);
 }
 
@@ -1041,7 +1003,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().join($join, $row1, $row2, $left.expression->toOne(), $right.expression->toOne(), $expContext, $newContext, $newContext.relation->isTrue());
 
-  ^$newContext(expression = $newExp);
+  clone(^$newContext(expression = $newExp), $newContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -1080,7 +1042,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().sort($context.expression->toOne(), $sortInformation, $context.relation->isTrue());
   
-  ^$context(expression = $newExp);
+  clone(^$context(expression = $newExp), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunction(si:SortItem[1], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -1117,7 +1079,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let limitValue = processExpression($limit, $expContext, $context);
   let newExp = ^TDSBuilder().limit($context.expression->toOne(), $limitValue, $context.relation->isTrue());
 
-  ^$context(expression = $newExp);
+  clone(^$context(expression = $newExp), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createOffset(offset: meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1128,7 +1090,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let offsetValue = processExpression($offset, $expContext, $context);
   let newExp = ^TDSBuilder().drop($context.expression->toOne(), $offsetValue, $context.relation->isTrue());
 
-  ^$context(expression = $newExp);
+  clone(^$context(expression = $newExp), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLimitOffset(limit: meta::external::query::sql::metamodel::Expression[1], offset: meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1145,7 +1107,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().slice($context.expression->toOne(), $offSetValue, $limitAdjusted, $context.relation->isTrue());
 
-  ^$context(expression = $newExp);
+  clone(^$context(expression = $newExp), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableSubquery(tsq: TableSubquery[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1217,13 +1179,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let parameterValues = createLambdaParameters($parameters, $arguments, $scopeSuffix, $context);
   let expression = $expressionSequence->last()->toOne();
 
-  let nc = ^$context(
+  let nc = clone(^$context(
     parameters = $parameterValues,
     assignments = if ($scopeSuffix->isNotEmpty(), | $assignments->map(e | $e->realias($scopeSuffix->toOne(), [])), | $assignments),
     expression = if ($scopeSuffix->isNotEmpty(), | $expression->realias($scopeSuffix->toOne(), []), | $expression)->cast(@FunctionExpression),
-    source = $source);
+    source = $source), $context);
 
-  let schema = $nc.columns().name;
+  let schema = $nc.columns.name;
 
   let aliases = $schema->map(c | ^SQLColumnAlias(name = $c));
 
@@ -1381,7 +1343,7 @@ let executionContext = if ($source.executionOptions->isNotEmpty(),
         ]->getValue(true, | $expression)->eval()
       );
 
-    ^$context(expression = $scopedExpression);
+    clone(^$context(expression = $scopedExpression), $context);
   );
 }
 
@@ -1624,7 +1586,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newExp = ^TDSBuilder().filter($context.expression->toOne(), $lambda, $context.relation->isTrue());
 
-  ^$context(expression = $newExp);
+  clone(^$context(expression = $newExp), $context);
 
   
 }
@@ -3539,6 +3501,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   scopeWithFrom: Boolean[0..1];
   debug: DebugContext[1];
   relation:Boolean[0..1];
+  columns:QueryColumn[*];
 
   //failOnUnknown is only set to false when trying to calculate type
   positional(p:PositionalParameterExpression[1], type:Type[0..1], failOnUnknown:Boolean[1]){
@@ -3587,11 +3550,6 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       if ($found->isEmpty(), | $this, | $found->toOne());
 
   }:SqlTransformContext[1];
-  columns(){
-    if ($this.expression->isNotEmpty(),
-      | meta::external::query::sql::transformation::queryToPure::resolveSchema($this.lambda(), $this.extensions);,
-      | [])
-  }: meta::external::query::sql::transformation::queryToPure::QueryColumn[*];
   columnByNameParts(parts:String[*], failIfNotFound:Boolean[1])
   {
     let name = if ($parts->size() > 1, | $parts->last(), | $parts)->joinStrings('.');
@@ -3603,7 +3561,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     $context.columnByName($name, $failIfNotFound);
   }:meta::external::query::sql::transformation::queryToPure::QueryColumn[0..1];
   columnByName(name:String[1], failIfNotFound:Boolean[1]){
-    let columns = $this.columns();
+    let columns = $this.columns;
     let alias = $this.aliases->filter(a | $a.name == $name || $a.alias == $name)->first();
     let column = $columns->filter(c|$c.name == $name || $c.name == $alias.alias || $c.name == $alias.realias)->first();
 
@@ -3800,6 +3758,17 @@ function meta::external::query::sql::transformation::queryToPure::resolveSchema(
                         multiplicity = $c.classifierGenericType.multiplicityArguments->first());
           );,
        | fail('unknow type'); [];));
+}
+
+//resolve schema especially in the relation (compileViaProtocol) flow is expensive so we store the columns on the context and only re-resolve when required
+//any time we modify the expression in the context we need to ensure to clone.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::clone(cloned:SqlTransformContext[1], oldContext:SqlTransformContext[1]):SqlTransformContext[1]
+{
+  if ($cloned.expression != $oldContext.expression,
+    |
+      let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(), $cloned.extensions);
+      ^$cloned(columns = $columns);,
+    | $cloned);
 }
 
 Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
