@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.relation.interpreted.pure;
+package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct;
 
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCRReport
+public class TestPCTReport
 {
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(3, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals("Native, Snowflake", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(8, PCTReportProviderLoader.gatherReports().size());
     }
 }
