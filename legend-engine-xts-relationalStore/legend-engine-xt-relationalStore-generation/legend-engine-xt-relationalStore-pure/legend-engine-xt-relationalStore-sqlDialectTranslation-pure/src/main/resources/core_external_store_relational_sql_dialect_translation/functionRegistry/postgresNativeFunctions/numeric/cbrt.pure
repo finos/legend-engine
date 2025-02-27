@@ -18,32 +18,41 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::Log10 extends ExtensionSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Cbrt extends PostgresNativeSqlFunction
 [
-  $this.name == 'log10'
+  $this.name == 'cbrt'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::log10(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cbrt(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numericFunctions::Log10
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Cbrt
   (
-    name = 'log10',
+    name = 'cbrt',
+    documentation = 'Returns the cube root for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('log10', literal(10)),
+        simpleFunctionCall('cbrt', literal(1)),
         1.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('log10', literal(100.0)),
-        2.0
+        simpleFunctionCall('cbrt', literal(16.0)),
+        2.5198421
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('cbrt', literal(64.0)),
+        4.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('cbrt', literal(-64.0)),
+        -4.0
       )
     ]
   )

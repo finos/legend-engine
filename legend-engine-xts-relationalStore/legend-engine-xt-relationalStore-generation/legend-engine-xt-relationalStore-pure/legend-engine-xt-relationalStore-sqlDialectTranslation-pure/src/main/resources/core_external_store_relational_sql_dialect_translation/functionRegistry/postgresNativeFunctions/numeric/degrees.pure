@@ -18,45 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceiling extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Degrees extends PostgresNativeSqlFunction
 [
-  $this.name == 'ceiling'
+  $this.name == 'degrees'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::ceiling(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::degrees(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ceiling
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Degrees
   (
-    name = 'ceiling',
+    name = 'degrees',
+    documentation = 'Converts the value of the given angle from radians to degrees.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = DoubleSqlType,
-        returnType = DoubleSqlType
-      ),
-      ^SqlFunctionVariation
-      (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
+        returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(17)),
-        17.0
+        simpleFunctionCall('degrees', literal(pi())),
+        180.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(17.4)),
-        18.0
+        simpleFunctionCall('degrees', literal(0.5)),
+        28.64788976
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(42.2)),
-        43.0
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('ceiling', literal(-42.2)),
-        -42.0
+        simpleFunctionCall('degrees', literal(-1*pi())),
+        -180.0
       )
     ]
   )

@@ -18,37 +18,47 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Sqrt extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceiling extends PostgresNativeSqlFunction
 [
-  $this.name == 'sqrt'
+  $this.name == 'ceiling'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::sqrt(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceiling(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Sqrt
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceiling
   (
-    name = 'sqrt',
+    name = 'ceiling',
+    documentation = 'Returns the rounded up value of the given number to the next integer.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
+        parameterTypes = DoubleSqlType,
         returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractNumericSqlType,
+        returnType = AbstractNumericSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('sqrt', literal(1)),
-        1.0
+        simpleFunctionCall('ceiling', literal(17)),
+        17.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('sqrt', literal(16.0)),
-        4.0
+        simpleFunctionCall('ceiling', literal(17.4)),
+        18.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('sqrt', literal(2)),
-        1.41421356237
-      ) 
+        simpleFunctionCall('ceiling', literal(42.2)),
+        43.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ceiling', literal(-42.2)),
+        -42.0
+      )
     ]
   )
 }

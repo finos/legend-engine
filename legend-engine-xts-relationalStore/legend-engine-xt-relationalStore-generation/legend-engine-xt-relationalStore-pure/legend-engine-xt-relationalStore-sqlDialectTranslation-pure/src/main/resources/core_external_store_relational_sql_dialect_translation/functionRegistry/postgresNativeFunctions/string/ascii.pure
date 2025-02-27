@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,32 +18,45 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Degrees extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Ascii extends PostgresNativeSqlFunction
 [
-  $this.name == 'degrees'
+  $this.name == 'ascii'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::degrees(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Degrees
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Ascii
   (
-    name = 'degrees',
+    name = 'ascii',
+    documentation = 'Returns the ASCII value for a given character.',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = AbstractNumericSqlType,
-        returnType = DoubleSqlType
+        parameterTypes = AbstractStringSqlType,
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('degrees', literal(pi())),
-        180.0
+        simpleFunctionCall('ascii', literal('A')),
+        65
       ),
       sqlFunctionTest(
-        simpleFunctionCall('degrees', literal(0.5)),
-        28.64788976
+        simpleFunctionCall('ascii', literal('z')),
+        122
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ascii', literal('!')),
+        33
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ascii', literal('6')),
+        54
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ascii', literal(' ')),
+        32
       )
     ]
   )

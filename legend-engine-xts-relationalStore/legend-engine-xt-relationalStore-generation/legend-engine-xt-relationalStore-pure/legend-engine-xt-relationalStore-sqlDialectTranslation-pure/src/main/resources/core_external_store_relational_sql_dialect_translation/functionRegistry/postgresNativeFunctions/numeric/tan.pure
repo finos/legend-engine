@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,32 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ln extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Tan extends PostgresNativeSqlFunction
 [
-  $this.name == 'ln'
+  $this.name == 'tan'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::ln(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::tan(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Ln
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Tan
   (
-    name = 'ln',
+    name = 'tan',
+    documentation = 'Returns the tangent for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        returnType = DoubleSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('ln', literal(2.0)),
-        0.69314718
+        simpleFunctionCall('tan', literal(0)),
+        0.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('ln', literal(4)),
-        1.38629436
+        simpleFunctionCall('tan', literal(pi()/4)),
+        1.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('tan', literal(-1*pi()/4)),
+        -1.0
       )
     ]
   )

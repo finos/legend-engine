@@ -18,36 +18,37 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Abs extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sqrt extends PostgresNativeSqlFunction
 [
-  $this.name == 'abs'
+  $this.name == 'sqrt'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::abs(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sqrt(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Abs
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sqrt
   (
-    name = 'abs',
-    variations = orderedSubTypes(AbstractNumericSqlType)->map({numType |
+    name = 'sqrt',
+    documentation = 'Returns the square root for a given number.',
+    variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = $numType,
-        returnType = $numType
+        parameterTypes = AbstractNumericSqlType,
+        returnType = DoubleSqlType
       )
-    }),
+    ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(101)),
-        101
+        simpleFunctionCall('sqrt', literal(1)),
+        1.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(-101)),
-        101
+        simpleFunctionCall('sqrt', literal(16.0)),
+        4.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('abs', literal(-101.0)),
-        101.0
+        simpleFunctionCall('sqrt', literal(2)),
+        1.41421356237
       ) 
     ]
   )
