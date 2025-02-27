@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -30,7 +36,8 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
     nodeProcessors = postgresDialectNodeProcessors(),
     identifierProcessor = postgresIdentifierProcessor(),
     expressionPrecedenceComparator = postgresExpressionPrecedenceComparator(),
-    keywords = postgresKeywords()
+    keywords = postgresKeywords(),
+    functionProcessorMap = functionProcessorMap()
   )
 }
 
@@ -52,15 +59,8 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    pair(
-      'FuncTests - log10(0/1)',
-      'Postgres SQL Dialect does not support the function - log10'
-    ),
-    pair(
-      'FuncTests - log10(1/1)',
-      'Postgres SQL Dialect does not support the function - log10'
-    )
-  ]->newMap()
+
+  ]->newMap()->cast(@Map<String, String>)
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresQuoteConfiguration(): QuoteConfiguration[1]
@@ -136,7 +136,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     inPredicateProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
-    functionCallProcessor_postgres(),
+    functionCallProcessor_default(),
     subQueryExpressionProcessor_default()
   ]
 }
@@ -185,41 +185,160 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]
 {
   [
-    // TODO: Update
-    'date'
-  ]
+    'all', 
+    'analyse', 
+    'analyze', 
+    'and', 
+    'any', 
+    'array', 
+    'as', 
+    'asc', 
+    'asymmetric', 
+    'authorization', 
+    'binary', 
+    'both', 
+    'case', 
+    'cast', 
+    'check', 
+    'collate', 
+    'collation', 
+    'column', 
+    'concurrently', 
+    'constraint', 
+    'create', 
+    'cross', 
+    'current_catalog', 
+    'current_date', 
+    'current_role', 
+    'current_schema', 
+    'current_time', 
+    'current_timestamp', 
+    'current_user', 
+    'default', 
+    'deferrable', 
+    'desc', 
+    'distinct', 
+    'do', 
+    'else', 
+    'end', 
+    'except', 
+    'false', 
+    'fetch', 
+    'for', 
+    'foreign', 
+    'freeze', 
+    'from', 
+    'full', 
+    'grant', 
+    'group', 
+    'having', 
+    'ilike', 
+    'in', 
+    'initially', 
+    'inner', 
+    'intersect', 
+    'into', 
+    'is', 
+    'isnull', 
+    'join', 
+    'lateral', 
+    'leading', 
+    'left', 
+    'like', 
+    'limit', 
+    'localtime', 
+    'localtimestamp', 
+    'natural', 
+    'not', 
+    'notnull', 
+    'null', 
+    'offset', 
+    'on', 
+    'only', 
+    'or', 
+    'order', 
+    'outer', 
+    'overlaps', 
+    'placing', 
+    'primary', 
+    'references', 
+    'returning', 
+    'right', 
+    'select', 
+    'session_user', 
+    'similar', 
+    'some', 
+    'symmetric', 
+    'system_user', 
+    'table', 
+    'tablesample', 
+    'then', 
+    'to', 
+    'trailing', 
+    'true', 
+    'union', 
+    'unique', 
+    'user', 
+    'using', 
+    'variadic', 
+    'verbose', 
+    'when', 
+    'where', 
+    'window', 
+    'with'
+  ];
 }
 
 // ---------------------------- Function processing -------------------------
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionCallProcessor_postgres(): NodeProcessor<FunctionCall>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
-  nodeProcessor(
-    FunctionCall,
-    {sqlDialect, f, state, config |
-      assert($f.distinct == false, | 'Distinct function call processing not implemented yet');
-      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
-      assert($f.group->isEmpty(), | 'Grouped function call processing not implemented yet');
-      assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
+  newMap([
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    pair(Cbrt, simpleFunctionProcessor('cbrt')),
+    pair(Ceil, simpleFunctionProcessor('ceil')),
+    pair(Ceiling, simpleFunctionProcessor('ceiling')),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(Exp, simpleFunctionProcessor('exp')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    pair(Log, simpleFunctionProcessor('log')),
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Acos, simpleFunctionProcessor('acos')),
+    pair(Asin, simpleFunctionProcessor('asin')),
+    pair(Atan, simpleFunctionProcessor('atan')),
+    pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cos, simpleFunctionProcessor('cos')),
+    pair(Cot, simpleFunctionProcessor('cot')),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Tan, simpleFunctionProcessor('tan')),
 
-      assert($f->cast(@TypedFunctionCall).sqlFunction->instanceOf(PostgresNativeSqlFunction), | 'Postgres SQL Dialect does not support the function - ' + $f.name.parts->joinStrings('.')->toLower());
+    // String
+    pair(Lpad, simpleFunctionProcessor('lpad')),
+    pair(Rpad, simpleFunctionProcessor('rpad')),
+    pair(Ltrim, simpleFunctionProcessor('ltrim')),
+    pair(Rtrim, simpleFunctionProcessor('rtrim')),
+    pair(Ascii, simpleFunctionProcessor('ascii')),
 
-      let sep0 = $state.separatorIfPretty(0, $config);
-      let sep1 = $state.separatorIfPretty(1, $config);
-      
-      let args = $f.arguments->map(a | $sqlDialect->executeNodeProcessor($a, [], $state->increaseLevel(), $config));
-      let noArgIsMultiLine = !($args->isNotEmpty() && $config.formatConfig.pretty && $args->map(a | $a->indexOf($config.formatConfig.lineSeparator) >= 0)->or());
+    // Boolean
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
-      $sqlDialect->qualifiedName($f.name, $state, $config) + '(' + if($noArgIsMultiLine, | '', | $sep1) +
-      $args->joinStrings(',' + if($noArgIsMultiLine, | ' ', | $state.separator(1, $config))) +
-      + if($noArgIsMultiLine, | '', | $sep0) + ')' +
-      if ($f.window->isNotEmpty(),
-          | ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($f.window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')',
-          | ''
-      );
-    },
-    {n | true}
-  );
+    // Temporal
+    pair(DateTrunc, simpleFunctionProcessor('date_trunc')),
+    pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Now, simpleFunctionProcessor('now')),
+    pair(ToDate, simpleFunctionProcessor('to_date')),
+    pair(ToTimestamp, simpleFunctionProcessor('to_timestamp'))
+  ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  // Postgres returns double for some reason, also, date_part to second includes milliseconds, which is non-standard.
+  let datePart = simpleFunctionProcessor('date_part').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  let roundedDatePart = $sqlDialect->generateFunctionCallWithArgs('floor', $datePart, [], $state, $config);
+  $sqlDialect->generateCast($roundedDatePart, 'integer', $state, $config);
 }
 
 // --------------------------------------------------------------------------
