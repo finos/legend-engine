@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -131,7 +132,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ide
   identifierProcessor
   (
     {sqlDialect, identifier, shouldQuote, state, config |
-      if ($shouldQuote || $identifier->in($sqlDialect.keywords),
+      if ($shouldQuote || $identifier->toLower()->in($sqlDialect.keywords->map(k|$k->toLower())),
           | if ($sqlDialect.quoteConfig->isEmpty(),
                 | // Quoting configuration unknown. Hence returning the identifier as is
                   $identifier,
@@ -215,7 +216,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::all
   nodeProcessor(
     AllColumns,
     {sqlDialect, a, state, config | 
-      let prefix = if ($a.prefix->isNotEmpty(), | $sqlDialect->executeIdentifierProcessor($a.prefix->toOne(), false, $state, $config) + '.', | '');
+      let prefix = if ($a.prefix->isNotEmpty(), | $sqlDialect->executeIdentifierProcessor($a.prefix->toOne(), $config.dbConfig.quoteIdentifiers, $state, $config) + '.', | '');
       $prefix + '*';
     }
   )
@@ -227,7 +228,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::sin
     SingleColumn,
     {sqlDialect, s, state, config | 
       let suffix = if ($s.alias->isNotEmpty(),
-        | ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($s.alias->toOne(), false, $state, $config),
+        | ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($s.alias->toOne(), $config.dbConfig.quoteIdentifiers, $state, $config),
         | ''
       );
       $sqlDialect->executeNodeProcessor($s.expression, $state, $config) + $suffix;
@@ -431,12 +432,22 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::cas
 {
   nodeProcessor(
     Cast,
-    {sqlDialect, c, state, config |
-      $sqlDialect->keyword('cast', $state, $config) + '(' + $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config) + ' ' +
-      $sqlDialect->keyword('as', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($c.type, [], $state, $config) + ')'
+    {sqlDialect, c, state, config | 
+      generateCast(
+        $sqlDialect,
+        $sqlDialect->executeNodeProcessor($c.expression, [], $state, $config),
+        $sqlDialect->executeNodeProcessor($c.type, [], $state, $config),
+        $state,
+        $config
+      )
     },
     {n | true}
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::generateCast(sqlDialect: SqlDialect[1], toCast:String[1], targetType:String[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $sqlDialect->keyword('cast', $state, $config) + '(' + $toCast + ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' + $targetType + ')'
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::inListExpressionProcessor_default(): NodeProcessor<InListExpression>[1]
@@ -553,7 +564,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::ali
     AliasedRelation,
     {sqlDialect, a, state, config |
       $sqlDialect->executeNodeProcessor($a.relation, $state, $config) + ' ' + $sqlDialect->keyword('as', $state, $config) + ' ' 
-      + $sqlDialect->executeIdentifierProcessor($a.alias, false, $state, $config)
+      + $sqlDialect->executeIdentifierProcessor($a.alias, $config.dbConfig.quoteIdentifiers, $state, $config)
     }
   )
 }
@@ -710,4 +721,42 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tab
       '(' + $sep1 + $sqlDialect->executeNodeProcessor($s.query, $state->increaseLevel(), $config) + $sep0 + ')';
     }
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::functionCallProcessor_default(): NodeProcessor<FunctionCall>[1]
+{
+  nodeProcessor(
+    FunctionCall,
+    {sqlDialect, f, state, config | 
+      let functionProcessor = $sqlDialect.functionProcessorMap->toOne()->get($f->cast(@TypedFunctionCall).sqlFunction->type());
+      assert($functionProcessor->isNotEmpty(), |$sqlDialect.dbType + ' SQL Dialect does not support the function - ' + $f.name.parts->joinStrings('.'));
+      $functionProcessor->toOne().processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpPattern(regexOperator:String[1]):String[1]
+{
+  '%s ' + $regexOperator + ' \'' + '^%s$' +'\''
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::transformRegexpParams(params: String[*]):String[*]
+{
+  let regExpression = $params->at(1)->removeQuotes();
+  $params->at(0)->concatenate($regExpression);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::removeQuotes(s:String[1]):String[1]
+{
+  if($s->startsWith('\'') && $s->endsWith('\''),
+    | $s->substring(1, $s->length()-1),
+    | $s
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpLike(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  regexpPattern('~')->format($processedArgs->transformRegexpParams());
 }

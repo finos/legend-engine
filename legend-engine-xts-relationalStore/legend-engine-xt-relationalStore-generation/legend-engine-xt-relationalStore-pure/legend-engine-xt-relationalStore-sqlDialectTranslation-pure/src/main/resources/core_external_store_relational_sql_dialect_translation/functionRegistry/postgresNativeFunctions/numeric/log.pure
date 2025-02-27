@@ -18,27 +18,30 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Log extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Log extends PostgresNativeSqlFunction
 [
   $this.name == 'log'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::log(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::log(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Log
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Log
   (
     name = 'log',
+    documentation = 'Returns the logarithm for a given number.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractPrecisionScaleSqlType
+        returnType = AbstractPrecisionScaleSqlType,
+        documentation = 'Returns the logarithm with base 10 for a number (1st arg).'
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
-        returnType = AbstractPrecisionScaleSqlType
+        returnType = AbstractPrecisionScaleSqlType,
+        documentation = 'Returns the logarithm of a number (1st arg) with specified base (2nd arg).'
       )
     ],
     tests = [
@@ -61,6 +64,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('log', [literal(2.0), literal(16.0)]),
         4.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('log', [literal(2.0), literal(0.5)]),
+        -1.0
       )
     ]
   )
