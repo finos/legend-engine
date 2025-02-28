@@ -38,8 +38,7 @@ import org.testcontainers.utility.DockerImageName;
 public class SpannerTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
     public SpannerEmulatorContainer spannerContainerEmulator = new SpannerEmulatorContainer(
-            //DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "gcr.io") + "/cloud-spanner-emulator/emulator")
-            DockerImageName.parse("dockerhub.site.gs.com:8413" + "/cloud-spanner-emulator/emulator")
+            DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "gcr.io") + "/cloud-spanner-emulator/emulator")
             .asCompatibleSubstituteFor("gcr.io/cloud-spanner-emulator/emulator"));
 
     private Spanner spanner;
