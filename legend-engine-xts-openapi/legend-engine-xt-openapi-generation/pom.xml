@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-openapi</artifactId>
-        <version>4.70.2-SNAPSHOT</version>
+        <version>4.71.0</version>
     </parent>
 
     <artifactId>legend-engine-xt-openapi-generation</artifactId>
