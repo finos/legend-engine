@@ -77,9 +77,9 @@ public class SpannerManagerTest
         properties.put("spanner_proxyPort", "test-port");
 
         assertThat(buildUrl(spannerManager, properties, new TestDatabaseAuthenticationStrategy()),
-                is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true;lenient=true;"));
+                is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?autoConfigEmulator=true;usePlainText=true;lenient=true;"));
         assertThat(buildUrl(spannerManager, properties, null),
-                is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true;lenient=true;"));
+                is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?autoConfigEmulator=true;usePlainText=true;lenient=true;"));
     }
 
     private String buildUrl(SpannerManager spannerManager, Properties properties, AuthenticationStrategy authenticationStrategy)
