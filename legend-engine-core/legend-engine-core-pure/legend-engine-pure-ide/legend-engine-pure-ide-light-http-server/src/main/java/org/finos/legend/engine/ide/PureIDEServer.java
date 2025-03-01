@@ -133,7 +133,6 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
 
         postInit();
 
-        // By default init pure runtime unless configured to not do so
         if (configuration.initPureRuntimeBeforeStart == null || configuration.initPureRuntimeBeforeStart)
         {
             long ct = System.currentTimeMillis();
@@ -141,10 +140,13 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
                     "**** Initializing Pure runtime... ****\n" +
                     "**************************************"
             );
-            try {
+            try
+            {
                 this.pureSession.getPureRuntime().initialize();
                 LOGGER.info("Initialization of Pure runtime completed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct));
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 LOGGER.warn("Initialization of Pure runtime failed in {}s.", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ct), e);
             }
         }
