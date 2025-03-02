@@ -233,10 +233,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
             one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
 
-            // CubeRoot
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(27) [90022-214]"),
-            one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Function \"CBRT\" not found; SQL statement:\nselect cbrt(0) [90022-214]"),
-
             // Is
             one("meta::pure::functions::boolean::tests::testIsEnum_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'is_Any_1__Any_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
             one("meta::pure::functions::boolean::tests::testIsNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.SideClass (_pureId,stringId,intId) values (10,'firstSide',1);"),
