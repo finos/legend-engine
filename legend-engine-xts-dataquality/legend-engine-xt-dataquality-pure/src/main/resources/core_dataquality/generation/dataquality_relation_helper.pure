@@ -63,34 +63,3 @@ function meta::external::dataquality::rowCountEqual<T>(rel: Relation<T>[1], equa
 {
   $rel->meta::pure::functions::relation::size() == $equalTo;
 }
-
-// column value
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueGreaterThan<T>(rel: Relation<T>[1], column:ColSpec<T>[1], lowerLimit: Number[1]): Boolean[1]
-{
-  $rel->filter(row | $rel->columns()->filter(c |$c.name == $column.name)->toOne()->eval($row)->toOne()->cast(@Number) <= $lowerLimit)->relationEmpty();
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueGreaterThanEqual<T>(rel: Relation<T>[1], column:ColSpec<T>[1], lowerLimit: Number[1]): Boolean[1]
-{
-  $rel->filter(row | $rel->columns()->filter(c |$c.name == $column.name)->toOne()->eval($row)->toOne()->cast(@Number) < $lowerLimit)->relationEmpty();
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueLessThan<T>(rel: Relation<T>[1], column:ColSpec<T>[1], upperLimit: Number[1]): Boolean[1]
-{
-  $rel->filter(row | $rel->columns()->filter(c |$c.name == $column.name)->toOne()->eval($row)->toOne()->cast(@Number) >= $upperLimit)->relationEmpty();
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueLessThanEqual<T>(rel: Relation<T>[1], column:ColSpec<T>[1], upperLimit: Number[1]): Boolean[1]
-{
-  $rel->filter(row | $rel->columns()->filter(c |$c.name == $column.name)->toOne()->eval($row)->toOne()->cast(@Number) > $upperLimit)->relationEmpty();
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueUnique<X,T>(rel: Relation<T>[1], columns:ColSpecArray<X⊆T>[1]): Boolean[1]
-{
-  $rel->size() == $rel->distinct($columns)->size();
-}
-
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::columnValueUnique<T>(rel: Relation<T>[1]): Boolean[1]
-{
-  $rel->size() == $rel->distinct()->size();
-}
