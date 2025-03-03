@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
-import meta::external::store::relational::sqlDialectTranslation::postgres::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
@@ -40,11 +40,11 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
     identifierProcessor = identifierProcessor_default(),
     expressionPrecedenceComparator = expressionPrecedenceComparator_default(),
     keywords = duckDBKeywords(),
-    functionProcessorDispatch = meta::external::store::relational::sqlDialectTranslation::duckDB::functionProcessorMap_SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__Map_1_
+    functionProcessorMap = functionProcessorMap()
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBSqlDialectExtension(): Extension[1]
+function <<db.ExtensionLoader>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBSqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -65,8 +65,9 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
     pair('FuncTests - sha1(0/1)', 'Current Version of DuckDB does not support sha1'),
     pair('FuncTests - sha1(1/1)', 'Current Version of DuckDB does not support sha1'),
     pair('FuncTests - sha256(0/1)', 'Current Version of DuckDB does not support sha256'),
-    pair('FuncTests - sha256(1/1)', 'Current Version of DuckDB does not support sha256')
-    
+    pair('FuncTests - sha256(1/1)', 'Current Version of DuckDB does not support sha256'),
+    pair('FuncTests - string_agg(0/0)', 'Tests for aggregate functions not supported yet!'),
+    pair('FuncTests - denseRank(0/0)', 'Tests for aggregate functions not supported yet!')
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -94,114 +95,108 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
-
-
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
 {
   [
+    qualifiedNameReferenceNodeProcessor_default(),
     comparisonExpressionNodeProcessor_default(),
     logicalBinaryExpressionNodeProcessor_default(),
     notExpressionNodeProcessor_default(),
     arithmeticExpressionNodeProcessor_duckDB(),
-    qualifiedNameReferenceNodeProcessor_default(),
-    isNullPredicateNodeProcessor_default(),
-    isNotNullPredicateNodeProcessor_default(),
-    negativeNodeProcessor_default(),
-    currentTimeNodeProcessor_default(),
-    whenClauseNodeProcessor_default(),
-    searchedCaseExpressionNodeProcessor_default(),
     columnTypeProcessor_default(),
     castProcessor_default(),
-    inListExpressionProcessor_default(),
-    inPredicateProcessor_default(),
-    extractProcessor_default(),
-    betweenPredicateProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
     functionCallProcessor_default(),
-    subQueryExpressionProcessor_default(),
-    trimProcessor_default()
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    inPredicateProcessor_default(),
+    inListExpressionProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default()
   ]
 }
-
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBKeywords(): String[*]
 {
   [ 
-    'ALL',
-    'ANALYSE',
-    'ANALYZE',
-    'AND',
-    'ANY',
-    'ARRAY',
-    'AS',
-    'ASC_P',
-    'ASYMMETRIC',
-    'BOTH',
-    'CASE',
-    'CAST',
-    'CHECK_P',
-    'COLLATE',
-    'COLUMN',
-    'CONSTRAINT',
-    'CREATE_P',
-    'DEFAULT',
-    'DEFERRABLE',
-    'DESC_P',
-    'DESCRIBE',
-    'DISTINCT',
-    'DO',
-    'ELSE',
-    'END_P',
-    'EXCEPT',
-    'FALSE_P',
-    'FETCH',
-    'FOR',
-    'FOREIGN',
-    'FROM',
-    'GRANT',
-    'GROUP_P',
-    'HAVING',
-    'QUALIFY',
-    'IN_P',
-    'INITIALLY',
-    'INTERSECT',
-    'INTO',
-    'LATERAL_P',
-    'LEADING',
-    'LIMIT',
-    'NOT',
-    'NULL_P',
-    'OFFSET',
-    'ON',
-    'ONLY',
-    'OR',
-    'ORDER',
-    'PIVOT',
-    'PIVOT_WIDER',
-    'PIVOT_LONGER',
-    'PLACING',
-    'PRIMARY',
-    'REFERENCES',
-    'RETURNING',
-    'SELECT',
-    'SHOW',
-    'SOME',
-    'SUMMARIZE',
-    'SYMMETRIC',
-    'TABLE',
-    'THEN',
-    'TO',
-    'TRAILING',
-    'TRUE_P',
-    'UNION',
-    'UNIQUE',
-    'UNPIVOT',
-    'USING',
-    'VARIADIC',
-    'WHEN',
-    'WHERE',
-    'WINDOW',
-    'WITH' 
+    'all',
+    'analyse',
+    'analyze',
+    'and',
+    'any',
+    'array',
+    'as',
+    'asc_p',
+    'asymmetric',
+    'both',
+    'case',
+    'cast',
+    'check_p',
+    'collate',
+    'column',
+    'constraint',
+    'create_p',
+    'default',
+    'deferrable',
+    'desc_p',
+    'describe',
+    'distinct',
+    'do',
+    'else',
+    'end_p',
+    'except',
+    'false_p',
+    'fetch',
+    'for',
+    'foreign',
+    'from',
+    'grant',
+    'group_p',
+    'having',
+    'qualify',
+    'in_p',
+    'initially',
+    'intersect',
+    'into',
+    'lateral_p',
+    'leading',
+    'limit',
+    'not',
+    'null_p',
+    'offset',
+    'on',
+    'only',
+    'or',
+    'order',
+    'pivot',
+    'pivot_wider',
+    'pivot_longer',
+    'placing',
+    'primary',
+    'references',
+    'returning',
+    'select',
+    'show',
+    'some',
+    'summarize',
+    'symmetric',
+    'table',
+    'then',
+    'to',
+    'trailing',
+    'true_p',
+    'union',
+    'unique',
+    'unpivot',
+    'using',
+    'variadic',
+    'when',
+    'where',
+    'window',
+    'with' 
   ]
 }
 
@@ -229,7 +224,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::duckDB::functionProcessorMap(sqlDialect: SqlDialect[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): Map<Class<SqlFunction>, FunctionProcessor>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
     // Numeric
@@ -257,11 +252,11 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::funct
     pair(Round,simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-
+    pair(DenseRank, simpleFunctionProcessor('denseRank')),
 
     // String
-    pair(Lpad, argTransformFunctionProcessor('lpad', 'lpad(%s)', {p:String[*]| if($p->size() == 2, |$p->concatenate('\' \''), |$p)->joinStrings(', ')})),
-    pair(Rpad, argTransformFunctionProcessor('rpad', 'rpad(%s)', {p:String[*]| if($p->size() == 2, |$p->concatenate('\' \''), |$p)->joinStrings(', ')})),
+    pair(Lpad, argTransformFunctionProcessor('lpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
+    pair(Rpad, argTransformFunctionProcessor('rpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),
     pair(Ltrim, simpleFunctionProcessor('ltrim')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(Ascii, simpleFunctionProcessor('ascii')),
@@ -270,40 +265,88 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::funct
     pair(Repeat, simpleFunctionProcessor('repeat')),
     pair(Replace, simpleFunctionProcessor('replace')),
     pair(Md5, simpleFunctionProcessor('md5')),
-    pair(CharLength, argTransformFunctionProcessor('char_length','length(%s)')),
+    pair(CharLength, argTransformFunctionProcessor('length', {n:Node[*]| $n})),
+
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
-    pair(Coalesce, simpleFunctionProcessor('coalesce')),
 
     // Boolean
-    pair(RegexpLike, argTransformFunctionProcessor('regexp_like', regexpPattern('~'), {p:String[*]|$p->transformRegexpParams()})),
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Temporal
-    pair(DateTrunc, argTransformFunctionProcessor('date_trunc', 'cast(date_trunc(%s, %s) as timestamp)')),
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
-    pair(ToDate, argTransformFunctionProcessor('to_date', 'cast(strptime(%s, %s) as date)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForDuckDB())})),
-    pair(ToTimestamp, argTransformFunctionProcessor('to_timestamp', '%s', {p:String[*]|$p->toTimestampForDuckDB()})),
-    pair(ToChar, argTransformFunctionProcessor('to_char', 'strftime(%s, %s)', {p:String[*]|$p->at(0)->concatenate($p->at(1)->dateFormatSpecifierForDuckDB())})),
-    pair(DateDiff, argTransformFunctionProcessor('datediff', '%s', {p:String[*]|if($p->at(0)->removeQuotes()=='week', |'cast(datediff(\'day\', '+$p->at(1)+', '+$p->at(2)+')//7 as int)', |'datediff('+$p->at(0)+', '+$p->at(1)+', '+$p->at(2)+')')}))
+    pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
+
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
 }
 
-function meta::external::store::relational::sqlDialectTranslation::duckDB::toTimestampForDuckDB(p:String[*]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
-  if($p->size() == 1,
-    | 'epoch_ms(cast(' + $p->at(0) + ' as bigint) * 1000)',
-    | 'strptime(' + $p->at(0) + ', ' + $p->at(1)->dateFormatSpecifierForDuckDB() + ')'
-  )
+  let dateTrunc = simpleFunctionProcessor('date_trunc').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($dateTrunc, 'timestamp', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForToDate(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let toDateCall = $sqlDialect->strptimeCall($processedArgs, $state, $config);
+  $sqlDialect->generateCast($toDateCall, 'date', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForToTimestamp(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->size() == 2,
+    | $sqlDialect->strptimeCall($processedArgs, $state, $config),
+    | let epochSeconds = $sqlDialect->generateCast($processedArgs->at(0), 'bigint', $state, $config);
+      let epochMilliseconds = $epochSeconds + ' * 1000';
+      generateFunctionCallWithArgs($sqlDialect, 'epoch_ms', $epochMilliseconds, [], $state, $config);
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::strptimeCall(sqlDialect:SqlDialect[1], args:String[*], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let dateFormat = $args->at(1)->dateFormatSpecifierForDuckDB();
+  generateFunctionCallWithArgs($sqlDialect, 'strptime', [$args->at(0), $dateFormat], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let toCharCall = $sqlDialect->strftimeCall($processedArgs, $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::strftimeCall(sqlDialect:SqlDialect[1], args:String[*], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let dateFormat = $args->at(1)->dateFormatSpecifierForDuckDB();
+  generateFunctionCallWithArgs($sqlDialect, 'strftime', [$args->at(0), $dateFormat], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let weekFunctionCall =  generateFunctionCallWithArgs($sqlDialect, 'datediff', ['\'day\'',$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)+'//7';
+  let nonweekFunctionCall =  generateFunctionCallWithArgs($sqlDialect, 'datediff', [$processedArgs->at(0),$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config);
+  let castedWeekCall =   $sqlDialect->generateCast($weekFunctionCall, 'integer', $state, $config);
+
+  if($processedArgs->at(0)->removeQuotes()=='week', |$castedWeekCall, |$nonweekFunctionCall);
 }
 
 
 
-function meta::external::store::relational::sqlDialectTranslation::duckDB::dateFormatSpecifierForDuckDB(f:String[1]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::dateFormatSpecifierForDuckDB(f:String[1]): String[1]
 {
   let formatSubs = [
     pair('Month', '%B'),
