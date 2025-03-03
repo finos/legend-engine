@@ -33,5 +33,6 @@
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
         <module>legend-engine-xt-relationalStore-spanner-pure</module>
         <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
+        <module>legend-engine-xt-relationalStore-spanner-PCT</module>
     </modules>
 </project>
