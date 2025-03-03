@@ -552,19 +552,20 @@ function meta::external::dataquality::buildRelationExpressionForAggregateLevelVa
 
    ^SimpleFunctionExpression
    (
-      func = map_T_m__Function_1__V_m_,
+      func = eval_Function_1__T_n__V_m_,
       multiplicity = PureOne,
-      genericType  = ^GenericType(rawType = Boolean),
+      genericType  = ^GenericType(rawType=Boolean),
       importGroup  = system::imports::coreImport,
       parametersValues =
-      [  $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne(),
-         ^InstanceValue (
-            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='validationFilter', genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+      [ ^InstanceValue (
+            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='aggfilter', genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Relation)))),
             multiplicity = PureOne,
-            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
+            values = meta::external::dataquality::lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType=Relation), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$dqRelationValidation.query->evaluateAndDeactivate()->functionReturnType(),name=$assertion->meta::pure::metamodel::serialization::grammar::printLambdaParameters())]),
                                                           $assertion.expressionSequence->evaluateAndDeactivate()->toOne())
-         )
+         ), 
+         $dqRelationValidation.query->evaluateAndDeactivate()->toOne().expressionSequence->toOne()
      ]
+
    )->evaluateAndDeactivate();
 }
 
