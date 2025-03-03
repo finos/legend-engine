@@ -26,8 +26,10 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,12 +44,22 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
     private Datasets datasets;
     private Executor<SqlGen, TabularData, SqlPlan> executor;
     Transformer<SqlGen, SqlPlan> transformer;
+    Map<String, PlaceholderValue> placeHolderKeyValues;
 
     public IngestModeOptimizer(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, Transformer<SqlGen, SqlPlan> transformer)
     {
         this.datasets = datasets;
         this.executor = executor;
         this.transformer = transformer;
+        this.placeHolderKeyValues = new HashMap<>();
+    }
+
+    public IngestModeOptimizer(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, Transformer<SqlGen, SqlPlan> transformer, Map<String, PlaceholderValue> placeHolderKeyValues)
+    {
+        this.datasets = datasets;
+        this.executor = executor;
+        this.transformer = transformer;
+        this.placeHolderKeyValues = placeHolderKeyValues;
     }
 
     @Override
@@ -71,27 +83,24 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
     @Override
     public IngestMode visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
     {
-        if (unitemporalSnapshot.partitioningStrategy().isPartitioned())
+        if (unitemporalSnapshot.needToDerivePartitionSpecList())
         {
             Partitioning partition = (Partitioning) unitemporalSnapshot.partitioningStrategy();
-            if (!partition.partitionFields().isEmpty() && partition.derivePartitionSpec())
-            {
-                return UnitemporalSnapshot
-                        .builder()
-                        .versioningStrategy(unitemporalSnapshot.versioningStrategy())
-                        .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
-                        .digestField(unitemporalSnapshot.digestField())
-                        .transactionMilestoning(unitemporalSnapshot.transactionMilestoning())
-                        .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
-                        .partitioningStrategy(Partitioning.builder()
-                            .addAllPartitionFields(partition.partitionFields())
-                            .addAllPartitionSpecList(derivePartitionSpecList(partition.partitionFields(), partition.maxPartitionSpecFilters()))
-                            .derivePartitionSpec(partition.derivePartitionSpec())
-                            .maxPartitionSpecFilters(partition.maxPartitionSpecFilters())
-                            .deleteStrategy(partition.deleteStrategy())
-                            .build())
-                        .build();
-            }
+            return UnitemporalSnapshot
+                .builder()
+                .versioningStrategy(unitemporalSnapshot.versioningStrategy())
+                .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
+                .digestField(unitemporalSnapshot.digestField())
+                .transactionMilestoning(unitemporalSnapshot.transactionMilestoning())
+                .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
+                .partitioningStrategy(Partitioning.builder()
+                    .addAllPartitionFields(partition.partitionFields())
+                    .addAllPartitionSpecList(derivePartitionSpecList(partition.partitionFields(), partition.maxPartitionSpecFilters()))
+                    .derivePartitionSpec(partition.derivePartitionSpec())
+                    .maxPartitionSpecFilters(partition.maxPartitionSpecFilters())
+                    .deleteStrategy(partition.deleteStrategy())
+                    .build())
+                .build();
         }
         return unitemporalSnapshot;
     }
@@ -140,7 +149,7 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
 
         // select count_distinct_approx (pk1, pk2, ...) from staging_table with staging_filters
         LogicalPlan logicalPlanForApproxDistinctCount = LogicalPlanFactory.getLogicalPlanForApproxDistinctCount(datasets.stagingDataset(), partitionFields);
-        List<TabularData> approxCountResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForApproxDistinctCount));
+        List<TabularData> approxCountResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForApproxDistinctCount), placeHolderKeyValues);
         Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(approxCountResult));
         Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
         if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > maxAllowedPartitionSpecFilters)
@@ -150,7 +159,7 @@ public class IngestModeOptimizer implements IngestModeVisitor<IngestMode>
 
         // Select distinct pk1, pk2, ... from staging_table with staging_filters
         LogicalPlan logicalPlanForPartitionSpec = LogicalPlanFactory.getLogicalPlanForDistinctValues(datasets.stagingDataset(), partitionFields);
-        List<TabularData> partitionSpecResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForPartitionSpec));
+        List<TabularData> partitionSpecResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForPartitionSpec), placeHolderKeyValues);
 
         if (!partitionSpecResult.isEmpty())
         {

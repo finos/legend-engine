@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -42,7 +43,6 @@ import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUt
 import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.exception.BulkLoadException;
 import org.finos.legend.engine.persistence.components.relational.exception.MultiDatasetException;
-import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -330,7 +330,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion(), false);
 
                 // 4. Add optimization columns if needed
-                enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer));
+                enrichedIngestMode = optimizeIngestModeIfNoNeedToDerivePartitionSpecList(enrichedDatasets, enrichedIngestMode);
 
                 // 5. Use a placeholder for additional metadata
                 Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
@@ -377,6 +377,20 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 ingestStageMetadataMap.get(details.dataset()).add(ingestStageMetadata);
             }
         }
+    }
+
+    private IngestMode optimizeIngestModeIfNoNeedToDerivePartitionSpecList(Datasets enrichedDatasets, IngestMode enrichedIngestMode)
+    {
+        if (enrichedIngestMode instanceof UnitemporalSnapshot)
+        {
+            UnitemporalSnapshot unitemporalSnapshot = (UnitemporalSnapshot) enrichedIngestMode;
+            if (unitemporalSnapshot.needToDerivePartitionSpecList())
+            {
+                // Do nothing - this is because we have to delay deriving partition spec list until ingest time
+                return enrichedIngestMode;
+            }
+        }
+        return enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer));
     }
 
     private void validateInitialization()
@@ -555,7 +569,19 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
             Planner planner = ingestStageMetadata.planner();
 
-            ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, enrichedIngestMode, stageStartInstant));
+            ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, ingestStageMetadata.ingestMode(), stageStartInstant));
+
+            // Rebuild generator and planner if need to derive partition spec list
+            if (enrichedIngestMode instanceof UnitemporalSnapshot)
+            {
+                UnitemporalSnapshot unitemporalSnapshot = (UnitemporalSnapshot) enrichedIngestMode;
+                if (unitemporalSnapshot.needToDerivePartitionSpecList())
+                {
+                    enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer, placeHolderKeyValues));
+                    generator = generator.withIngestMode(enrichedIngestMode);
+                    planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
+                }
+            }
 
             try
             {
@@ -608,7 +634,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 List<IngestStageResult> mappedResults = Collections.unmodifiableList(ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
                 ingestStageResults.addAll(mappedResults);
 
-                ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageSuccess(dataset, batchId, enrichedIngestMode, mappedResults));
+                ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageSuccess(dataset, batchId, ingestStageMetadata.ingestMode(), mappedResults));
             }
             catch (Exception e)
             {
