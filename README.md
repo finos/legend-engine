@@ -1,6 +1,6 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
+[![Build CI](https://github.com/finos/legend-engine/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/finos/legend-engine/actions/workflows/build.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.finos.legend.engine/legend-engine-server.svg)](https://central.sonatype.com/namespace/org.finos.legend.engine)
-![Build CI](https://github.com/finos/legend-engine/workflows/Build%20CI/badge.svg)
 
 # legend-engine
 
