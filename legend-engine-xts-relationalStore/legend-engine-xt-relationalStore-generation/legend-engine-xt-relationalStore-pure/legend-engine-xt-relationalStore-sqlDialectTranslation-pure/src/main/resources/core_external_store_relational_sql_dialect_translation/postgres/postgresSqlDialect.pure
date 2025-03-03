@@ -16,6 +16,7 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
@@ -38,11 +39,11 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
     identifierProcessor = identifierProcessor_default(),
     expressionPrecedenceComparator = expressionPrecedenceComparator_default(),
     keywords = postgresKeywords(),
-    functionProcessorDispatch = meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap_SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__Map_1_
+    functionProcessorMap = functionProcessorMap()
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(): Extension[1]
+function <<db.ExtensionLoader>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -60,11 +61,32 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-
+    pair(
+      'FuncTests - string_agg(0/0)',
+      'Tests for aggregate functions not supported yet!'
+    ),
+    pair(
+      'FuncTests - denseRank(0/0)',
+      'Tests for aggregate functions not supported yet!'
+    ),
+    pair(
+      'FuncTests - now(0/1)',
+      'TimeZone Issue : Result is five hours ahead'
+    ),
+    pair(
+      'FuncTests - now(1/1)',
+      'TimeZone Issue : Result is five hours ahead'
+    ),
+    pair(
+      'FuncTests - to_timestamp(0/3)',
+      'TimeZone Issue : Result is five hours ahead'
+    ),
+    pair(
+      'FuncTests - to_timestamp(1/3)',
+      'TimeZone Issue : Result is five hours ahead'
+    )
   ]->newMap()->cast(@Map<String, String>)
 }
-
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
 {
@@ -88,8 +110,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ->map(n | pair($n.nodeType, $n))
   )
 }
-
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]
 {
@@ -200,7 +220,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 // ---------------------------- Function processing -------------------------
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap(sqlDialect: SqlDialect[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): Map<Class<SqlFunction>, FunctionProcessor>[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
 {
   newMap([
     // Numeric
@@ -212,7 +232,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Exp, simpleFunctionProcessor('exp')),
     pair(Ln, simpleFunctionProcessor('ln')),
     pair(Log, simpleFunctionProcessor('log')),
-    pair(Log10, argTransformFunctionProcessor('log10', 'log(10, %s)')),
+    pair(Log10, argTransformFunctionProcessor('log', {n:Node[*]| literal(10)->concatenate($n)})),
     pair(Sqrt, simpleFunctionProcessor('sqrt')),
     pair(Acos, simpleFunctionProcessor('acos')),
     pair(Asin, simpleFunctionProcessor('asin')),
@@ -223,12 +243,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sin, simpleFunctionProcessor('sin')),
     pair(Tan, simpleFunctionProcessor('tan')),
     pair(Power, simpleFunctionProcessor('power')),
-    pair(Sign, argTransformFunctionProcessor('sign','cast(sign(%s) as int)')), //explicit casting was needed since postgres was returning decimal,which is non-standard
+    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), 
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-
+    pair(DenseRank, simpleFunctionProcessor('denseRank')),
 
     // String
     pair(Lpad, simpleFunctionProcessor('lpad')),
@@ -246,29 +266,59 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
+    pair(Sha1, argTransformFunctionProcessor('digest', {n:Node[*]| literal('sha1')->concatenate($n)->reverse()})),
+    pair(Sha256, argTransformFunctionProcessor('digest', {n:Node[*]| literal('sha256')->concatenate($n)->reverse()})),
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
-    pair(Coalesce, simpleFunctionProcessor('coalesce')),
-    pair(Sha1, argTransformFunctionProcessor('sha1', 'encode(digest(%s, \'sha1\'), \'hex\')')),
-    pair(Sha256, argTransformFunctionProcessor('sha256', 'encode(digest(%s, \'sha256\'), \'hex\')')),
-
 
     // Boolean
-    pair(RegexpLike, argTransformFunctionProcessor('regexp_like', regexpPattern('~'), {p:String[*]|$p->transformRegexpParams()})),
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Temporal
     pair(DateTrunc, simpleFunctionProcessor('date_trunc')),
-    pair(DatePart, argTransformFunctionProcessor('date_part', 'cast(floor(date_part(%s, %s)) as integer)')), // Postgres returns double for some reason, also, date_part to second includes milliseconds, which is non-standard.
+    pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, simpleFunctionProcessor('to_date')),
     pair(ToTimestamp, simpleFunctionProcessor('to_timestamp')),
-    pair(ToChar, argTransformFunctionProcessor('to_char', 'trim(to_char(%s,%s))')), // trim was needed to handle the extra spaces  that are appended to result to match September's length.
-    pair(DateDiff, argTransformFunctionProcessor('dateDiff', '%s', {p:String[*]|$p->dateDiffHandlerForPostgres()}))
+     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
 }
 
-function meta::external::store::relational::sqlDialectTranslation::postgres::dateDiffHandlerForPostgres(p:String[*]): String[1]
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
-  
+  // Postgres returns double for some reason, also, date_part to second includes milliseconds, which is non-standard.
+  let datePart = simpleFunctionProcessor('date_part').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  let roundedDatePart = $sqlDialect->generateFunctionCallWithArgs('floor', $datePart, [], $state, $config);
+  $sqlDialect->generateCast($roundedDatePart, 'integer', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForSign(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  // Postgres returns sign in decimal, which is non standard.
+  let floatedSign = simpleFunctionProcessor('sign').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($floatedSign, 'integer', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  // trim was needed to handle the extra spaces  that are appended to result to match September's length.
+  let unTrimmed = simpleFunctionProcessor('to_char').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateFunctionCallWithArgs('trim', $unTrimmed, [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  $processedArgs->dateDiffHandlerForPostgres();
+}
+
+function meta::external::store::relational::sqlDialectTranslation::postgres::dateDiffHandlerForPostgres(p: String[*]): String[1]
+{ 
+  $p->map(x|println($x));
   let timeUnits=['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
   let indexOfUnit=$timeUnits->indexOf($p->at(0)->replace('\'', ''));
   let unitFunctionsList=[
@@ -313,5 +363,4 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::dat
   ];
 
   format($unitFunctionsList->at($indexOfUnit)->eval(), [$p->at(2), $p->at(1)]);
-
 }

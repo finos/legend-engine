@@ -46,6 +46,17 @@ Class meta::external::store::relational::sqlDialectTranslation::functionRegistry
   }: String[1];
 }
 
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::VariadicSqlFunctionVariation extends SqlFunctionVariation
+[
+  hasAtLeastOneArgument:  if($this.parameterTypes->size() > 0,
+                            | true,
+                            | println('VariadicSqlFunctionVariation expects at least one argument, found none.');
+                              false;
+                          )
+]
+{
+}
+
 Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::functionRegistry::PostgresNativeSqlFunction extends SqlFunction
 {
 }
@@ -81,16 +92,17 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(): Map<String, SqlFunction>[1]
 {
   [
+
     // Postgres Native Functions
     // Numeric
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::abs(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cbrt(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceil(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceiling(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::abs(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cbrt(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceil(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceiling(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::degrees(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::exp(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ln(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::log(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::log(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sqrt(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::acos(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::asin(),
@@ -106,13 +118,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::round(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::greatest(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::least(),
+    //meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::denseRank(),
 
-
-
-    // String
+    // // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lpad(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rpad(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ltrim(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rpad(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ltrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rtrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lower(),
@@ -120,37 +131,37 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::repeat(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::replace(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::left(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::right(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::md5(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::charLength(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::chr(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::concat(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::coalesce(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::right(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::md5(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::charLength(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::chr(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
+    // // meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::stringAgg(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::concat(),
 
+    // // Temporal function
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
+    // //meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateTrunc(),
+      meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
+      meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
+     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toChar(),
 
-    // Temporal function
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateTrunc(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toChar(),
-
+    // // Miscellaneous
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),
     
-    // Extension Functions
-
-    // Numeric
+    // // Extension Functions
+    // // Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::log10(),
 
-    // Boolean functions
+    // // Boolean functions
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike(),
 
-    //String functions
+    // //String functions
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
 
-    //Temporal functions
+    // //Temporal functions
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::dateDiff()
 
 
