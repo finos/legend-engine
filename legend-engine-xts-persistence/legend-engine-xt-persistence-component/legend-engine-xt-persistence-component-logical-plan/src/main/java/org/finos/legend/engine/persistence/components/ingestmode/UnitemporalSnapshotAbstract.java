@@ -20,7 +20,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.deletestrategy.
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
-import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
@@ -61,16 +60,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
         return visitor.visitUnitemporalSnapshot(this);
-    }
-
-    default boolean needToDerivePartitionSpecList()
-    {
-        if (this.partitioningStrategy().isPartitioned())
-        {
-            Partitioning partition = (Partitioning) this.partitioningStrategy();
-            return !partition.partitionFields().isEmpty() && partition.derivePartitionSpec();
-        }
-        return false;
     }
 
     @Value.Check
