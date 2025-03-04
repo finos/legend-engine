@@ -34,11 +34,13 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -87,6 +89,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPla
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
+import org.finos.legend.pure.generated.core_pure_router_preeval_preeval;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -151,9 +154,7 @@ public class SQLExecutor
             RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_PlanParameter> positionalPlans = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanParameters_SQLPlaceholderParameter_MANY__Extension_MANY__PlanParameter_MANY_(positionals, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
             Map<String, Result> positionalArgumentPlans = getPlanArguments(positionalPlans, pureModel, user, identity);
 
-            Root_meta_pure_executionPlan_ExecutionPlan plan = plans._plan();
-            plan = PlanPlatform.JAVA.bindPlan(plan, null, pureModel, routerExtensions.apply(pureModel));
-            SingleExecutionPlan transformedPlan = transformExecutionPlan(plan, pureModel, PureClientVersions.production, identity, routerExtensions.apply(pureModel), transformers);
+            SingleExecutionPlan transformedPlan = transformExecutionPlan(plans._plan(), pureModel, PureClientVersions.production, identity, routerExtensions.apply(pureModel), transformers);
 
             arguments.putAll(positionalArgumentPlans);
             Result result = planExecutor.execute(transformedPlan, arguments, user, identity);
@@ -232,7 +233,25 @@ public class SQLExecutor
 
     private Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult planResult(Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext, PureModel pureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources)
     {
-        return core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanResult_SqlTransformContext_1__SQLSource_MANY__Extension_MANY__PlanGenerationResult_1_(transformedContext, sources, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+        Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult result = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanResult_SqlTransformContext_1__SQLSource_MANY__Extension_MANY__PlanGenerationResult_1_(transformedContext, sources, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+
+        if (result._plan() == null)
+        {
+            TraceUtils.trace("generating plan", span ->
+            {
+                Lambda lambda = read(result._lambda(), Lambda.class);
+                FunctionDefinition<?> func = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
+                FunctionDefinition<?> func2 = core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(func, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
+                Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
+                result._plan(plan);
+            });
+        }
+        else
+        {
+            result._plan(PlanPlatform.JAVA.bindPlan(result._plan(), null, pureModel, routerExtensions.apply(pureModel)));
+        }
+
+        return result;
     }
 
     private <T> T process(Query query, List<Object> positionalArguments, Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func, String name, SQLContext context, Identity identity)
@@ -418,6 +437,18 @@ public class SQLExecutor
         try
         {
             return Objects.hash(OBJECT_MAPPER.writeValueAsString(query));
+        }
+        catch (JsonProcessingException e)
+        {
+            return null;
+        }
+    }
+
+    private <T> T read(String string, Class<T> clazz)
+    {
+        try
+        {
+            return OBJECT_MAPPER.readValue(string, clazz);
         }
         catch (JsonProcessingException e)
         {

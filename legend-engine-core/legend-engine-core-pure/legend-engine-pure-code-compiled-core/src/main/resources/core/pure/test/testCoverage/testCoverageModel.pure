@@ -43,7 +43,8 @@ Profile  meta::pure::testCoverage::featureMatrix::QuerySubFeature
 
 function meta::pure::testCoverage::featureMatrix::featureSets():FeatureSet[*]
 {
-  ^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes('union'),QueryFeature]); //Every test should have a version with a union
+  [^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes('union'),QueryFeature,QueryType]),
+  ^FeatureSet(name='basic',features=[MappingFeature,QueryFeature,QueryType])];
 }
 
 
@@ -71,6 +72,8 @@ Class meta::pure::testCoverage::featureMatrix::FeatureResult
    <<equality.Key>> mappingFeature:String[*];
    <<equality.Key>> querySubFeature:String[*];
    <<equality.Key>> featureTests:FeatureTest[*];
+   <<equality.Key>> testCollection:String[0..1];
+
 }
 
 
@@ -88,4 +91,12 @@ function meta::pure::testCoverage::featureMatrix::profileSubSet(profile:Profile[
   let stereoTypes = $include->map(r|  $profile->stereotype($r));
  ^FeatureSet(name = 'subFeature', features= $stereoTypes);
 
+}
+
+
+ function meta::pure::testCoverage::featureMatrix::collectFCTFeatures():Map<String,ConcreteFunctionDefinition<Any>>[1]
+{
+   let fctTestPackage = meta::pure::fct::tests;
+
+  let testFunctions = $fctTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('feature',meta::pure::test::fct::model::FCT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
 }

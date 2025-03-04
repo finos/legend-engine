@@ -12,45 +12,115 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::sql::transformation::compile::utils::*;
 import meta::relational::extension::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::external::query::sql::transformation::queryToPure::tests::*;
 
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1]):Boolean[1]
+Class meta::external::query::sql::transformation::queryToPure::tests::TestConfig
+{
+  expected:FunctionDefinition<Any>[1];
+  assertJSON:Boolean[1];
+  assertLambda:Boolean[1];
+  sources:SQLSource[*];
+
+  expectedLambda() {
+    if ($this.relation,
+      | $this.expected->cast(@LambdaFunction<Any>)->compileViaProtocol([], relationalExtensions()),
+      | $this.expected);
+  }:FunctionDefinition<Any>[1];
+
+  relation(){
+    $this.expected->functionReturnType().rawType == meta::pure::metamodel::relation::Relation;
+  }:Boolean[1];
+
+  resolveSources()
+  {
+    if ($this.sources->isEmpty(),
+      |
+        if ($this.relation,
+          | relationSources(),
+          | tabularDataSetSources()),
+      | $this.sources);
+  }:SQLSource[*];
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::c(expected:FunctionDefinition<Any>[1]):TestConfig[1]
+{
+  c($expected, true, true)
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::c(expected:FunctionDefinition<Any>[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):TestConfig[1]
+{
+  c($expected, $assertLambda, $assertJSON, []);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::c(expected:FunctionDefinition<Any>[1], assertLambda:Boolean[1], assertJSON:Boolean[1], sources:SQLSource[*]):TestConfig[1]
+{
+  ^TestConfig(expected = $expected, assertLambda = $assertLambda, assertJSON = $assertJSON, sources = $sources);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*]):Boolean[1]
+{
+  test($sqls, $expected, false);
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1]):Boolean[1]
+{
+  $sqls->forAll(sql |
+    $expected->forAll(e |
+      let sqlTransformContext = $sql->processQuery($e.resolveSources(), $scopeWithFrom);
+      let actual = $sqlTransformContext.lambda();
+
+      if ($e.assertLambda, | assertLambdaEquals($e.expectedLambda, $actual), | true);
+      if ($e.assertJSON, | assertLambdaJSONEquals($e.expectedLambda, $actual), | true);
+    )
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[*]):Boolean[1]
 {
   test($sqls, $expected, true);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], assertJSON:Boolean[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[*], assertJSON:Boolean[1]):Boolean[1]
 {
-  test($sqls, $expected, testSources(), false, true, $assertJSON);
+  test($sqls, $expected->map(e | c($e, true, $assertJSON)), false);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[*], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
 {
-  $sqls->forAll(sql |
-    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
-    let actual = $sqlTransformContext.lambda();
-
-    if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
-    if ($assertJSON, | assertLambdaJSONEquals($expected, $actual), | true);
-  )
+  test($sqls, $expected->map(e | c($e, $assertLambda, $assertJSON, $sources)), $scopeWithFrom);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1], relation:Boolean[1]): SqlTransformContext[1]
 {
-  processQuery($sql, false);
+  processQuery($sql, if ($relation, | relationSources(), | tabularDataSetSources()), $scopeWithFrom);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
+
+function meta::external::query::sql::transformation::queryToPure::tests::tabularDataSetSources():SQLSource[*]
 {
-  processQuery($sql, [
+  [
     serviceToSource(Service1()),
     serviceToSource(Service2()),
     serviceToSource(Service3()),
-    serviceToSource(Service4())
-  ], $scopeWithFrom);
+    serviceToSource(Service4()),
+    serviceToSource(Service5()),
+    serviceToSource(Service6())
+  ]
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::relationSources():SQLSource[*]
+{
+  [
+    serviceToSource(Service1Relation()),
+    serviceToSource(Service2Relation()),
+    serviceToSource(Service3Relation()),
+    serviceToSource(Service4Relation())
+  ]
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]

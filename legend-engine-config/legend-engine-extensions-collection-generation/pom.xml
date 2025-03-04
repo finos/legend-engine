@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.70.1-SNAPSHOT</version>
+        <version>4.71.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -361,6 +361,7 @@
             <artifactId>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
+
         <!-- Relational -->
 
         <!-- Service Store -->

@@ -89,7 +89,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
             {
                 CsvSerializer csvSerializer;
-                boolean withHeader = true;
+                boolean withHeader = dbCommands.supportsHeaderOnCsvFile();
                 if (result instanceof RelationalResult)
                 {
                     csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);

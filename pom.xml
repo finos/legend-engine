@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.70.1-SNAPSHOT</version>
+    <version>4.71.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -105,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.33.0</legend.pure.version>
+        <legend.pure.version>5.34.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -1182,11 +1182,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.engine</groupId>-->
-            <!--                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
@@ -2019,6 +2014,12 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-FCT-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2604,13 +2605,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgresSql-grammar</artifactId>
-                <version>${project.version}</version>
-                <type>test-jar</type>
-            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgresSql-grammar</artifactId>
@@ -2962,26 +2956,6 @@
                 <artifactId>legend-pure-runtime-java-extension-interpreted-dsl-tds</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-engine-pure-functions-relation-pure</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>

@@ -1,0 +1,290 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function>> meta::pure::functions::math::min(left:Integer[1], right:Integer[1]):Integer[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(left:Float[1], right:Float[1]):Float[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(left:Number[1], right:Number[1]):Number[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(ints:Integer[1..*]):Integer[1]
+{
+    $ints->fold({i, m | min($i, $m)}, $ints->at(0))
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(ints:Integer[*]):Integer[0..1]
+{
+    $ints->fold({i, m | min($i, $m->toOne())}, $ints->first())
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(floats:Float[1..*]):Float[1]
+{
+    $floats->fold({f, m | min($f, $m)}, $floats->at(0))
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(floats:Float[*]):Float[0..1]
+{
+    $floats->fold({f, m | min($f, $m->toOne())}, $floats->first())
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(numbers:Number[1..*]):Number[1]
+{
+    $numbers->fold({n, m | min($n, $m)}, $numbers->at(0))
+}
+
+function <<PCT.function>> meta::pure::functions::math::min(numbers:Number[*]):Number[0..1]
+{
+    $numbers->fold({n, m | min($n, $m->toOne())}, $numbers->first())
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1, $f->eval(|min(1, 2)));
+    assertEquals(1, $f->eval(|min(2, 1)));
+    assertEquals([], $f->eval(|min([]->cast(@Integer))));
+    assertEquals(1, $f->eval(|min([1])));
+    assertEquals(1, $f->eval(|min([4, 7, 1, 3, 4])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1.23, $f->eval(|min(1.23, 2.8)));
+    assertEquals(1.23, $f->eval(|min(2.8, 1.23)));
+    assertEquals([], $f->eval(|min([]->cast(@Float))));
+    assertEquals(1.0, $f->eval(|min([1.0])));
+    assertEquals(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3.678, 4.6])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(1.23, $f->eval(|min(1.23, 2)));
+    assertEquals(1.23, $f->eval(|min(2, 1.23)));
+    assertEquals(1.23d, $f->eval(|min(2, 1.23d)));
+    assertEquals([], $f->eval(|min([]->cast(@Number))));
+    assertEquals(1.0d, $f->eval(|min([1.0d])));
+    assertEquals(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3, 4])));
+    assertEquals(1.0d, $f->eval(|min([4.23d, 7.345, 1.0d, 3, 4])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21
+                  2, 1, B, 41
+                  3, 3, C, 71
+                  4, 4, D, 31
+                  5, 2, E, 11
+                  6, 1, F, 1
+                  7, 3, G, 91
+                  8, 1, H, 81
+                  9, 5, I, 51
+                  10, 0, J, 101
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber : y | $y->min())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101\n'+
+                  '   1,1\n'+
+                  '   2,11\n'+
+                  '   3,71\n'+
+                  '   4,31\n'+
+                  '   5,51\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21.12
+                  2, 1, B, 41.14
+                  3, 3, C, 71.17
+                  4, 4, D, 31.13
+                  5, 2, E, 11.11
+                  6, 1, F, 1.1
+                  7, 3, G, 91.19
+                  8, 1, H, 81.18
+                  9, 5, I, 51.15
+                  10, 0, J, 101.101
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber : y | $y->min())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101.101\n'+
+                  '   1,1.1\n'+
+                  '   2,11.11\n'+
+                  '   3,71.17\n'+
+                  '   4,31.13\n'+
+                  '   5,51.15\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21d
+                  2, 1, B, 41.14d
+                  3, 3, C, 71d
+                  4, 4, D, 31.13d
+                  5, 2, E, 11d
+                  6, 1, F, 1.1d
+                  7, 3, G, 91d
+                  8, 1, H, 81.18d
+                  9, 5, I, 51d
+                  10, 0, J, 101.101d
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber->cast(@Number) : y | $y->min())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101.101\n'+
+                  '   1,1.1\n'+
+                  '   2,11.0\n'+
+                  '   3,71.0\n'+
+                  '   4,31.13\n'+
+                  '   5,51.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->min())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10\n'+
+                  '   2,1,B,2\n'+
+                  '   6,1,F,2\n'+
+                  '   8,1,H,2\n'+
+                  '   1,2,A,1\n'+
+                  '   5,2,E,1\n'+
+                  '   3,3,C,3\n'+
+                  '   7,3,G,3\n'+
+                  '   4,4,D,4\n'+
+                  '   9,5,I,9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1.1, 2, A
+                  2.2, 1, B
+                  3.3, 3, C
+                  4.4, 4, D
+                  5.5, 2, E
+                  6.6, 1, F
+                  7.7, 3, G
+                  8.8, 1, H
+                  9.9, 5, I
+                  10.10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->min())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10.1,0,J,10.1\n'+
+                  '   2.2,1,B,2.2\n'+
+                  '   6.6,1,F,2.2\n'+
+                  '   8.8,1,H,2.2\n'+
+                  '   1.1,2,A,1.1\n'+
+                  '   5.5,2,E,1.1\n'+
+                  '   3.3,3,C,3.3\n'+
+                  '   7.7,3,G,3.3\n'+
+                  '   4.4,4,D,4.4\n'+
+                  '   9.9,5,I,9.9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1.1, 2, A
+                  2.2, 1, B
+                  3.3, 3, C
+                  4.4, 4, D
+                  5.5, 2, E
+                  6.6, 1, F
+                  7.7, 3, G
+                  8.8, 1, H
+                  9.9, 5, I
+                  10.10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->cast(@Number)}:y|$y->min())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10.1,0,J,10.1\n'+
+                  '   2.2,1,B,2.2\n'+
+                  '   6.6,1,F,2.2\n'+
+                  '   8.8,1,H,2.2\n'+
+                  '   1.1,2,A,1.1\n'+
+                  '   5.5,2,E,1.1\n'+
+                  '   3.3,3,C,3.3\n'+
+                  '   7.7,3,G,3.3\n'+
+                  '   4.4,4,D,4.4\n'+
+                  '   9.9,5,I,9.9\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}

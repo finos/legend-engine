@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -28,6 +29,7 @@ import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUt
 import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
+import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -91,7 +93,9 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
         return builder.build();
     }
 
+    // ---------- Private Fields ----------
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalSchemaEvolutionService.class);
+    private static final String MAIN_TABLE_NAME = "MAIN";
 
     // ------API-----
     public SchemaEvolutionServiceResult evolve(DatasetReference mainDatasetReference, SchemaDefinition stagingSchema, RelationalConnection connection)
@@ -160,5 +164,32 @@ public abstract class RelationalSchemaEvolutionServiceAbstract
             .status(SchemaEvolutionStatus.SUCCEEDED)
             .addAllExecutedSchemaEvolutionSqls(executedSqls)
             .build();
+    }
+
+    public SchemaEvolutionServiceResult evolve(DatasetDefinition mainDatasetDefinition, SchemaDefinition stagingSchema, RelationalConnection connection)
+    {
+        LOGGER.info("Invoked evolve method, will evolve the target dataset based on derived schema if given schema is evolvable");
+
+        LOGGER.info("Validating schema is evolvable");
+        validateSchemaEvolvable(mainDatasetDefinition.schema(), stagingSchema);
+
+        return evolve(mainDatasetDefinition.datasetReference(), stagingSchema, connection);
+    }
+
+    public void validateSchemaEvolvable(SchemaDefinition mainSchema, SchemaDefinition stagingSchema) throws IncompatibleSchemaChangeException
+    {
+        LOGGER.info("Invoked isSchemaEvolvable method, will check if schema evolution is possible");
+
+        // Creates DatasetDefinition from the given schema
+        DatasetDefinition mainDatasetDefinition = DatasetDefinition.builder().name(MAIN_TABLE_NAME).schema(mainSchema).build();
+
+        // Handle case conversion
+        IngestMode ingestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        mainDatasetDefinition = ApiUtils.applyCase(mainDatasetDefinition, caseConversion());
+        stagingSchema = ApiUtils.applyCase(stagingSchema, caseConversion());
+
+        // Attempt to build logical plan for schema evolution
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet(), ignoreCaseForSchemaEvolution());
+        schemaEvolution.buildLogicalPlanForSchemaEvolution(mainDatasetDefinition, stagingSchema);
     }
 }

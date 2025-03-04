@@ -88,6 +88,7 @@ public class IngestModeTest
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
     protected Field nonNullableBizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).nullable(false).build();
     protected Field description = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
+    protected Field descriptionLong = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, Optional.of(1000), Optional.empty())).build();
     protected Field descriptionModified = Field.builder().name("Description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
     protected Field decimalCol = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
     protected Field decimalColModified = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 2)).build();
@@ -186,6 +187,14 @@ public class IngestModeTest
             .addFields(bizDate)
             .addFields(description)
             .build();
+
+    protected SchemaDefinition baseTableSchemaWithLongDescription = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(descriptionLong)
+        .build();
 
     protected SchemaDefinition baseTableSchemaWithDataScaleChange = SchemaDefinition.builder()
             .addFields(id)
@@ -465,14 +474,15 @@ public class IngestModeTest
 
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
 
-    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(16777216)";
     protected String expectedSchemaEvolutionModifyDecimal = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DECIMAL(10,0)";
     protected String expectedSchemaEvolutionModifyScale = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"decimal_col\" DECIMAL(10,2)";
 
-    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(16777216)";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE";
-    protected String expectedSchemaNonBreakingChangeWithSizing = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE(8)";
+    protected String expectedSchemaNonBreakingChangeWithAmount = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"Amount\" DOUBLE";
+    protected String expectedSchemaNonBreakingChangeWithSizing = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"Amount\" DOUBLE(8)";
     protected String expectedSchemaImplicitNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" SET NULL";
     protected String expectedSchemaNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"biz_date\" SET NULL";
 

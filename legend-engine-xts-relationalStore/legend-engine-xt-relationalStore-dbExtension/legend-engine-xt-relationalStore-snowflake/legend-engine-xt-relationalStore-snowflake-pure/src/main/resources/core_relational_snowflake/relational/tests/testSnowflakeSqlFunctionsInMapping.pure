@@ -87,6 +87,22 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$snowflakeSql);
 }
 
+function <<test.Test>>  meta::relational::tests::mapping::function::snowflake::testToSQLStringParseDateForSnowFlakeddMMMyyyy():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormatddMMMyyyy], ['parseDate']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select to_date("root".string2date,\'ddMONyyyy\') as "parseDate" from dataTable as "root"',$s);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testToSQLStringParseDateForSnowFlakeddMONyyyy():Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2DateUserDefinedFormatddMONyyyy], ['parseDate']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select to_date("root".string2date,\'ddMONyyyy\') as "parseDate" from dataTable as "root"',$s);
+}
+
 function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testToSQLStringjoinStringsMappingSnowflake():Boolean[1]
 {
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.joinStringsResult], ['aggregatedCol']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());

@@ -4,9 +4,18 @@
   "dependencies": [
     "platform",
     "platform_dsl_tds",
+    "platform_dsl_mapping",
+    "platform_dsl_store",
+    "platform_store_relational",
+    "core_external_compiler",
     "core_functions_relation",
+    "core",
+    "core_functions_standard",
     "core_functions_unclassified",
+    "core_functions_relation",
     "core_functions_json",
-    "core"
+    "core_relational",
+    "core_relational_fct",
+    "core_analytics_lineage"
   ]
 }

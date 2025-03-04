@@ -51,6 +51,9 @@ function meta::pure::tds::toRelation::transform(v:meta::protocols::pure::vX_X_X:
 
 function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
 {
+
+  let func = resolveFControlFunction($a, $extensions);
+
   [
     pair(project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
@@ -71,12 +74,12 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
         appliedFunction(project_C_MANY__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
     ),
     //TODO activate when relation inference is fixed on project
-    // pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
-    //   |
-    //     let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
+    pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      |
+        let columns = $a.parameters->at(1)->colsToColSpecArrayInstance($extensions);
 
-    //     appliedFunction(project_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
-    // ),
+        appliedFunction(project_Relation_1__FuncColSpecArray_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $columns]);
+    ),
     pair(groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
         let groupByColumns = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
@@ -218,20 +221,33 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
       | transformOlapGroupBySortOpString($a, $extensions)
     )
   ]->concatenate([
+      swap(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, $a, $extensions),
+      swap(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, drop_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, drop_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, slice_Relation_1__Integer_1__Integer_1__Relation_1_, $a, $extensions),
       swap(limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(take_TabularDataSet_1__Integer_1__TabularDataSet_1_, limit_Relation_1__Integer_1__Relation_1_, $a, $extensions),
       swap(distinct_TabularDataSet_1__TabularDataSet_1_, distinct_Relation_1__Relation_1_, $a, $extensions),
       swap(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, concatenate_Relation_1__Relation_1__Relation_1_, $a, $extensions)
-    ])->concatenate(getExtensions($a, $extensions))->getValue(resolveFControlFunction($a, $extensions), | ^$a(parameters = $a.parameters->map(p | $p->transform($extensions))))->eval();
+    ])->concatenate(getExtensions($a, $extensions))->getValue($func, | defaultTransform($func, $a, $extensions))->eval();
 }
+
+
 
 function meta::pure::tds::toRelation::getExtensions(a:AppliedFunction[1], extensions:Extension[*]):meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[*]
 {
   $extensions.tdsToRelation
     ->filter(t | $t->instanceOf(TdsToRelationExtension_V_X_X))
     ->cast(@TdsToRelationExtension_V_X_X).transfers->map(t | $t->eval($a, $extensions))
+}
+
+function meta::pure::tds::toRelation::defaultTransform(f:Function<Any>[1], a:AppliedFunction[1], extensions:Extension[*]):AppliedFunction[1]
+{
+  let returnType = $f->functionReturnType().rawType;
+
+  assert(!($returnType->isNotEmpty() && $returnType->toOne()->subTypeOf(TabularDataSet)), 'conversion of function "' + $f.name->toOne() + '"" is currently not supported');
+
+  ^$a(parameters = $a.parameters->map(p | $p->transform($extensions)));
 }
 
 

@@ -24,7 +24,7 @@ public abstract class FCTReport
 {
     public abstract ImmutableList<FCTTestCollection> getTestCollection();
 
-    public abstract String getreportID();
+    public abstract String getReportID();
 
     public abstract String getStoreID();
 

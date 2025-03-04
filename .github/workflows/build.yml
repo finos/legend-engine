@@ -17,9 +17,14 @@ name: Build CI
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  MAVEN_OPTS: "-Xmx6g"
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
@@ -34,15 +39,14 @@ jobs:
     # NOTE: Only run this when not in fork as those likely do not have access to larger runners and will fail on normal runner due to resource limitation
     # Also, skip this build for release commits
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
-    # NOTE: larger runner is required to run this build
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-mvn-deps
         with:
@@ -81,6 +85,8 @@ jobs:
 
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
+        env:
+          MAVEN_OPTS: "-Xmx8g"
         run: |
           mvn -B -e -DskipTests=true install
 
@@ -89,6 +95,7 @@ jobs:
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          MAVEN_OPTS: "-Xmx8g"
         # NOTE: here we publish snapshot to a staging Maven registry
         # some registry like Maven Central requires javadoc, but for now we
         # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
@@ -99,15 +106,34 @@ jobs:
           mvn -B -e -DskipTests=true deploy -P docker-snapshot
 
       - name: Test
+        env:
+          MAVEN_OPTS: "-Xmx4g"
         run: |
           mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
-      - name: Upload Test Results
-        if: always()
+      - name: Test SDT Postgres
+        uses: ./.github/workflows/actions/sdt-test
+        with:
+          check-name:  Postgres
+          module:  legend-engine-xt-relationalStore-SDT-pure
+          test-class: Test_Postgres_SDT
+
+      - name: Test SDT DuckDB
+        uses: ./.github/workflows/actions/sdt-test
+        with:
+          check-name:  DuckDB
+          module:  legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
+          test-class: Test_DuckDB_SDT
+
+      - name: Generate PCT Report
+        run: |
+          mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+
+      - name: Upload PCT HTML Report
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+          name: pct-html-report
+          path: target/ok.html
 
       - name: Upload CI Event
         if: always()

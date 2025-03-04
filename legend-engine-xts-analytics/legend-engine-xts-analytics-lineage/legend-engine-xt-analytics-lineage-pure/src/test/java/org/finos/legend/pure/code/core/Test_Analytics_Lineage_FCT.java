@@ -33,7 +33,7 @@ public class Test_Analytics_Lineage_FCT  extends LineageFCTReport
         CompiledExecutionSupport support = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__Function_1_", false, support);
+        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__Boolean_1_", false, true,support);
         return wrapSuite(
                 () -> true,
                 () -> suite,

@@ -182,7 +182,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::extractTableAliasC
                               n:ColumnName[1]|[],
                               r:RelationalOperationElementWithJoin[1]|$r.relationalOperationElement->extractTableAliasColumns($nContext)->concatenate($r.joinTreeNode->extractTableAliasColumns($nContext)),
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns($nContext)->concatenate($wc.func->extractTableAliasColumns($nContext)),
-                              w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns($nContext)->concatenate($w.sortBy->extractTableAliasColumns($nContext)),
+                              w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns($nContext)->concatenate($w.sortBy.sortByElement->extractTableAliasColumns($nContext)),
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns($nContext));,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns($nContext), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns($nContext),

@@ -69,38 +69,37 @@ function <<test.Test>> meta::pure::tds::toRelation::testProjectSingle():Boolean[
   );
 }
 
-//TODO activate when relation inference is fixed on project
-// function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectSingle():Boolean[1]
-// {
-//   test(
-//     {| TestClass.all()
-//       ->project(col(x | $x.string, 'str'))
-//       ->project(col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'))},
-//     {| TestClass.all()
-//         ->project(~[str: x | $x.string])
-//         ->project(~[newCol : x | $x.str->toOne() + 'abc'])}
-//   );
-// }
 
-// function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectMulti():Boolean[1]
-// {
-//   test(
-//     {| TestClass.all()
-//         ->project([col(x | $x.string, 'str'), col(x | $x.integer, 'int')])
-//         ->project([
-//           col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'),
-//           col(x:TDSRow[1] | $x.getString('str')->toOne() + 'def', 'newCol2')
-//         ])},
-//     {| TestClass.all()
-//         ->project(~[str: x | $x.string, int: x | $x.integer])
-//         ->project(~[
-//           newCol : x | $x.str->toOne() + 'abc',
-//           newCol2 : x | $x.str->toOne() + 'def'
-//         ])
-//     }
-//   );
-// }
+function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectSingle():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+      ->project(col(x | $x.string, 'str'))
+      ->project(col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'))},
+    {| TestClass.all()
+        ->project(~[str: x | $x.string])
+        ->project(~[newCol : x | $x.str->toOne() + 'abc'])}
+  );
+}
 
+function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectMulti():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project([col(x | $x.string, 'str'), col(x | $x.integer, 'int')])
+        ->project([
+          col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'),
+          col(x:TDSRow[1] | $x.getString('str')->toOne() + 'def', 'newCol2')
+        ])},
+    {| TestClass.all()
+        ->project(~[str: x | $x.string, int: x | $x.integer])
+        ->project(~[
+          newCol : x | $x.str->toOne() + 'abc',
+          newCol2 : x | $x.str->toOne() + 'def'
+        ])
+    }
+  );
+}
 
 function <<test.Test>> meta::pure::tds::toRelation::testExtendSingle():Boolean[1]
 {
@@ -409,6 +408,21 @@ function <<test.Test>> meta::pure::tds::toRelation::testOlap():Boolean[1]
         ->extend(over([~int->ascending()]), ~[RANK3:{p,w,r| $p->rank($w, $r)}])
     }
   )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFrom():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    }
+  );
 }
 
 function meta::pure::tds::toRelation::test(inputs:LambdaFunction<Any>[*], expected:LambdaFunction<Any>[1]):Boolean[1]

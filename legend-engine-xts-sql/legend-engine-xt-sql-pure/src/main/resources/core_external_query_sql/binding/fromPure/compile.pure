@@ -1,0 +1,1 @@
+native function meta::external::query::sql::legendCompileVSProtocol(json:String[1], extraElementsJSON:String[0..1]):ValueSpecification[1];

@@ -8,6 +8,8 @@
     "platform_store_relational",
     "core_functions_unclassified",
     "core_functions_standard",
+    "core_functions_json",
+    "core_functions_relation",
     "core",
     "core_service",
     "core_relational",

@@ -10,22 +10,16 @@
 **/*.DS_Store
 # for temporary files, user local data, configs, etc.
 /temp
+/duckdb*
 
 # VS Code ignores
 .vscode
 .settings
 .classpath
 .project
-/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/snowflake.properties
-/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/query.properties
-/legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userLocalConfig.json
-/legend-engine-authentication/src/test/resources/test-secrets/**
 /legend-engine.ipr
 /legend-engine.iws
-/legend-engine-language-pure-grammar/gen/
-/legend-engine-language-pure-grammar/src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/core/gen/
-/legend-engine-xt-graphQL-grammar/gen/
+**/legend-engine-language-pure-grammar/gen/
+**/legend-engine-language-pure-grammar/src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/core/gen/
 /welcome.pure
-/legend-engine-xt-nonrelationalStore-mongodb-grammar/gen/
-/legend-engine-core-shared/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json
 /legend-engine-core/legend-engine-core-shared/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json

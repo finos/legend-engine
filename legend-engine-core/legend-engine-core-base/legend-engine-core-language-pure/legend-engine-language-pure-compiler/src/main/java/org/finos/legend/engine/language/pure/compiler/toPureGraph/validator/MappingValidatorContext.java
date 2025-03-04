@@ -18,9 +18,9 @@ import java.util.Map;
 
 public class MappingValidatorContext
 {
-   private Map<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping>> mappingRootMappingAndClassMappingId;
-   private Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings;
-   private Map<String, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping> protocolMappingsByName;
+   private final Map<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping>> mappingRootMappingAndClassMappingId;
+   private final Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings;
+   private final Map<String, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping> protocolMappingsByName;
 
     public MappingValidatorContext(Map<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping>> mappingRootMappingAndClassMappingId, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings, Map<String, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping> protocolMappingsByName)
     {
