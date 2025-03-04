@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeGrantInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
@@ -99,15 +100,15 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        MutableList<? extends FunctionActivatorError> errors = validate(identity, artifact);
-        this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.addAll(v.validate(identity, activator)));
+        FunctionActivatorResult errors = validate(identity, artifact);
+        this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.getErrors().addAll(v.validate(identity, activator)));
         return errors;
     }
 
-    public MutableList<? extends FunctionActivatorError> validate(Identity identity, SnowflakeAppArtifact artifact)
+    public FunctionActivatorResult validate(Identity identity, SnowflakeAppArtifact artifact)
     {
         MutableList<FunctionActivatorError> errors = Lists.mutable.empty();
         SnowflakeAppContent content = (SnowflakeAppContent)artifact.content;
@@ -133,14 +134,14 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
                 errors.add(new SnowflakeAppError("Privilege Violation for SEQUESTERED scheme. Deployment Role contains SELECT permissions on tables: " + violations.collect(v -> v.objectName).makeString("[", ",", "]")));
             }
         }
-        return errors;
+        return new FunctionActivatorResult(errors);
     }
 
     @Override
     public SnowflakeDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        MutableList<? extends  FunctionActivatorError> validationError = validate(identity, artifact);
+        MutableList<? extends  FunctionActivatorError> validationError = validate(identity, artifact).getErrors();
         if (validationError.isEmpty())
         {
             return this.snowflakeDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
