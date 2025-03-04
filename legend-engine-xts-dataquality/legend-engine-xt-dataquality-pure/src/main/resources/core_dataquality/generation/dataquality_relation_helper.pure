@@ -14,6 +14,7 @@
 
 
 
+import meta::pure::test::pct::*;
 import meta::external::dataquality::*;
 import meta::pure::metamodel::relation::*;
 
@@ -28,38 +29,165 @@ function meta::external::dataquality::assertRelationEmpty<T>(rel:Relation<T>[1],
   assert($rel->meta::pure::functions::relation::size() > 0, $message)
 }
 
-function meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1]):Boolean[1]
+function <<PCT.function>> meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() == 0;
 }
 
-function meta::external::dataquality::relationNotEmpty<T>(rel:Relation<T>[1]):Boolean[1]
+function <<PCT.function>> meta::external::dataquality::relationNotEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() > 0;
 }
 
 // row count
-function meta::external::dataquality::rowCountGreaterThan<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
+function <<PCT.function>> meta::external::dataquality::rowCountGreaterThan<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() > $lowerLimit;
 }
 
-function meta::external::dataquality::rowCountGreaterThanEqual<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
+function <<PCT.function>> meta::external::dataquality::rowCountGreaterThanEqual<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() >= $lowerLimit;
 }
 
-function meta::external::dataquality::rowCountLowerThan<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
+function <<PCT.function>> meta::external::dataquality::rowCountLowerThan<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() < $upperLimit;
 }
 
-function meta::external::dataquality::rowCountLowerThanEqual<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
+function <<PCT.function>> meta::external::dataquality::rowCountLowerThanEqual<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() <= $upperLimit;
 }
 
-function meta::external::dataquality::rowCountEqual<T>(rel: Relation<T>[1], equalTo: Number[1]): Boolean[1]
+function <<PCT.function>> meta::external::dataquality::rowCountEqual<T>(rel: Relation<T>[1], equalTo: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() == $equalTo;
+}
+
+
+// todo: fix compilation for below helper function
+// function meta::external::dataquality::columnValuesUnique<Q,V>(rel: Relation<Q>[1], column:ColSpec<V>[1]): Boolean[1]
+// {
+//   $rel
+//   ->groupBy(
+//     $column, ~[
+//       count: x | $x : y | $y->count()
+//     ]
+//   )
+//   ->filter(x | $x.count > 1)
+//   ->relationEmpty()
+// }
+
+
+function <<PCT.test>> meta::external::dataquality::testRelationNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::relationNotEmpty();
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRelationEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::relationEmpty();
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(false, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRowCountGreaterThan<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::rowCountGreaterThan(1);
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRowCountGreaterThanEqual<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::rowCountGreaterThanEqual(3);
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRowCountLowerThan<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::rowCountLowerThan(4);
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRowCountLowerThanEqual<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::rowCountLowerThanEqual(3);
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::external::dataquality::testRowCountEqual<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #->select(~val)->meta::external::dataquality::rowCountEqual(3);
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
 }
