@@ -722,7 +722,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 settlementDateTime : [db]orderTable.settlementDateTime,
                 pnl : [db]@OrderPnlView_Order | orderPnlView.pnl,
                 pnlContact : [db]@OrderPnlView_Order > [db]@OrderPnlView_Person,
-                zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),'true','false')
+                zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),sqlTrue(),sqlFalse())
              }
 
    OrderPnl : Relational
@@ -761,7 +761,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                     time : [db]interactionTable.time,
                     source : [db]@Interaction_Source,
                     target : [db]@Interaction_Target,
-                    active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
+                    active : case(equal([db]interactionTable.active,'Y'), sqlTrue(), sqlFalse()),
                     longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
                  }
 

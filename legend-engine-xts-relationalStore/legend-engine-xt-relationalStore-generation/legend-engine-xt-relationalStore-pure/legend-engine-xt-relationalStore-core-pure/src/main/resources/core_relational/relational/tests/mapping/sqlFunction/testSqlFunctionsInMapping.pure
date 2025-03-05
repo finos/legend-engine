@@ -434,8 +434,8 @@ function <<test.Test>> {serverVersion.start='v1_20_0'} meta::relational::tests::
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['parseDecimal']),
                                                 testMapping,
                                                 testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals([123.0D, 100.0D], $result.values->at(0).rows.values);
-   assertEquals('select cast("root".string2Decimal as decimal) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
+   assertEquals([123.45D, 100.01D], $result.values->at(0).rows.values);
+   assertEquals('select cast("root".string2Decimal as decimal(5,2)) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> {serverVersion.start='v1_20_0'} meta::relational::tests::mapping::sqlFunction::parseDecimal::testToSQLStringParseDecimalSQLCompilationinH2():Boolean[1]
@@ -443,8 +443,8 @@ function <<test.Test>> {serverVersion.start='v1_20_0'} meta::relational::tests::
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2decimal->parseDecimal()], ['parseDecimal']),
                                                 testMapping,
                                                 testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals([123.0D, 100.0D], $result.values->at(0).rows.values);
-   assertEquals('select cast(trim("root".string2Decimal) as decimal) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
+   assertEquals([123.45D, 100.01D], $result.values->at(0).rows.values);
+   assertEquals('select cast(trim("root".string2Decimal) as decimal(5,2)) as "parseDecimal" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinH2():Boolean[1]
