@@ -49,7 +49,6 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.*;
-import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
