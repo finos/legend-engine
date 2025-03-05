@@ -28,11 +28,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 
-public class MultiDatasetIngestModeOptimizer implements IngestModeVisitor<IngestMode>
+public class StaticIngestModeOptimizer implements IngestModeVisitor<IngestMode>
 {
     private Datasets datasets;
 
-    public MultiDatasetIngestModeOptimizer(Datasets datasets)
+    public StaticIngestModeOptimizer(Datasets datasets)
     {
         this.datasets = datasets;
     }

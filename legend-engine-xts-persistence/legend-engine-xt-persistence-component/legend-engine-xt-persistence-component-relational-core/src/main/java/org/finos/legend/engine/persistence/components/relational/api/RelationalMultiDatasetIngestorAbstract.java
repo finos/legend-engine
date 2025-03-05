@@ -38,8 +38,8 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.api.optimizers.MultiDatasetIngestModeOptimizer;
-import org.finos.legend.engine.persistence.components.relational.api.optimizers.MultiDatasetIngestModeRefresher;
+import org.finos.legend.engine.persistence.components.relational.api.optimizers.StaticIngestModeOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.optimizers.DynamicIngestModeOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.exception.BulkLoadException;
@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.*;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -331,7 +332,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion(), false);
 
                 // 4. Add optimization columns if needed
-                enrichedIngestMode = enrichedIngestMode.accept(new MultiDatasetIngestModeOptimizer(enrichedDatasets));
+                enrichedIngestMode = enrichedIngestMode.accept(new StaticIngestModeOptimizer(enrichedDatasets));
 
                 // 5. Use a placeholder for additional metadata
                 Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
@@ -558,7 +559,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
 
             ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, ingestStageMetadata.ingestMode(), stageStartInstant));
 
-            IngestMode refreshedIngestMode = enrichedIngestMode.accept(new MultiDatasetIngestModeRefresher(enrichedDatasets, executor, transformer, placeHolderKeyValues));
+            IngestMode refreshedIngestMode = enrichedIngestMode.accept(new DynamicIngestModeOptimizer(enrichedDatasets, executor, transformer, placeHolderKeyValues));
             if (!refreshedIngestMode.equals(enrichedIngestMode))
             {
                 enrichedIngestMode = refreshedIngestMode;

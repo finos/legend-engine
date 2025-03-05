@@ -36,14 +36,14 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.util.Map;
 
-public class MultiDatasetIngestModeRefresher implements IngestModeVisitor<IngestMode>
+public class DynamicIngestModeOptimizer implements IngestModeVisitor<IngestMode>
 {
     private Datasets datasets;
     private Executor<SqlGen, TabularData, SqlPlan> executor;
     Transformer<SqlGen, SqlPlan> transformer;
     Map<String, PlaceholderValue> placeHolderKeyValues;
 
-    public MultiDatasetIngestModeRefresher(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, Transformer<SqlGen, SqlPlan> transformer, Map<String, PlaceholderValue> placeHolderKeyValues)
+    public DynamicIngestModeOptimizer(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, Transformer<SqlGen, SqlPlan> transformer, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         this.datasets = datasets;
         this.executor = executor;
