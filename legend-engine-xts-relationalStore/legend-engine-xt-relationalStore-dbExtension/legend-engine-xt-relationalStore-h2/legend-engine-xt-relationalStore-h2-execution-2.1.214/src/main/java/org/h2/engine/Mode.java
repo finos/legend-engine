@@ -3,6 +3,7 @@
  * and the EPL 1.0 (https://h2database.com/html/license.html).
  * Initial Developer: H2 Group
  */
+
 package org.h2.engine;
 
 import java.sql.Types;
@@ -19,9 +20,11 @@ import org.h2.value.Value;
  * The compatibility modes. There is a fixed set of modes (for example
  * PostgreSQL, MySQL). Each mode has different settings.
  */
-public class Mode {
+public class Mode
+{
 
-    public enum ModeEnum {
+    public enum ModeEnum
+    {
         REGULAR, STRICT, LEGACY, DB2, Derby, MariaDB, MSSQLServer, HSQLDB, MySQL, Oracle, PostgreSQL
     }
 
@@ -29,7 +32,8 @@ public class Mode {
      * Determines how rows with {@code NULL} values in indexed columns are handled
      * in unique indexes.
      */
-    public enum UniqueIndexNullsHandling {
+    public enum UniqueIndexNullsHandling
+    {
         /**
          * Multiple rows with identical values in indexed columns with at least one
          * indexed {@code NULL} value are allowed in unique index.
@@ -52,7 +56,8 @@ public class Mode {
     /**
      * Generation of column names for expressions.
      */
-    public enum ExpressionNames {
+    public enum ExpressionNames
+    {
         /**
          * Use optimized SQL representation of expression.
          */
@@ -87,7 +92,8 @@ public class Mode {
     /**
      * Generation of column names for expressions to be used in a view.
      */
-    public enum ViewExpressionNames {
+    public enum ViewExpressionNames
+    {
         /**
          * Use both specified and generated names as is.
          */
@@ -108,7 +114,8 @@ public class Mode {
     /**
      * When CHAR values are right-padded with spaces.
      */
-    public enum CharPadding {
+    public enum CharPadding
+    {
         /**
          * CHAR values are always right-padded with spaces.
          */
@@ -459,7 +466,8 @@ public class Mode {
 
     private final ModeEnum modeEnum;
 
-    static {
+    static
+    {
         Mode mode = new Mode(ModeEnum.REGULAR);
         mode.allowEmptyInPredicate = true;
         mode.dateTimeValueWithinTransaction = true;
@@ -703,12 +711,14 @@ public class Mode {
         add(mode);
     }
 
-    private Mode(ModeEnum modeEnum) {
+    private Mode(ModeEnum modeEnum)
+    {
         this.name = modeEnum.name();
         this.modeEnum = modeEnum;
     }
 
-    private static void add(Mode mode) {
+    private static void add(Mode mode)
+    {
         MODES.put(StringUtils.toUpperEnglish(mode.name), mode);
     }
 
@@ -718,24 +728,29 @@ public class Mode {
      * @param name the name of the mode
      * @return the mode object
      */
-    public static Mode getInstance(String name) {
+    public static Mode getInstance(String name)
+    {
         return MODES.get(StringUtils.toUpperEnglish(name));
     }
 
-    public static Mode getRegular() {
+    public static Mode getRegular()
+    {
         return getInstance(ModeEnum.REGULAR.name());
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public ModeEnum getEnum() {
+    public ModeEnum getEnum()
+    {
         return this.modeEnum;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return name;
     }
 

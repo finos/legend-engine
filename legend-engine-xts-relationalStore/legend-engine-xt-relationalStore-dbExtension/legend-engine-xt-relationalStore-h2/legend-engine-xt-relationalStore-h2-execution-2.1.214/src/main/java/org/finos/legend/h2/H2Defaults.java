@@ -1,3 +1,9 @@
+/*
+ * Copyright 2004-2022 H2 Group. Multiple-Licensed under the MPL 2.0,
+ * and the EPL 1.0 (https://h2database.com/html/license.html).
+ * Initial Developer: H2 Group
+ */
+
 package org.finos.legend.h2;
 
 import java.sql.DriverManager;
@@ -16,6 +22,7 @@ public class H2Defaults
             throw new RuntimeException("cannot identify H2 driver major version", e);
         }
     }
+
     public static String getDefaultH2Properties()
     {
         String defaultH2Properties;
