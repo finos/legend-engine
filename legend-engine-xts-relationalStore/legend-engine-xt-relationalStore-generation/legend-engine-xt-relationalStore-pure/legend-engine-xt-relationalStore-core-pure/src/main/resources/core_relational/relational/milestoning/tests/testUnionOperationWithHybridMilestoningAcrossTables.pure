@@ -48,7 +48,8 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::uni
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::union::testInFlowHybridMilestoningUnionOperationWithNonTemporalRootWithPropagation():Boolean[1]
 {
    testHybridMilestoningUnionOperationWithNonTemporalRootWithPropagation([
-     'BiTemporalProductClassificationTableWithBusinessMilestoningtype_description_BiTemporalProductClassificationTableWithBusinessSnapshotMilestoningtype_description_BiTemporalProductClassificationTableWithProcessingMilestoning___c88f893dbce2fa7329ae22544d6bcf41'
+    'BiTemporalProductClassificationTableWithBusinessMilestoningtype_description_BiTemporalProductClassificationTableWithBusinessSnapshotMilestoningtype_description_BiTemporalProductClassificationTableWithProcessingMilestoning___c88f893dbce2fa7329ae22_0'
+
    ]->repeat(5));
 }
 
@@ -75,7 +76,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::uni
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::union::testInFlowHybridMilestoningUnionOperationWithTemporalRootWithPropagation():Boolean[1]
 {
    testHybridMilestoningUnionOperationWithTemporalRootWithPropagation([
-     'BiTemporalProductClassificationTableWithBusinessMilestoningtype_description_BiTemporalProductClassificationTableWithBusinessSnapshotMilestoningtype_description_BiTemporalProductClassificationTableWithProcessingMilestoning___c88f893dbce2fa7329ae22544d6bcf41'
+     'BiTemporalProductClassificationTableWithBusinessMilestoningtype_description_BiTemporalProductClassificationTableWithBusinessSnapshotMilestoningtype_description_BiTemporalProductClassificationTableWithProcessingMilestoning___c88f893dbce2fa7329ae22_0'
    ]->repeat(5));
 }
 
