@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
 {
    let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\'_\', "root".LASTNAME, Text\'\') as "firstName_lastName" from personTable as "root"', $postGresSql);
+   assertEquals('select concat(Text\'\',\'\',concat("root".FIRSTNAME, Text\'_\', "root".LASTNAME),\'\',Text\'\') as "firstName_lastName" from personTable as "root"', $postGresSql);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringConcatPostgres():Boolean[1]
@@ -74,7 +74,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                     meta::relational::tests::simpleRelationalMapping,
                                     meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\' \', "root".LASTNAME, Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
+   assertEquals('select concat(Text\'\',\'\',concat("root".FIRSTNAME, Text\' \', "root".LASTNAME),\'\',Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testTakePostgres():Boolean[1]
