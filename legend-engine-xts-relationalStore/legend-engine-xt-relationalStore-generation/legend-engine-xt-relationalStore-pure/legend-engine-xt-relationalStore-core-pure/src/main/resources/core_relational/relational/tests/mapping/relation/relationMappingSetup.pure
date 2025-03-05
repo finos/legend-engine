@@ -18,7 +18,7 @@ Database meta::relational::tests::mapping::relation::testDB
   Table personTable
   (
     ID INTEGER PRIMARY KEY,
-    FIRSTNAME VARCHAR(100),
+    "FIRST NAME" VARCHAR(100),
     AGE INTEGER,
     FIRMID INTEGER,
     SALARY FLOAT
@@ -27,7 +27,7 @@ Database meta::relational::tests::mapping::relation::testDB
   Table firmTable
   (
     ID INTEGER PRIMARY KEY,
-    LEGALNAME VARCHAR(100)
+    legalName VARCHAR(100)
   )
 
   Table groupMembershipTable
@@ -74,7 +74,7 @@ Mapping meta::relational::tests::mapping::relation::simpleMapping
   *Person[person]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
-    firstName: FIRSTNAME,
+    firstName: 'FIRST NAME',
     age: AGE,
     +firmId: Integer[1]: FIRMID
   }
@@ -82,7 +82,7 @@ Mapping meta::relational::tests::mapping::relation::simpleMapping
   *Firm[firm]: Relation 
   {
     ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
-    legalName: LEGALNAME,
+    legalName: legalName,
     +id: Integer[1]: ID
   }
 
@@ -98,14 +98,14 @@ Mapping meta::relational::tests::mapping::relation::mixedMapping
   *Person[person]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunctionWithProject__Relation_1_
-    firstName: FIRSTNAME,
+    firstName: 'FIRST NAME',
     age: AGE,
     +firmId: Integer[1]: FIRMID
   }
 
   *PersonWithFirmId: Relational 
   {
-    firstName: [meta::relational::tests::mapping::relation::testDB]personTable.FIRSTNAME,
+    firstName: [meta::relational::tests::mapping::relation::testDB]personTable."FIRST NAME",
     age: [meta::relational::tests::mapping::relation::testDB]personTable.AGE,
     firmId: [meta::relational::tests::mapping::relation::testDB]personTable.FIRMID
   }
@@ -113,7 +113,7 @@ Mapping meta::relational::tests::mapping::relation::mixedMapping
   *Firm[firm]: Relational 
   {
     +id: Integer[1]: [meta::relational::tests::mapping::relation::testDB]firmTable.ID,
-    legalName: [meta::relational::tests::mapping::relation::testDB]firmTable.LEGALNAME
+    legalName: [meta::relational::tests::mapping::relation::testDB]firmTable.legalName
   }
 
   Person_Firm: XStore
@@ -128,7 +128,7 @@ Mapping meta::relational::tests::mapping::relation::complexMapping
   *ExtendedPerson[person]: Relation
   {
     ~func meta::relational::tests::mapping::relation::complexPersonFunction__Relation_1_
-    firstName: FIRSTNAME,
+    firstName: 'FIRST NAME',
     groupName: GROUPNAME,
     age: AGE,
     rank: RANK
@@ -156,19 +156,19 @@ function meta::relational::tests::mapping::relation::personFunctionWithProject()
     ->filter(x|$x.age > 25)
     ->project(
       ~[
-        FIRSTNAME:x|$x.firstName,
+        'FIRST NAME':x|$x.firstName,
         AGE:x|$x.age,
         FIRMID:x|$x.firmId
       ]
     )
-    ->select(~[FIRSTNAME, AGE, FIRMID])
+    ->select(~['FIRST NAME', AGE, FIRMID])
 }
 
 function meta::relational::tests::mapping::relation::firmFunction(): Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.firmTable}#
     ->limit(10)
-    ->select(~[ID, LEGALNAME])
+    ->select(~[ID, legalName])
 }
 
 function meta::relational::tests::mapping::relation::complexPersonFunction(): Relation<Any>[1]
