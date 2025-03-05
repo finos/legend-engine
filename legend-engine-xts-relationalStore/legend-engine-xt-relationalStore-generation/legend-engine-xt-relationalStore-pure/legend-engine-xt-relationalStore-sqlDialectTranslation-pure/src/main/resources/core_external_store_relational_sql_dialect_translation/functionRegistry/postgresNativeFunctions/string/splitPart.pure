@@ -1,0 +1,51 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::SplitPart extends PostgresNativeSqlFunction
+[
+  $this.name == 'split_part'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::splitPart(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::SplitPart
+  (
+    name = 'split_part',
+    documentation = 'Returns the length of a String .',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType, AbstractIntegerSqlType],
+        returnType = AbstractStringSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('split_part', [literal('abc|def|ghi'), literal('|'), literal(2)]),
+        'def'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('split_part', [literal('abc,def,ghi'), literal(','), literal(3)]),
+        'ghi'
+      )
+    ]
+  )
+}
