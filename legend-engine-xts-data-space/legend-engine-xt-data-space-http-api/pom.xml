@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-data-space</artifactId>
-        <version>4.70.2-SNAPSHOT</version>
+        <version>4.71.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

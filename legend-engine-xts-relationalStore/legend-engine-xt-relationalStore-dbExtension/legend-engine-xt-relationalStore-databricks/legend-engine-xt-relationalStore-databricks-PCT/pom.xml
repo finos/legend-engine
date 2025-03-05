@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-databricks</artifactId>
-        <version>4.70.2-SNAPSHOT</version>
+        <version>4.71.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-databricks-PCT</artifactId>
@@ -49,7 +49,7 @@
                         <configuration>
                             <skip>false</skip>
                             <systemProperties>
-                                <DATABRICKS_API_TOKEN>${env.DATABRICKS_API_TOKEN}></DATABRICKS_API_TOKEN>
+                                <DATABRICKS_API_TOKEN>${env.DATABRICKS_API_TOKEN}&gt;</DATABRICKS_API_TOKEN>
                             </systemProperties>
                         </configuration>
                     </plugin>

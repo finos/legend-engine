@@ -46,6 +46,11 @@ public abstract class RelationalDatabaseCommands
 
     public abstract IngestionMethod getDefaultIngestionMethod();
 
+    public boolean supportsHeaderOnCsvFile()
+    {
+        return true;
+    }
+
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)
 //    {
 //        buildTempTableFromResult(config, connection, result, tableName, this.getDefaultIngestionMethod());
