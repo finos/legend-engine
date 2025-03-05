@@ -268,6 +268,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(CharLength, argTransformFunctionProcessor('length', {n:Node[*]| $n})),
 
     pair(Chr, simpleFunctionProcessor('chr')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(Substring, simpleFunctionProcessor('substring')),
+
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
@@ -285,6 +289,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
 
     // Miscellaneous
@@ -342,6 +347,18 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let castedWeekCall =   $sqlDialect->generateCast($weekFunctionCall, 'integer', $state, $config);
 
   if($processedArgs->at(0)->removeQuotes()=='week', |$castedWeekCall, |$nonweekFunctionCall);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let intervalString='INTERVAL '+$processedArgs->at(1) +' '+$processedArgs->at(2)->replace('\'', '');
+  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->replace('\'','')], [], $state, $config) ;
+  let dateUnit = $processedArgs->at(2)->replace('\'', '');
+  if($dateUnit == 'DAY' || $dateUnit == 'MONTH' || $dateUnit == 'YEAR' || $dateUnit == 'WEEK' ,
+    |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config), 
+    |$dateAddCall
+   );
 }
 
 

@@ -71,6 +71,22 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2Functio
     pair(
       'FuncTests - to_timestamp(1/3)',
       'TimeZone Issue : Result is five hours ahead'
+    ),
+     pair(
+      'FuncTests - reverse(0/1)',
+      'Reverse not supported in H2 version we use'
+    ),
+     pair(
+      'FuncTests - reverse(1/1)',
+      'Reverse not supported in H2 version we use'
+    ),
+    pair(
+      'FuncTests - split_part(0/1)',
+      'SplitPart is not available in H2'
+    ),
+     pair(
+      'FuncTests - split_part(1/1)',
+      'SplitPart is not available in H2'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -308,7 +324,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
    
     pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
     pair(CharLength, simpleFunctionProcessor('char_length')),
-    pair(Chr, argTransformFunctionProcessor('char', {n:Node[*]| $n})),
+    pair(Chr, simpleFunctionProcessor('char')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(Substring, simpleFunctionProcessor('substring')),
+
+
     pair(StrPos,argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
     pair(Concat, simpleFunctionProcessor('concat')),
     pair(Coalesce, simpleFunctionProcessor('coalesce')),
@@ -327,7 +347,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(DateDiff, simpleFunctionProcessor('datediff'))
+    pair(DateDiff, simpleFunctionProcessor('datediff')),
+    pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+
 
   ])
 }
@@ -502,6 +524,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let modifiedIndex = if($index->parseInteger()<0, |generateFunctionCallWithArgs($sqlDialect, 'length', [$inputString], [], $state, $config ) + $index, |$index);
   generateFunctionCallWithArgs($sqlDialect, 'right',[$inputString, $modifiedIndex], [], $state, $config);
 }   
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  generateFunctionCallWithArgs($sqlDialect, 'dateadd', [$processedArgs->at(2), $processedArgs->at(1), $processedArgs->at(0)], [], $state, $config) ;
+}
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::dateFormatSpecifierForH2(f:String[1]): String[1]
 {
