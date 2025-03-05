@@ -38,11 +38,12 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.api.optimizers.StaticIngestModeOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.optimizers.DynamicIngestModeOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.utils.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils;
 import org.finos.legend.engine.persistence.components.relational.exception.BulkLoadException;
 import org.finos.legend.engine.persistence.components.relational.exception.MultiDatasetException;
-import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -330,7 +331,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 enrichedDatasets = ApiUtils.enrichAndApplyCase(enrichedDatasets, caseConversion(), false);
 
                 // 4. Add optimization columns if needed
-                enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizer(enrichedDatasets, executor, transformer));
+                enrichedIngestMode = enrichedIngestMode.accept(new StaticIngestModeOptimizer(enrichedDatasets));
 
                 // 5. Use a placeholder for additional metadata
                 Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
@@ -555,7 +556,15 @@ public abstract class RelationalMultiDatasetIngestorAbstract
             RelationalGenerator generator = ingestStageMetadata.relationalGenerator();
             Planner planner = ingestStageMetadata.planner();
 
-            ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, enrichedIngestMode, stageStartInstant));
+            ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageStart(dataset, batchId, ingestStageMetadata.ingestMode(), stageStartInstant));
+
+            IngestMode refreshedIngestMode = enrichedIngestMode.accept(new DynamicIngestModeOptimizer(enrichedDatasets, executor, transformer, placeHolderKeyValues));
+            if (!refreshedIngestMode.equals(enrichedIngestMode))
+            {
+                enrichedIngestMode = refreshedIngestMode;
+                generator = generator.withIngestMode(enrichedIngestMode);
+                planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
+            }
 
             try
             {
@@ -608,7 +617,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                 List<IngestStageResult> mappedResults = Collections.unmodifiableList(ingestorResults.stream().map(this::buildIngestStageResult).collect(Collectors.toList()));
                 ingestStageResults.addAll(mappedResults);
 
-                ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageSuccess(dataset, batchId, enrichedIngestMode, mappedResults));
+                ingestStageCallBack().ifPresent(ingestStageCallBack -> ingestStageCallBack.onStageSuccess(dataset, batchId, ingestStageMetadata.ingestMode(), mappedResults));
             }
             catch (Exception e)
             {
