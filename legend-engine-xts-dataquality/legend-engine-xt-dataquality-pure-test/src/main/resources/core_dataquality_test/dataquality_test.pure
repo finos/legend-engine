@@ -246,6 +246,6 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '         ];' +
     '      }',
           'nonEmptyDataset',
-          {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->meta::pure::functions::collection::map(rel| $rel->meta::external::dataquality::relationNotEmpty())}
+          {|{rel|$rel->meta::external::dataquality::relationNotEmpty();}->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));}
     )
 }
