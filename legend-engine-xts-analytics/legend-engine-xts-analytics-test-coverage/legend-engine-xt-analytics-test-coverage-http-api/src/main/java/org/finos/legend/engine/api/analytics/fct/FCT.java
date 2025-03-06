@@ -21,30 +21,17 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
-import org.finos.legend.engine.test.fct.model.FCTTestResult;
-import org.finos.legend.engine.test.fct.model.FeatureTest;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
@@ -54,14 +41,14 @@ import java.util.Scanner;
 
 public class FCT
 {
-    private final MutableList<? extends Root_meta_pure_extension_Extension> extensions;
 
     public FCT(ModelManager modelManager)
     {
-        PureModel pureModel = modelManager.loadModel(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity(), null);
-        this.extensions  = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
     }
 
+    public FCT()
+    {
+    }
 
     @GET
     @Path("json")
@@ -71,7 +58,7 @@ public class FCT
     {
         try
         {
-            List<FCTTestReport> reports = FCTReportCollector.collectReports(extensions);
+            List<FCTTestReport> reports = FCTReportCollector.collectReports();
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             return Response.status(200).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(reports)).build();

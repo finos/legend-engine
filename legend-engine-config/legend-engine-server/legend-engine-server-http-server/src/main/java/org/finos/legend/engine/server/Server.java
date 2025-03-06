@@ -432,7 +432,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
         environment.jersey().register(new TestDataGenerationAPI(modelManager, planExecutor));
-        environment.jersey().register(new FCT(modelManager));
+        environment.jersey().register(new FCT());
         enableCors(environment, serverConfiguration);
     }
 

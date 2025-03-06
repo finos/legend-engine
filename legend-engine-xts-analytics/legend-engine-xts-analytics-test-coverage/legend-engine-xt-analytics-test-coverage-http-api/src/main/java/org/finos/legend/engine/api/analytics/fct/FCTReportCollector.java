@@ -16,21 +16,20 @@ package org.finos.legend.engine.api.analytics.fct;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
-
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
-import org.finos.legend.pure.code.core.LineageFCTReport;
+import org.finos.legend.pure.code.core.LineageM2MFCTReport;
+import org.finos.legend.pure.code.core.LineageRelationalFCTReport;
+import org.finos.legend.pure.code.core.M2MFCTReport;
 import org.finos.legend.pure.code.core.relational.dbSpecific.RelationalFCTReportH2;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import java.util.List;
 
 public class FCTReportCollector
 {
-     public static List<FCTTestReport> collectReports(MutableList<? extends Root_meta_pure_extension_Extension> extensions)
+     public static List<FCTTestReport> collectReports()
     {
-        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new LineageFCTReport(), new RelationalFCTReportH2());
-        return FCTReportBuilder.generateReport(testAnalytics, extensions);
+        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new LineageRelationalFCTReport(), new RelationalFCTReportH2(), new LineageM2MFCTReport(), new M2MFCTReport());
+        return FCTReportBuilder.generateReport(testAnalytics);
     }
 
 }

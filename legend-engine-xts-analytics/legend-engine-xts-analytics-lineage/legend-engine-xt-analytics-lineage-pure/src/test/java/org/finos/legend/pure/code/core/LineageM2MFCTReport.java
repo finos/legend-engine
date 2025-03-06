@@ -14,7 +14,7 @@
  * //  limitations under the License.
  */
 
-package org.finos.legend.pure.code.core.relational;
+package org.finos.legend.pure.code.core;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -23,49 +23,34 @@ import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestCollection;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class RelationalFCTReport extends FCTReport
+public class LineageM2MFCTReport extends FCTReport
 {
-    private final String databaseType;
 
-       public RelationalFCTReport(String databaseType)
-    {
-        this.databaseType = databaseType;
+
+    protected static ImmutableList<FCTTestCollection> testCollection(CompiledExecutionSupport support)
+    {      return Lists.immutable.with(
+                Test_Pure_FCT_M2M_Collection.buildCollection(support)
+    );
     }
 
-    public String getDatabaseType()
-    {
-        return databaseType;
-    }
-
-
-    protected static MutableList<ExclusionSpecification> getExpectedFailures()
-    {
-        return Lists.mutable.empty();
-    }
-
-    protected static ImmutableList<FCTTestCollection> testCollection()
-    {  CompiledExecutionSupport support = getClassLoaderExecutionSupport();
-        return Lists.immutable.with(
-                Test_Pure_Relational_FCT_Collection.buildCollection(support));
-    }
 
     @Override
-    public ImmutableList<FCTTestCollection> getTestCollection()
+    public  ImmutableList<FCTTestCollection> getTestCollection()
     {
-        return testCollection();
+        return testCollection(PureTestBuilderCompiled.getClassLoaderExecutionSupport());
     }
 
     @Override
     public String getReportID()
     {
-        return "Execution";
+        return "Lineage";
     }
 
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return getExpectedFailures();
+        return Lists.mutable.empty();
     }
 }

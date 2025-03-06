@@ -14,30 +14,24 @@
  * //  limitations under the License.
  */
 
-package org.finos.legend.engine.server.test.pureClient.stores;
+package org.finos.legend.engine.server.test.FCTTest;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
-import org.finos.legend.pure.code.core.relational.dbSpecific.RelationalFCTReportH2;
+import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
+import org.finos.legend.pure.code.core.M2MFCTReport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReportH2
+public class Test_M2MFCT extends M2MFCTReport
 {
     public static Test suite()
     {
-        CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
+        CompiledExecutionSupport executionSupport = PureTestHelperFramework.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
-        return wrapSuite(
-                () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Boolean_1_", true,false,executionSupport),
-                PureWithEngineHelper::cleanUp
-        );
+        return FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::pure::mapping::modelToModel::fct::fctEvaluator__FCTEvaluator_1_", "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport);
     }
 
 }
