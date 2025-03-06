@@ -188,9 +188,8 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    assertSize($result.values.rows, 1);
    println($result.values.rows.values);
    assertSameElements([false, '4'], $result.values.rows.values);
-   assertEqualsH2Compatible(
+   assertEquals(
     'select "root".ID as "id", case when "root".active = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', 
-    'select "root".ID as "id", cast(case when "root".active = \'Y\' then \'true\' else \'false\' end as boolean) as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', 
     $result->sqlRemoveFormatting()
    );
 }

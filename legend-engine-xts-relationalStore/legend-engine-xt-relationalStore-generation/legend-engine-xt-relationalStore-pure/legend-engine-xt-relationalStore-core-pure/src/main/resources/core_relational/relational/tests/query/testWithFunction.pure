@@ -204,7 +204,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 {
    let result = execute(|Account.all()->filter(a|$a.name->substring(9,1)->parseDecimal() ==1), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     assertSameElements(['Account 1'], $result.values.name);
-    assertEquals( 'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where cast(substring("root".name, 9, 1) as decimal) = 1', $result->sqlRemoveFormatting());
+    assertEquals( 'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where cast(substring("root".name, 9, 1) as decimal(5,2)) = 1', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingToUpperFunction():Boolean[1]
