@@ -29,6 +29,7 @@
     }
   },
   "debugMode" : true,
+  "initPureRuntimeBeforeStart" : true,
   "sourceLocationConfiguration": {
     "welcomeFileDirectory": "./"
   }
