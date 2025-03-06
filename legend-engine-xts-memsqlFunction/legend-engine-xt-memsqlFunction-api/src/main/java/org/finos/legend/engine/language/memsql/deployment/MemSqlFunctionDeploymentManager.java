@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentDetails;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
@@ -33,6 +34,7 @@ import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunction
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,7 @@ import java.util.List;
 /**
  * These deployment functions assume that the artifact has already been validated.
  */
-public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSqlFunctionArtifact, MemSqlFunctionDeploymentResult, MemSqlFunctionDeploymentConfiguration>
+public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSqlFunctionArtifact, MemSqlFunctionDeploymentResult, MemSqlFunctionDeploymentConfiguration, FunctionActivatorDeploymentDetails, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MemSqlFunctionDeploymentManager.class);
 
@@ -94,6 +96,12 @@ public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSql
         }
 
         return result;
+    }
+
+    @Override
+    public FunctionActivatorDeploymentDetails getActivatorDetails(Identity identity, MemSqlFunctionDeploymentConfiguration runtimeConfig, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator)
+    {
+        return new FunctionActivatorDeploymentDetails();
     }
 
     public void deployImpl(Connection connection, MemSqlFunctionContent context) throws SQLException

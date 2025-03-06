@@ -14,22 +14,25 @@
 
 package org.finos.legend.engine.functionActivator.generation;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.functionActivator.postDeployment.PostDeploymentActionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 
 public abstract class FunctionActivatorGenerator
 {
-    public static List<ActionContent> generateActions(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
+    public static List<ActionContent> generateActions(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         List<ActionContent> actionResults = Lists.mutable.empty();
         PostDeploymentActionLoader.generationExtensions().forEach((ex) ->
         {
-            actionResults.addAll(ex.generate(activator, pureModel));
+            actionResults.addAll(ex.generate(activator, pureModel, routerExtensions));
         });
         return actionResults;
     }

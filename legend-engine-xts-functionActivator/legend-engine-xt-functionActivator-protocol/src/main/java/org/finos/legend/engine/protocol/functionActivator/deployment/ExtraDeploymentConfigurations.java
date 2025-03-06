@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.hostedService.deployment;
+package org.finos.legend.engine.protocol.functionActivator.deployment;
 
-import org.finos.legend.engine.protocol.functionActivator.deployment.ExtraDeploymentConfigurations;
-import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public class ExtraDeploymentConfigurations
 {
-    public HostedServiceDestination destination;
-    public String domain;
-    public int port;
-    public String path;
-    public String serviceDetails;
-    public ExtraDeploymentConfigurations extraConfigurations;
+    public ExtraDeploymentConfigurations()
+    {
+        //For Jackson
+    }
 }

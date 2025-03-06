@@ -27,7 +27,9 @@ import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunc
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentDetails;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
 import org.slf4j.Logger;
@@ -38,7 +40,7 @@ import java.util.List;
 /**
  * These deployment functions assume that the artifact has already been validated.
  */
-public class BigQueryFunctionDeploymentManager implements DeploymentManager<BigQueryFunctionArtifact, BigQueryFunctionDeploymentResult, BigQueryFunctionDeploymentConfiguration>
+public class BigQueryFunctionDeploymentManager implements DeploymentManager<BigQueryFunctionArtifact, BigQueryFunctionDeploymentResult, BigQueryFunctionDeploymentConfiguration, FunctionActivatorDeploymentDetails, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryFunctionDeploymentManager.class);
 
@@ -63,6 +65,12 @@ public class BigQueryFunctionDeploymentManager implements DeploymentManager<BigQ
     public BigQueryFunctionDeploymentResult deploy(Identity identity, BigQueryFunctionArtifact artifact, List<BigQueryFunctionDeploymentConfiguration> availableRuntimeConfigurations)
     {
         return new BigQueryFunctionDeploymentResult("", false);
+    }
+
+    @Override
+    public FunctionActivatorDeploymentDetails getActivatorDetails(Identity identity, BigQueryFunctionDeploymentConfiguration runtimeConfig, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator)
+    {
+        return new FunctionActivatorDeploymentDetails();
     }
 
     public BigQueryFunctionDeploymentResult deployImpl(BigQueryFunctionArtifact artifact, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration deploymentConfiguration)
