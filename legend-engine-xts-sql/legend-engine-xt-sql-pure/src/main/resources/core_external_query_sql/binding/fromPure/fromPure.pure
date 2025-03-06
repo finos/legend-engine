@@ -3601,7 +3601,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
   protocol() {
     ^$this(relation = false).lambda()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($this.extensions)
-  }:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+  }:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 
   source(type:String[1], arguments:SQLSourceArgument[*]){
       let source = $this.sources->filter(s | $s.matches($type, $arguments))->first();

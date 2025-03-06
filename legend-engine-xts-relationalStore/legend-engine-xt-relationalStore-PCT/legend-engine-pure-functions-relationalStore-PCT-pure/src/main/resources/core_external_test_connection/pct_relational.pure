@@ -115,16 +115,19 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               // processResult
               if ($resultType->toOne()->instanceOf(PrimitiveType),
                 | let preResultFinal = $res.result.rows->at(0).values->at(0);
+                println($preResultFinal);
                   let resultFinal = 
                     if ([
+                          pair(|$preResultFinal == TDSNull, |[]),
                           pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
                           pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
                           pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
-                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
+                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat()),
+                          pair(|$resultType->toOne()->subTypeOf(Number), |$preResultFinal->cast(@Number))
                         ],
                       | $preResultFinal->toOne()
                     );
-                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
+                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|

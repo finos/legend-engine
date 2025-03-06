@@ -163,7 +163,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
   assertLambdaJSONEquals($expected, $actual);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]): Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
 {
   assertLambdaEquals($expected, $actual);
   assertLambdaJSONEquals($expected, $actual);
@@ -174,7 +174,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
   assertEquals($expected->functionCode(), $actual->functionCode());
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]): Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
 {
   assertEquals($expected->functionCode(), $actual->functionCode());
 }
@@ -185,7 +185,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
   assertEquals($expected->functionJSON(), $actual->functionJSON());
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]): Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
 {
   assertEquals($expected->functionJSON(), $actual->functionJSON());
 }
@@ -195,22 +195,22 @@ function meta::external::query::sql::transformation::queryToPure::tests::functio
   $func->transformLambda()->meta::json::toJSON(100);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::functionJSON(func:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]): String[1]
+function meta::external::query::sql::transformation::queryToPure::tests::functionJSON(func:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): String[1]
 {
   $func->meta::json::toJSON(100);
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::functionCode(func:FunctionDefinition<Any>[1]): String[1]
 {
-  $func->printFunctionDefinition('')
+  $func->printFunctionDefinition(^GContext(space=''))
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::functionCode(func:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]): String[1]
+function meta::external::query::sql::transformation::queryToPure::tests::functionCode(func:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): String[1]
 {
   $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(sqlExtensions());
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::transformLambda(func:FunctionDefinition<Any>[1]): meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function meta::external::query::sql::transformation::queryToPure::tests::transformLambda(func:FunctionDefinition<Any>[1]): meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
   $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(sqlExtensions());
 }
