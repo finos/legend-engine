@@ -287,7 +287,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithNoTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^meta::external::store::relational::runtime::DatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expectedH2 = 'Sequence\n'+
                   '(\n'+
@@ -316,7 +316,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2, timeZone='US/Arizona'))), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^meta::external::store::relational::runtime::DatabaseConnection(type=DatabaseType.H2, timeZone='US/Arizona'))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expectedH2 = 'Sequence\n'+
                   '(\n'+
