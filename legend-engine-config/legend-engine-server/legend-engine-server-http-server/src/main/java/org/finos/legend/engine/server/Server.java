@@ -68,6 +68,7 @@ import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensi
 import org.finos.legend.engine.language.dataquality.api.DataQualityExecute;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
 import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
+import org.finos.legend.engine.language.pure.compiler.api.Autofix;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -360,6 +361,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
         environment.jersey().register(new Compile(modelManager));
+        environment.jersey().register(new Autofix(modelManager));
 
         // Generation and Import
         MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
