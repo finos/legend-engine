@@ -481,7 +481,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
                                                            testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "convertToDate" from dataTable as "root"',$result->sqlRemoveFormatting());
+   assertEquals('select cast( parseDateTime( Substring ("root".stringDateFormat, 1, 10),\'yyyy-MM-dd\') as date) as "convertToDate" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%2016-06-23, %2016-02-23], $result.values->at(0).rows.values);
 }
 
@@ -613,7 +613,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL], ['date']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-    assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
+    assertEquals('select cast( parseDateTime( Substring ("root".stringDateFormat, 1, 10),\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::base64::testBase64H2():Boolean[1]
