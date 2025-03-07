@@ -297,6 +297,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
+    pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
 
     // String
     // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the 
@@ -475,6 +479,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCeil(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let ceilDecimal = simpleFunctionProcessor('ceil').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForFloor(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilDecimal = simpleFunctionProcessor('floor').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
   $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
 }
 

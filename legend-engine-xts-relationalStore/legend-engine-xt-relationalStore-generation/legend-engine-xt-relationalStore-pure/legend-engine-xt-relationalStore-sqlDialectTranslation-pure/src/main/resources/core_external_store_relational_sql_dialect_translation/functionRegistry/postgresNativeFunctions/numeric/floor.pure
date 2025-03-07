@@ -1,0 +1,64 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Floor extends PostgresNativeSqlFunction
+[
+  $this.name == 'floor'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::floor(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Floor
+  (
+    name = 'floor',
+    documentation = 'Returns the rounded up value of the given number to the next integer.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = DoubleSqlType,
+        returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractNumericSqlType,
+        returnType = AbstractNumericSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('floor', literal(17)),
+        17.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('floor', literal(17.4)),
+        17.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('floor', literal(42.2)),
+        42.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('floor', literal(-42.2)),
+        -43.0
+      )
+    ]
+  )
+}

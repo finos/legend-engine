@@ -253,6 +253,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
     pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Floor, simpleFunctionProcessor('floor')),
 
     // String
     pair(Lpad, argTransformFunctionProcessor('lpad', {n:Node[*]| if($n->size() == 2, |$n->concatenate(^StringLiteral(value = ' ')), |$n)})),

@@ -249,6 +249,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
     pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    pair(Sum, simpleFunctionProcessor('sum')),
+    pair(Floor, simpleFunctionProcessor('floor')),
+
 
     // String
     pair(Lpad, simpleFunctionProcessor('lpad')),
