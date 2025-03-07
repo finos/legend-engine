@@ -179,6 +179,18 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testNotC
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 }
 
+//TODO: Move to another location - this is testing that legend-h2 is
+//actually being used rather than vanilla h2
+function <<test.Test>> meta::relational::tests::projection::filter::in::H2Test():Boolean[1]
+{
+    let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2);
+  let result = meta::relational::metamodel::execute::executeInDb('SELECT case when false = \'false\' then \'Ok\' else \'Error\' END as BooleanVarCharComparison', $conn);
+
+   assertSize($result.rows.values, 1);
+   assertSameElements(['Ok'], $result.rows.values->at(0));
+   //assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where ("root".FIRSTNAME not in (\'John\', \'Peter\') OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::projection::filter::in::testInWithDynaFunction():Boolean[1]
 {
    let result = execute(|Interaction.all()->filter(i| $i.active->in(['false', 'something']) && $i.id == 4)->project([i | $i.id, i | $i.active], ['id', 'active']),
