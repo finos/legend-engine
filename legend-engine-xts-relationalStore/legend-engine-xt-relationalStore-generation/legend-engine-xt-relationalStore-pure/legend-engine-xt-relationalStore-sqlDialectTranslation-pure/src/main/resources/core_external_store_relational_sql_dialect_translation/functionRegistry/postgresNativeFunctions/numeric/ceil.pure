@@ -18,17 +18,18 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Exp extends PostgresNativeSqlFunction
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceil extends PostgresNativeSqlFunction
 [
-  $this.name == 'exp'
+  $this.name == 'ceil'
 ]
 {}
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::exp(): SqlFunction[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::ceil(): SqlFunction[1]
 {
-  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numericFunctions::Exp
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceil
   (
-    name = 'exp',
+    name = 'ceil',
+    documentation = 'Returns the rounded up value of the given number to the next integer.',
     variations = [
       ^SqlFunctionVariation
       (
@@ -43,12 +44,20 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('exp', literal(1)),
-        2.71828183
+        simpleFunctionCall('ceil', literal(17)),
+        17.0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('exp', literal(2.0)),
-        7.3890561
+        simpleFunctionCall('ceil', literal(17.4)),
+        18.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ceil', literal(42.2)),
+        43.0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('ceil', literal(-42.2)),
+        -42.0
       )
     ]
   )

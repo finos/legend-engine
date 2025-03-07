@@ -1,0 +1,74 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Rpad extends PostgresNativeSqlFunction
+[
+  $this.name == 'rpad'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rpad(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Rpad
+  (
+    name = 'rpad',
+    documentation = 'Right-pads a string with another string, to a certain length.',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractNumericSqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractNumericSqlType, AbstractStringSqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with another string (3rd arg), till the specified length (2nd arg).'
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(5)]),
+        'abcd '
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(5), literal('e')]),
+        'abcde'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(5), literal('ef')]),
+        'abcde'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(6), literal('ef')]),
+        'abcdef'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(7), literal('ef')]),
+        'abcdefe'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('rpad', [literal('abcd'), literal(4), literal('e')]),
+        'abcd'
+      )
+    ]
+  )
+}
