@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.api.IngestModeOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.optimizers.IngestModeOptimizer;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
