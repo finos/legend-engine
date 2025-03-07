@@ -14,31 +14,20 @@
  * //  limitations under the License.
  */
 
-package org.finos.legend.pure.code.core.relational;
+package org.finos.legend.pure.code.core;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestCollection;
+import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
-public class RelationalFCTReport extends FCTReport
+
+public class M2MFCTReport extends  FCTReport
 {
-    private final String databaseType;
-
-       public RelationalFCTReport(String databaseType)
-    {
-        this.databaseType = databaseType;
-    }
-
-    public String getDatabaseType()
-    {
-        return databaseType;
-    }
-
 
     protected static MutableList<ExclusionSpecification> getExpectedFailures()
     {
@@ -46,15 +35,16 @@ public class RelationalFCTReport extends FCTReport
     }
 
     protected static ImmutableList<FCTTestCollection> testCollection()
-    {  CompiledExecutionSupport support = getClassLoaderExecutionSupport();
+    {  CompiledExecutionSupport support = PureTestHelperFramework.getClassLoaderExecutionSupport();
         return Lists.immutable.with(
-                Test_Pure_Relational_FCT_Collection.buildCollection(support));
+                Test_Pure_FCT_M2M_Collection.buildCollection(support));
     }
 
     @Override
     public ImmutableList<FCTTestCollection> getTestCollection()
     {
         return testCollection();
+
     }
 
     @Override
@@ -63,9 +53,11 @@ public class RelationalFCTReport extends FCTReport
         return "Execution";
     }
 
+
+
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return getExpectedFailures();
+        return Lists.mutable.empty();
     }
 }

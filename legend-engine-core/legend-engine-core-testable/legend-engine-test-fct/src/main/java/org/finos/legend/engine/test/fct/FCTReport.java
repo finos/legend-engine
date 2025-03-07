@@ -26,8 +26,6 @@ public abstract class FCTReport
 
     public abstract String getReportID();
 
-    public abstract String getStoreID();
-
     public abstract MutableList<ExclusionSpecification> expectedFailures();
 
     public FCTReport()

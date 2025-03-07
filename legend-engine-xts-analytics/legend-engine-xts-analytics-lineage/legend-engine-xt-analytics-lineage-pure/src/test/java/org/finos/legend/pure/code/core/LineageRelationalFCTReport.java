@@ -24,13 +24,14 @@ import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecificat
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class LineageFCTReport extends FCTReport
+public class LineageRelationalFCTReport extends FCTReport
 {
 
 
     protected static ImmutableList<FCTTestCollection> testCollection(CompiledExecutionSupport support)
     {      return Lists.immutable.with(
-                Test_Pure_Relational_FCT_Collection.buildCollection(support));
+                Test_Pure_Relational_FCT_Collection.buildCollection(support)
+    );
     }
 
 
@@ -43,13 +44,7 @@ public class LineageFCTReport extends FCTReport
     @Override
     public String getReportID()
     {
-        return "LineageFCT";
-    }
-
-    @Override
-    public String getStoreID()
-    {
-        return "relationalStore";
+        return "Lineage";
     }
 
     @Override
