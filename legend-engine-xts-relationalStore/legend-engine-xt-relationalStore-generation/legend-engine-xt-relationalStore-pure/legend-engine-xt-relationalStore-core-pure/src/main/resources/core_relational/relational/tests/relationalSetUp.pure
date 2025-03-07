@@ -761,7 +761,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                     time : [db]interactionTable.time,
                     source : [db]@Interaction_Source,
                     target : [db]@Interaction_Target,
-                    active : case(equal([db]interactionTable.active,'Y'), sqlTrue(), sqlFalse()),
+                    active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
                     longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
                  }
 
@@ -1035,7 +1035,7 @@ Mapping meta::relational::tests::TestMappingWithViewJoins
      ~mainTable [db] firmTable
      firstName : [db]@personViewWithFirmTable|PersonViewWithDistinct.firstName,
      lastName : [db]@personViewWithFirmTable|PersonViewWithDistinct.lastName,
-     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()),'false','true')
+     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()), sqlFalse(),sqlTrue())
    }
 )
 
