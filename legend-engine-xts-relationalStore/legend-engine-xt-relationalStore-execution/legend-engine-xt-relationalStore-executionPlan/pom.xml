@@ -27,15 +27,6 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Execution Plan</name>
 
-    <profiles>
-       <!-- To test some of the legacy H2 classes-->
-        <profile>
-            <id>h2-1.4.200</id>
-            <properties>
-                <h2.version>1.4.200</h2.version>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <!-- Pure -->
