@@ -25,16 +25,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_valueSpecification_raw_Lambda;
+import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_m3_function_LambdaFunction;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_pure_protocol_protocol;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -49,10 +45,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
-import static org.finos.legend.pure.generated.core_pure_tds_relation_tdsToRelation.Root_meta_pure_tds_toRelation_transform_LambdaFunction_1__Extension_MANY__Lambda_1_;
+import static org.finos.legend.pure.generated.core_pure_tds_relation_tdsToRelation.Root_meta_pure_tds_toRelation_transform_LambdaFunction_1__Extension_MANY__LambdaFunction_1_;
 
 @Api(tags = "Pure - Autofix")
 @Path("pure/v1/compilation/autofix")
@@ -79,12 +74,12 @@ public class Autofix
         Identity identity = Identity.makeIdentity(profiles);
         PureModelContext model = lambdaTdsToRelationInput.model;
         PureModel pureModel = modelManager.loadModel(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, identity, null);
-        Lambda lambda = lambdaTdsToRelationInput.lambda;
+        org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction lambda = lambdaTdsToRelationInput.lambda;
         LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(lambda.body, lambda.parameters, pureModel.getContext());
         RichIterable<? extends
                 Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        Root_meta_protocols_pure_vX_X_X_metamodel_valueSpecification_raw_Lambda transformedRawLambda =
-                Root_meta_pure_tds_toRelation_transform_LambdaFunction_1__Extension_MANY__Lambda_1_(
+        Root_meta_protocols_pure_vX_X_X_metamodel_m3_function_LambdaFunction transformedRawLambda =
+                Root_meta_pure_tds_toRelation_transform_LambdaFunction_1__Extension_MANY__LambdaFunction_1_(
                         lambdaFunction,
                         extensions,
                         pureModel.getExecutionSupport()
@@ -92,7 +87,7 @@ public class Autofix
         String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(transformedRawLambda, pureModel.getExecutionSupport());
         try
         {
-            Lambda transformedLambda = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(json, Lambda.class);
+            org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction transformedLambda = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(json, org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction.class);
             return Response.ok(transformedLambda, MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (JsonProcessingException e)
