@@ -104,7 +104,7 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
               let relElement = $alias.relationalElement;
               let results = $relElement ->search($runtime)->concatenate($a.childrenData->cast(@JoinTreeNode)->search($runtime))
               ->concatenate($a->match([
-                                      j: JoinTreeNode[1]|  $j.join.target->search($runtime)->concatenate($j.join.aliases.first->search($runtime))->concatenate($j.join.aliases.second->search($runtime));,
+                                      j: JoinTreeNode[1]|  $j.join.operation->search($runtime);,
                                       r: RootJoinTreeNode[1]| [];
                                      ])
                            );
