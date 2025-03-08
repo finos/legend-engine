@@ -722,7 +722,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 settlementDateTime : [db]orderTable.settlementDateTime,
                 pnl : [db]@OrderPnlView_Order | orderPnlView.pnl,
                 pnlContact : [db]@OrderPnlView_Order > [db]@OrderPnlView_Person,
-                zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),sqlTrue(),sqlFalse())
+                zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),'true','false')
              }
 
    OrderPnl : Relational
@@ -1035,7 +1035,7 @@ Mapping meta::relational::tests::TestMappingWithViewJoins
      ~mainTable [db] firmTable
      firstName : [db]@personViewWithFirmTable|PersonViewWithDistinct.firstName,
      lastName : [db]@personViewWithFirmTable|PersonViewWithDistinct.lastName,
-     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()), sqlFalse(),sqlTrue())
+     activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()), 'false','true')
    }
 )
 
