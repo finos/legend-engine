@@ -26,7 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.Collections;
 
@@ -67,7 +67,7 @@ public class XStoreAssociationMappingParseTreeWalker
         return xStorePropertyMapping;
     }
 
-    private Lambda visitLambda(XStoreAssociationMappingParserGrammar.CombinedExpressionContext ctx)
+    private LambdaFunction visitLambda(XStoreAssociationMappingParserGrammar.CombinedExpressionContext ctx)
     {
         // Build source info for Lambda
         int startLine = ctx.start.getLine();
@@ -79,7 +79,7 @@ public class XStoreAssociationMappingParseTreeWalker
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = Collections.singletonList(valueSpecification);
         return lambda;
     }

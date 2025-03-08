@@ -38,7 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -81,7 +81,7 @@ public class HelperDomainGrammarComposer
         return PureGrammarComposerUtility.convertIdentifier(unit.name) + (unit.conversionFunction == null ? ";" : ": " + renderUnitLambda(unit.conversionFunction, transformer) + ";");
     }
 
-    public static String renderUnitLambda(Lambda conversionFunction, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderUnitLambda(LambdaFunction conversionFunction, DEPRECATED_PureGrammarComposerCore transformer)
     {
         return (conversionFunction.parameters.isEmpty() ? "" : LazyIterate.collect(conversionFunction.parameters, variable -> variable.name).makeString(","))
                 + " -> " + LazyIterate.collect(conversionFunction.body, valueSpecification -> valueSpecification.accept(transformer)).makeString(";");
@@ -129,7 +129,7 @@ public class HelperDomainGrammarComposer
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
         return renderAnnotations(qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
-                + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
+                + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"
                 + (qualifiedProperty.body.size() <= 1
                 ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
@@ -155,6 +155,11 @@ public class HelperDomainGrammarComposer
             StringBuilder builder = new StringBuilder().append(constraint.name).append('\n');
             appendTabString(builder, 1);
             builder.append("(").append('\n');
+            if (constraint.owner != null)
+            {
+                appendTabString(builder, 2);
+                builder.append("~owner: ").append(constraint.owner).append('\n');
+            }
             if (constraint.externalId != null)
             {
                 appendTabString(builder, 2);

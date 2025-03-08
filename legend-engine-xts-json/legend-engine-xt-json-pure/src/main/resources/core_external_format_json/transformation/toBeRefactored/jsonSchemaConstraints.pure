@@ -169,7 +169,7 @@ function <<access.private>> meta::external::format::json::schema::constraint::bu
                   ,
                      |'');
    
-   $valueSpec->meta::pure::metamodel::serialization::grammar::printValueSpecification(' ') + $prop;
+   $valueSpec->meta::pure::metamodel::serialization::grammar::printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space=' ')) + $prop;
 }
 
 function <<access.private>> meta::external::format::json::schema::constraint::buildSubTypeDiscriminator( fn:SimpleFunctionExpression[1],config:JSONSchemaConfigInternal[1] ) : SchemaConstraint[1]

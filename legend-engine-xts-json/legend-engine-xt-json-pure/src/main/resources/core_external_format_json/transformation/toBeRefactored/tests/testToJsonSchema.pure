@@ -2171,7 +2171,7 @@ function <<test.Test>>  meta::external::format::json::schema::generation::tests:
    assertSameElements($class.message.message,['Property meta::external::format::json::schema::tests::ClassWithUnspportedConstraint.p1 references an unsupported schema and likely did not generate correctly',
                                                'Property meta::external::format::json::schema::tests::ClassWithUnspportedConstraint.p2 references an unsupported schema and likely did not generate correctly']);
    
-   assertSameElements($fn.message.message,['Unsupported function found : ($value / 10) at meta::external::format::json::schema::tests::unsupportedFunction_Integer_1__Boolean_1_']);
+   assertSameElements($fn.message.message,['Unsupported function found : $value / 10 at meta::external::format::json::schema::tests::unsupportedFunction_Integer_1__Boolean_1_']);
    
    
   assertEquals($expectedClassSchema->meta::json::parseJSON()->toCompactJSONString(),$class.content->toOne()->meta::json::parseJSON()->toCompactJSONString());

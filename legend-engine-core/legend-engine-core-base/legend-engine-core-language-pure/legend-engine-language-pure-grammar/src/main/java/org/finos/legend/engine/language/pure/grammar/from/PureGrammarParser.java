@@ -36,8 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -94,17 +94,17 @@ public class PureGrammarParser
         return this.parse(code, this.parsers, "", 0, 0, true);
     }
 
-    public Lambda parseLambda(String code)
+    public LambdaFunction parseLambda(String code)
     {
         return this.parseLambda(code, "", 0, 0, true);
     }
 
-    public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
-    public Lambda parseLambda(String code, String sourceId, boolean returnSourceInfo)
+    public LambdaFunction parseLambda(String code, String sourceId, boolean returnSourceInfo)
     {
         return this.parseLambda(code, sourceId, 0, 0, returnSourceInfo);
     }

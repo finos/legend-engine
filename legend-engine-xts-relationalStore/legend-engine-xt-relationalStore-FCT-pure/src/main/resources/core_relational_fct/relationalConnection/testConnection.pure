@@ -86,7 +86,7 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseTy
 
 
 ###Pure
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 import meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::*;
 import meta::relational::fct::testGeneration::*;
 import meta::pure::mapping::*;
@@ -98,7 +98,7 @@ import meta::pure::testCoverage::featureMatrix::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 
 
-function  meta::relational::fct::testGeneration::buildExpectedInstance(result:String[1],expected:String[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]
+function  meta::relational::fct::testGeneration::buildExpectedInstance(result:String[1],expected:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
 { 
  let instance = if($expected == 'tds',
           |  let r =$result->meta::json::fromJSON(RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@RelationalTDSResult)->toOne()->meta::relational::fct::resultToCSV();
@@ -106,17 +106,17 @@ function  meta::relational::fct::testGeneration::buildExpectedInstance(result:St
           |  ^JSONResult(value=$result)->deactivate()->transformValueSpecification([],  [pair('result',list($result))] ->newMap(), true, false, relationalExtensions());
   );
 
-    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='expectedExecutionResult'),expression=$instance);
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='expectedExecutionResult'),expression=$instance);
 
 }
 
 
 
 
-function   meta::relational::fct::testGeneration::testReference(function:ConcreteFunctionDefinition<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression[1]
+function   meta::relational::fct::testGeneration::testReference(function:ConcreteFunctionDefinition<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
 { 
 
-    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='test'),expression=^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr(_type ='packageableElementPtr',fullPath=$function->elementToPath()));
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='test'),expression=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr(_type ='packageableElementPtr',fullPath=$function->elementToPath()));
 
 }
 

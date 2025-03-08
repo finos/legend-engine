@@ -42,7 +42,7 @@ meta::analytics::testCoverage::testGenerator(fctTest:FCTMappingTest[1]):String[1
                         let  testExp = $v->testReference();
                         let assert =  ^TestAssertion( tests= [],  expectedExecutionResult = [] ,expectedLineageResult=[] )->deactivate();
                         let assertVS = $assert->transformValueSpecification([], newMap([]->cast(@meta::pure::functions::collection::Pair<String, meta::pure::functions::collection::List<Any>>)), false, false, relationalExtensions())->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction);
-                        let assertKeys =  $assertVS.parameters->at(2)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection);
+                        let assertKeys =  $assertVS.parameters->at(2)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection);
                         let newCollection = ^$assertKeys(values =$testExp->concatenate($expectedExecutionResultExp)->concatenate($lineageAssertion));
                         let updatedParams =  $assertVS.parameters->take(2) ->concatenate($newCollection);
                         let updatedAssert =  toPure($updatedState , ^$assertVS( parameters =  $updatedParams)); 

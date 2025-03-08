@@ -1,0 +1,138 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::protocols::pure::vX_X_X::metamodel::SourceInformation
+{
+    sourceId : String[1];
+    mainLine: Integer[1];
+    mainColumn: Integer[1];
+    startLine: Integer[1];
+    startColumn: Integer[1];
+    endLine: Integer[1];
+    endColumn: Integer[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   fullPath : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType extends meta::protocols::pure::vX_X_X::metamodel::m3::type::Type, meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
+{
+}
+
+
+
+
+
+//------------------------------
+// InstanceValue: ClassInstance
+//------------------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   type : String[1];
+   value : Any[1];
+}
+
+//---------------------------
+// InstanceValue: Collection
+//---------------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
+   values : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
+}
+
+//--------------------------
+// InstanceValue: EnumValue
+//--------------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::EnumValue extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   fullPath : String[1];
+   value : String[1];
+}
+
+//---------------------
+// InstanceValue: Unit
+//---------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::UnitInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   unitType : String[1];
+   unitValue : Number[1];
+}
+
+//--------------------------
+// InstanceValue: Primitive
+//--------------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   value : Integer[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDecimal extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   value : Decimal[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CBoolean extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   value : Boolean[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CFloat extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+   value : Float[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDateTime extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictTime extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CLatestDate extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate
+{
+}
+
+//-----------------------------
+// InstanceValue: '@' Notation
+//-----------------------------
+
+Class meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+  genericType : meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1];
+}

@@ -1,0 +1,672 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 0
+          },
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "values": []
+        }
+      ],
+      "name": "f1_Integer_1__String_MANY__String_$0_1$_",
+      "package": "protocol",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 32,
+                "endLine": 2,
+                "sourceId": "",
+                "startColumn": 26,
+                "startLine": 2
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "p",
+          "sourceInformation": {
+            "endColumn": 35,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 2
+          }
+        },
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String",
+              "sourceInformation": {
+                "endColumn": 46,
+                "endLine": 2,
+                "sourceId": "",
+                "startColumn": 41,
+                "startLine": 2
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "z",
+          "sourceInformation": {
+            "endColumn": 49,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 38,
+            "startLine": 2
+          }
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String",
+          "sourceInformation": {
+            "endColumn": 58,
+            "endLine": 2,
+            "sourceId": "",
+            "startColumn": 53,
+            "startLine": 2
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0,
+        "upperBound": 1
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 5,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 0
+          },
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 9
+          },
+          "values": []
+        }
+      ],
+      "name": "f2_Relation_1__Light_MANY_",
+      "package": "protocol",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "meta::pure::metamodel::relation::Relation",
+              "sourceInformation": {
+                "endColumn": 94,
+                "endLine": 7,
+                "sourceId": "",
+                "startColumn": 26,
+                "startLine": 7
+              }
+            },
+            "typeArguments": [
+              {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "relationType",
+                  "columns": [
+                    {
+                      "genericType": {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "String",
+                          "sourceInformation": {
+                            "endColumn": 78,
+                            "endLine": 7,
+                            "sourceId": "",
+                            "startColumn": 73,
+                            "startLine": 7
+                          }
+                        },
+                        "typeArguments": [],
+                        "typeVariableValues": []
+                      },
+                      "multiplicity": {
+                        "lowerBound": 0,
+                        "upperBound": 1
+                      },
+                      "name": "col",
+                      "sourceInformation": {
+                        "endColumn": 78,
+                        "endLine": 7,
+                        "sourceId": "",
+                        "startColumn": 69,
+                        "startLine": 7
+                      }
+                    },
+                    {
+                      "genericType": {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "Integer",
+                          "sourceInformation": {
+                            "endColumn": 92,
+                            "endLine": 7,
+                            "sourceId": "",
+                            "startColumn": 86,
+                            "startLine": 7
+                          }
+                        },
+                        "typeArguments": [],
+                        "typeVariableValues": []
+                      },
+                      "multiplicity": {
+                        "lowerBound": 0,
+                        "upperBound": 1
+                      },
+                      "name": "col2",
+                      "sourceInformation": {
+                        "endColumn": 92,
+                        "endLine": 7,
+                        "sourceId": "",
+                        "startColumn": 81,
+                        "startLine": 7
+                      }
+                    }
+                  ]
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              }
+            ],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "r",
+          "sourceInformation": {
+            "endColumn": 97,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 7
+          }
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "protocol::support::Light",
+          "sourceInformation": {
+            "endColumn": 124,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 101,
+            "startLine": 7
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 10,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 7
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 0
+          },
+          "sourceInformation": {
+            "endColumn": 4,
+            "endLine": 14,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 14
+          },
+          "values": []
+        }
+      ],
+      "name": "f3_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
+      "package": "protocol",
+      "parameters": [
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 153,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 147,
+                "startLine": 12
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "x",
+          "sourceInformation": {
+            "endColumn": 156,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 144,
+            "startLine": 12
+          }
+        },
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [
+              {
+                "lowerBound": 0
+              }
+            ],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Property",
+              "sourceInformation": {
+                "endColumn": 184,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 162,
+                "startLine": 12
+              }
+            },
+            "typeArguments": [
+              {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "Nil",
+                  "sourceInformation": {
+                    "endColumn": 173,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 171,
+                    "startLine": 12
+                  }
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              },
+              {
+                "multiplicityArguments": [],
+                "rawType": {
+                  "_type": "packageableType",
+                  "fullPath": "String",
+                  "sourceInformation": {
+                    "endColumn": 181,
+                    "endLine": 12,
+                    "sourceId": "",
+                    "startColumn": 176,
+                    "startLine": 12
+                  }
+                },
+                "typeArguments": [],
+                "typeVariableValues": []
+              }
+            ],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "z",
+          "sourceInformation": {
+            "endColumn": 190,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 159,
+            "startLine": 12
+          }
+        },
+        {
+          "_type": "var",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "meta::external::catalog::precisePrimitives::Varchar",
+              "sourceInformation": {
+                "endColumn": 255,
+                "endLine": 12,
+                "sourceId": "",
+                "startColumn": 200,
+                "startLine": 12
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": [
+              {
+                "_type": "integer",
+                "sourceInformation": {
+                  "endColumn": 254,
+                  "endLine": 12,
+                  "sourceId": "",
+                  "startColumn": 252,
+                  "startLine": 12
+                },
+                "value": 200
+              }
+            ]
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "other",
+          "sourceInformation": {
+            "endColumn": 258,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 193,
+            "startLine": 12
+          }
+        }
+      ],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "String",
+          "sourceInformation": {
+            "endColumn": 267,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 262,
+            "startLine": 12
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 15,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 12
+      },
+      "stereotypes": [
+        {
+          "profile": "AProfile",
+          "profileSourceInformation": {
+            "endColumn": 19,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 12,
+            "startLine": 12
+          },
+          "sourceInformation": {
+            "endColumn": 24,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 12,
+            "startLine": 12
+          },
+          "value": "flag"
+        },
+        {
+          "profile": "protocol::support::AProfile",
+          "profileSourceInformation": {
+            "endColumn": 53,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 27,
+            "startLine": 12
+          },
+          "sourceInformation": {
+            "endColumn": 61,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 27,
+            "startLine": 12
+          },
+          "value": "newFlag"
+        }
+      ],
+      "taggedValues": [
+        {
+          "sourceInformation": {
+            "endColumn": 106,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 66,
+            "startLine": 12
+          },
+          "tag": {
+            "profile": "protocol::support::AProfile",
+            "profileSourceInformation": {
+              "endColumn": 92,
+              "endLine": 12,
+              "sourceId": "",
+              "startColumn": 66,
+              "startLine": 12
+            },
+            "sourceInformation": {
+              "endColumn": 97,
+              "endLine": 12,
+              "sourceId": "",
+              "startColumn": 94,
+              "startLine": 12
+            },
+            "value": "tag1"
+          },
+          "value": "yeah"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 128,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 109,
+            "startLine": 12
+          },
+          "tag": {
+            "profile": "AProfile",
+            "profileSourceInformation": {
+              "endColumn": 116,
+              "endLine": 12,
+              "sourceId": "",
+              "startColumn": 109,
+              "startLine": 12
+            },
+            "sourceInformation": {
+              "endColumn": 121,
+              "endLine": 12,
+              "sourceId": "",
+              "startColumn": 118,
+              "startLine": 12
+            },
+            "value": "tag2"
+          },
+          "value": "ok"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_type": "profile",
+      "name": "AProfile",
+      "package": "protocol::support",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 21,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 17
+      },
+      "stereotypes": [
+        {
+          "sourceInformation": {
+            "endColumn": 20,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 19
+          },
+          "value": "flag"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 29,
+            "endLine": 19,
+            "sourceId": "",
+            "startColumn": 23,
+            "startLine": 19
+          },
+          "value": "newFlag"
+        }
+      ],
+      "tags": [
+        {
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 10,
+            "startLine": 20
+          },
+          "value": "tag1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 20,
+            "sourceId": "",
+            "startColumn": 16,
+            "startLine": 20
+          },
+          "value": "tag2"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Light",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 25,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 23
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::f1_Integer_1__String_MANY__String_$0_1$_",
+            "protocol::f2_Relation_1__Light_MANY_",
+            "protocol::f3_Integer_1__Property_$1_MANY$__Varchar_1__String_MANY_",
+            "protocol::support::AProfile",
+            "protocol::support::Light"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 27,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

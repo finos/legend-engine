@@ -1,0 +1,62 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::vX_X_X::metamodel::executableMapping::*;
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::ExecutableMapping extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement
+{
+   tests : Test[1..*];
+   mapping : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::Test
+{
+    data : TestData[*];
+    asserts : TestAssert[1..*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::TestAssert
+{
+   expected:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
+   inputs : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
+   comparisonKey : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
+   comparisonType : ComparisonType[0..1];
+}
+
+Enum meta::protocols::pure::vX_X_X::metamodel::executableMapping::ComparisonType
+{
+   EQUALS,
+   SET_EQUALS
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::TestData
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::SetBasedStoreTestData extends TestData
+{
+   store : String[1];
+   data : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::ModelTestData extends TestData
+{
+   classTestData : ModelClassTestData[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::ModelClassTestData extends TestData
+{
+   class : String[1];
+   instances : String[*];
+}

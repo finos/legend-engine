@@ -56,7 +56,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.query.pure.cache.PureExecutionCacheKey;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
@@ -73,7 +73,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -166,12 +165,12 @@ public class Execute
         }
     }
 
-    private LambdaWithParameters planCacheLambdaWithParams(Lambda lambda, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues, Runtime runtime, String mapping, SDLC sdlcInfo) throws JsonProcessingException
+    private LambdaWithParameters planCacheLambdaWithParams(LambdaFunction lambda, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues, Runtime runtime, String mapping, SDLC sdlcInfo) throws JsonProcessingException
     {
         ParameterizedValueSpecification cachableValueSpec = new ParameterizedValueSpecification(lambda, "GENERATED");
         List<Variable> allLambdaParameters = lambdaParameters != null ? Stream.concat(lambdaParameters.stream(), cachableValueSpec.getVariables().stream()).collect(Collectors.toList()) : cachableValueSpec.getVariables();
         List<ParameterValue> allLambdaParameterValues = lambdaParameterValues != null ? Stream.concat(lambdaParameterValues.stream(), cachableValueSpec.getParameterValues().stream()).collect(Collectors.toList()) : cachableValueSpec.getParameterValues();
-        return new LambdaWithParameters(((Lambda) cachableValueSpec.getValueSpecification()).body, allLambdaParameters, allLambdaParameterValues, runtime, mapping, sdlcInfo);
+        return new LambdaWithParameters(((LambdaFunction) cachableValueSpec.getValueSpecification()).body, allLambdaParameters, allLambdaParameterValues, runtime, mapping, sdlcInfo);
     }
 
     @POST
@@ -270,7 +269,7 @@ public class Execute
     {
         String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
         PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, identity, null);
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext());
         Mapping mapping = executeInput.mapping == null ? null : pureModel.getMapping(executeInput.mapping);
         Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
         Root_meta_pure_runtime_ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
@@ -279,17 +278,17 @@ public class Execute
                 new PlanWithDebug(PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers), "");
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format)
+    public Response exec(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format)
     {
         return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, identity, user, format, Maps.mutable.empty());
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters)
+    public Response exec(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters)
     {
         return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, identity, user, format, parameters, new RequestContext(), null);
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
+    public Response exec(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         /*
             planExecutionAuthorizer is used as a feature flag.
@@ -307,7 +306,7 @@ public class Execute
     }
 
 
-    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameterToValues, RequestContext requestContext, PlanCacheKey planCacheKey)
+    public Response execLegacy(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameterToValues, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         try
         {
@@ -342,12 +341,12 @@ public class Execute
         }
     }
 
-    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters)
+    public Response execStrategic(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters)
     {
         return execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, identity, user, format, parameters, new RequestContext(), null);
     }
 
-    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
+    public Response execStrategic(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         try
         {
@@ -402,7 +401,7 @@ public class Execute
         return this.executeAsMiddleTierPlan(planExecutor, identity, user, format, start, authorizationResult.getTransformedPlan(), parameters, requestContext);
     }
 
-    private SingleExecutionPlan buildPlan(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity)
+    private SingleExecutionPlan buildPlan(Function<PureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, Identity identity)
     {
 
         PureModel pureModel = pureModelFunc.value();

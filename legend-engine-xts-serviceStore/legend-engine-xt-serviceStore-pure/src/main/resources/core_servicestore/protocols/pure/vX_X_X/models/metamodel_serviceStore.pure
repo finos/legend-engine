@@ -125,8 +125,14 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServicePtr
 ###Pure
 import meta::protocols::pure::vX_X_X::metamodel::store::service::*;
 import meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::*;
-
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::RootServiceClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
 {
@@ -162,12 +168,12 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::Service
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestParameterBuildInfo
 {
    serviceParameter : String[1];
-   transform        : Lambda[1];
+   transform        : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBodyBuildInfo
 {
-   transform        : Lambda[1];
+   transform        : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::SecuritySchemeRequirement

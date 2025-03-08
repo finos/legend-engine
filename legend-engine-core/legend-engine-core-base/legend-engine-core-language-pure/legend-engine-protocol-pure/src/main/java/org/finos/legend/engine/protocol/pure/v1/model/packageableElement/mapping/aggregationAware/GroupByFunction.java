@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class GroupByFunction
 {
-    public Lambda groupByFn;
+    public LambdaFunction groupByFn;
 }

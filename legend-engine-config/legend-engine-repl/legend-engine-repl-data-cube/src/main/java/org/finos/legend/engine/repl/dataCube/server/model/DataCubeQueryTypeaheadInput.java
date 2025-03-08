@@ -15,11 +15,11 @@
 package org.finos.legend.engine.repl.dataCube.server.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class DataCubeQueryTypeaheadInput
 {
     public String code;
-    public Lambda baseQuery;
+    public LambdaFunction baseQuery;
     public PureModelContextData model;
 }

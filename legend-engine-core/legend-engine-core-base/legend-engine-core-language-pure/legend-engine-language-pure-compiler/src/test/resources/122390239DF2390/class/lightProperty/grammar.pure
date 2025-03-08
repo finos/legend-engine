@@ -1,0 +1,4 @@
+Class protocol::LightProperty
+{
+  value: Integer[1];
+}

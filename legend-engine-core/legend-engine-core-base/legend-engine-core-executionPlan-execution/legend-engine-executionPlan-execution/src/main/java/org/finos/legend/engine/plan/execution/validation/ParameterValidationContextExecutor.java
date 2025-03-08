@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.validation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.EnumValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContextVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ProtocolObjectValidationContext;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 
 import java.util.List;

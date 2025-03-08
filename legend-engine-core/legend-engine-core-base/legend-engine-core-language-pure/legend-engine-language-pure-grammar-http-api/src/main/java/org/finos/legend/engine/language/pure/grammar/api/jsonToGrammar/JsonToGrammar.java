@@ -23,8 +23,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -134,7 +134,7 @@ public class JsonToGrammar extends GrammarAPI
     @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response lambda(Lambda lambda,
+    public Response lambda(LambdaFunction lambda,
                            @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
                            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
@@ -147,7 +147,7 @@ public class JsonToGrammar extends GrammarAPI
     @ApiOperation(value = "Generates Pure language text from Pure protocol Value Specification fragment")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response lambdaBatch(Map<String, Lambda> lambdas,
+    public Response lambdaBatch(Map<String, LambdaFunction> lambdas,
                                 @QueryParam("renderStyle") @DefaultValue("PRETTY") RenderStyle renderStyle,
                                 @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {

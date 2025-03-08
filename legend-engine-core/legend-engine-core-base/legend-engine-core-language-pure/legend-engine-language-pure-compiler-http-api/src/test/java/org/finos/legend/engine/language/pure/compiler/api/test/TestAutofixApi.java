@@ -21,8 +21,8 @@ import org.finos.legend.engine.language.pure.compiler.api.LambdaTdsToRelationInp
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -42,12 +42,12 @@ public class TestAutofixApi
                 "}\n";
         PureModelContextText text = new PureModelContextText();
         text.code = model;
-        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project([x|$x.name],['Name'])", "", 0, 0, false);
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project([x|$x.name],['Name'])", "", 0, 0, false);
         LambdaTdsToRelationInput lambdaTdsToRelationInput = new LambdaTdsToRelationInput();
         lambdaTdsToRelationInput.model = text;
         lambdaTdsToRelationInput.lambda = lambda;
         String stringResult = objectMapper.writeValueAsString(autofixApi.transformTdsToRelationLambda(lambdaTdsToRelationInput, null).getEntity());
-        Lambda actualLambda = objectMapper.readValue(stringResult, Lambda.class);
+        LambdaFunction actualLambda = objectMapper.readValue(stringResult, LambdaFunction.class);
         String actualLambdaString = actualLambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.STANDARD).build());
         String expectedLambdaString = "|model::Person.all()->project(~[Name:x: model::Person[1]|$x.name])";
         Assert.assertEquals(expectedLambdaString, actualLambdaString);

@@ -52,9 +52,9 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Firm\n' +
     '{\n' +
-    '  legalName : String[1];\n' +
-    '  employees : meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
-    '  incType : meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
+    '  legalName: String[1];\n' +
+    '  employees: meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
+    '  incType: meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
     '}\n' +
     '\n' +
     'Enum meta::external::query::graphQL::metamodel::sql::IncType\n' +
@@ -65,14 +65,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  firstName : String[0..1];\n' +
-    '  lastName : String[1];\n' +
-    '  age : Integer[1];\n' +
+    '  firstName: String[0..1];\n' +
+    '  lastName: String[1];\n' +
+    '  age: Integer[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
     '{\n' +
-    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  firmByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}',
     $pureTypes);
 }
@@ -130,9 +130,9 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Firm\n' +
     '{\n' +
-    '  legalName : String[1];\n' +
-    '  employees : meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
-    '  incType : meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
+    '  legalName: String[1];\n' +
+    '  employees: meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
+    '  incType: meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
     '}\n' +
     '\n' +
     'Enum meta::external::query::graphQL::metamodel::sql::IncType\n' +
@@ -143,19 +143,19 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Mutation\n' +
     '{\n' +
-    '  upsertFirm(firm: meta::external::query::graphQL::metamodel::sql::Firm[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  upsertFirm(firm: meta::external::query::graphQL::metamodel::sql::Firm[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  firstName : String[0..1];\n' +
-    '  lastName : String[1];\n' +
-    '  age : Integer[1];\n' +
+    '  firstName: String[0..1];\n' +
+    '  lastName: String[1];\n' +
+    '  age: Integer[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
     '{\n' +
-    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '  firmByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
     '}',
     $pureTypes);
 }
@@ -190,14 +190,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::ClassWithPrimitiveTypes\n' +
     '{\n' +
-    '  string : String[1];\n' +
-    '  integer : Integer[1];\n' +
-    '  float : Float[1];\n' +
-    '  boolean : Boolean[1];\n' +
-    '  date : Date[1];\n' +
-    '  datetime : DateTime[1];\n' +
-    '  decimal : Decimal[1];\n' +
-    '  strictDate : StrictDate[1];\n' +
+    '  string: String[1];\n' +
+    '  integer: Integer[1];\n' +
+    '  float: Float[1];\n' +
+    '  boolean: Boolean[1];\n' +
+    '  date: Date[1];\n' +
+    '  datetime: DateTime[1];\n' +
+    '  decimal: Decimal[1];\n' +
+    '  strictDate: StrictDate[1];\n' +
     '}',
     $pureTypes);
 }
@@ -235,14 +235,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::ClassWithPrimitiveTypes\n' +
     '{\n' +
-    '  string : String[1];\n' +
-    '  integer : Integer[1];\n' +
-    '  float : Float[1];\n' +
-    '  boolean : Boolean[1];\n' +
-    '  date : Date[1];\n' +
-    '  datetime : DateTime[1];\n' +
-    '  decimal : Decimal[1];\n' +
-    '  strictDate : StrictDate[1];\n' +
+    '  string: String[1];\n' +
+    '  integer: Integer[1];\n' +
+    '  float: Float[1];\n' +
+    '  boolean: Boolean[1];\n' +
+    '  date: Date[1];\n' +
+    '  datetime: DateTime[1];\n' +
+    '  decimal: Decimal[1];\n' +
+    '  strictDate: StrictDate[1];\n' +
     '}',
     $pureTypes);
 }
@@ -264,7 +264,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class <<meta::pure::profiles::temporal.bitemporal>> meta::external::query::graphQL::metamodel::sql::BitemporalClass\n' +
     '{\n' +
-    '  string : String[1];\n' +
+    '  string: String[1];\n' +
     '}',
     $pureTypes);
 }
@@ -304,15 +304,15 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  title : String[1];\n' +
-    '  startDate : StrictDate[1];\n' +
+    '  title: String[1];\n' +
+    '  startDate: StrictDate[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  firstName : String[0..1];\n' +
-    '  lastName : String[1];\n' +
-    '  age : Integer[1];\n' +
+    '  firstName: String[0..1];\n' +
+    '  lastName: String[1];\n' +
+    '  age: Integer[1];\n' +
     '}',
     $pureTypes);
 }
@@ -357,21 +357,21 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  title : String[1];\n' +
-    '  startDate : StrictDate[1];\n' +
+    '  title: String[1];\n' +
+    '  startDate: StrictDate[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  firstName : String[0..1];\n' +
-    '  lastName : String[1];\n' +
-    '  age : Integer[1];\n' +
+    '  firstName: String[0..1];\n' +
+    '  lastName: String[1];\n' +
+    '  age: Integer[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Team\n' +
     '{\n' +
-    '  name : String[1];\n' +
-    '  members : meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
+    '  name: String[1];\n' +
+    '  members: meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
     '}',
     $pureTypes);
 }
@@ -429,20 +429,20 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  title : String[1];\n' +
-    '  startDate : StrictDate[1];\n' +
+    '  title: String[1];\n' +
+    '  startDate: StrictDate[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::GSEmployee extends meta::external::query::graphQL::metamodel::sql::Employee\n' +
     '{\n' +
-    '  division : String[1];\n' +
+    '  division: String[1];\n' +
     '}\n' +
     '\n' +
     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
     '{\n' +
-    '  firstName : String[0..1];\n' +
-    '  lastName : String[1];\n' +
-    '  age : Integer[1];\n' +
+    '  firstName: String[0..1];\n' +
+    '  lastName: String[1];\n' +
+    '  age: Integer[1];\n' +
     '}',
     $pureTypes);
 }
@@ -522,33 +522,33 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assertEquals(   
     'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
      '{\n' +
-     '  title : String[1];\n' +
-     '  startDate : StrictDate[1];\n' +
+     '  title: String[1];\n' +
+     '  startDate: StrictDate[1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::MutationHierarchy\n' +
      '{\n' +
-     '  upsertTeam(team: meta::external::query::graphQL::metamodel::sql::Team[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
-     '  upsertEmployee(employee: meta::external::query::graphQL::metamodel::sql::Employee[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '  upsertTeam(team: meta::external::query::graphQL::metamodel::sql::Team[1]) {}: meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  upsertEmployee(employee: meta::external::query::graphQL::metamodel::sql::Employee[1]) {}: meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
      '{\n' +
-     '  firstName : String[0..1];\n' +
-     '  lastName : String[1];\n' +
-     '  age : Integer[1];\n' +
+     '  firstName: String[0..1];\n' +
+     '  lastName: String[1];\n' +
+     '  age: Integer[1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::QueryHierarchy\n' +
      '{\n' +
-     '  teamByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
-     '  employeeByFirstName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '  teamByName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  employeeByFirstName(n: String[1]) {}: meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
      '}\n' +
      '\n' +
      'Class meta::external::query::graphQL::metamodel::sql::Team\n' +
      '{\n' +
-     '  name : String[1];\n' +
-     '  members : meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
+     '  name: String[1];\n' +
+     '  members: meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
      '}',
     $pureTypes);
 }

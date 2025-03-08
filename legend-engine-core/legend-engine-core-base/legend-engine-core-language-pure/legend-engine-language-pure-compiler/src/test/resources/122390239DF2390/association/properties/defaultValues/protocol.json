@@ -1,0 +1,255 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "association",
+      "name": "AnAssociation4",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassA",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "a",
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "defaultValue": {
+            "sourceInformation": {
+              "endColumn": 94,
+              "endLine": 5,
+              "sourceId": "",
+              "startColumn": 51,
+              "startLine": 5
+            },
+            "value": {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 2,
+                "upperBound": 2
+              },
+              "sourceInformation": {
+                "endColumn": 94,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 51,
+                "startLine": 5
+              },
+              "values": [
+                {
+                  "_type": "func",
+                  "function": "new",
+                  "parameters": [
+                    {
+                      "_type": "genericTypeInstance",
+                      "genericType": {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "meta::pure::metamodel::type::Class"
+                        },
+                        "typeArguments": [
+                          {
+                            "multiplicityArguments": [],
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "AssociationClassB"
+                            },
+                            "typeArguments": [],
+                            "typeVariableValues": []
+                          }
+                        ],
+                        "typeVariableValues": []
+                      }
+                    },
+                    {
+                      "_type": "string",
+                      "value": ""
+                    },
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 0,
+                        "upperBound": 0
+                      },
+                      "values": []
+                    }
+                  ]
+                },
+                {
+                  "_type": "func",
+                  "function": "new",
+                  "parameters": [
+                    {
+                      "_type": "genericTypeInstance",
+                      "genericType": {
+                        "multiplicityArguments": [],
+                        "rawType": {
+                          "_type": "packageableType",
+                          "fullPath": "meta::pure::metamodel::type::Class"
+                        },
+                        "typeArguments": [
+                          {
+                            "multiplicityArguments": [],
+                            "rawType": {
+                              "_type": "packageableType",
+                              "fullPath": "AssociationClassB"
+                            },
+                            "typeArguments": [],
+                            "typeVariableValues": []
+                          }
+                        ],
+                        "typeVariableValues": []
+                      }
+                    },
+                    {
+                      "_type": "string",
+                      "value": ""
+                    },
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 0,
+                        "upperBound": 0
+                      },
+                      "values": []
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "protocol::support::AssociationClassB",
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 6,
+                "startLine": 5
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "b",
+          "sourceInformation": {
+            "endColumn": 95,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassA",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 10,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 8
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "AssociationClassB",
+      "originalMilestonedProperties": [],
+      "package": "protocol::support",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 12
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::AnAssociation4",
+            "protocol::support::AssociationClassA",
+            "protocol::support::AssociationClassB"
+          ],
+          "imports": [
+            "protocol::support"
+          ],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 16,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

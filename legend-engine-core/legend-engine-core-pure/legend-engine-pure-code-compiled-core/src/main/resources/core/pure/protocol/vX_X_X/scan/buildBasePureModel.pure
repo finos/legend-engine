@@ -72,7 +72,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
             $fe.genericType.rawType->concatenate($params)->concatenate($func);
          },
          i:InstanceValue[1]         | $i.values->map(v | $v->scan($visited)),
-         k:meta::pure::functions::lang::KeyExpression[1]         | $k.expression->scan($visited);,
+         k:meta::pure::metamodel::function::KeyExpression[1]         | $k.expression->scan($visited);,
          lf :LambdaFunction<Any>[1] | $lf.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($visited))->concatenate($lf.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters.genericType.rawType)->removeDuplicates(),
          v:VariableExpression[1]    | [],
          {cfd:ConcreteFunctionDefinition<Any>[1]|
@@ -347,6 +347,19 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
    );
 }
 
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromAllElementsInPackage(ps:Package[*], baseVersion:String[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
+{
+   let found = $ps->map(p|$p->getAllPackageElements(true))->filter(e|!$e->instanceOf(Package))->removeDuplicates();
+   let protocol = ^Protocol(name='pure', version='vX_X_X');
+   ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+   (
+      _type = 'data',
+      serializer = $protocol,
+      origin = buildPureModelContextPointer($ps->map(p|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.PACKAGE, path=$p->elementToPath())), $baseVersion, $protocol),
+      elements = $found->map(x|$x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement($extensions))
+   );
+}
+
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromStore(store:meta::pure::store::Store[1], baseVersion:String[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
 {
    let stores = $store->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::transformStore($extensions));
@@ -371,6 +384,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
 //----------------------
 // Access using Strings
 //----------------------
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromAllElementsInPackageStr(packageStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let gm = $packageStr->pathToElement()->cast(@Package);
+   buildBasePureModelFromAllElementsInPackage($gm, '-1', $extensions)->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
+}
+
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMappingStr(mappingStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let gm = $mappingStr->pathToElement()->cast(@Mapping);

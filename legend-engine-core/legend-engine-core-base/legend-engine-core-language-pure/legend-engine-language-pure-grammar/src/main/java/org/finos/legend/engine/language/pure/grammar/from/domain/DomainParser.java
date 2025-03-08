@@ -31,9 +31,9 @@ import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,12 +79,12 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public Lambda parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         return parseLambda(code, new PureGrammarParserContext(PureGrammarParserExtensions.fromAvailableExtensions()), sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
-    public Lambda parseLambda(String code, PureGrammarParserContext parserContext, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    public LambdaFunction parseLambda(String code, PureGrammarParserContext parserContext, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         ParseTreeWalkerSourceInformation lambdaWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset).withReturnSourceInfo(returnSourceInfo).build();
         String prefix = "function go():Any[*]{";
@@ -94,7 +94,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
                 .withColumnOffset(lambdaWalkerSourceInformation.getColumnOffset() - prefix.length()).build();
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(fullCode, null, walkerSourceInformation, true);
         DomainParseTreeWalker walker = new DomainParseTreeWalker(walkerSourceInformation, parserContext, null);
-        return (Lambda) walker.concreteFunctionDefinition(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition());
+        return (LambdaFunction) walker.concreteFunctionDefinition(((DomainParserGrammar.DefinitionContext) sectionParserInfo.rootContext).elementDefinition(0).functionDefinition());
     }
 
     public ValueSpecification parseCombinedExpression(String code, ParseTreeWalkerSourceInformation combinedExpressionWalkerSourceInformation, PureGrammarParserContext parserContext)

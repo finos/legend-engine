@@ -31,7 +31,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
@@ -46,7 +46,6 @@ import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -102,7 +101,7 @@ public class SqlExecuteTest
                 .request()
                 .post(entity).readEntity(String.class);
 
-        Lambda actual = new ObjectMapper().readValue(lambda, Lambda.class);
+        LambdaFunction actual = new ObjectMapper().readValue(lambda, LambdaFunction.class);
         String actualGrammar = actual.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
 
         Assert.assertEquals(expected, actualGrammar);
@@ -119,7 +118,7 @@ public class SqlExecuteTest
     @Test
     public void testLambda() throws JsonProcessingException
     {
-        String expectedCode = "{names: String[*],_1: String[1]|demo::employee.all()->filter(\n" +
+        String expectedCode = "{names: String[*], _1: String[1]|demo::employee.all()->filter(\n" +
                 "  p: demo::employee[1]|$names->isEmpty() ||\n" +
                 "    $p.name->in(\n" +
                 "    $names\n" +

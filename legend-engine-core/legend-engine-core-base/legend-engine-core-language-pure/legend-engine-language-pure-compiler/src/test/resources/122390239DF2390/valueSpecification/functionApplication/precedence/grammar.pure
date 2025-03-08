@@ -1,0 +1,26 @@
+function protocol::precedenceArithmetic(): Any[*]
+{
+  2 * 4 + 2;
+  2 + 2 * 4;
+  2 + 2 / 4;
+  2 / 4 - 4;
+}
+
+function protocol::precedenceBooleanWithEqual(): Any[*]
+{
+  true == false && true == false;
+  true == false && true == false || false == false;
+  true == false || true == false && false == false;
+  true == !false || !(true == false) && false == false;
+  not(true != false && true == !false);
+  not(true != false && true == !false || !(true && false && true == !false));
+  true && false == $x->isNumber();
+  $x->isNumber() && false == $x->isNumber();
+  $x->isNumber() && false == true;
+}
+
+function protocol::precedenceBoolean(): Any[*]
+{
+  true && false || true;
+  true || true && false;
+}

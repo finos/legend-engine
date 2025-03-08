@@ -37,10 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
@@ -163,7 +163,7 @@ public class DataCubeHelpers
         return result;
     }
 
-    public static RelationType getRelationReturnType(LegendInterface legendInterface, Lambda lambda, PureModelContextData model)
+    public static RelationType getRelationReturnType(LegendInterface legendInterface, LambdaFunction lambda, PureModelContextData model)
     {
         return getRelationReturnType(legendInterface, DataCubeHelpers.injectNewFunction(model, lambda).getOne());
     }
@@ -184,7 +184,7 @@ public class DataCubeHelpers
         return valueSpecification.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(pretty != null && pretty ? RenderStyle.PRETTY : RenderStyle.STANDARD).build());
     }
 
-    public static CompletionResult getCodeTypeahead(String code, Lambda lambda, PureModelContextData model, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
+    public static CompletionResult getCodeTypeahead(String code, LambdaFunction lambda, PureModelContextData model, MutableList<CompleterExtension> extensions, LegendInterface legendInterface)
     {
         try
         {
@@ -213,7 +213,7 @@ public class DataCubeHelpers
     /**
      * Replace the magic function (if exists) in the given graph data by a new function with the body of the specified lambda
      */
-    public static Pair<PureModelContextData, Function> injectNewFunction(PureModelContextData model, Lambda lambda)
+    public static Pair<PureModelContextData, Function> injectNewFunction(PureModelContextData model, LambdaFunction lambda)
     {
         PureModelContextData newModel;
         Function func;

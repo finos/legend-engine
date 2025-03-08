@@ -438,7 +438,7 @@ function meta::pure::tds::toRelation::test(inputs:LambdaFunction<Any>[*], expect
   )
 }
 
-function meta::pure::tds::toRelation::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:Lambda[1]): Boolean[1]
+function meta::pure::tds::toRelation::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
 {
   assertEquals($expected->functionJSON(), $actual->meta::json::toJSON(100));
 }

@@ -31,29 +31,29 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFuncti
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CByteArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CFloat;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CInteger;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CLatestDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictDate;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CStrictTime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CBoolean;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CByteArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDateTime;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CFloat;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CLatestDate;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictDate;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CStrictTime;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Enum;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.EnumValue;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.MappingInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.UnitInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprecated.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
@@ -67,19 +67,19 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSSortInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_lang_KeyExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_KeyExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
@@ -101,7 +101,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
@@ -257,8 +256,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(AggregateValue aggregateValue)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) aggregateValue.mapFn.accept(this))._values().getFirst();
-        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) aggregateValue.aggregateFn.accept(this))._values().getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> l = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((InstanceValue) aggregateValue.mapFn.accept(this))._values().getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> o = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((InstanceValue) aggregateValue.aggregateFn.accept(this))._values().getFirst();
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(aggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::functions::collection::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -691,9 +690,9 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     }
 
     @Override
-    public ValueSpecification visit(Lambda glambda)
+    public ValueSpecification visit(LambdaFunction glambda)
     {
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(glambda.body, glambda.parameters, this.context, processingContext);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(glambda.body, glambda.parameters, this.context, processingContext);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(glambda.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(lambda._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -876,7 +875,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TdsOlapAggregation tdsOlapAggregation)
     {
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapAggregation.function, this.context, processingContext);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapAggregation.function, this.context, processingContext);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapAggregation.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapAggregation"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -888,8 +887,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TDSAggregateValue tdsAggregateValue)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.mapFn.accept(this))._values().getFirst();
-        LambdaFunction<?> o = (LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.aggregateFn.accept(this))._values().getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> l = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.mapFn.accept(this))._values().getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> o = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((InstanceValue) tdsAggregateValue.aggregateFn.accept(this))._values().getFirst();
 
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
@@ -915,7 +914,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TDSColumnInformation tdsColumnInformation)
     {
-        LambdaFunction<?> l = (LambdaFunction<?>) ((InstanceValue) tdsColumnInformation.columnFn.accept(this))._values().getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> l = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?>) ((InstanceValue) tdsColumnInformation.columnFn.accept(this))._values().getFirst();
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsColumnInformation.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::BasicColumnSpecification"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -924,7 +923,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
 
     public ValueSpecification processClassInstance(TdsOlapRank tdsOlapRank)
     {
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapRank.function, this.context, processingContext);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapRank.function, this.context, processingContext);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsOlapRank.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapRank"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
@@ -972,7 +971,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(keyExpressionGenericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.with(new Root_meta_pure_functions_lang_KeyExpression_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.KeyExpression))._add(keyExpression.add)._key((InstanceValue) key)._expression(expression)));
+                ._values(Lists.immutable.with(new Root_meta_pure_metamodel_function_KeyExpression_Impl("", SourceInformationHelper.toM3SourceInformation(keyExpression.sourceInformation), this.context.pureModel.getClass(M3Paths.KeyExpression))._add(keyExpression.add)._key((InstanceValue) key)._expression(expression)));
     }
 
     @Override

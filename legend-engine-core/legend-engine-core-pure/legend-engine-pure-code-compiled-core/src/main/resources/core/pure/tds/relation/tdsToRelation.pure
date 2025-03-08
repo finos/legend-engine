@@ -13,13 +13,15 @@
 // limitations under the License.
 
 import meta::protocols::pure::vX_X_X::transformation::helpers::*;
-import meta::protocols::pure::vX_X_X::metamodel::relation::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::*;
 import meta::pure::functions::math::olap::*;
 import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::*;
 import meta::pure::extension::*;
 import meta::pure::tds::toRelation::*;
 import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::*;
 import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 
 Class meta::pure::tds::toRelation::TdsToRelationExtension {}
 
@@ -28,7 +30,7 @@ Class meta::pure::tds::toRelation::TdsToRelationExtension_V_X_X extends TdsToRel
   transfers: Function<{AppliedFunction[1], Extension[*] -> meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->AppliedFunction[1]}>>[*]}>[1];
 }
 
-function meta::pure::tds::toRelation::transform(l:LambdaFunction<Any>[1], extensions:Extension[*]):Lambda[1]
+function meta::pure::tds::toRelation::transform(l:LambdaFunction<Any>[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
   let transformed = $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions);
   ^$transformed(body = $transformed.body->map(b | $b->transform($extensions)));
@@ -42,7 +44,7 @@ function meta::pure::tds::toRelation::transform(v:meta::protocols::pure::vX_X_X:
       if ($a.property->in(TDSRow.qualifiedProperties.name) && $a.parameters->size() == 2 && $a.parameters->at(1)->instanceOf(CString),
           | property($a.parameters->at(1)->cast(@CString).value, $a.parameters->at(0)),
           | $a),
-    l:Lambda[1] | ^$l(parameters = $l.parameters->map(p | $p->transform($extensions)->cast(@Variable)), body = $l.body->map(b | $b->transform($extensions))),
+    l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(parameters = $l.parameters->map(p | $p->transform($extensions)->cast(@Variable)), body = $l.body->map(b | $b->transform($extensions))),
     c:Collection[1] | ^$c(values = $c.values->map(v | $v->transform($extensions))),
     v:Variable[1] | var($v.name),
     v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $v
@@ -63,7 +65,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
     ),
     pair(project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
-        let lambdas = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
+        let lambdas = $a.parameters->at(1)->fromCollection()->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
         let names = $a.parameters->at(2)->fromCollection()->cast(@CString).value;
 
         let columns = $lambdas->zip($names)
@@ -82,7 +84,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
     ),
     pair(groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
       |
-        let groupByColumns = $a.parameters->at(1)->fromCollection()->cast(@Lambda);
+        let groupByColumns = $a.parameters->at(1)->fromCollection()->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
         let aggs = $a.parameters->at(2)->fromCollection()->cast(@ClassInstance).value->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue);
         let names = $a.parameters->at(3)->fromCollection()->cast(@CString).value;
 
@@ -96,7 +98,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
 
         let aggregations = $names->slice($groupByColumns->size(), $names->size())->zip($aggs)
               ->map(p |
-                let agg = $p.second.aggregateFn->transform($extensions)->cast(@Lambda);
+                let agg = $p.second.aggregateFn->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
                 createColSpec($p.first, lambda(property($p.first, $p.second.mapFn.parameters), $p.second.mapFn.parameters), $agg);
               )->createColSpecArrayInstance();
 
@@ -114,11 +116,11 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
           $a->match([
             c:ClassInstance[1] |
               let agg = $c.value->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue);
-              createColSpec($agg.name, $agg.mapFn->transform($extensions)->cast(@Lambda), $agg.aggregateFn->transform($extensions)->cast(@Lambda));,
+              createColSpec($agg.name, $agg.mapFn->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction), $agg.aggregateFn->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction));,
             a:AppliedFunction[1] |
               let name = $a.parameters->at(0)->cast(@CString).value;
-              let map = $a.parameters->at(1)->transform($extensions)->cast(@Lambda);
-              let agg = $a.parameters->at(2)->transform($extensions)->cast(@Lambda);
+              let map = $a.parameters->at(1)->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
+              let agg = $a.parameters->at(2)->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
               createColSpec($name, $map, $agg);
           ])
         )->createColSpecArrayInstance();
@@ -151,7 +153,7 @@ function meta::pure::tds::toRelation::transform(a:AppliedFunction[1], extensions
     ),
     pair(filter_TabularDataSet_1__Function_1__TabularDataSet_1_->cast(@Function<Any>),
       |
-        let func = $a.parameters->at(1)->transform($extensions)->cast(@Lambda);
+        let func = $a.parameters->at(1)->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
 
         appliedFunction(filter_Relation_1__Function_1__Relation_1_, [$a.parameters->at(0)->transform($extensions), $func]);
     ),
@@ -264,7 +266,7 @@ function meta::pure::tds::toRelation::colsToColSpecArrayInstance(params:meta::pr
         let col = $c.value->cast(@TDSColumnInformation);
         createColSpec($col.name, $col.columnFn, []);,
       f:AppliedFunction[1] |
-        createColSpec($f.parameters->at(1)->cast(@CString).value, $f.parameters->at(0)->transform($extensions)->cast(@Lambda), [])
+        createColSpec($f.parameters->at(1)->cast(@CString).value, $f.parameters->at(0)->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction), [])
     ]))->createColSpecArrayInstance();
 }
 
@@ -357,23 +359,23 @@ function meta::pure::tds::toRelation::transformOlapFunction(v:meta::protocols::p
             createColSpec($name, $aggregation);,
           a:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1] |
               let mapFn = lambda(property($a.columnName, var('r')), [var('p'), var('w'), var('r')]);
-              let aggregation = $a.function->transform($extensions)->cast(@Lambda);
+              let aggregation = $a.function->transform($extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
               createColSpec($name, $mapFn, $aggregation);
         ]),
       a:AppliedFunction[1] |
         [
           pair(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_.name->toOne(), |
               ^ClassInstance(_type='classInstance',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation(function = $a.parameters->at(1)->cast(@Lambda), columnName = $a.parameters->at(0)->cast(@CString).value),
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation(function = $a.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction), columnName = $a.parameters->at(0)->cast(@CString).value),
                             type= 'tdsOlapAggregation')
           ),
           pair(func_FunctionDefinition_1__TdsOlapRank_1_.name->toOne(), |
               ^ClassInstance(_type='classInstance',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank(function = $a.parameters->at(0)->cast(@Lambda)),
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank(function = $a.parameters->at(0)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)),
                             type= 'tdsOlapRank')
           )
         ]->getValue($a.fControl->toOne())->eval()->transformOlapFunction($name, $extensions),
-      l:Lambda[1] |
+      l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] |
         ^ClassInstance(_type='classInstance',
                         value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank(function = $l),
                         type= 'tdsOlapRank')->transformOlapFunction($name, $extensions)
@@ -389,11 +391,11 @@ function meta::pure::tds::toRelation::getOlapExtendFunction(v:meta::protocols::p
           r:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1] | extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_,
           a:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1] | extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_
         ]),
-      l:Lambda[1] | extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_
+      l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_
     ]);
 }
 
-function meta::pure::tds::toRelation::transformJoinColsToFunc(left:String[*], right:String[*]):Lambda[1]
+function meta::pure::tds::toRelation::transformJoinColsToFunc(left:String[*], right:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
   let func = $left->zip($right)->map(v |
           let lc = property($v.first, var('x'));

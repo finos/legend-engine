@@ -34,7 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
@@ -177,7 +177,7 @@ public abstract class AlloyTestServer
         Function fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 
         return PlanGenerator.generateExecutionPlan(
-                HelperValueSpecificationBuilder.buildLambda(((Lambda) fetchFunctionExpressions.body.get(0)).body, ((Lambda) fetchFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
+                HelperValueSpecificationBuilder.buildLambda(((LambdaFunction) fetchFunctionExpressions.body.get(0)).body, ((LambdaFunction) fetchFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
                 pureModel.getMapping("test::Map"),
                 pureModel.getRuntime("test::Runtime"),
                 null,

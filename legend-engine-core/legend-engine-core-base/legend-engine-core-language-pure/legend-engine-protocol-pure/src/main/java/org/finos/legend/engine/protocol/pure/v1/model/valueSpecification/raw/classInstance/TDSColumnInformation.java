@@ -15,12 +15,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 // Should NOT extend ValueSpecification
 public class TDSColumnInformation
 {
     public SourceInformation sourceInformation;
     public String name;
-    public Lambda columnFn;
+    public LambdaFunction columnFn;
 }

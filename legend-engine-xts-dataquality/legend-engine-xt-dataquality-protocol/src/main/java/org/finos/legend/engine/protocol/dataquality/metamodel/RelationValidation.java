@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.dataquality.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 //------------------------------------------------------------
 // Should be generated out of the Pure protocol specification
@@ -25,6 +25,6 @@ public class RelationValidation
 {
     public String name;
     public String description;
-    public Lambda assertion;
+    public LambdaFunction assertion;
     public String type;
 }

@@ -78,7 +78,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         Assert.assertEquals(1, model.getElements().size());
 
         String expected = ">>>example::jsonSchema::Test\n" +
-                "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "Class example::jsonSchema::Test\n" +
                 "{\n" +
                 "  floatField: Float[1];\n" +
                 "  decimalField: Float[1];\n" +
@@ -147,7 +147,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         Assert.assertEquals(2, model.getElements().size());
 
         String expected = ">>>example::jsonSchema::Test\n" +
-                "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "Class example::jsonSchema::Test\n" +
                 "{\n" +
                 "  floatField: Float[1];\n" +
                 "  decimalField: Float[1];\n" +
@@ -212,7 +212,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>example::jsonSchema::Test\n" +
-                "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "Class example::jsonSchema::Test\n" +
                 "{\n" +
                 "  floatField: Float[0..1];\n" +
                 "  decimalField: Float[0..1];\n" +
@@ -467,7 +467,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>example::jsonSchema::Test\n" +
-                "Class {meta::json::schema::JSONSchemaGeneration.title = 'meta::json::schema::tests::PrimitiveTypeDomain'} example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "Class {meta::json::schema::JSONSchemaGeneration.title = 'meta::json::schema::tests::PrimitiveTypeDomain'} example::jsonSchema::Test\n" +
                 "{\n" +
                 "  {meta::pure::profiles::doc.doc = 'Float Field'} floatField: Float[1];\n" +
                 "  {meta::pure::profiles::doc.doc = 'Field Float - range 1..3'} floatRangeField: Float[1..3];\n" +
@@ -555,14 +555,14 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>demo::jsonSchema::Firm\n" +
-                "Class demo::jsonSchema::Firm extends meta::pure::metamodel::type::Any\n" +
+                "Class demo::jsonSchema::Firm\n" +
                 "{\n" +
                 "  legalName: String[1];\n" +
                 "  employeesCount: Integer[1];\n" +
                 "}\n" +
                 "\n" +
                 ">>>example::jsonSchema::Test\n" +
-                "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "Class example::jsonSchema::Test\n" +
                 "{\n" +
                 "  firstName: String[1];\n" +
                 "  lastName: String[1];\n" +
@@ -669,7 +669,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::Simple"));
 
         String expected = ">>>test::Simple::Address\n" +
-                "Class test::Simple::Address extends meta::pure::metamodel::type::Any\n" +
+                "Class test::Simple::Address\n" +
                 "{\n" +
                 "  addressType: test::Simple::AddressType[1];\n" +
                 "  addressLine1: String[1];\n" +
@@ -686,14 +686,14 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                 "}\n" +
                 "\n" +
                 ">>>test::Simple::Firm\n" +
-                "Class test::Simple::Firm extends meta::pure::metamodel::type::Any\n" +
+                "Class test::Simple::Firm\n" +
                 "{\n" +
                 "  legalName: String[1];\n" +
                 "  addresses: test::Simple::Address[*];\n" +
                 "}\n" +
                 "\n" +
                 ">>>test::Simple::Person\n" +
-                "Class test::Simple::Person extends meta::pure::metamodel::type::Any\n" +
+                "Class test::Simple::Person\n" +
                 "{\n" +
                 "  firstName: String[1];\n" +
                 "  lastName: String[1];\n" +

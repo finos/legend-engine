@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,5 +35,5 @@ public class DataQuality extends PackageableElement
 
     public DataQualityExecutionContext context;
     public DataQualityRootGraphFetchTree dataQualityRootGraphFetchTree;
-    public Lambda filter;
+    public LambdaFunction filter;
 }
