@@ -83,16 +83,44 @@ function meta::external::store::relational::sqlDialectTranslation::sqlTyping::ty
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typedCast(c: Cast[1]): TypedSqlExpression[1]
 {
-  let targetType = $c.type.name;
+  let targetType = $c.type.name->toLower();
   let sqlTypeMap = [
+    
+    // Integer types
+    pair('int2', SmallIntSqlType),
+    pair('smallint', SmallIntSqlType),
+
+    pair('int', IntegerSqlType),
+    pair('int4', IntegerSqlType),
     pair('integer', IntegerSqlType),
-    pair('long', BigIntSqlType),
+
+    pair('int8', BigIntSqlType),
     pair('bigint', BigIntSqlType),
-    pair('double', DoubleSqlType),
+
+    // Decimal types
+    pair('numeric', NumericSqlType),
+    pair('decimal', DecimalSqlType),
+    pair('float', FloatSqlType),
+    pair('float4', FloatSqlType),
+    pair('real', RealSqlType),
+    pair('double precision', DoubleSqlType),
+    pair('float8', DoubleSqlType),
+
+    // Boolean types
     pair('boolean', BooleanSqlType),
-    pair('string', VarcharSqlType),
+    pair('bool', BooleanSqlType),
+
+    // String types
+    pair('varchar', VarcharSqlType),
+    pair('character varying', VarcharSqlType),
+
+    pair('char', CharSqlType),
+    pair('character', CharSqlType),
+
+    // Temporal types
     pair('date', DateSqlType),
     pair('timestamp', TimestampSqlType)
+
     // TODO: More types
   ]->newMap();
   $c->typedExpression(TypedCastExpression, $sqlTypeMap->get($targetType->toLower())->toOne());

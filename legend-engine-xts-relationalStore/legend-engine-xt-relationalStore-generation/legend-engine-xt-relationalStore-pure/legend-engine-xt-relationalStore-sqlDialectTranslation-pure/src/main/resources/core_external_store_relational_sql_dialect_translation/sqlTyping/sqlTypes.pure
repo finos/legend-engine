@@ -45,13 +45,13 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTy
 
 // ---------------------- Boolean ----------------------------------------------
 
-Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BooleanSqlType extends SqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BooleanSqlType extends SqlType {}
 
 // -----------------------------------------------------------------------------
 
 // ---------------------- String ----------------------------------------------
 
-Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractStringSqlType extends SqlType {}
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractStringSqlType extends SqlType {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::CharSqlType extends AbstractStringSqlType {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::VarcharSqlType extends AbstractStringSqlType {}
 
@@ -59,7 +59,7 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTy
 
 // ---------------------- Date & Time ----------------------------------------------
 
-Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractTemporalSqlType extends SqlType {}
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractTemporalSqlType extends SqlType {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::DateSqlType extends AbstractTemporalSqlType {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::TimestampSqlType extends AbstractTemporalSqlType {}
 
