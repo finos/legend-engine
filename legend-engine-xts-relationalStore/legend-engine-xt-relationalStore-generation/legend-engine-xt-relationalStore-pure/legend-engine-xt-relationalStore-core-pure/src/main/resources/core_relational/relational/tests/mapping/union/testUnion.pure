@@ -87,6 +87,11 @@ function <<test.Test>> meta::relational::tests::mapping::union::testProjectThrou
    let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['Anand Firm X', 'Scott Firm X', 'Taylor Firm X', 'Wright Firm X', 'Roberts Firm A'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('legalName')));
+
+   // With removal of union or join turned on
+   let result2 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','name']), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(), noDebug());
+   assert($result2->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
+   assertEquals($result1->meta::relational::tests::csv::toCSV(), $result2.values->meta::relational::tests::csv::toCSV());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::testSimpleQueryFromAssociationMapping():Boolean[1]
@@ -353,6 +358,11 @@ function <<test.Test>> meta::relational::tests::mapping::union::testChainedUnion
    let result1 = execute(|Person.all()->project([p|$p.firm.temporalEntityWithAddress(%2019-1-1).address.name], ['address_name']), unionToUnionMappingForChainedUnions, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(8, $result1.rows->size());
    assertSameElements(['New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'Hoboken', 'Hoboken'], $result1.rows->map(r|$r.getString('address_name')));
+
+   // With removal of union or join turned on
+   let result2 = execute(|Person.all()->project([p|$p.firm.temporalEntityWithAddress(%2019-1-1).address.name], ['address_name']), unionToUnionMappingForChainedUnions, meta::external::store::relational::tests::testRuntime(), meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(), noDebug());
+   assert($result2->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
+   assertSameElements(['New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'Hoboken', 'Hoboken'], $result2.values.rows->map(r|$r.getString('address_name')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::testPksWithImportDataFlow():Boolean[1]
@@ -367,6 +377,11 @@ function <<test.Test>> meta::relational::tests::mapping::union::testUnionWithSin
 {
    let result = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['name', 'firmName']), unionWithSinglePropertyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."PersonSet1lastName_s1_PersonSet1lastName_s1" as "name", "firm_0".name as "firmName" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet1lastName_s1", "root".FirmID as FirmID_0, null as FirmID_1 from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet1lastName_s1", null as FirmID_0, "root".FirmID as FirmID_1 from PersonSet1 as "root") as "unionBase" left outer join Firm as "firm_0" on ("unionBase".FirmID_0 = "firm_0".ID or "unionBase".FirmID_1 = "firm_0".ID)', $result);
+
+   // With removal of union or join turned on
+   let result2 = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['name', 'firmName']), unionWithSinglePropertyMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(), noDebug());
+   assert($result2->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
+   assertEquals($result.values->meta::relational::tests::csv::toCSV(), $result2.values->meta::relational::tests::csv::toCSV());
 }
 
 function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]

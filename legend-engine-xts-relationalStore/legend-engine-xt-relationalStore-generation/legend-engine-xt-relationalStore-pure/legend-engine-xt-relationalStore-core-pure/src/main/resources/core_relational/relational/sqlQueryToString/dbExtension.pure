@@ -449,6 +449,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ALL ')+')',
                                           u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ')+')',
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
+                                          u:meta::relational::functions::pureToSqlQuery::union::UnionOrJoin[1]|processDynaFunction($u.parameters->reverse()->meta::relational::functions::pureToSqlQuery::orFilters($extensions)->toOne()->cast(@DynaFunction), $sgc),
                                           d:DynaFunction[1]|processDynaFunction($d, $sgc),
                                           c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),
