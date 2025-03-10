@@ -24,7 +24,6 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
-
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 
 public class Test_Analytics_Lineage__M2M_FCT extends LineageM2MFCTReport

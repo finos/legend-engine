@@ -31,7 +31,7 @@ public class Test_RelationalFCT extends RelationalFCTReportH2
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
-        return FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalEvalulator__FCTEvaluator_1_", "meta::relational::fct::relationalAdaptorH2__FCTAdapter_1_",executionSupport);
+        return FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalEvaluator__FCTEvaluator_1_", "meta::relational::fct::relationalAdaptorH2__FCTAdapter_1_",executionSupport);
     }
 
 }

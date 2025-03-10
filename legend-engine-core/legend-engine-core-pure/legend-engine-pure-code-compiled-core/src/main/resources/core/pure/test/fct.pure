@@ -92,6 +92,12 @@ Class  meta::pure::test::fct::FCTMappingTest
 
 }
 
+function meta::pure::test::fct::adaptorSetupFunction(adaptor:Function<{->FCTAdapter[1]}>[1]):Function<{Function<{->FCTMappingTest[1]}>[1]->Any[1]}>[0..1] 
+{
+    $adaptor->eval().setup; 
+}
+
+
  function meta::pure::test::fct::createTestParameters(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
  {
       $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t.tests->map(test| ^TestParameters(runtime=$runtime,
@@ -173,13 +179,24 @@ Profile  meta::pure::fct::TestReturnType
 
 
 
-function   meta::pure::fct::tests::testRunnerAssertion(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
 {
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $adapter.runtime->eval($mappingTest);
           $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
                                                      );
 }
+
+function   meta::pure::fct::tests::testRunnerAssertion(adapterFN:Function<{->FCTAdapter[1]}>[1], evaluatorFN:Function<{->FCTEvaluator[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+{
+          let adapter = $adapterFN->eval();
+          let evaluator = $evaluatorFN->eval();
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $adapter.runtime->eval($mappingTest);
+          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
+                                                     );
+}
+
 
 
 
