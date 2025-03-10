@@ -267,7 +267,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Repeat, simpleFunctionProcessor('repeat')),
     pair(Replace, simpleFunctionProcessor('replace')),
     pair(Md5, simpleFunctionProcessor('md5')),
-    pair(CharLength, argTransformFunctionProcessor('length', {n:Node[*]| $n})),
+    pair(CharLength, functionRenameProcessor('length')),
 
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Reverse, simpleFunctionProcessor('reverse')),
@@ -344,19 +344,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let weekFunctionCall =  generateFunctionCallWithArgs($sqlDialect, 'datediff', ['\'day\'',$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)+'//7';
-  let nonweekFunctionCall =  generateFunctionCallWithArgs($sqlDialect, 'datediff', [$processedArgs->at(0),$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config);
-  let castedWeekCall =   $sqlDialect->generateCast($weekFunctionCall, 'integer', $state, $config);
-
-  if($processedArgs->at(0)->removeQuotes()=='week', |$castedWeekCall, |$nonweekFunctionCall);
+  if($processedArgs->at(0)->removeQuotes()=='week',
+   |$sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'datediff', ['\'day\'',$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)+'//7', 'integer', $state, $config), 
+   |generateFunctionCallWithArgs($sqlDialect, 'datediff', [$processedArgs->at(0),$processedArgs->at(1), $processedArgs->at(2)], [], $state, $config));
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let intervalString='INTERVAL '+$processedArgs->at(1) +' '+$processedArgs->at(2)->replace('\'', '');
-  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->replace('\'','')], [], $state, $config) ;
-  let dateUnit = $processedArgs->at(2)->replace('\'', '');
+  let intervalString='INTERVAL '+$processedArgs->at(1) +' '+$processedArgs->at(2)->removeQuotes();
+  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0),$intervalString->removeQuotes()], [], $state, $config) ;
+  let dateUnit = $processedArgs->at(2)->removeQuotes();
   if($dateUnit == 'DAY' || $dateUnit == 'MONTH' || $dateUnit == 'YEAR' || $dateUnit == 'WEEK' ,
     |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config), 
     |$dateAddCall
