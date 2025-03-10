@@ -1,0 +1,419 @@
+import meta::legend::service::metamodel::*;
+import meta::legend::service::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
+import meta::external::function::activator::*;
+import meta::external::function::activator::jarService::generation::*;
+import meta::external::format::shared::functions::*;
+import meta::pure::model::unit::*;
+import meta::external::format::shared::binding::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::external::function::activator::jarService::*;
+import meta::external::function::activator::jarService::tests::model::simple::*;
+import meta::external::function::activator::jarService::tests::*;
+import meta::pure::graphFetch::*;
+
+
+function meta::external::function::activator::jarService::tests::defaultConfig():JarServiceDeploymentConfiguration[1]
+{
+  ^JarServiceDeploymentConfiguration();
+}
+
+// =========================================================================================================
+// Simple Examples
+// =========================================================================================================
+
+// simple relational
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      activationConfiguration = defaultConfig(),
+      function= meta::external::function::activator::jarService::tests::simpleRelationalfunction__TabularDataSet_1_
+   );
+   //isMulti
+print('isMultiExecService:');
+$service-> meta::external::function::activator::jarService::generation::isMultiEenvironmentService()->println();
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+function meta::external::function::activator::jarService::tests::simpleRelationalfunction():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+
+//simple graph fetch
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase2():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetchAndSerialize__String_1_
+   );
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+
+function meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetchAndSerialize():String[1]
+{
+  let binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)); //wont work if in-lined
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)->from(simpleRelationalMapping, testRuntime(dbInc))
+    ->externalize( $binding
+                , #{ PersonX {firstName} } #);
+}
+
+
+function meta::external::function::activator::jarService::tests::simpleServiceMergeRuntime():Any[*]
+{
+    let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::functionWithRuntimeComponents_String_1__String_1__String_1_
+   );
+   $service->meta::external::function::activator::jarService::generation::getEnvironmentkey()->println();
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  $service-> meta::external::function::activator::jarService::generation::isMultiEenvironmentService()->println(); //fail();
+  //printlnPlan
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+}
+
+function meta::external::function::activator::jarService::tests::functionWithRuntimeComponents(key:String[1], data:String[1]):String[1]
+{
+   meta::external::format::shared::executionPlan::tests::TargetPerson.all()
+  ->graphFetch(#{meta::external::format::shared::executionPlan::tests::TargetPerson{fullName}}#)
+  ->from(meta::external::function::activator::jarService::tests::execEnvInstance()->getWithRuntime($key, $data))
+    ->serialize( #{meta::external::format::shared::executionPlan::tests::TargetPerson{fullName}}#);
+}
+
+
+function meta::external::function::activator::jarService::tests::testBindingX(): Binding[1]
+{
+  ^Binding(
+    name        = 'MyBindingMo',
+    package     = meta::external::format::shared::executionPlan::tests::_Person.package,
+    contentType = 'application/x.flatdata',
+    modelUnit   = ^ModelUnit()
+  );
+}
+
+function meta::external::function::activator::jarService::tests::execEnvInstance():meta::legend::service::metamodel::ExecutionEnvironmentInstance[1]
+{
+    let runtime2 =  ^meta::core::runtime::Runtime(
+                              connectionStores = ^ConnectionStore(
+                                element=^ModelStore(),
+                                connection=^ModelChainConnection(mappings = meta::external::format::shared::executionPlan::tests::M2MMapping1))
+                            );
+    ^meta::legend::service::metamodel::ExecutionEnvironmentInstance(
+    executionParameters = [
+
+    ^meta::legend::service::metamodel::SingleExecutionParameters
+    (
+      key = 'UAT',
+      mapping = meta::external::format::shared::executionPlan::tests::M2MMapping,
+      runtimeComponents = ^meta::legend::service::metamodel::RuntimeComponents(
+                              runtime = $runtime2,
+                              class = meta::external::format::shared::executionPlan::tests::_Person,
+                              binding = meta::external::function::activator::jarService::tests::testBindingX()
+                            )
+    ),
+    ^meta::legend::service::metamodel::SingleExecutionParameters
+    (
+      key = 'PROD',
+      mapping = meta::external::format::shared::executionPlan::tests::M2MMapping,
+      runtimeComponents = ^meta::legend::service::metamodel::RuntimeComponents(
+                              runtime = $runtime2,
+                              class = meta::external::format::shared::executionPlan::tests::_Person,
+                              binding = meta::external::function::activator::jarService::tests::testBindingX()
+                            )
+  )
+    ]);
+}
+
+// relational with single execution param
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase3():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simpleRelationalfunctionWithExecutionEnv__TabularDataSet_1_
+   );
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->possiblyFlattenSingleExecutionParam()->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+//function needs to be flattened to avoid a seperate router extension for service.
+function meta::external::function::activator::jarService::tests::simpleRelationalfunctionWithExecutionEnv():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(^meta::legend::service::metamodel::SingleExecutionParameters( key = 'test', mapping =meta::external::function::activator::jarService::tests::simpleRelationalMapping ,
+                                                                         runtime= meta::external::function::activator::jarService::tests::testRuntime(dbInc) ))
+}
+
+//Simple relational with Execution env instance
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase4():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simpleRelationalfunctionWithExecutionEnvInstance_String_1__TabularDataSet_1_
+   );
+  //isMulti
+  print('isMultiExecService:');
+  $service-> meta::external::function::activator::jarService::generation::isMultiEenvironmentService()->println();
+
+  $service->meta::external::function::activator::jarService::generation::getEnvironmentkey()->println();
+
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+
+}
+
+// Simple relational with Execution env instance
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase4X():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simpleRelationalfunctionWithExecutionEnvInstance_String_1__TabularDataSet_1_
+   );
+
+// $service-> meta::external::function::activator::jarService::generation::getEnvironmentkey()->println(); fail();
+
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+
+}
+
+function meta::external::function::activator::jarService::tests::simpleRelationalfunctionWithExecutionEnvInstance(env:String[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(meta::external::function::activator::jarService::tests::TestExecutionEnviroment()->meta::legend::service::get($env));
+}
+//simple graph fetch with Execution env instance
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase5():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simplegraphFetchfunctionWithExecutionEnvInstance_String_1__PersonX_MANY_
+   );
+
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+
+}
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase5WithContentType():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      contentType =  'application/json',
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simplegraphFetchfunctionWithExecutionEnvInstance_String_1__PersonX_MANY_
+   );
+//isMulti
+print('isMultiExecService:');
+$service-> meta::external::function::activator::jarService::generation::isMultiEenvironmentService()->println();
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+
+}
+
+function meta::external::function::activator::jarService::tests::simplegraphFetchfunctionWithExecutionEnvInstance(env:String[1]):PersonX[*]
+{
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)->from(meta::external::function::activator::jarService::tests::TestExecutionEnviroment()->get($env));
+}
+
+function meta::external::function::activator::jarService::tests::TestExecutionEnviroment(): meta::legend::service::metamodel::ExecutionEnvironmentInstance[1]
+{
+  ^meta::legend::service::metamodel::ExecutionEnvironmentInstance(
+    executionParameters = [
+
+    ^meta::legend::service::metamodel::SingleExecutionParameters
+    (
+      key = 'UAT',
+      mapping = simpleRelationalMapping,
+      runtime = meta::external::function::activator::jarService::tests::testRuntime(dbInc)
+
+    ),
+    ^meta::legend::service::metamodel::SingleExecutionParameters
+    (
+      key = 'PROD',
+      mapping = simpleRelationalMapping2,
+      runtime = meta::external::function::activator::jarService::tests::testRuntime(dbInc)
+    )
+    ]
+  )
+
+}
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcaseWithDataSpace():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      contentType =  'application/json',
+      documentation = 'bla bla',
+      function = meta::external::function::activator::jarService::tests::simplegraphFetchfunctionWithDataSpace_String_1__PersonX_MANY_
+   );
+  //isMulti
+  print('isMultiExecService:');
+  $service-> meta::external::function::activator::jarService::generation::isMultiEenvironmentService()->println();
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+  $service->rebuildServiceUsingFlattenedParams().second->map(s|$s->meta::external::function::activator::jarService::generation::printPlan());
+
+}
+
+function meta::external::function::activator::jarService::tests::simplegraphFetchfunctionWithDataSpace(key:String[1]):PersonX[*]
+{
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)
+    ->from(meta::external::function::activator::jarService::tests::TestDataSpaces()->meta::pure::metamodel::dataSpace::get($key));
+}
+
+function meta::external::function::activator::jarService::tests::TestDataSpaces(): meta::pure::metamodel::dataSpace::DataSpace[1]
+{
+  let executionContext1 = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
+                            name = 'UAT',
+                            mapping = simpleRelationalMapping,
+                            defaultRuntime = meta::external::function::activator::jarService::tests::testPackageableRuntime(dbInc, 'meta::external::function::activator::jarService::tests::testRuntime')
+                          );
+
+  let executionContext2 = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
+                            name = 'PROD',
+                            mapping = simpleRelationalMapping2,
+                            defaultRuntime = meta::external::function::activator::jarService::tests::testPackageableRuntime(dbInc, 'meta::external::function::activator::jarService::tests::testRuntime')
+                          );
+
+  ^meta::pure::metamodel::dataSpace::DataSpace(
+    name = 'TestDataSpace',
+    package = ^Package(
+      name = 'test'
+    ),
+    defaultExecutionContext = $executionContext1,
+    executionContexts = [$executionContext1, $executionContext2],
+    title = 'Test DataSpace'
+  );
+}
+
+
+// =========================================================================================================
+// Examples that require the function to be recomposed
+// =========================================================================================================
+
+
+
+
+//simple graph fetch : Return type of functioin (Person) is invalid so validation should block this. we specify the serialization tree and beinding so ots safe
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase30():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
+      function= meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetch__PersonX_MANY_
+   );
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+
+function meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetch():PersonX[*]
+{
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+
+
+// =========================================================================================================
+// Functions with parameters
+// =========================================================================================================
+
+
+//simple relational
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase6():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      function= meta::external::function::activator::jarService::tests::simpleRelationalfunction_String_1__Integer_1__TabularDataSet_1_
+   );
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+function meta::external::function::activator::jarService::tests::simpleRelationalfunction(name:String[1], length:Integer[1]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == $name || $p.lastName->length()==$length) ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+
+
+function meta::external::function::activator::jarService::tests::simpleServiceTDSShowcase7():Any[*]
+{
+  let service =  ^JarService
+   (
+      ownership = ^UserList(users = ['debelp', 'harted']),
+      documentation = 'bla bla',
+      binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
+      function= meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetch_RootGraphFetchTree_1__PersonX_MANY_
+   );
+  //validate
+  $service->meta::external::function::activator::jarService::validator::validateService();
+  //printlnPlan
+   $service->meta::external::function::activator::jarService::generation::printPlan();
+}
+
+
+function meta::external::function::activator::jarService::tests::simplefunctionWithGraphFetch(tree:RootGraphFetchTree<PersonX>[1]):PersonX[*]
+{
+    // Person.all()->graphFetch($tree)->from(simpleRelationalMapping, testRuntime(dbInc));
+    PersonX.all()->graphFetch(#{ PersonX {firstName} } #)->from(simpleRelationalMapping, testRuntime(dbInc));
+}
+// =========================================================================================================
+// validation failures
+// =========================================================================================================
