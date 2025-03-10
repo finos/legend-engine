@@ -274,8 +274,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
-    pair(Sha1, argTransformFunctionProcessor('digest', {n:Node[*]| literal('sha1')->concatenate($n)->reverse()})),
-    pair(Sha256, argTransformFunctionProcessor('digest', {n:Node[*]| literal('sha256')->concatenate($n)->reverse()})),
+    pair(Sha1, argTransformFunctionProcessor('digest', {n:Node[*]|  $n->concatenate(literal('sha1'))})),
+    pair(Sha256, argTransformFunctionProcessor('digest', {n:Node[*]|  $n->concatenate(literal('sha1'))})),
     pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
@@ -328,9 +328,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let dateAddCall = $processedArgs->at(0) + ' + INTERVAL \''+$processedArgs->at(1) +' '+$processedArgs->at(2)->replace('\'', '')+'\'';
-  let dateUnit = $processedArgs->at(2)->replace('\'', '');
-  if($dateUnit == 'DAY' || $dateUnit == 'MONTH' || $dateUnit == 'YEAR' || $dateUnit == 'WEEK' ,
+  let dateAddCall = $processedArgs->at(0) + ' + INTERVAL \''+$processedArgs->at(1) +' '+$processedArgs->at(2)->removeQuotes()+'\'';
+  let dateUnit = $processedArgs->at(2)->removeQuotes();
+  if($dateUnit->in(['DAY', 'MONTH', 'YEAR', 'WEEK']) ,
     |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config), 
     |$dateAddCall
    );
@@ -338,10 +338,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 
 function meta::external::store::relational::sqlDialectTranslation::postgres::dateDiffHandlerForPostgres(p: String[*]): String[1]
 { 
-  $p->map(x|println($x));
-  let timeUnits=['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
-  let indexOfUnit=$timeUnits->indexOf($p->at(0)->replace('\'', ''));
-  let unitFunctionsList=[
+  let timeUnits = ['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
+  let indexOfUnit = $timeUnits->indexOf($p->at(0)->removeQuotes());
+  let unitFunctionsList = [
 
     { | format('(%s)', [
         'cast((extract(\'year\' from %s) - extract(\'year\' from %s)) as int)'

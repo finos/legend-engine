@@ -158,6 +158,17 @@ function meta::external::store::relational::sqlDialectTranslation::simpleFunctio
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::functionRenameProcessor(functionName: String[1]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      $f->doFunctionCallChecks();
+      $sqlDialect->generateFunctionCallWithArgs($functionName, $f.arguments, $f.window, $state, $config);
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
 function meta::external::store::relational::sqlDialectTranslation::argTransformFunctionProcessor(functionName: String[1], transform: Function<{Node[*]->Node[*]}>[1]): FunctionProcessor[1]
 {
   functionProcessor(

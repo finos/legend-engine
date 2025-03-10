@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::SplitPart
   (
     name = 'split_part',
-    documentation = 'Returns the length of a String .',
+    documentation = 'Returns the required nth part from a string after breaking it with a seperator',
     variations = [
       ^SqlFunctionVariation
       (
