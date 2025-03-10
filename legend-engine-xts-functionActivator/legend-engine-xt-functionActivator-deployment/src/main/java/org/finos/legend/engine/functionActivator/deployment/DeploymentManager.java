@@ -19,12 +19,14 @@ import org.finos.legend.engine.functionActivator.postDeployment.PostDeploymentAc
 import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentDetails;
 import org.finos.legend.engine.protocol.functionActivator.deployment.PostDeploymentActionResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 
 import java.util.List;
 
-public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration>
+public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration, X extends FunctionActivatorDeploymentDetails, Y extends Root_meta_external_function_activator_FunctionActivator>
 {
 
     public List<W> selectConfig(List<FunctionActivatorDeploymentConfiguration> availableConfigs);
@@ -33,6 +35,8 @@ public interface DeploymentManager<U extends FunctionActivatorArtifact, V extend
 
     public V deploy(Identity identity, U artifact, List<W> availableRuntimeConfigurations);
 
+    public X getActivatorDetails(Identity identity, W deploymentConfig, Y activator);
+
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact);
 
     public default List<PostDeploymentActionResult> deployActions(Identity identity, U artifact)
@@ -40,7 +44,10 @@ public interface DeploymentManager<U extends FunctionActivatorArtifact, V extend
         List<PostDeploymentActionResult> actionResults = Lists.mutable.empty();
         PostDeploymentActionLoader.extensions().forEach((ex) ->
         {
-            actionResults.addAll(ex.processAction(identity, artifact));
+            if (ex.canDeploy(artifact))
+            {
+                actionResults.addAll(ex.processAction(identity, artifact));
+            }
         });
         return actionResults;
     }

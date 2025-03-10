@@ -22,7 +22,7 @@ import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentDetails;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
@@ -30,9 +30,9 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class SnowflakeAppDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeAppDeploymentConfiguration>
+public class SnowflakeAppDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeAppDeploymentConfiguration, FunctionActivatorDeploymentDetails, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAppDeploymentManager.class);
 
@@ -116,6 +116,11 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         return result;
     }
 
+    @Override
+    public FunctionActivatorDeploymentDetails getActivatorDetails(Identity identity, SnowflakeAppDeploymentConfiguration runtimeConfig, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator)
+    {
+        return new FunctionActivatorDeploymentDetails();
+    }
 
     public SnowflakeAppDeploymentTool getSnowflakeAppDeploymentTool()
     {

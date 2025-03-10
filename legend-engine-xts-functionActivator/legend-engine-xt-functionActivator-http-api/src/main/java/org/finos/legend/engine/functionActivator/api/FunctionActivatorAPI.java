@@ -24,7 +24,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorLoader;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
@@ -115,7 +115,7 @@ public class FunctionActivatorAPI
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
-            MutableList<? extends FunctionActivatorError> validate = service.validate(Identity.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions);
+            FunctionActivatorResult validate = service.validate(Identity.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig), routerExtensions);
             long end = System.currentTimeMillis();
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
             return Response.ok(objectMapper.writeValueAsString(validate)).type(MediaType.APPLICATION_JSON_TYPE).build();

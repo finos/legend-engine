@@ -67,7 +67,7 @@ public class HostedServiceArtifactGenerator
     {
         ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
         Lineage lineage = new Lineage();
-        return new HostedServiceArtifact(activator._pattern(), new GenerationInfoData(plan, lineage), HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
+        return new HostedServiceArtifact(activator._pattern(), new GenerationInfoData(plan, lineage), HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel, routerExtensions), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
     }
 
     public static ExecutionPlan generatePlan(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion,Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

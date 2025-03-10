@@ -23,4 +23,6 @@ import java.util.List;
 public interface PostDeploymentActionDeploymentContract
 {
     List<PostDeploymentActionResult> processAction(Identity identity, FunctionActivatorArtifact artifact);
+    
+    boolean canDeploy(FunctionActivatorArtifact artifact);
 }
