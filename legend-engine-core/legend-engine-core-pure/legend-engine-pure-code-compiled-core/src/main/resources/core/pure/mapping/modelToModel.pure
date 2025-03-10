@@ -166,8 +166,9 @@ function meta::external::store::model::planExecutionPure(sq:meta::pure::mapping:
    let connection = $runtime->toOne()->connectionByElement($sq.store);
    $connection->match([
       mc: ModelConnection[1]| planExecutionInMemory($sq, $ext->cast(@StoreMappingRoutedValueSpecification), $m, $mc, $runtime, $exeCtx, $extensions, $debug),
-      mcc: ModelChainConnection[1]| planExecutionChain($sq, $ext->cast(@StoreMappingRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
-   ]);
+      mcc: ModelChainConnection[1]| planExecutionChain($sq, $ext->cast(@StoreMappingRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug),
+      pmc: PureModelConnection[1] | fail('Found unexpected connection type for TabularDataSet Query: ' + $pmc->type().name->toOne()); @ExecutionNode;
+   ]); 
 }
 
 

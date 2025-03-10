@@ -9,7 +9,6 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 
 
-
 function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1] 
 {
     meta::relational::fct::relationalRunTime($mappingTest,DatabaseType.H2)
@@ -23,12 +22,25 @@ function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test
 
  }
 
+function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalAdaptorH2():FCTAdapter[1] //Maybe on store contract?
+{
+    ^FCTAdapter(
+              runtime= meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_,
+               setup =  meta::relational::fct::setupDataRunnerH2_Function_1__Any_1_
+             );
+
+}
+
+
 
 
 function   meta::relational::fct::relationalTestSetUpH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
 {
      meta::relational::fct::setupData($mappingTestFN,DatabaseType.H2);
 }
+
+
+
 
 
 function   meta::relational::fct::testfctRuntime(database:Database[1],databaseType:DatabaseType[1]):Runtime[1]
@@ -45,6 +57,12 @@ function   meta::relational::fct::setupData(mappingTestFN:Function<{->FCTMapping
 
 }
 
+function   meta::relational::fct::setupDataRunnerH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
+{
+     let mappingTest = $mappingTestFN->eval();
+
+    meta::relational::fct::setupDataRunner($mappingTest.setupData,DatabaseType.H2);
+}
 function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseType:DatabaseType[1]):Any[1]
 {
 

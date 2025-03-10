@@ -2413,6 +2413,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-fct</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>

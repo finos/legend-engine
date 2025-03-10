@@ -43,57 +43,66 @@ public class FCTReportBuilder
 {
 
 
-    public static List<FCTTestReport> generateReport(ImmutableList<FCTReport> reports, MutableList<? extends Root_meta_pure_extension_Extension> extensions)
+    public static List<FCTTestReport> generateReport(ImmutableList<FCTReport> reports)
     {
        ObjectMapper mapper = new ObjectMapper();
        FastList<FCTTestReport> results = FastList.newList();
        reports.forEach(report ->
                {
 
-                   MutableMap<String, String> explodedExpectedFailures = PCTReportConfiguration.explodeExpectedFailures(report.expectedFailures(), getClassLoaderExecutionSupport().getProcessorSupport());
+                  MutableMap<String, String> explodedExpectedFailures = PCTReportConfiguration.explodeExpectedFailures(report.expectedFailures(), getClassLoaderExecutionSupport().getProcessorSupport());
+                  report.getTestCollection().forEach(collection ->
 
-                   RichIterable<? extends ConcreteFunctionDefinition<? extends Object>> testfunctions = (RichIterable<? extends ConcreteFunctionDefinition<? extends Object>>) (RichIterable<?>) Lists.mutable.withAll(report.getTestCollection().stream()
-                           .flatMap(c -> c.getAllTestFunctions().stream()).map(c -> (ConcreteFunctionDefinition<? extends Object>) c).collect(Collectors.toList()));
-                   String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_(testfunctions, report.getReportID(), report.getStoreID(), getClassLoaderExecutionSupport());
-                   try
                    {
-                       FCTTestResult[] fctTestResults = mapper.readValue(json, FCTTestResult[].class);
-                       for (FCTTestResult testResult : fctTestResults)
+                       RichIterable<? extends ConcreteFunctionDefinition<? extends Object>> testfunctions = Lists.mutable.withAll(report.getTestCollection().stream()
+                               .flatMap(c -> c.getAllTestFunctions().stream()).map(c -> (ConcreteFunctionDefinition<? extends Object>) c).collect(Collectors.toList()));
+                       String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_(testfunctions, report.getReportID(), collection.getStoreType(), getClassLoaderExecutionSupport());
+                       try
                        {
-                           FCTTestReport fctTestReport = new FCTTestReport(testResult);
-                           if (testResult.featureTests != null)
+                           FCTTestResult[] fctTestResults = mapper.readValue(json, FCTTestResult[].class);
+                           for (FCTTestResult testResult : fctTestResults)
                            {
-                               for (FeatureTest featureTest : testResult.featureTests)
+                               FCTTestReport fctTestReport = new FCTTestReport(testResult);
+                               if (testResult.featureTests != null)
                                {
-                                   fctTestReport.functionName = featureTest.functionName;
-                                   String error = explodedExpectedFailures.get(featureTest.functionName);
-                                   fctTestReport.success = (error == null  && featureTest.expectedError == null   && Objects.equals(featureTest.assertionType, "assertion"));
-                                   fctTestReport.errorMessage = featureTest.expectedError != null ? featureTest.expectedError : error;
-                                   if (Objects.equals(featureTest.assertionType, "assertion"))
+                                   for (FeatureTest featureTest : testResult.featureTests)
                                    {
-                                       fctTestReport.assertionType = Objects.equals(testResult.testType, "LineageFCT") ? "Lineage" : "Execution";
-                                   }
-                                   else
-                                   {
-                                       fctTestReport.assertionType = featureTest.assertionType;
+                                       fctTestReport.functionName = featureTest.functionName;
+                                       String error = explodedExpectedFailures.get(featureTest.functionName);
+                                       fctTestReport.success = (error == null && featureTest.expectedError == null && Objects.equals(featureTest.assertionType, "assertion"));
+                                       fctTestReport.errorMessage = featureTest.expectedError != null ? featureTest.expectedError : error;
+                                       if (Objects.equals(featureTest.assertionType, "assertion"))
+                                       {
+                                           fctTestReport.assertionType = Objects.equals(testResult.testType, "LineageFCT") ? "Lineage" : "Execution";
+                                       }
+                                       else
+                                       {
+                                           fctTestReport.assertionType = featureTest.assertionType;
+                                       }
                                    }
                                }
+                               else
+                               {
+                                   fctTestReport.assertionType = "UnTested";
+                               }
+                               results.add(fctTestReport);
+
                            }
-                           else
-                           {
-                               fctTestReport.assertionType = "UnTested";
-                           }
-                           results.add(fctTestReport);
 
                        }
 
+                       catch (JsonProcessingException e)
+                       {
+                           throw new RuntimeException(e);
+                       }
+
                    }
-                   catch (JsonProcessingException e)
-                   {
-                       throw new RuntimeException(e);
-                   }
+                  );
+
                }
-       );
+
+               );
+
         return results;
     }
 
