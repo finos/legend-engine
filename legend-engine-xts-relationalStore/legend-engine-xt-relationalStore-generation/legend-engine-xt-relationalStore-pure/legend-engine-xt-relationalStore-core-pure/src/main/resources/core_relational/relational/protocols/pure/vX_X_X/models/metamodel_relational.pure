@@ -67,7 +67,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Relation
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Milestoning
 {
     _type : String[1];
-   infinityDate : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate[0..1];
+   infinityDate : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDate[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Table extends meta::protocols::pure::vX_X_X::metamodel::store::relational::Relation

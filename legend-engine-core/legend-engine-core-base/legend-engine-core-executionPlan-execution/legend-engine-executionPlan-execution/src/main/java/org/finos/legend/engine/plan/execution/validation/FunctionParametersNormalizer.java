@@ -25,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Functi
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ProtocolObjectValidationContext;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 
 import org.finos.legend.engine.shared.core.identity.Identity;

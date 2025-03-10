@@ -1,0 +1,30 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::Path
+{
+   name : String[1];
+   startType : String[1];
+   path : meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement extends meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PropertyPathElement extends meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PathElement
+{
+   property : String[1];
+   parameters : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*];
+}

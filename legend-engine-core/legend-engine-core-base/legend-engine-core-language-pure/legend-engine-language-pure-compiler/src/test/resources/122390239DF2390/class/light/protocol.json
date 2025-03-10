@@ -1,0 +1,46 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Light",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 3,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::Light"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -22,11 +22,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
@@ -97,7 +97,7 @@ public class ExtendHandler extends FunctionHandler
 
     private static void processColSpecFirstFunction(ColSpec o, GenericType propertyType, ProcessingContext processingContext, PureModel pureModel)
     {
-        Lambda lambda = o.function1;
+        LambdaFunction lambda = o.function1;
         if (lambda != null)
         {
             if (lambda.parameters.size() > 1)

@@ -43,8 +43,8 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityExecuteInput;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -57,7 +57,6 @@ import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -120,7 +119,7 @@ public class DataQualityExecute
             // 1. load pure model from PureModelContext
             PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
             // 2. call DQ PURE func to generate lambda
-            LambdaFunction<Object> dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery, dataQualityExecuteInput.queryLimit);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery, dataQualityExecuteInput.queryLimit);
             // 3. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);// since lambda has from function we dont need mapping, runtime and context
             LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_GENERATE_PLAN_END, System.currentTimeMillis() - start).toString());
@@ -148,7 +147,7 @@ public class DataQualityExecute
             // 1. load pure model from PureModelContext
             PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
             // 2. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
             // 3. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityExecuteInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);// since lambda has from function we dont need mapping, runtime and context
             // 4. execute plan
@@ -178,8 +177,8 @@ public class DataQualityExecute
         // 1. load pure model from PureModelContext
         PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
         // 2. call DQ PURE func to generate lambda
-        LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
-        Lambda lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambdaForTrial(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.queryLimit, dataQualityExecuteInput.validationName, dataQualityExecuteInput.runQuery);
+        LambdaFunction lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
         return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }
 

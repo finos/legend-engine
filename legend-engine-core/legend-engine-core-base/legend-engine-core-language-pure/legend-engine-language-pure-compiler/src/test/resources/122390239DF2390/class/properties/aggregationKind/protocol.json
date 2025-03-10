@@ -1,0 +1,146 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "ClassWithPropertiesWithAggregationKind",
+      "originalMilestonedProperties": [],
+      "package": "protocol",
+      "properties": [
+        {
+          "aggregation": "NONE",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 23,
+                "endLine": 3,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 3
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "value",
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "aggregation": "COMPOSITE",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 29,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 23,
+                "startLine": 4
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "value2",
+          "sourceInformation": {
+            "endColumn": 33,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "aggregation": "SHARED",
+          "genericType": {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "Integer",
+              "sourceInformation": {
+                "endColumn": 26,
+                "endLine": 5,
+                "sourceId": "",
+                "startColumn": 20,
+                "startLine": 5
+              }
+            },
+            "typeArguments": [],
+            "typeVariableValues": []
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "value3",
+          "sourceInformation": {
+            "endColumn": 30,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 6,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::ClassWithPropertiesWithAggregationKind"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

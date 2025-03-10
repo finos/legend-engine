@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 @Deprecated
 public class DataSpaceTemplateExecutable extends DataSpaceExecutable
 {
-    public Lambda query;
+    public LambdaFunction query;
 }

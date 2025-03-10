@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -282,7 +283,7 @@ public class HelperPersistenceBuilder
         return IPersistenceCompilerExtension.process(persistenceTarget, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraPersistenceTargetProcessors), context);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path buildPath(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path path, CompileContext ctx)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path buildPath(Path path, CompileContext ctx)
     {
         Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) new ValueSpecificationBuilder(ctx, org.eclipse.collections.impl.factory.Lists.mutable.empty(), new ProcessingContext("")).processClassInstance(path);
 

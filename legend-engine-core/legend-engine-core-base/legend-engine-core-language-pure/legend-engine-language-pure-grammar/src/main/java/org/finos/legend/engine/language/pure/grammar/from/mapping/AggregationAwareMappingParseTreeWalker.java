@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -164,7 +164,7 @@ public class AggregationAwareMappingParseTreeWalker
 
     private GroupByFunction visitGroupByFunction(AggregationAwareParserGrammar.GroupByFunctionSpecificationContext ctx)
     {
-        Lambda lambda = visitLambda(ctx.combinedExpression());
+        LambdaFunction lambda = visitLambda(ctx.combinedExpression());
         GroupByFunction groupByFunction = new GroupByFunction();
         groupByFunction.groupByFn = lambda;
 
@@ -180,7 +180,7 @@ public class AggregationAwareMappingParseTreeWalker
         return aggregateFunction;
     }
 
-    private Lambda visitLambda(AggregationAwareParserGrammar.CombinedExpressionContext ctx)
+    private LambdaFunction visitLambda(AggregationAwareParserGrammar.CombinedExpressionContext ctx)
     {
         // Build source info for Lambda
         int startLine = ctx.start.getLine();
@@ -193,7 +193,7 @@ public class AggregationAwareMappingParseTreeWalker
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = Collections.singletonList(valueSpecification);
         return lambda;
     }

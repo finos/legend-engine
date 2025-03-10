@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class ExecuteInput
 {
     public String clientVersion;
     @JsonProperty(required = true)
-    public Lambda function;
+    public LambdaFunction function;
     public String mapping;
     public Runtime runtime;
     public ExecutionContext context;

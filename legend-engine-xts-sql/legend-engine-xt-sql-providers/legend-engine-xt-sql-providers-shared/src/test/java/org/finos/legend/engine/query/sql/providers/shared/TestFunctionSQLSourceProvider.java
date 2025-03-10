@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
@@ -81,7 +81,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("workspace", null, "ws1")
         );
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = function.body;
         lambda.parameters = function.parameters;
 
@@ -120,7 +120,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("coordinates", null, "proj1:art:1.0.0")
         );
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = function.body;
         lambda.parameters = function.parameters;
 

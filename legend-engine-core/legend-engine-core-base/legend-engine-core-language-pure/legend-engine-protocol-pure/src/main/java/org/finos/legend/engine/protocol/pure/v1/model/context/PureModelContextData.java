@@ -66,7 +66,7 @@ public class PureModelContextData extends PureModelContext
     }
 
     @JsonIgnore
-    public <T extends PackageableElement> List<T> getElementsOfType(java.lang.Class<T> cls)
+    public <T extends PackageableElement> MutableList<T> getElementsOfType(java.lang.Class<T> cls)
     {
         return this.elements.selectInstancesOf(cls);
     }

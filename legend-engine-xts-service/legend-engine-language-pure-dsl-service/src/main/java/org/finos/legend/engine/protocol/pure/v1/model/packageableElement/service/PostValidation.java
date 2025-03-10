@@ -17,7 +17,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
 public class PostValidation
 {
     public String description;
-    public List<Lambda> parameters = Collections.emptyList();
+    public List<LambdaFunction> parameters = Collections.emptyList();
     public List<PostValidationAssertion> assertions = Collections.emptyList();
     public SourceInformation sourceInformation;
 }

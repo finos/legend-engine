@@ -17,7 +17,7 @@ package org.finos.legend.engine.query.sql.providers.core;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 
 import java.util.Collections;
@@ -26,14 +26,14 @@ import java.util.List;
 public class SQLSource
 {
     private final String type;
-    private final Lambda func;
+    private final LambdaFunction func;
     private final String mapping;
     private final Runtime runtime;
     private final List<ExecutionOption> executionOptions;
     private final ExecutionContext executionContext;
     private final List<SQLSourceArgument> key;
 
-    public SQLSource(String type, Lambda func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key)
+    public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key)
     {
         this.type = type;
         this.func = func;
@@ -49,7 +49,7 @@ public class SQLSource
         return type;
     }
 
-    public Lambda getFunc()
+    public LambdaFunction getFunc()
     {
         return func;
     }

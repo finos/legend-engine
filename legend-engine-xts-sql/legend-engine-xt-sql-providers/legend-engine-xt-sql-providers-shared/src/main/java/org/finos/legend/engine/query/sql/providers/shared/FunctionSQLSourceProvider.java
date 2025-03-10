@@ -24,8 +24,8 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.query.sql.providers.core.SQLContext;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
@@ -92,7 +92,7 @@ public class FunctionSQLSourceProvider implements SQLSourceProvider
                 throw new EngineException("Function " + path + " does not return a supported data type. Supported types: [" + String.join(", ", SUPPORTED_TYPES) + "]");
             }
 
-            Lambda lambda = new Lambda();
+            LambdaFunction lambda = new LambdaFunction();
             lambda.parameters = function.parameters;
             lambda.body = function.body;
 

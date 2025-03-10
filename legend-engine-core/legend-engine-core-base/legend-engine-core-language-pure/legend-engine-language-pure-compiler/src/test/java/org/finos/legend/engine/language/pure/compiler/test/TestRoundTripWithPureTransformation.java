@@ -50,7 +50,7 @@ public class TestRoundTripWithPureTransformation
     @Test
     public void testClassWithDefaultValue() throws Exception
     {
-        roundTripElement("test::Person","Class test::Person extends meta::pure::metamodel::type::Any\n" +
+        roundTripElement("test::Person","Class test::Person\n" +
                 "{\n" +
                 "  firstName: String[1];\n" +
                 "  age: Integer[1] = 5;\n" +

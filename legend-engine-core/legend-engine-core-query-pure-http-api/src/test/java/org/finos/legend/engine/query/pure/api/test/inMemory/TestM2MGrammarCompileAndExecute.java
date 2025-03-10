@@ -29,12 +29,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -96,7 +96,7 @@ public class TestM2MGrammarCompileAndExecute
         );
 
         ClassInstance fetchTree = rootGFT("test::Person");
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Person")), fetchTree), fetchTree));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Person")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
         input.clientVersion = "vX_X_X";
@@ -134,7 +134,7 @@ public class TestM2MGrammarCompileAndExecute
         );
 
         ClassInstance fetchTree = rootGFT("test::A", propertyGFT("d"));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::A")), fetchTree), fetchTree));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::A")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
         input.clientVersion = "vX_X_X";
@@ -203,7 +203,7 @@ public class TestM2MGrammarCompileAndExecute
         );
 
         ClassInstance fetchTree = rootGFT("test::Company", propertyGFT("name"), propertyGFT("employees", propertyGFT("fullName")));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Company")), fetchTree), fetchTree));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Company")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
         input.clientVersion = "vX_X_X";
@@ -227,7 +227,7 @@ public class TestM2MGrammarCompileAndExecute
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(derivedPure);
 
         ClassInstance fetchTree = rootGFT("test::FirstEmployee", propertyGFT("name"));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::FirstEmployee")), fetchTree), fetchTree));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::FirstEmployee")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
         input.clientVersion = "vX_X_X";
@@ -281,7 +281,7 @@ public class TestM2MGrammarCompileAndExecute
         );
 
         ClassInstance fetchTree = rootGFT("test::TargetClass", propertyGFT("enum"));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::TargetClass")), fetchTree), fetchTree));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::TargetClass")), fetchTree), fetchTree));
 
         ExecuteInput jsonInput = new ExecuteInput();
         jsonInput.clientVersion = "vX_X_X";
@@ -333,9 +333,9 @@ public class TestM2MGrammarCompileAndExecute
         return clazz;
     }
 
-    private Lambda lambda(ValueSpecification body)
+    private LambdaFunction lambda(ValueSpecification body)
     {
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = Collections.singletonList(body);
         return lambda;
     }

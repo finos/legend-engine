@@ -50,9 +50,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
@@ -91,7 +91,6 @@ import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.finos.legend.pure.generated.core_pure_router_preeval_preeval;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
 
@@ -189,17 +188,17 @@ public class SQLExecutor
         }));
     }
 
-    public Lambda lambda(Query query, SQLContext context, Identity identity)
+    public LambdaFunction lambda(Query query, SQLContext context, Identity identity)
     {
         return lambda(query, FastList.newList(), context, identity);
     }
 
-    public Lambda lambda(Query query, List<Object> positionalArguments, SQLContext context, Identity identity)
+    public LambdaFunction lambda(Query query, List<Object> positionalArguments, SQLContext context, Identity identity)
     {
         return process(query, positionalArguments,
                 (transformedContext, pureModel, sources, positionals, span) ->
                 {
-                    LambdaFunction<? extends Object> lambda = transformedContext.lambda(pureModel.getExecutionSupport());
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object> lambda = transformedContext.lambda(pureModel.getExecutionSupport());
                     return transformLambda(lambda, pureModel);
                 },
                 (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
@@ -239,7 +238,7 @@ public class SQLExecutor
         {
             TraceUtils.trace("generating plan", span ->
             {
-                Lambda lambda = read(result._lambda(), Lambda.class);
+                LambdaFunction lambda = read(result._lambda(), LambdaFunction.class);
                 FunctionDefinition<?> func = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
                 FunctionDefinition<?> func2 = core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(func, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
                 Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
@@ -399,10 +398,10 @@ public class SQLExecutor
         );
     }
 
-    private Lambda transformLambda(LambdaFunction<?> lambda, PureModel pureModel)
+    private LambdaFunction transformLambda(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel)
     {
         Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-        return transform(protocol, Lambda.class, pureModel);
+        return transform(protocol, LambdaFunction.class, pureModel);
     }
 
     private <T> T transform(Object object, java.lang.Class<T> clazz, PureModel pureModel)
@@ -423,7 +422,11 @@ public class SQLExecutor
         try
         {
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Method method = cl.getMethod("Root_meta_protocols_pure_" + version +
+                    (PureClientVersions.versionAGreaterThanVersionB(version, "v1_33_0") ?
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__LambdaFunction_1_" :
+                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_"),
+                    FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, lambda, extensions, executionSupport);
         }
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)

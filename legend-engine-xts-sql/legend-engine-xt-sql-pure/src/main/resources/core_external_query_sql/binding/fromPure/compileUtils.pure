@@ -184,7 +184,7 @@ function meta::external::query::sql::transformation::compile::utils::compileViaP
   meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($l, $extensions)->removeLambdaTDSFunction($removeFunctions)->compileViaProtocol($extensions);
 }
 
-function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1], extensions:Extension[*]):LambdaFunction<Any>[1]
+function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], extensions:Extension[*]):LambdaFunction<Any>[1]
 {
   $l->meta::alloy::metadataServer::alloyToJSON()
     ->meta::external::query::sql::legendCompileVSProtocol([])
@@ -194,16 +194,16 @@ function meta::external::query::sql::transformation::compile::utils::compileViaP
     ]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeLambdaTDSFunction(l:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeLambdaTDSFunction(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
-  $l->removeTDSFunction($functions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda);
+  $l->removeTDSFunction($functions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeTDSFunction(a:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
   $a->match([
-    l:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1] | ^$l(body = $l.body->map(b | $b->removeTDSFunction($functions))),
-    c:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection[1] | ^$c(values = $c.values->map(v | $v->removeTDSFunction($functions))),
+    l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(body = $l.body->map(b | $b->removeTDSFunction($functions))),
+    c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | ^$c(values = $c.values->map(v | $v->removeTDSFunction($functions))),
     f:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1] |
       if ($f.function->in($functions),
         | $f.parameters->at(0)->removeTDSFunction($functions),

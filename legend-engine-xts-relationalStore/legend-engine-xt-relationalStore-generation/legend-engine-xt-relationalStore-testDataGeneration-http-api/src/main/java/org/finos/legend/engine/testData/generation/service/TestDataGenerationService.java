@@ -21,18 +21,17 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVTable;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_data_RelationalCSVData;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.generated.core_relational_relational_testDataGeneration_testDataGeneration;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
 import java.util.Collections;
 import java.util.List;
 
 public class TestDataGenerationService
 {
-    public static List<EmbeddedData> generateEmbeddedData(Lambda query, Mapping mapping, PureModel pureModel)
+    public static List<EmbeddedData> generateEmbeddedData(LambdaFunction query, Mapping mapping, PureModel pureModel)
     {
         Root_meta_relational_metamodel_data_RelationalCSVData relationalCSVData = core_relational_relational_testDataGeneration_testDataGeneration.Root_meta_relational_testDataGeneration_getRelationalCSVDataFromQuery_FunctionDefinition_1__Mapping_1__RelationalCSVData_1_(
                 buildPureLambda(query, pureModel), mapping, pureModel.getExecutionSupport());
@@ -49,7 +48,7 @@ public class TestDataGenerationService
         return Collections.singletonList(data);
     }
 
-    private static LambdaFunction<?> buildPureLambda(Lambda lambda, PureModel pureModel)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> buildPureLambda(LambdaFunction lambda, PureModel pureModel)
     {
         return HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
     }

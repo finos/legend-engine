@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-platform-modular-generation</artifactId>
-        <version>4.71.2-SNAPSHOT</version>
+        <version>4.72.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>

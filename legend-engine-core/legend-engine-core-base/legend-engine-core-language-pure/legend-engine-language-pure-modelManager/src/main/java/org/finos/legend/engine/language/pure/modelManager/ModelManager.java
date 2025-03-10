@@ -35,7 +35,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -112,7 +112,7 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, Identity identity)
+    public String getLambdaReturnType(LambdaFunction lambda, PureModelContext context, String clientVersion, Identity identity)
     {
         PureModel result = this.loadModel(context, clientVersion, identity, null);
         return Compiler.getLambdaReturnType(lambda, result);

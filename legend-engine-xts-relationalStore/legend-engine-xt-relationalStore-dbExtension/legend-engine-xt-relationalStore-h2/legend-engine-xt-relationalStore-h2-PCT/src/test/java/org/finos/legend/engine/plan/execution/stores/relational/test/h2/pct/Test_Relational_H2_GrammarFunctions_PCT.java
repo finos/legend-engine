@@ -98,19 +98,19 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
 
             // Minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"; SQL statement:\nselect (-9223372036854775718 - 132) [22003-214]"),
+            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\""),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"; SQL statement:\nselect (-9223372036854775718 - 132) [22003-214]\n"),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"1\" for parameter \"columnIndex\" [90008-214]"),
 
             // Plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
+            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\""),
 
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"9223372036854775807\"; SQL statement:\nselect (9223372036854775807 + 3 + (4 + 5) + 7) [22003-214]"),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
 
             // Times
-            one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47000000003\""),
+            one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"2\"; SQL statement:\nselect (2 * 9223372036854775807) [22003-214]"),
 
             // Plus (String)

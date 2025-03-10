@@ -63,8 +63,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UserListOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -504,7 +504,7 @@ public class ServiceParseTreeWalker
         return keyedSingleExecutionTest;
     }
 
-    private Lambda visitLambda(ServiceParserGrammar.CombinedExpressionContext ctx)
+    private LambdaFunction visitLambda(ServiceParserGrammar.CombinedExpressionContext ctx)
     {
         DomainParser parser = new DomainParser();
         // prepare island grammar walker source information
@@ -515,13 +515,13 @@ public class ServiceParseTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
-        if (valueSpecification instanceof Lambda)
+        if (valueSpecification instanceof LambdaFunction)
         {
-            return (Lambda) valueSpecification;
+            return (LambdaFunction) valueSpecification;
         }
         // NOTE: If the user just provides the body of the lambda, we will wrap a lambda around it
         // we might want to reconsider this behavior and throw error if this convenience causes any trouble
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = new ArrayList<>();
         lambda.body.add(valueSpecification);
         lambda.parameters = new ArrayList<>();

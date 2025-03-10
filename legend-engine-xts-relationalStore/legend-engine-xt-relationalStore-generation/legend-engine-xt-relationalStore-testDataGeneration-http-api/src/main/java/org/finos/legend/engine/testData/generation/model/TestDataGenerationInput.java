@@ -18,7 +18,7 @@ package org.finos.legend.engine.testData.generation.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 public class TestDataGenerationInput
 {
@@ -26,7 +26,7 @@ public class TestDataGenerationInput
      * query should be optional. For now, It's required.
      */
     @JsonProperty
-    public Lambda query;
+    public LambdaFunction query;
 
     @JsonProperty
     public PureModelContext model;
@@ -40,7 +40,7 @@ public class TestDataGenerationInput
     @JsonProperty
     public String clientVersion;
 
-    public TestDataGenerationInput(@JsonProperty("query") Lambda query, @JsonProperty("model") PureModelContext model, @JsonProperty("runtime") String runtime, @JsonProperty("mapping") String mapping, @JsonProperty("clientVersion") String clientVersion)
+    public TestDataGenerationInput(@JsonProperty("query") LambdaFunction query, @JsonProperty("model") PureModelContext model, @JsonProperty("runtime") String runtime, @JsonProperty("mapping") String mapping, @JsonProperty("clientVersion") String clientVersion)
     {
         this.query = query;
         this.runtime = runtime;

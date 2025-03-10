@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.deprec
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.One;
 
 @Deprecated
 public class Whatever extends One

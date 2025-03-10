@@ -51,9 +51,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -514,7 +514,7 @@ public class ServiceStoreParseTreeWalker
         return requestBodyBuildInfo;
     }
 
-    private Lambda visitLambda(ServiceStoreParserGrammar.CombinedExpressionContext ctx)
+    private LambdaFunction visitLambda(ServiceStoreParserGrammar.CombinedExpressionContext ctx)
     {
         String lambdaString = ctx.start.getInputStream().getText(Interval.of(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
 
@@ -528,7 +528,7 @@ public class ServiceStoreParseTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = new ArrayList<>();
         lambda.body.add(valueSpecification);
         lambda.parameters = Lists.mutable.empty();
@@ -613,7 +613,7 @@ public class ServiceStoreParseTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ValueSpecification valueSpecification = parser.parseCombinedExpression("$this." + PureGrammarParserUtility.fromIdentifier(ctx.identifier()), combineExpressionSourceInformation, null);
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = new ArrayList<>();
         lambda.body.add(valueSpecification);
         lambda.parameters = Lists.mutable.empty();
