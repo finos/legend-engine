@@ -232,17 +232,21 @@ function meta::relational::functions::sqlQueryToString::spanner::getSpannerDDLCo
 
 function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateCreateSchemaStatementSpanner(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   [];
+   if ($createSchemaSQL.schema.name == 'default',
+      | [],
+      | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
 }
 
 function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateDropSchemaStatementSpanner(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   [];
+   if ($dropSchemaSQL.schema.name == 'default',
+     |  [],
+     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
 }
 
 function meta::relational::functions::sqlQueryToString::spanner::translateDropTableStatementSpanner(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-  '[Drop table '+$dropTableSQL.table.name+';]';
+  'Drop table if exists '+$dropTableSQL.table.name+';';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::schemaNameToIdentifierForSpanner(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
@@ -259,7 +263,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
         + $table.columns->cast(@meta::relational::metamodel::Column)
           ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextSpanner($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
           ->joinStrings(',')
-        + if ($table.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $table.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+        + if ($table.primaryKey->isEmpty() || $applyConstraints == false, | ', PRIMARY KEY(' + $table.columns->cast(@meta::relational::metamodel::Column)->map(c | $c.name)->joinStrings(',') + ')', | ', PRIMARY KEY(' + $table.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
         +');';
 }
 

@@ -48,6 +48,12 @@ public class CoreExternalTestConnectionCodeRepositoryProvider implements CodeRep
             "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_"
     );
 
+    public static final Adapter spannerAdapter = new Adapter(
+            "Spanner",
+            "Store_Relational",
+            "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_"
+    );
+
     @Override
     public CodeRepository repository()
     {
