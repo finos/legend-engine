@@ -41,7 +41,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       (
         parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
         returnType = AbstractPrecisionScaleSqlType,
-        documentation = 'Returns the logarithm of a number (1st arg) with specified base (2nd arg).'
+        documentation = 'Returns the logarithm of a number (2nd arg) with specified base (1st arg).'
       )
     ],
     tests = [

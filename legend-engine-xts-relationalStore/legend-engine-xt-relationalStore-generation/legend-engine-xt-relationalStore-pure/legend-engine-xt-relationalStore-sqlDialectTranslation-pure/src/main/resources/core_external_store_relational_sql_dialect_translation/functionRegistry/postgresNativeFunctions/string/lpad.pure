@@ -33,13 +33,13 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, AbstractNumericSqlType],
+        parameterTypes = [AbstractStringSqlType, AbstractIntegerSqlType],
         returnType = AbstractStringSqlType,
         documentation = 'Left pads the string (1st arg) with spaces till the specified length (2nd arg).'
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, AbstractNumericSqlType, AbstractStringSqlType],
+        parameterTypes = [AbstractStringSqlType, AbstractIntegerSqlType, AbstractStringSqlType],
         returnType = AbstractStringSqlType,
         documentation = 'Left pads the string (1st arg) with another string (3rd arg) till the specified length (2nd arg).'
       )
