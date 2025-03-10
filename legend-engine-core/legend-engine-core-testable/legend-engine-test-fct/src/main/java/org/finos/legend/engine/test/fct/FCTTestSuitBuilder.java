@@ -30,12 +30,14 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.pure.generated.Root_meta_pure_fct_AssertionRun;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.profile.Profile;
@@ -132,7 +134,7 @@ public class FCTTestSuitBuilder extends PureTestBuilder
             subSuites.add(buildFCTSuite(collection,  evaluator, adaptor,  executionSupport));
         }
 
-        return buildFCTSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
+        return buildFCTSuite(PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
                 evaluator,
                 adaptor,
                 testCollection.getTestFunctions(),
@@ -159,22 +161,33 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         {
 
             Function<?>  adaptorFN = ((Function<?>) _Package.getByUserPath(adaptor, ((CompiledExecutionSupport) executionSupport).getProcessorSupport()));
-            Function<?> setup = Root_meta_pure_test_fct_adaptorSetupFunction_Function_1__Function_$0_1$_(adaptorFN, executionSupport);
+            Function<?> setup = null;
+            try
+
+            {
+                setup = Root_meta_pure_test_fct_adaptorSetupFunction_Function_1__Function_$0_1$_(adaptorFN, executionSupport);
+            }
+            catch (Exception e)
+            {
+                System.out.println("adaptor not found");
+            }
+
+
             Function<?>  evaluatorFn = ((Function<?>) _Package.getByUserPath(evaluator, ((CompiledExecutionSupport) executionSupport).getProcessorSupport()));
 
 
             if (setup != null)
             {
-                PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> setupExecutor = (a, b) -> fctExecuteFn(a, testFunc,org.eclipse.collections.impl.factory.Maps.mutable.empty(),executionSupport, b);
+                F2<CoreInstance, MutableList<Object>, Object> setupExecutor = (a, b) -> fctExecuteFn(a, testFunc, Maps.mutable.empty(),executionSupport, b);
                 suite.addTest(new FCTPureTestCase(setup, setupExecutor, executionSupport, Lists.mutable.empty(),"setup"));
             }
 
-            RichIterable<? extends Root_meta_pure_fct_AssertionRun> functions = Root_meta_pure_fct_tests_testRunnerAssertion_Function_1__Function_1__Function_1__AssertionRun_MANY_(adaptorFN, evaluatorFn,(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object>)testFunc,executionSupport);
+            RichIterable<? extends Root_meta_pure_fct_AssertionRun> functions = Root_meta_pure_fct_tests_testRunnerAssertion_Function_1__Function_1__Function_1__AssertionRun_MANY_(adaptorFN, evaluatorFn,(Function<? extends Object>)testFunc,executionSupport);
 
 
             for (Root_meta_pure_fct_AssertionRun assertionRun: functions)
                  {
-                     PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> testExecutor = (a, b) -> fctExecuteFn(a,assertionRun._parameter(),org.eclipse.collections.impl.factory.Maps.mutable.empty(),executionSupport, b);
+                     F2<CoreInstance, MutableList<Object>, Object> testExecutor = (a, b) -> fctExecuteFn(a,assertionRun._parameter(), Maps.mutable.empty(),executionSupport, b);
                      Test theTest = new FCTPureTestCase(assertionRun._evaluator()._eval(),testExecutor, executionSupport,Lists.mutable.empty(),   assertionRun._parameter()._test().getName());
                      suite.addTest(theTest);
 
