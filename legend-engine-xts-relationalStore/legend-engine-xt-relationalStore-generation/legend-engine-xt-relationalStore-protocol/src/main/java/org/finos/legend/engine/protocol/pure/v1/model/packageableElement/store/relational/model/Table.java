@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 
@@ -27,4 +29,6 @@ public class Table
     public List<String> primaryKey = Collections.emptyList();
     public List<Milestoning> milestoning = Collections.emptyList();
     public SourceInformation sourceInformation;
+    public List<StereotypePtr> stereotypes;
+    public List<TaggedValue> taggedValues;
 }
