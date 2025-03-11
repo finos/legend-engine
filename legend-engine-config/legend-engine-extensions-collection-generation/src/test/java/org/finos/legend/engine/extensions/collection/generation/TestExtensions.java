@@ -32,6 +32,7 @@ import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArt
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
+import org.finos.legend.engine.language.functionJar.compiler.toPureGraph.FunctionJarCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
@@ -43,10 +44,9 @@ import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.Hoste
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
-import org.finos.legend.engine.language.jarService.compiler.toPureGraph.JarServiceCompilerExtension;
-import org.finos.legend.engine.language.jarService.generation.deployment.JarServiceArtifactGenerationExtension;
-import org.finos.legend.engine.language.jarService.grammar.from.JarServiceGrammarParserExtension;
-import org.finos.legend.engine.language.jarService.grammar.to.JarServiceGrammarComposer;
+import org.finos.legend.engine.language.functionJar.generation.deployment.FunctionJarArtifactGenerationExtension;
+import org.finos.legend.engine.language.functionJar.grammar.from.FunctionJarGrammarParserExtension;
+import org.finos.legend.engine.language.functionJar.grammar.to.FunctionJarGrammarComposer;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.memsqlFunction.grammar.to.MemSqlFunctionGrammarComposer;
 import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer;
@@ -98,7 +98,7 @@ import org.finos.legend.engine.language.stores.elasticsearch.v7.from.Elasticsear
 import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
-import org.finos.legend.engine.protocol.jarService.metamodel.JarServiceProtocolExtension;
+import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarProtocolExtension;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -312,7 +312,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
-                .with(JarServiceProtocolExtension.class)
+                .with(FunctionJarProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(MemSqlFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
@@ -359,7 +359,7 @@ public class TestExtensions
                 .with(DataSpaceParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(HostedServiceGrammarParserExtension.class)
-                .with(JarServiceGrammarParserExtension.class)
+                .with(FunctionJarGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
                 .with(MemSqlFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
@@ -389,7 +389,7 @@ public class TestExtensions
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
-                .with(JarServiceGrammarComposer.class)
+                .with(FunctionJarGrammarComposer.class)
                 .with(PostDeploymentActionGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(MemSqlFunctionGrammarComposer.class)
@@ -425,7 +425,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
                 .with(SnowflakeAppCompilerExtension.class)
                 .with(HostedServiceCompilerExtension.class)
-                .with(JarServiceCompilerExtension.class)
+                .with(FunctionJarCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(MemSqlFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
@@ -529,7 +529,7 @@ public class TestExtensions
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
                 .with(HostedServiceArtifactGenerationExtension.class)
-                .with(JarServiceArtifactGenerationExtension.class)
+                .with(FunctionJarArtifactGenerationExtension.class)
                 .with(FunctionActivatorArtifactGenerationExtension.class);
     }
 
@@ -600,7 +600,7 @@ public class TestExtensions
                 .with("core_bigqueryfunction")
                 .with("core_memsqlfunction")
                 .with("core_hostedservice")
-                .with("core_jarservice")
+                .with("core_functionjar")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_external_language_java_conventions_essential")

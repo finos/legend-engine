@@ -78,7 +78,7 @@
         <module>legend-engine-xts-service</module>
         <module>legend-engine-xts-persistence</module>
         <module>legend-engine-xts-hostedService</module>
-        <module>legend-engine-xts-jarService</module>
+        <module>legend-engine-xts-functionJar</module>
 
         <!-- New Packageable Elements -->
         <module>legend-engine-xts-text</module>
@@ -1078,32 +1078,32 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-protocol</artifactId>
+                <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-pure</artifactId>
+                <artifactId>legend-engine-xt-functionJar-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-compiler</artifactId>
+                <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-grammar</artifactId>
+                <artifactId>legend-engine-xt-functionJar-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-api</artifactId>
+                <artifactId>legend-engine-xt-functionJar-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-jarService-generation</artifactId>
+                <artifactId>legend-engine-xt-functionJar-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
