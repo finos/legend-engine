@@ -113,7 +113,8 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                      rb:meta::pure::executionPlan::RelationalBlockExecutionNode[1]|
                                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode( _type = 'relationalBlock',
                                                                                                                        resultType = $rb.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
-                                                                                                                       finallyExecutionNodes = $rb.finallyExecutionNodes->map(n|$n->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($extensions)));,
+                                                                                                                       finallyExecutionNodes = $rb.finallyExecutionNodes->map(n|$n->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($extensions)),
+                                                                                                                       isolationLevel = $rb.isolationLevel->map(i| $i->toString()->toOne()->meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::TransactionIsolationLevel));,
                      rel:meta::relational::mapping::SQLExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode(
                            _type = 'sql',
