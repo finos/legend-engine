@@ -262,7 +262,8 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         Schema defaultSchema = ListIterate.select(database.schemas, schema -> "default".equals(schema.name)).getFirst();
         RelationalGrammarComposerContext context = RelationalGrammarComposerContext.Builder.newInstance().withCurrentDatabase(PureGrammarComposerUtility.convertPath(database.getPath())).withNoDynaFunctionNames().withRenderStyle(PUREcontext.getRenderStyle()).build();
         StringBuilder builder = new StringBuilder();
-        builder.append("Database ").append(renderAnnotations(database.stereotypes, null)).append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
+        builder.append("Database ");
+        builder.append(renderAnnotations(database.stereotypes, database.taggedValues)).append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
         boolean nonEmpty = false;
         if (!database.includedStores.isEmpty())
         {
