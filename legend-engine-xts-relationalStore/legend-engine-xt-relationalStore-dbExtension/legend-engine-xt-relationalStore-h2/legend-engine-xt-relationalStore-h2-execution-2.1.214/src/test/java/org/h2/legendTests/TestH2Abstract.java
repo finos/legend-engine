@@ -40,6 +40,7 @@ public class TestH2Abstract
     @AfterClass
     public static void tearDownClass() throws Exception
     {
+        h2ConnStatement.execute("DROP ALL OBJECTS");
         h2ConnStatement.close();
         h2Conn.close();
         System.out.println("H2 Connection Closed....");
