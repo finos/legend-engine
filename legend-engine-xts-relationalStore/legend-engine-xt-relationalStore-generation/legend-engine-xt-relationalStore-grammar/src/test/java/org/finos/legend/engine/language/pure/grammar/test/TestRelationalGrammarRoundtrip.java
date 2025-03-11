@@ -900,6 +900,28 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     }
 
     @Test
+    public void testRelationalElementsWithStereotypesAndTaggedValues()
+    {
+        test("###Relational\n" +
+                "Database test::db\n" +
+                "(\n" +
+                "  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema\n" +
+                "  (\n" +
+                "    Table <<equality.Key>> {doc.doc = 'table'} table1\n" +
+                "    (\n" +
+                "      col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  View <<equality.Key>> {doc.doc = 'view'} view1\n" +
+                "  (\n" +
+                "    col1: mySchema.table1.col1\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+
+    @Test
     public void testFunctionTest()
 
     {
