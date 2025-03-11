@@ -511,19 +511,19 @@
         <!-- Service Jar -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-jarService-compiler</artifactId>
+            <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-jarService-grammar</artifactId>
+            <artifactId>legend-engine-xt-functionJar-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-jarService-protocol</artifactId>
+            <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-jarService-generation</artifactId>
+            <artifactId>legend-engine-xt-functionJar-generation</artifactId>
         </dependency>
         <!-- Service Jar -->
 
