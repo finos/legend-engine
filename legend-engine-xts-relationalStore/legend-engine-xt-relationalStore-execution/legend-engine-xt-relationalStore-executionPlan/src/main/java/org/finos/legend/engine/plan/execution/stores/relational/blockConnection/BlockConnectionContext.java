@@ -20,9 +20,11 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.TransactionIsolationLevel;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
+import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 
 public class BlockConnectionContext
@@ -82,5 +84,19 @@ public class BlockConnectionContext
     public BlockConnectionContext copy()
     {
         return new BlockConnectionContext(Maps.mutable.ofMap(this.blockConnectionMap));
+    }
+
+    public void setIsolationLevel(TransactionIsolationLevel isolationLevel)
+    {
+        this.blockConnectionMap.values().forEach(conn -> {
+            try
+            {
+                conn.setTransactionIsolation(isolationLevel.getLevel());
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException("Failed to set transaction isolation level: " + isolationLevel, e);
+            }
+        });
     }
 }
