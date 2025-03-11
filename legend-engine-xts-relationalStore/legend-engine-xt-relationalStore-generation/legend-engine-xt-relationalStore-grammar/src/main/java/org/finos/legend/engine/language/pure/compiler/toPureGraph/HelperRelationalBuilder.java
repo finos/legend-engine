@@ -419,6 +419,8 @@ public class HelperRelationalBuilder
     public static Schema processDatabaseSchema(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema srcSchema, CompileContext context, Database database)
     {
         Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name, SourceInformationHelper.toM3SourceInformation(srcSchema.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Schema"))._name(srcSchema.name);
+        schema._stereotypes(srcSchema.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcSchema.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+        schema._taggedValues(srcSchema.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(srcSchema.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
         RichIterable<Table> tables = ListIterate.collect(srcSchema.tables, _table -> processDatabaseTable(_table, context, schema));
         RichIterable<TabularFunction> functions = ListIterate.collect(srcSchema.tabularFunctions, _function -> processDatabaseFunction(_function, context, schema));
         return schema._tables(tables)._tabularFunctions(functions)._database(database);
@@ -441,6 +443,8 @@ public class HelperRelationalBuilder
     public static Table processDatabaseTable(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table databaseTable, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema)
     {
         Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, SourceInformationHelper.toM3SourceInformation(databaseTable.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
+        table._stereotypes(databaseTable.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(databaseTable.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+        table._taggedValues(databaseTable.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(databaseTable.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
         MutableList<Column> columns = Lists.mutable.empty();
         MutableSet<String> validColumnNames = Sets.mutable.empty();
         MutableSet<String> duplicateColumns = Sets.mutable.empty();
@@ -453,7 +457,10 @@ public class HelperRelationalBuilder
             else
             {
                 validColumnNames.add(column.name);
-                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, SourceInformationHelper.toM3SourceInformation(column.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table));
+                Column col = new Root_meta_relational_metamodel_Column_Impl(column.name, SourceInformationHelper.toM3SourceInformation(column.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table);
+                col._stereotypes(column.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(column.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+                col._taggedValues(column.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(column.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
+                columns.add(col);
             }
         }
 
@@ -476,6 +483,8 @@ public class HelperRelationalBuilder
     public static View processDatabaseViewFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View srcView, CompileContext context, Schema schema)
     {
         View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name, SourceInformationHelper.toM3SourceInformation(srcView.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::View"))._name(srcView.name);
+        view._stereotypes(srcView.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcView.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+        view._taggedValues(srcView.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(srcView.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
         MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, SourceInformationHelper.toM3SourceInformation(columnMapping.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
         RichIterable<Column> pk = ListIterate.collect(srcView.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         return view._columns(columns)._primaryKey(pk)._schema(schema);

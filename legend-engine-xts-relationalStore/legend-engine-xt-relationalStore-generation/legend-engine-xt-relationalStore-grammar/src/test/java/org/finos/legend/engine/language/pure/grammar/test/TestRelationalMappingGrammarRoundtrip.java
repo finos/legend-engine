@@ -217,6 +217,30 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "  stereotypes: [type1, type2];\n" +
                 "}\n");
     }
+    
+    @Test
+    public void testDatabaseTaggedValues()
+    {
+        test("###Relational\n" +
+                "Database <<meta::pure::profiles::storeType.type2>> {meta::pure::profiles::doc.doc = 'Database documentation'} app::db\n" +
+                "(\n" +
+                "  Table Product\n" +
+                "  (\n" +
+                "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "  stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "Profile meta::pure::profiles::doc\n" +
+                "{\n" +
+                "  tags: [doc];\n" +
+                "}\n");
+    }
 
     @Test
     public void testRelationalPropertyMappingWithBindingTransformer()

@@ -15,6 +15,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,5 +27,7 @@ public class Schema
     public List<Table> tables = Collections.emptyList();
     public List<View> views = Collections.emptyList();
     public List<TabularFunction> tabularFunctions = Collections.emptyList();
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;
 }

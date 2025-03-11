@@ -187,7 +187,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                             database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                     ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
-                                    ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
+                                    ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)))
+                                    ._taggedValues(srcDatabase.taggedValues == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.taggedValues, taggedValue -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(taggedValue.tag.profile, taggedValue.tag.value, taggedValue.tag.profileSourceInformation, taggedValue.tag.sourceInformation))._value(taggedValue.value)));
 
                             return database;
                         },
