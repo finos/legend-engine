@@ -15,11 +15,18 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
+
+import java.util.Collections;
+import java.util.List;
 
 public class Column
 {
     public String name;
     public org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType type;
     public boolean nullable;
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;
 }

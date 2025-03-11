@@ -35,6 +35,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.lang.Double;
@@ -429,6 +431,7 @@ public class HelperRelationalGrammarComposer
         {
             builder.append(" NOT NULL");
         }
+        builder.append(HelperDomainGrammarComposer.renderAnnotations(column.stereotypes, column.taggedValues));
         return builder.toString();
     }
 

@@ -31,6 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.LocalMappingPropertyInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
@@ -165,6 +167,25 @@ public class RelationalParseTreeWalker
             return stereotypePtr;
         });
     }
+    
+    // ----------------------------------------------- TAGGED VALUES -----------------------------------------------
+
+    public List<TaggedValue> visitTaggedValues(RelationalParserGrammar.TaggedValuesContext ctx)
+    {
+        return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
+        {
+            TaggedValue taggedValue = new TaggedValue();
+            TagPtr tagPtr = new TagPtr();
+            taggedValue.tag = tagPtr;
+            tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
+            tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
+            tagPtr.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
+            tagPtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
+            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
+            return taggedValue;
+        });
+    }
 
 
     // ----------------------------------------------- SCHEMA -----------------------------------------------
@@ -177,6 +198,8 @@ public class RelationalParseTreeWalker
         schema.tables = ListIterate.collect(ctx.table(), this::visitTable);
         schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.identifier().getStart()).build()));
         schema.tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
+        schema.stereotypes = ctx.stereotypes() == null ? Collections.emptyList() : this.visitStereotypes(ctx.stereotypes());
+        schema.taggedValues = ctx.taggedValues() == null ? Collections.emptyList() : this.visitTaggedValues(ctx.taggedValues());
         return schema;
     }
 
@@ -195,6 +218,8 @@ public class RelationalParseTreeWalker
         {
             table.milestoning = ListIterate.collect(ctx.milestoneSpec().milestoning(), this::visitMilestoning);
         }
+        table.stereotypes = ctx.stereotypes() == null ? Collections.emptyList() : this.visitStereotypes(ctx.stereotypes());
+        table.taggedValues = ctx.taggedValues() == null ? Collections.emptyList() : this.visitTaggedValues(ctx.taggedValues());
         return table;
     }
 
@@ -214,6 +239,8 @@ public class RelationalParseTreeWalker
             nullable = false;
         }
         column.nullable = nullable;
+        column.stereotypes = ctx.stereotypes() == null ? Collections.emptyList() : this.visitStereotypes(ctx.stereotypes());
+        column.taggedValues = ctx.taggedValues() == null ? Collections.emptyList() : this.visitTaggedValues(ctx.taggedValues());
         String dataType = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         RelationalDataType val;
         try
@@ -497,6 +524,8 @@ public class RelationalParseTreeWalker
         List<String> primaryKeys = FastList.newList();
         view.columnMappings = ListIterate.collect(ctx.viewColumnMapping(), viewColumnMappingCtx -> this.visitViewColumnMapping(viewColumnMappingCtx, primaryKeys, scopeInfo));
         view.primaryKey = primaryKeys;
+        view.stereotypes = ctx.stereotypes() == null ? Collections.emptyList() : this.visitStereotypes(ctx.stereotypes());
+        view.taggedValues = ctx.taggedValues() == null ? Collections.emptyList() : this.visitTaggedValues(ctx.taggedValues());
         // TODO? mainTable: we might not need this while parsing
         return view;
     }

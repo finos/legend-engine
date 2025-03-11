@@ -18,6 +18,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,5 +33,7 @@ public class View
     public List<RelationalOperationElement> groupBy = Collections.emptyList();
     public Boolean distinct;
     public List<ColumnMapping> columnMappings = Collections.emptyList();
+    public List<StereotypePtr> stereotypes = Collections.emptyList();
+    public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;
 }
