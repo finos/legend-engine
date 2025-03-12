@@ -226,12 +226,6 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
   name : String[1];
 }
 
-Class meta::pure::mapping::modelToModel::test::shared::src::_S_FirmWithEmployees
-{
-  name : String[1];
-  employees : _S_Person[*];
-}
-
 Association  meta::pure::mapping::modelToModel::test::shared::src::_S_Firm__S_Person
 {
    employees : _S_Person[*];
