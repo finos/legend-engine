@@ -80,7 +80,7 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData serviceData = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel, routerExtensions), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
             LOGGER.info("Generated artifacts for " + element.getName());
 
         }

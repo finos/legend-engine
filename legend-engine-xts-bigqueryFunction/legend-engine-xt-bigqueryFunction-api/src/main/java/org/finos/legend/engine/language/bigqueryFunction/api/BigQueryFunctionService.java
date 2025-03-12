@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
@@ -68,7 +69,7 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, List<BigQueryFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         return this.validateArtifact(artifact);
@@ -78,7 +79,7 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     public BigQueryFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, List<BigQueryFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
+        MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact).getErrors();
 
         Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration) activator._activationConfiguration());
         return validationErrors.notEmpty() ?
@@ -104,11 +105,11 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
         return Lists.mutable.withAll(configurations).select(e -> e instanceof BigQueryFunctionDeploymentConfiguration).collect(e -> (BigQueryFunctionDeploymentConfiguration) e);
     }
 
-    private MutableList<? extends FunctionActivatorError> validateArtifact(BigQueryFunctionArtifact artifact)
+    private FunctionActivatorResult validateArtifact(BigQueryFunctionArtifact artifact)
     {
         int size = ((BigQueryFunctionContent)artifact.content).sqlExpressions.size();
         return size == 1 ?
-                Lists.fixedSize.empty() :
-                Lists.fixedSize.with(new BigQueryFunctionError("BigQuery Function can't be used with a plan containing '" + size + "' SQL expressions", ((BigQueryFunctionContent)artifact.content).sqlExpressions));
+                new FunctionActivatorResult() :
+                new FunctionActivatorResult(Lists.fixedSize.with(new BigQueryFunctionError("BigQuery Function can't be used with a plan containing '" + size + "' SQL expressions", ((BigQueryFunctionContent)artifact.content).sqlExpressions)));
     }
 }

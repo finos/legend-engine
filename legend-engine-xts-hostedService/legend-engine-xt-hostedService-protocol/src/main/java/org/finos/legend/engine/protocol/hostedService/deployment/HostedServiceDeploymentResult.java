@@ -23,6 +23,7 @@ public class HostedServiceDeploymentResult extends DeploymentResult
     public String deployed;
     public String generationId;
     public List<String> errors;
+    public List<String> warnings;
 
     public HostedServiceDeploymentResult()
     {

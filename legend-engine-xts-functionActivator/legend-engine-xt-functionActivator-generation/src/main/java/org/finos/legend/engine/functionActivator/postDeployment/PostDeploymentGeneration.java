@@ -14,13 +14,16 @@
 
 package org.finos.legend.engine.functionActivator.postDeployment;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 
 public interface PostDeploymentGeneration
 {
-        List<ActionContent> generate(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel);
+        List<ActionContent> generate(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 }

@@ -16,9 +16,8 @@ package org.finos.legend.engine.functionActivator.service;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -43,7 +42,7 @@ public interface FunctionActivatorService<T extends Root_meta_external_function_
 
     boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);
 
-    MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+    FunctionActivatorResult validate(Identity identity, PureModel pureModel, T functionActivator, PureModelContext inputModel, List<U> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
     V publishToSandbox(Identity identity, PureModel pureModel, T functionActivator, PureModelContext inputModel, List<U> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
