@@ -1,0 +1,181 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "elements": [
+    {
+      "_type": "dataProduct",
+      "name": "TestDataProduct",
+      "package": "test::model",
+      "title": "My Data Space",
+      "executionContexts": [
+        {
+          "name": "INT",
+          "title": "Integration",
+          "description": "some description 1",
+          "mapping": {
+            "type": "MAPPING",
+            "path": "test::model::TestMapping"
+          },
+          "defaultRuntime": {
+            "type": "RUNTIME",
+            "path": "test::model::TestRuntime"
+          }
+        }
+      ],
+      "defaultExecutionContext": "INT",
+      "description": "some description 2",
+      "diagrams": [
+        {
+          "title": "Diagram 1",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
+        },
+        {
+          "title": "Diagram 2",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
+        }
+      ],
+      "elements": [
+        { "path": "test::model" },
+        { "path": "test::model::Class1" },
+        { "path": "test::model::Class2" },
+        { "path": "test::model::Assoc1" },
+        { "path": "test::model::MyEnum", "exclude": true }
+      ],
+      "executables": [
+        {
+          "_type": "dataProductPackageableElementExecutable",
+          "title": "Executable 1",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataProductPackageableElementExecutable",
+          "title": "Executable 2",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataProductPackageableElementExecutable",
+          "title": "Executable 1",
+          "id": "template_1",
+          "executionContextKey": "INT",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataProductTemplateExecutable",
+          "title": "Template 1",
+          "id": "1",
+          "description": "description",
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "project",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "getAll",
+                    "parameters": [
+                      {
+                        "_type": "packageableElementPtr",
+                        "fullPath": "model::Firm"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x"
+                              }
+                            ],
+                            "property": "id"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "property": "employees"
+                              }
+                            ],
+                            "property": "firstName"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "string",
+                        "value": "Id"
+                      },
+                      {
+                        "_type": "string",
+                        "value": "Employees/First Name"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "executionContextKey": "INT"
+        }
+      ],
+      "supportInfo": {
+        "_type": "combined",
+        "documentationUrl": "https://www.example.org",
+        "emails": ["testEmail@test.org"],
+        "website": "https://www.example.org",
+        "faqUrl": "https://www.example.org",
+        "supportUrl": "https://www.example.org"
+      }
+    }
+  ]
+}
