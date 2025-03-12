@@ -289,6 +289,35 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::*;
 
+Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithMultipleSubTypes
+(
+  *RoadVehicle: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+  Vehicles: Pure
+  {
+    ~src _Vehicles
+    vehicles[car]: $src.roadVehicles->map(v | $v->match([c: _Car[1] | $c, a: Any[*] | []])),
+    vehicles[motorcycle]: $src.roadVehicles->map(v | $v->match([m: _Motorcycle[1] | $m, a: Any[*] | []]))
+  }
+  Car[car]: Pure
+  {
+    ~src _Car
+    engine: $src.engine
+  }
+  Motorcycle[motorcycle]: Pure
+  {
+    ~src _Motorcycle
+    type: $src.type
+  }
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
 Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithSubTypeWithNestedAssociation
 (
    meta::pure::mapping::modelToModel::test::shared::dest::Firm : Pure
