@@ -376,15 +376,15 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testSchemaStereotype()
     {
         test("###Pure\n" +
-                "Profile meta::pure::profiles::storeType\n" +
+                "Profile meta::pure::profiles::equality\n" +
                 "{\n" +
-                "    stereotypes: [type1, type2];\n" +
+                "    stereotypes: [Key];\n" +
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
                 "Database app::db\n" +
                 "(\n" +
-                "  Schema <<meta::pure::profiles::storeType.type2>> mySchema\n" +
+                "  Schema <<meta::pure::profiles::equality.Key>> mySchema\n" +
                 "  (\n" +
                 "    Table Product\n" +
                 "    (\n" +
@@ -394,15 +394,15 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")\n");
 
         test("###Pure\n" +
-                        "Profile meta::pure::profiles::storeType\n" +
+                        "Profile meta::pure::profiles::equality\n" +
                         "{\n" +
-                        "    stereotypes: [type1, type2];\n" +
+                        "    stereotypes: [Key];\n" +
                         "}\n" +
                         "\n" +
                         "###Relational\n" +
                         "Database app::db\n" +
                         "(\n" +
-                        "  Schema <<meta::pure::profiles::storeType.type3>> mySchema\n" +
+                        "  Schema <<meta::pure::profiles::equality.Unknown>> mySchema\n" +
                         "  (\n" +
                         "    Table Product\n" +
                         "    (\n" +
@@ -410,7 +410,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    )\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [10:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [10:44-51]: Can't find stereotype 'Unknown' in profile 'meta::pure::profiles::equality'"
         );
     }
     
@@ -418,35 +418,35 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testTableStereotype()
     {
         test("###Pure\n" +
-                "Profile meta::pure::profiles::storeType\n" +
+                "Profile meta::pure::profiles::equality\n" +
                 "{\n" +
-                "    stereotypes: [type1, type2];\n" +
+                "    stereotypes: [Key];\n" +
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
                 "Database app::db\n" +
                 "(\n" +
-                "  Table <<meta::pure::profiles::storeType.type2>> Product\n" +
+                "  Table <<meta::pure::profiles::equality.Key>> Product\n" +
                 "  (\n" +
                 "    ProductID VARCHAR(30) PRIMARY KEY\n" +
                 "  )\n" +
                 ")\n");
 
         test("###Pure\n" +
-                        "Profile meta::pure::profiles::storeType\n" +
+                        "Profile meta::pure::profiles::equality\n" +
                         "{\n" +
-                        "    stereotypes: [type1, type2];\n" +
+                        "    stereotypes: [Key];\n" +
                         "}\n" +
                         "\n" +
                         "###Relational\n" +
                         "Database app::db\n" +
                         "(\n" +
-                        "  Table <<meta::pure::profiles::storeType.type3>> Product\n" +
+                        "  Table <<meta::pure::profiles::equality.Unknown>> Product\n" +
                         "  (\n" +
                         "    ProductID VARCHAR(30) PRIMARY KEY\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [10:42-46]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [10:42-49]: Can't find stereotype 'Unknown' in profile 'meta::pure::profiles::equality'"
         );
     }
     
@@ -454,9 +454,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testViewStereotype()
     {
         test("###Pure\n" +
-                "Profile meta::pure::profiles::storeType\n" +
+                "Profile meta::pure::profiles::equality\n" +
                 "{\n" +
-                "    stereotypes: [type1, type2];\n" +
+                "    stereotypes: [Key];\n" +
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
@@ -467,7 +467,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    id INTEGER PRIMARY KEY,\n" +
                 "    name VARCHAR(30)\n" +
                 "  )\n" +
-                "  View <<meta::pure::profiles::storeType.type2>> ProductView\n" +
+                "  View <<meta::pure::profiles::equality.Key>> ProductView\n" +
                 "  (\n" +
                 "    id: ProductTable.id,\n" +
                 "    name: ProductTable.name\n" +
@@ -475,9 +475,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")\n");
 
         test("###Pure\n" +
-                        "Profile meta::pure::profiles::storeType\n" +
+                        "Profile meta::pure::profiles::equality\n" +
                         "{\n" +
-                        "    stereotypes: [type1, type2];\n" +
+                        "    stereotypes: [Key];\n" +
                         "}\n" +
                         "\n" +
                         "###Relational\n" +
@@ -488,13 +488,13 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    id INTEGER PRIMARY KEY,\n" +
                         "    name VARCHAR(30)\n" +
                         "  )\n" +
-                        "  View <<meta::pure::profiles::storeType.type3>> ProductView\n" +
+                        "  View <<meta::pure::profiles::equality.Unknown>> ProductView\n" +
                         "  (\n" +
                         "    id: ProductTable.id,\n" +
                         "    name: ProductTable.name\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [15:41-45]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [15:41-48]: Can't find stereotype 'Unknown' in profile 'meta::pure::profiles::equality'"
         );
     }
     
@@ -502,9 +502,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testColumnStereotype()
     {
         test("###Pure\n" +
-                "Profile meta::pure::profiles::storeType\n" +
+                "Profile meta::pure::profiles::equality\n" +
                 "{\n" +
-                "    stereotypes: [type1, type2];\n" +
+                "    stereotypes: [Key];\n" +
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
@@ -512,14 +512,14 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "(\n" +
                 "  Table Product\n" +
                 "  (\n" +
-                "    ProductID <<meta::pure::profiles::storeType.type2>> VARCHAR(30) PRIMARY KEY\n" +
+                "    ProductID <<meta::pure::profiles::equality.Key>> VARCHAR(30) PRIMARY KEY\n" +
                 "  )\n" +
                 ")\n");
 
         test("###Pure\n" +
-                        "Profile meta::pure::profiles::storeType\n" +
+                        "Profile meta::pure::profiles::equality\n" +
                         "{\n" +
-                        "    stereotypes: [type1, type2];\n" +
+                        "    stereotypes: [Key];\n" +
                         "}\n" +
                         "\n" +
                         "###Relational\n" +
@@ -527,10 +527,10 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "(\n" +
                         "  Table Product\n" +
                         "  (\n" +
-                        "    ProductID <<meta::pure::profiles::storeType.type3>> VARCHAR(30) PRIMARY KEY\n" +
+                        "    ProductID <<meta::pure::profiles::equality.Unknown>> VARCHAR(30) PRIMARY KEY\n" +
                         "  )\n" +
                         ")",
-                "COMPILATION error at [12:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+                "COMPILATION error at [12:44-51]: Can't find stereotype 'Unknown' in profile 'meta::pure::profiles::equality'"
         );
     }
     
@@ -584,9 +584,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public void testCombinedStereotypesAndTaggedValues()
     {
         test("###Pure\n" +
-                "Profile meta::pure::profiles::storeType\n" +
+                "Profile meta::pure::profiles::equality\n" +
                 "{\n" +
-                "    stereotypes: [type1, type2];\n" +
+                "    stereotypes: [Key];\n" +
                 "}\n" +
                 "\n" +
                 "Profile meta::pure::profiles::doc\n" +
@@ -597,14 +597,14 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "###Relational\n" +
                 "Database app::db\n" +
                 "(\n" +
-                "  Schema <<meta::pure::profiles::storeType.type1>> {meta::pure::profiles::doc.doc = 'Schema documentation'} mySchema\n" +
+                "  Schema <<meta::pure::profiles::equality.Key>> {meta::pure::profiles::doc.doc = 'Schema documentation'} mySchema\n" +
                 "  (\n" +
-                "    Table <<meta::pure::profiles::storeType.type2>> {meta::pure::profiles::doc.doc = 'Table documentation'} Product\n" +
+                "    Table <<meta::pure::profiles::equality.Key>> {meta::pure::profiles::doc.doc = 'Table documentation'} Product\n" +
                 "    (\n" +
-                "      ProductID <<meta::pure::profiles::storeType.type1>> {meta::pure::profiles::doc.doc = 'Column documentation'} VARCHAR(30) PRIMARY KEY\n" +
+                "      ProductID <<meta::pure::profiles::equality.Key>> {meta::pure::profiles::doc.doc = 'Column documentation'} VARCHAR(30) PRIMARY KEY\n" +
                 "    )\n" +
                 "  )\n" +
-                "  View <<meta::pure::profiles::storeType.type2>> {meta::pure::profiles::doc.doc = 'View documentation'} ProductView\n" +
+                "  View <<meta::pure::profiles::equality.Key>> {meta::pure::profiles::doc.doc = 'View documentation'} ProductView\n" +
                 "  (\n" +
                 "    id: mySchema.Product.ProductID\n" +
                 "  )\n" +
