@@ -56,6 +56,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property
    sourceInformation: SourceInformation[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::MultiplicityPtr
+{
+  lowerBound: Integer[0..1];
+  upperBound: Integer[0..1];
+  sourceInformation: SourceInformation[0..1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue
 {
    tag : meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr[1];
