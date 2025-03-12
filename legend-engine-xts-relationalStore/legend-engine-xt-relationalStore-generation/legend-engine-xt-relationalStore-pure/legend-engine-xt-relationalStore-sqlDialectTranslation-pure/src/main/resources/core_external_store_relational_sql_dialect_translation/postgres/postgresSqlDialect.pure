@@ -274,8 +274,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
-    pair(Sha1, argTransformFunctionProcessor('digest', {n:Node[*]|  $n->concatenate(literal('sha1'))})),
-    pair(Sha256, argTransformFunctionProcessor('digest', {n:Node[*]|  $n->concatenate(literal('sha1'))})),
+    pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1',$f,$sqlDialect,$state,$config )})),
+    pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256',$f,$sqlDialect,$state,$config )})),
     pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
@@ -295,6 +295,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // Miscellaneous
     pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForSha(hashing:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let hashType = '\''+$hashing+'\'';
+  let digestCall = generateFunctionCallWithArgs($sqlDialect, 'digest', [$processedArgs->at(0), $hashType], [], $state, $config);
+  generateFunctionCallWithArgs($sqlDialect, 'encode', [$digestCall,'\'hex\''], [], $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
