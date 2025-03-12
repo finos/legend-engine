@@ -46,16 +46,16 @@ Class meta::external::store::relational::sqlDialectTranslation::functionRegistry
   }: String[1];
 }
 
-Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::VariadicSqlFunctionVariation extends SqlFunctionVariation
-[
-  hasAtLeastOneArgument:  if($this.parameterTypes->size() > 0,
-                            | true,
-                            | println('VariadicSqlFunctionVariation expects at least one argument, found none.');
-                              false;
-                          )
-]
-{
-}
+//Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::VariadicSqlFunctionVariation extends SqlFunctionVariation
+//[
+//  hasAtLeastOneArgument:  if($this.parameterTypes->size() > 0,
+//                            | true,
+//                            | println('VariadicSqlFunctionVariation expects at least one argument, found none.');
+//                              false;
+//                          )
+//]
+//{
+//}
 
 Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::functionRegistry::PostgresNativeSqlFunction extends SqlFunction
 {
@@ -140,7 +140,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::substring(),
      meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
     // // meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::stringAgg(),
-     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::concat(),
+    // meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::concat(),
 
     // // Temporal function
      meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
@@ -152,7 +152,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
      meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateAdd(),
 
     // // // Miscellaneous
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),
+    // meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),
     
     // // Extension Functions
     // // Numeric
