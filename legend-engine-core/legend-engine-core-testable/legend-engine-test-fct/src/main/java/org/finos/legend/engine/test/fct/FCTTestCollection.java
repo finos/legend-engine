@@ -28,38 +28,24 @@ import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.isFCTTestColle
 
 public class FCTTestCollection
 {
-    private final String runtimeFunction;
-
-
-    private final String mockRuntime;
-    private final String setupFunction;
 
     private final MutableList<CoreInstance> testFunctions = Lists.mutable.with();
     private final CoreInstance pkg;
+
+    public String getStoreType()
+    {
+        return storeType;
+    }
+
+    private final String storeType;
+
     private final MutableList<FCTTestCollection> subCollections = Lists.mutable.with();
 
-    public String getRuntimeFunction(boolean useMock)
-    {
-        return  useMock ? mockRuntime : runtimeFunction;
-    }
 
-    public String getSetupFunction()
-    {
-        return setupFunction;
-    }
-
-    public String getMockRuntime()
-    {
-        return mockRuntime;
-    }
-
-
-    public FCTTestCollection(CoreInstance pkg, String runtimeFunction, String setupFunction, ProcessorSupport processorSupport, String mockRuntime)
+    public FCTTestCollection(CoreInstance pkg, String storeType, ProcessorSupport processorSupport)
     {
         this.pkg = pkg;
-        this.runtimeFunction = runtimeFunction;
-        this.setupFunction = setupFunction;
-        this.mockRuntime = mockRuntime;
+        this.storeType = storeType;
         findPackageTests(processorSupport);
     }
 
@@ -119,7 +105,7 @@ public class FCTTestCollection
             }
             else if (Instance.instanceOf(child, M3Paths.Package, processorSupport))
             {
-                FCTTestCollection subCollection = new FCTTestCollection(child,this.getRuntimeFunction(false),this.getSetupFunction(), processorSupport,  this.getMockRuntime());
+                FCTTestCollection subCollection = new FCTTestCollection(child, storeType, processorSupport);
                 // only add the sub-collection if it has some test content
                 if (subCollection.hasTestContent())
                 {

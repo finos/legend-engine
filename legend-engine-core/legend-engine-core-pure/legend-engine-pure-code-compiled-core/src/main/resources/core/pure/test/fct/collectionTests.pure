@@ -44,7 +44,7 @@ Association meta::pure::fct::tests::collection::PositionProduct
 
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS():FunctionDefinition<{->Any[1]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
    {|Position.all()->filter(i|$i.gsn  == 'ABC123')->project(p|[$p.gsn],['gsn'])};
 
@@ -52,20 +52,20 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, Quer
 
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[1]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
-   {|Position.all()->filter(i|$i.gsn  == 'ABC123')->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)};
+   {|Position.all()->filter(i|$i.gsn  == 'ABC123')->graphFetch(#{Position{gsn}}#)};
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[1]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
-   {|Position.all()->filter(i|$i.product.description ->in(['Gold']))->graphFetch(#{Position{gsn}}#)->serialize(#{Position{gsn}}#)};
+   {|Position.all()->filter(i|$i.product.description ->in(['Gold']))->graphFetch(#{Position{gsn}}#)};
 
 }
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[1]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[*]}>[1]
 {
    {|Position.all()->filter(i|$i.product.description->in(['Gold']))->project(p|[$p.gsn],['gsn'])};
 }
