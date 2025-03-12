@@ -92,6 +92,11 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_Vehicle
    isElectric: Boolean[0..1];
 }
 
+Class meta::pure::mapping::modelToModel::test::shared::src::_Vehicles
+{
+   roadVehicles : _RoadVehicle[*];
+}
+
 Class meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle
 {
    wheelCount : Integer[1];
@@ -114,6 +119,27 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_Bicycle extends _Ro
 Class meta::pure::mapping::modelToModel::test::shared::src::_Motorcycle extends _RoadVehicle
 {
    series : String[0..1];
+   type : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::Vehicles
+{
+   vehicles : RoadVehicle[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::RoadVehicle
+{
+   series : String[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::Car extends RoadVehicle
+{
+   engine : Boolean[0..1];
+   type : String[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::Motorcycle extends RoadVehicle
+{
    type : String[0..1];
 }
 
@@ -198,6 +224,12 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_S_PersonC extends _
 Class meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
 {
   name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::_S_FirmWithEmployees
+{
+  name : String[1];
+  employees : _S_Person[*];
 }
 
 Association  meta::pure::mapping::modelToModel::test::shared::src::_S_Firm__S_Person
