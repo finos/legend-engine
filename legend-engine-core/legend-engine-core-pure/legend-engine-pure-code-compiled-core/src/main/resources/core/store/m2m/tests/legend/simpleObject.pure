@@ -605,6 +605,47 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_20_0',
    doc.doc='Given: a single JSON object that matches a source definition, and an M2M mapping',
+   doc.doc='When:  the mapping is executed using graphFetch with multiple Subtype names and serialize.',
+   doc.doc='Then:  multiple Subtypes are matched, the mapping is applied and the result of the mapping is serialized.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObjectWithMultipleSubTypes() : Boolean[1]
+{
+   let tree = #{
+                Vehicles {
+                  vehicles->subType(@Car) {
+                    engine
+                  }
+                  ,
+                  vehicles->subType(@Motorcycle) {
+                    type
+                  }
+                }
+              }#;
+
+   let result = execute(
+      |Vehicles.all()->graphFetch($tree)->serialize($tree),
+      simpleModelMappingWithMultipleSubTypes,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=_Vehicles,
+                                url='data:application/json,{\n  "roadVehicles": [\n    {\n      "wheelCount": 4,\n      "engine": true,\n      "series": "10",\n      "@type": "_Car"\n    },\n    {\n      "wheelCount": 2,\n      "type": "sports",\n      "series": "5",\n      "@type": "_Motorcycle"\n    }\n  ]\n}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+  assert(jsonEquivalent('{"vehicles":[{"engine":true},{"type":"sports"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Given: a single JSON object that matches a source definition, and an M2M mapping',
    doc.doc='When:  the mapping is executed using graphFetch with Subtype names only and serialize.',
    doc.doc='Then:  the Subtype is discover, the mapping is applied and the result of the mapping is serialized.'
 }

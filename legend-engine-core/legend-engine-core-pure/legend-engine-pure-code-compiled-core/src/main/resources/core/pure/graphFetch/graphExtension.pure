@@ -442,7 +442,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    let isPropertyTemporalMilestoned = $tgtPgft.property->hasGeneratedMilestoningPropertyStereotype();
 
    let requiredProperty = if($isPropertyTemporalMilestoned, |$setImplementation.class->propertyByName($tgtPgft.property->edgePointPropertyName()->toOne()), |$tgtPgft.property);
-   let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty)->cast(@PurePropertyMapping);
+   let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty && if($tgtPgft.subType->isNotEmpty(), | $setImplementation.parent->classMappingById($pm.targetSetImplementationId)->toOne().class->_subTypeOf($tgtPgft.subType->toOne()), | true))->cast(@PurePropertyMapping);
 
    if($srcNodeOwner->instanceOf(Class) && ($propertyMappings->isNotEmpty() || ($requiredProperty->isNotEmpty() && ($requiredProperty->toOne()->isPropertyAutoMapped($setImplementation) || $setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge()))),
       {|
