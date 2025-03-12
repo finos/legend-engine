@@ -33,6 +33,11 @@ public abstract class Processor<T extends PackageableElement>
         return Collections.emptyList();
     }
 
+    public Collection<? extends Class<? extends PackageableElement>> getReversePrerequisiteClasses()
+    {
+        return Collections.emptyList();
+    }
+
     public RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> getPrerequisiteElements(PackageableElement element, CompileContext context)
     {
         return processPrerequisiteElements(castElement(element), context);
