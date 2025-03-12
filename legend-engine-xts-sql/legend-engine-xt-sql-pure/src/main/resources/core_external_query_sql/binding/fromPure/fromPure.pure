@@ -1355,8 +1355,8 @@ function meta::external::query::sql::transformation::queryToPure::fromFunctions(
     meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
     meta::pure::mapping::from_T_m__Runtime_1__T_m_,
     meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
-    //  meta::pure::mapping::from_T_m__DataSpace_1__T_m_,
-    //  meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_,
+    //  meta::pure::mapping::from_T_m__DataProduct_1__T_m_,
+    //  meta::pure::mapping::from_T_m__DataProductExecutionContext_1__T_m_,
     meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_,
     meta::pure::mapping::from_T_m__ExecutionEnvironmentInstance_1__T_m_
   ]

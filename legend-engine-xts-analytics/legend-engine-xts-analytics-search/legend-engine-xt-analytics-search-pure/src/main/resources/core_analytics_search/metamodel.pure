@@ -1,7 +1,7 @@
 Enum meta::analytics::search::metamodel::DocumentType
 {
   Class,
-  DataSpace,
+  DataProduct,
   Diagram,
   Mapping,
   Service,
@@ -67,7 +67,7 @@ Class meta::analytics::search::metamodel::class::ClassProperty
 }
 
 // DATASPACE DOCUMENT
-Class meta::analytics::search::metamodel::dataspace::DataSpaceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+Class meta::analytics::search::metamodel::dataspace::DataProductDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
   defaultExecutionContext: String[1];
   diagrams: String[*];

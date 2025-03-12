@@ -81,7 +81,7 @@
         <!-- New Packageable Elements -->
         <module>legend-engine-xts-text</module>
         <module>legend-engine-xts-diagram</module>
-        <module>legend-engine-xts-data-space</module>
+        <module>legend-engine-xts-data-product</module>
         <module>legend-engine-xts-changetoken</module>
         <module>legend-engine-xts-generation</module>
         <module>legend-engine-xts-dataquality</module>
@@ -1908,38 +1908,38 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+                <artifactId>legend-engine-xt-data-product-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+                <artifactId>legend-engine-xt-data-product-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+                <artifactId>legend-engine-xt-data-product-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+                <artifactId>legend-engine-xt-data-product-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-pure</artifactId>
+                <artifactId>legend-engine-xt-data-product-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-generation</artifactId>
+                <artifactId>legend-engine-xt-data-product-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-data-space-http-api</artifactId>
+                <artifactId>legend-engine-xt-data-product-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

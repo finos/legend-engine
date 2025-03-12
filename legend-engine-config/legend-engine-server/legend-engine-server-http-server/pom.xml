@@ -385,17 +385,17 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+            <artifactId>legend-engine-xt-data-product-compiler</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+            <artifactId>legend-engine-xt-data-product-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-http-api</artifactId>
+            <artifactId>legend-engine-xt-data-product-http-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -780,7 +780,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-generation</artifactId>
+            <artifactId>legend-engine-xt-data-product-generation</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

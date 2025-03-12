@@ -298,7 +298,7 @@ function meta::external::function::activator::hostedService::tests::TestExecutio
 
 }
 
-function meta::external::function::activator::hostedService::tests::simpleServiceTDSShowcaseWithDataSpace():Any[*]
+function meta::external::function::activator::hostedService::tests::simpleServiceTDSShowcaseWithDataProduct():Any[*]
 {
   let service =  ^HostedService
    (
@@ -307,7 +307,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
       contentType =  'application/json',
       documentation = 'bla bla',
       autoActivateUpdates = true,
-      function= meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace_String_1__PersonX_MANY_
+      function= meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataProduct_String_1__PersonX_MANY_
    );
   //isMulti
   print('isMultiExecService:');
@@ -319,34 +319,34 @@ function meta::external::function::activator::hostedService::tests::simpleServic
  
 }
 
-function meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataSpace(key:String[1]):PersonX[*]
+function meta::external::function::activator::hostedService::tests::simplegraphFetchfunctionWithDataProduct(key:String[1]):PersonX[*]
 {
     PersonX.all()->graphFetch(#{ PersonX {firstName} } #)
-    ->from(meta::external::function::activator::hostedService::tests::TestDataSpaces()->meta::pure::metamodel::dataSpace::get($key));
+    ->from(meta::external::function::activator::hostedService::tests::TestDataProducts()->meta::pure::metamodel::dataProduct::get($key));
 }
 
-function meta::external::function::activator::hostedService::tests::TestDataSpaces(): meta::pure::metamodel::dataSpace::DataSpace[1]
+function meta::external::function::activator::hostedService::tests::TestDataProducts(): meta::pure::metamodel::dataProduct::DataProduct[1]
 {
-  let executionContext1 = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
+  let executionContext1 = ^meta::pure::metamodel::dataProduct::DataProductExecutionContext(
                             name = 'UAT',
                             mapping = simpleRelationalMapping,
                             defaultRuntime = meta::external::function::activator::hostedService::tests::testPackageableRuntime(dbInc, 'meta::external::function::activator::hostedService::tests::testRuntime')
                           );
 
-  let executionContext2 = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
+  let executionContext2 = ^meta::pure::metamodel::dataProduct::DataProductExecutionContext(
                             name = 'PROD',
                             mapping = simpleRelationalMapping2,
                             defaultRuntime = meta::external::function::activator::hostedService::tests::testPackageableRuntime(dbInc, 'meta::external::function::activator::hostedService::tests::testRuntime')
                           );
 
-  ^meta::pure::metamodel::dataSpace::DataSpace(
-    name = 'TestDataSpace',
+  ^meta::pure::metamodel::dataProduct::DataProduct(
+    name = 'TestDataProduct',
     package = ^Package(
       name = 'test'
     ),
     defaultExecutionContext = $executionContext1,
     executionContexts = [$executionContext1, $executionContext2],
-    title = 'Test DataSpace'
+    title = 'Test DataProduct'
   );
 }
 

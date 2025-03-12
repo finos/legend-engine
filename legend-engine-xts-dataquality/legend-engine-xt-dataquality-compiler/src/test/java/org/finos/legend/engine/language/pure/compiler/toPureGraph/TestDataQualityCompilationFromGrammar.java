@@ -66,7 +66,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::dataquality::PersonDataspace, 'default');\n" +
+                "    context: fromDataProduct(meta::dataquality::PersonDataspace, 'default');\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
@@ -290,8 +290,8 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "   street: String[1];\n" +
             "   locality: String[1];\n" +
             "}\n" +
-            "###DataSpace\n" +
-            "DataSpace meta::dataquality::PersonDataspace\n" +
+            "###DataProduct\n" +
+            "DataProduct meta::dataquality::PersonDataspace\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +

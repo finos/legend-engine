@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.dataquality.metamodel;
 
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
-public class DataSpaceDataQualityExecutionContext extends DataQualityExecutionContext
+public class DataProductDataQualityExecutionContext extends DataQualityExecutionContext
 {
     public String _type = "dataSpaceDataQualityExecutionContext";
     public PackageableElementPointer dataSpace;

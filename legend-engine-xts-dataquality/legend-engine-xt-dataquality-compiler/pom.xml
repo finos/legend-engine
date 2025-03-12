@@ -116,15 +116,15 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+            <artifactId>legend-engine-xt-data-product-compiler</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+            <artifactId>legend-engine-xt-data-product-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+            <artifactId>legend-engine-xt-data-product-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
 

@@ -37,7 +37,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataProduct.DataProduct;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
@@ -82,7 +82,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Lists.immutable.with(
                 Processor.newProcessor(
                         Service.class,
-                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class, DataSpace.class),
+                        Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class, DataProduct.class),
                         (service, context) -> processserviceFirstPass(service, context),
                         (service, context) ->
                         {

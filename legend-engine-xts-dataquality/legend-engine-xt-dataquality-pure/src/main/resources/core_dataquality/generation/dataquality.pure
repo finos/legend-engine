@@ -417,9 +417,9 @@ function meta::external::dataquality::getMappingAndRuntime(context: DataQualityE
   if($context->instanceOf(MappingAndRuntimeDataQualityExecutionContext),
       | let mappingAndRuntimeContext = $context->cast(@MappingAndRuntimeDataQualityExecutionContext);
         ^Pair<Mapping, Runtime>(first=$mappingAndRuntimeContext.mapping, second=$mappingAndRuntimeContext.runtime);,
-      | let dataSpaceDataQualityExecutionContext = $context->cast(@DataSpaceDataQualityExecutionContext);
-        let dataSpaceExecutionContext = $dataSpaceDataQualityExecutionContext.dataSpace.executionContexts->filter(execContext| $execContext.name == $dataSpaceDataQualityExecutionContext.contextName)->toOne();
-        ^Pair<Mapping, Runtime>(first=$dataSpaceExecutionContext.mapping, second=$dataSpaceExecutionContext.defaultRuntime.runtimeValue);
+      | let dataProductDataQualityExecutionContext = $context->cast(@DataProductDataQualityExecutionContext);
+        let dataProductExecutionContext = $dataProductDataQualityExecutionContext.dataProduct.executionContexts->filter(execContext| $execContext.name == $dataProductDataQualityExecutionContext.contextName)->toOne();
+        ^Pair<Mapping, Runtime>(first=$dataProductExecutionContext.mapping, second=$dataProductExecutionContext.defaultRuntime.runtimeValue);
     );
 }
 

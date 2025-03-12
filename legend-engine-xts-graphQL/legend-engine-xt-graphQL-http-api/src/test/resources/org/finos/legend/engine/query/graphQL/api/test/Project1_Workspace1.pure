@@ -119,8 +119,8 @@ Database simple::store::DB
   Join PERSON_ADDRESS(PERSON_TABLE.ID = ADDRESS_TABLE.PERSON_ID)
 )
 
-###DataSpace
-DataSpace simple::dataspace
+###DataProduct
+DataProduct simple::dataspace
 {
   executionContexts:
   [

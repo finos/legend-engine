@@ -1,0 +1,15 @@
+{
+  "name": "core_data_product",
+  "pattern": "(meta::pure::metamodel::dataProduct)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "core_functions_unclassified",
+    "core",
+    "core_diagram_metamodel",
+    "core_diagram",
+    "core_analytics_mapping",
+    "core_external_compiler",
+    "core_data_product_metamodel"
+  ]
+}

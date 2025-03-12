@@ -63,7 +63,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+                        <artifactId>legend-engine-xt-data-product-pure-metamodel</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -111,7 +111,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+                        <artifactId>legend-engine-xt-data-product-pure-metamodel</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -130,7 +130,7 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency> org.finos.legend.engine:legend-engine-xt-data-space-pure-metamodel:jar</dependency>
+                                <dependency> org.finos.legend.engine:legend-engine-xt-data-product-pure-metamodel:jar</dependency>
                                 <dependency> org.finos.legend.engine:legend-engine-xt-json-pure:jar</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
@@ -179,7 +179,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+            <artifactId>legend-engine-xt-data-product-pure-metamodel</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

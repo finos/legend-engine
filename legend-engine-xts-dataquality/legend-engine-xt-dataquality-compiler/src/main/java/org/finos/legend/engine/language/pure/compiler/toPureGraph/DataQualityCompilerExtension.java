@@ -30,13 +30,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
-import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataProductDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataProduct.DataProduct;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -55,8 +55,8 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualit
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataProductDataQualityExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataProductDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_RelationValidation;
@@ -124,7 +124,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataQuality.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataProduct.class),
                 (dataquality, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQuality<Object> metamodel = new Root_meta_external_dataquality_DataQuality_Impl<>(
@@ -153,7 +153,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
     {
         return Processor.newProcessor(
                 DataqualityRelationValidation.class,
-                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataSpace.class),
+                org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableRuntime.class, Mapping.class, org.finos.legend.engine.protocol.pure.m3.type.Class.class, DataProduct.class),
                 (dataqualityRelationValidation, compileContext) ->
                 {
                     Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel = new Root_meta_external_dataquality_DataQualityRelationValidation_Impl(
@@ -241,9 +241,9 @@ public class DataQualityCompilerExtension implements CompilerExtension
         {
             return buildMappingAndRuntimeExecutionContext(((MappingAndRuntimeDataQualityExecutionContext) app.context), context);
         }
-        else if (app.context instanceof DataSpaceDataQualityExecutionContext)
+        else if (app.context instanceof DataProductDataQualityExecutionContext)
         {
-            return buildDataSpaceExecutionContext(((DataSpaceDataQualityExecutionContext) app.context), context);
+            return buildDataProductExecutionContext(((DataProductDataQualityExecutionContext) app.context), context);
         }
         throw new EngineException("Unsupported DataQuality ExecutionContext");
     }
@@ -260,14 +260,14 @@ public class DataQualityCompilerExtension implements CompilerExtension
 
     }
 
-    private Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext buildDataSpaceExecutionContext(DataSpaceDataQualityExecutionContext dataSpaceDataQualityExecutionContext, CompileContext compileContext)
+    private Root_meta_external_dataquality_DataProductDataQualityExecutionContext buildDataProductExecutionContext(DataProductDataQualityExecutionContext dataSpaceDataQualityExecutionContext, CompileContext compileContext)
     {
-        return new Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext_Impl(
+        return new Root_meta_external_dataquality_DataProductDataQualityExecutionContext_Impl(
                 null,
                 SourceInformationHelper.toM3SourceInformation(dataSpaceDataQualityExecutionContext.sourceInformation),
-                compileContext.pureModel.getClass("meta::external::dataquality::DataSpaceDataQualityExecutionContext")
+                compileContext.pureModel.getClass("meta::external::dataquality::DataProductDataQualityExecutionContext")
         )
-                ._dataSpace(HelperDataSpaceBuilder.resolveDataSpace(dataSpaceDataQualityExecutionContext.dataSpace.path, dataSpaceDataQualityExecutionContext.dataSpace.sourceInformation, compileContext))
+                ._dataSpace(HelperDataProductBuilder.resolveDataProduct(dataSpaceDataQualityExecutionContext.dataSpace.path, dataSpaceDataQualityExecutionContext.dataSpace.sourceInformation, compileContext))
                 ._contextName(dataSpaceDataQualityExecutionContext.context);
 
     }

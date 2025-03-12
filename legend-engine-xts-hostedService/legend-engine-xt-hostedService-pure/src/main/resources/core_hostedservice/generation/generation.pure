@@ -10,7 +10,7 @@ import meta::pure::graphFetch::*;
 import meta::external::function::activator::hostedService::generation::*;
 import meta::pure::extension::*;
 import meta::external::function::activator::hostedService::*;
-import meta::pure::metamodel::dataSpace::*;
+import meta::pure::metamodel::dataProduct::*;
 import meta::analytics::lineage::*;
 
 
@@ -177,7 +177,7 @@ function meta::external::function::activator::hostedService::generation::multiEx
   [
     getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_,
     get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,
-    get_DataSpace_1__String_1__DataSpaceExecutionContext_1_
+    get_DataProduct_1__String_1__DataProductExecutionContext_1_
   ]
 }
 
@@ -187,7 +187,7 @@ function meta::external::function::activator::hostedService::generation::rebuild
     $execParam->match([
                        e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
                                                              rebuildFromExpressionForExecutionEnv($h, $e->cast(@ExecutionEnvironmentInstance)->toOne());,
-                       d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
+                       d : DataProduct[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataProducts, Size =' + $d->size()->toString());
                                                               $d.executionContexts->map(
                                                                 ec | let newFunc = rebuildFromExpression($h.function, $ec.mapping, $ec.defaultRuntime.runtimeValue);
                                                                 let newHostedService = ^$h(function = $newFunc);

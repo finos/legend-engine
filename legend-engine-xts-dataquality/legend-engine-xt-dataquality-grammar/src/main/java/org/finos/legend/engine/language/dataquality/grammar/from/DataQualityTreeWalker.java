@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
-import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataProductDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
@@ -229,12 +229,12 @@ public class DataQualityTreeWalker
         }
         PackageableElementPointer dataSpaceElementPointer = new PackageableElementPointer();
         dataSpaceElementPointer.type = PackageableElementType.DATASPACE;
-        dataSpaceElementPointer.path = visitQualifiedName(dqContextContext.fromDataSpace().dataspace().qualifiedName());
-        dataSpaceElementPointer.sourceInformation = walkerSourceInformation.getSourceInformation(dqContextContext.fromDataSpace().dataspace());
+        dataSpaceElementPointer.path = visitQualifiedName(dqContextContext.fromDataProduct().dataspace().qualifiedName());
+        dataSpaceElementPointer.sourceInformation = walkerSourceInformation.getSourceInformation(dqContextContext.fromDataProduct().dataspace());
 
-        final DataSpaceDataQualityExecutionContext dataSpaceDataQualityExecutionContext = new DataSpaceDataQualityExecutionContext();
+        final DataProductDataQualityExecutionContext dataSpaceDataQualityExecutionContext = new DataProductDataQualityExecutionContext();
         dataSpaceDataQualityExecutionContext.dataSpace = dataSpaceElementPointer;
-        dataSpaceDataQualityExecutionContext.context = PureGrammarParserUtility.fromGrammarString(dqContextContext.fromDataSpace().contextName().STRING().getText(), true);
+        dataSpaceDataQualityExecutionContext.context = PureGrammarParserUtility.fromGrammarString(dqContextContext.fromDataProduct().contextName().STRING().getText(), true);
         return dataSpaceDataQualityExecutionContext;
     }
 

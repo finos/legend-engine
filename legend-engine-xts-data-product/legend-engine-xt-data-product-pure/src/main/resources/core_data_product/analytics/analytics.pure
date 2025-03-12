@@ -1,0 +1,206 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::metamodel::dataProduct::*;
+import meta::pure::metamodel::dataProduct::analytics::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::functions::doc::*;
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductAnalysisResult
+{
+  diagramModels: meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult[1];
+  executionContexts: DataProductExecutionContextAnalysisResult[*];
+  elementDocs: DataProductModelDocumentationEntry[*];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductCoverageAnalysisResult
+{
+  executionContexts: DataProductExecutionContextAnalysisResult[*];
+}
+
+function meta::pure::metamodel::dataProduct::analytics::analyzeDataProduct(dataProduct: DataProduct[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataProductAnalysisResult[1]
+{
+  let mappingCoverage = $dataProduct.executionContexts.mapping->removeDuplicates()->map(mapping | pair($mapping, meta::analytics::mapping::modelCoverage::analyze($mapping, $returnLightGraph, false, $returnLightGraph)))->newMap();
+  ^DataProductAnalysisResult
+  (
+    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataProduct.diagrams.diagram),
+    executionContexts = analyzeDataProductExecutionContexts($dataProduct, $allAvailableRuntimes, $returnLightGraph, $mappingCoverage),
+    elementDocs = getModelsDoc($dataProduct)
+  );
+}
+
+function meta::pure::metamodel::dataProduct::analytics::analyzeDataProductCoverage(dataProduct: DataProduct[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataProductCoverageAnalysisResult[1]
+{
+  let mappingCoverage = $dataProduct.executionContexts.mapping->removeDuplicates()->map(mapping| pair($mapping, meta::analytics::mapping::modelCoverage::analyze($mapping, $returnLightGraph, false, $returnLightGraph)))->newMap();
+  ^DataProductCoverageAnalysisResult
+  (
+    executionContexts = analyzeDataProductExecutionContexts($dataProduct, $allAvailableRuntimes, $returnLightGraph, $mappingCoverage)
+  );
+}
+
+
+// ------------------------- Execution Context ----------------------------
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductExecutionContextAnalysisResult
+{
+  name: String[1];
+  compatibleRuntimes: meta::pure::runtime::PackageableRuntime[*];
+  mappingCoverage: meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult[1];
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::analyzeDataProductExecutionContexts(dataProduct: DataProduct[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1], mappingCoverageMap: Map<Mapping,meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult>[1]): DataProductExecutionContextAnalysisResult[*]
+{
+  $dataProduct.executionContexts->map(context|^DataProductExecutionContextAnalysisResult(
+    name = $context.name,
+    compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
+    mappingCoverage = if($mappingCoverageMap->get($context.mapping)->isEmpty()
+                ,|meta::analytics::mapping::modelCoverage::analyze($context.mapping, $returnLightGraph, false, $returnLightGraph)
+                ,|$mappingCoverageMap->get($context.mapping)->toOne()
+                )
+    )
+  );
+}
+
+// NOTE: this compatibility check is fairly simple and only do static analysis on the runtimes
+// However, we could be more advanced and do some router analysis, etc.
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getMappingCompatibleRuntimes(mappingToCheck: Mapping[1], runtimes: meta::pure::runtime::PackageableRuntime[*]): meta::pure::runtime::PackageableRuntime[*]
+{
+  $runtimes->removeDuplicates()->filter(runtime|isRuntimeCompatibleWithMapping($runtime, $mappingToCheck));
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getAllIncludedMappings(mapping: Mapping[1]): Mapping[*]
+{
+   $mapping.includes.included->concatenate($mapping.includes->map(i | $i.included->getAllIncludedMappings()))->removeDuplicates();
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::isRuntimeCompatibleWithMapping(runtime: meta::pure::runtime::PackageableRuntime[1], mappingToCheck: Mapping[1]): Boolean[1]
+{
+  $runtime.runtimeValue.mappings
+    ->map(mapping|[$mapping]->concatenate($mapping->getAllIncludedMappings())->removeDuplicates())
+    ->exists(mappings|$mappings->contains($mappingToCheck));
+}
+
+
+// ------------------------- Elements ----------------------------
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductBasicDocumentationEntry
+{
+  name: String[1];
+  docs: String[*];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductPropertyDocumentationEntry extends DataProductBasicDocumentationEntry
+{
+  milestoning: String[0..1];
+  type: String[0..1];
+  multiplicity: Multiplicity[1];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductModelDocumentationEntry extends DataProductBasicDocumentationEntry
+{
+  element: PackageableElement[1];
+  path: String[1];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductClassDocumentationEntry extends DataProductModelDocumentationEntry
+{
+  properties: DataProductPropertyDocumentationEntry[*];
+  milestoning: String[0..1];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductEnumerationDocumentationEntry extends DataProductModelDocumentationEntry
+{
+  enumValues: DataProductBasicDocumentationEntry[*];
+}
+
+Class meta::pure::metamodel::dataProduct::analytics::DataProductAssociationDocumentationEntry extends DataProductModelDocumentationEntry
+{
+  properties: DataProductPropertyDocumentationEntry[*];
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getClassMilestoning(class: Class<Any>[1]): String[0..1]
+{
+  if (
+    ['bitemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'bitemporal', | if (
+    ['businesstemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'businesstemporal', | if (
+    ['processingtemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'processingtemporal', | []))
+  );
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getPropertyMilestoning(property: AbstractProperty<Any>[1]): String[0..1]
+{
+  let type = $property.genericType.rawType;
+  if (!$type->isEmpty() && $type->toOne()->instanceOf(Class), | $type->toOne()->cast(@Class<Any>)->getClassMilestoning(), | []);
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getClassDoc(class: Class<Any>[1]): DataProductClassDocumentationEntry[1]
+{
+  let allDefinedProperties = $class->allProperties()->reverseMilestoningTransforms();
+
+  ^DataProductClassDocumentationEntry(
+    element = $class,
+    name = $class.name->toOne(),
+    path = $class->elementToPath(),
+    docs = getDocs($class),
+    milestoning = $class->getClassMilestoning(),
+    properties = $allDefinedProperties->map(p|^DataProductPropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
+  );
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getEnumerationDoc(enumeration: Enumeration<Enum>[1]): DataProductEnumerationDocumentationEntry[1]
+{
+  ^DataProductEnumerationDocumentationEntry(
+    element = $enumeration,
+    name = $enumeration->enumName(),
+    path = $enumeration->elementToPath(),
+    docs = getDocs($enumeration),
+    enumValues = $enumeration->enumValues()->map(p|^DataProductBasicDocumentationEntry(name=$p.name->toOne(), docs=getDocs($p)))
+  )
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getAssociationDoc(association: Association[1]): DataProductAssociationDocumentationEntry[1]
+{
+  ^DataProductAssociationDocumentationEntry(
+    element = $association,
+    name = $association.name->toOne(),
+    path = $association->elementToPath(),
+    docs = getDocs($association),
+    properties = []
+     ->concatenate($association.properties)
+     ->concatenate($association.qualifiedProperties)
+     ->reverseMilestoningTransforms()
+     ->map(p|^DataProductPropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
+  )
+}
+
+function <<access.private>> meta::pure::metamodel::dataProduct::analytics::getModelsDoc(dataProduct: DataProduct[1]): DataProductModelDocumentationEntry[*]
+{
+  $dataProduct.elements->removeDuplicates()->map(el | $el->match([
+    class: Class<Any>[1] | getClassDoc($class),
+    enumeration: Enumeration<Enum>[1] | getEnumerationDoc($enumeration),
+    association: Association[1] | getAssociationDoc($association)
+  ]));
+}

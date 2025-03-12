@@ -69,8 +69,8 @@ import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transfor
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataProduct;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataProductExecutionContext;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_introspection_query;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
@@ -423,19 +423,19 @@ public class GraphQLExecute extends GraphQL
         return serializedNamedPlans;
     }
 
-    private Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext getDataspaceExecutionContext(String dataspacePath, String executionContext, PureModel pureModel)
+    private Root_meta_pure_metamodel_dataSpace_DataProductExecutionContext getDataspaceExecutionContext(String dataspacePath, String executionContext, PureModel pureModel)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(dataspacePath);
-        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace, () -> "Can't find data space '" + dataspacePath + "'");
+        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataProduct, () -> "Can't find data space '" + dataspacePath + "'");
         if (executionContext.equals("defaultExecutionContext"))
         {
-            return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
+            return ((Root_meta_pure_metamodel_dataSpace_DataProduct) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataProduct) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
         }
         else
         {
             try
             {
-                return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
+                return ((Root_meta_pure_metamodel_dataSpace_DataProduct) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
             }
             catch (Exception e)
             {
@@ -450,7 +450,7 @@ public class GraphQLExecute extends GraphQL
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
         org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
 
-        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
+        Root_meta_pure_metamodel_dataSpace_DataProductExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
         Mapping mapping = executionContextPureElement._mapping();
         Root_meta_core_runtime_Runtime runtime = executionContextPureElement._defaultRuntime()._runtimeValue();
         return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
