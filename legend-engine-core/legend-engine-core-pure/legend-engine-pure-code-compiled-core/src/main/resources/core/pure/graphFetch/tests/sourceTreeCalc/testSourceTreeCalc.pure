@@ -2592,8 +2592,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testMultip
          }
       }
    }#;
-  //  println($sourceTree->asString(true));
-  //  println($expected->asString(true));
+
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
