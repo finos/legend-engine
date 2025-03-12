@@ -24,9 +24,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
+public class DataProductDataElementReferenceParser implements EmbeddedDataParser
 {
-    public static final String TYPE = "DataspaceTestData";
+    public static final String TYPE = "DataProductTestData";
 
     @Override
     public String getType()
@@ -39,7 +39,7 @@ public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
     {
         if ("".equals(code.trim()))
         {
-            throw new EngineException("Path should be provided for DataspaceDataElementReference", sourceInformation, EngineErrorType.PARSER);
+            throw new EngineException("Path should be provided for DataProductDataElementReference", sourceInformation, EngineErrorType.PARSER);
         }
         String validPath = PureGrammarParserUtility.validatePath(code.trim(), sourceInformation);
 

@@ -22,7 +22,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.DataProductParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.DataspaceDataElementReferenceParser;
+import org.finos.legend.engine.language.pure.grammar.from.DataProductDataElementReferenceParser;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -138,16 +138,16 @@ public class DataProductGrammarComposerExtension implements PureGrammarComposerE
     {
         if (executable instanceof DataProductPackageableElementExecutable)
         {
-            return renderDataspacePackageableElementExecutable((DataProductPackageableElementExecutable) executable, context);
+            return renderDataProductPackageableElementExecutable((DataProductPackageableElementExecutable) executable, context);
         }
         else if (executable instanceof DataProductTemplateExecutable)
         {
-            return renderDataspaceTemplateExecutable((DataProductTemplateExecutable) executable, context);
+            return renderDataProductTemplateExecutable((DataProductTemplateExecutable) executable, context);
         }
         throw new UnsupportedOperationException();
     }
 
-    private static String renderDataspacePackageableElementExecutable(DataProductPackageableElementExecutable executable, PureGrammarComposerContext context)
+    private static String renderDataProductPackageableElementExecutable(DataProductPackageableElementExecutable executable, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
                 (executable.id == null ? "" :  (getTabString(3) + "id: " + executable.id + ";\n")) +
@@ -158,7 +158,7 @@ public class DataProductGrammarComposerExtension implements PureGrammarComposerE
                 getTabString(2) + "}";
     }
 
-    private static String renderDataspaceTemplateExecutable(DataProductTemplateExecutable executable, PureGrammarComposerContext context)
+    private static String renderDataProductTemplateExecutable(DataProductTemplateExecutable executable, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
                 (getTabString(3) + "id: " + executable.id + ";\n") +
@@ -213,7 +213,7 @@ public class DataProductGrammarComposerExtension implements PureGrammarComposerE
         if (mappingInclude.getClass() == MappingIncludeDataProduct.class)
         {
             MappingIncludeDataProduct mappingIncludeDataProduct = (MappingIncludeDataProduct) mappingInclude;
-            return "include dataspace " + mappingIncludeDataProduct.includedDataProduct;
+            return "include dataproduct " + mappingIncludeDataProduct.includedDataProduct;
         }
         return null;
     }
@@ -221,16 +221,16 @@ public class DataProductGrammarComposerExtension implements PureGrammarComposerE
     @Override
     public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
     {
-        return Collections.singletonList(this::composeDataspaceDataElementReference);
+        return Collections.singletonList(this::composeDataProductDataElementReference);
     }
 
-    private ContentWithType composeDataspaceDataElementReference(EmbeddedData embeddedData, PureGrammarComposerContext context)
+    private ContentWithType composeDataProductDataElementReference(EmbeddedData embeddedData, PureGrammarComposerContext context)
     {
         if (embeddedData instanceof DataElementReference
                 && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
         {
             String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
-            return new ContentWithType(DataspaceDataElementReferenceParser.TYPE, content);
+            return new ContentWithType(DataProductDataElementReferenceParser.TYPE, content);
         }
         return null;
     }

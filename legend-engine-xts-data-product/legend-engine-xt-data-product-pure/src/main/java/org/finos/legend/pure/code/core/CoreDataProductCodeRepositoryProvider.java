@@ -23,6 +23,6 @@ public class CoreDataProductCodeRepositoryProvider implements CodeRepositoryProv
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_data_space.definition.json");
+        return GenericCodeRepository.build("core_data_product.definition.json");
     }
 }

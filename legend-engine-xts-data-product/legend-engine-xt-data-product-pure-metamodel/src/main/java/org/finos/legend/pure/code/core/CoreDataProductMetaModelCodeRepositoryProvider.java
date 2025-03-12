@@ -23,6 +23,6 @@ public class CoreDataProductMetaModelCodeRepositoryProvider implements CodeRepos
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_data_space_metamodel.definition.json");
+        return GenericCodeRepository.build("core_data_product_metamodel.definition.json");
     }
 }

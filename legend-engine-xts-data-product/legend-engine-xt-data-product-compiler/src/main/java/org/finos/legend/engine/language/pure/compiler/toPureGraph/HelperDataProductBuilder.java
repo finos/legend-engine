@@ -31,9 +31,9 @@ public class HelperDataProductBuilder
 {
     public static Root_meta_pure_metamodel_dataProduct_DataProduct getDataProduct(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_pure_metamodel_dataProduct_DataProduct dataspace = (Root_meta_pure_metamodel_dataProduct_DataProduct) context.pureModel.getPackageableElement_safe(fullPath);
-        Assert.assertTrue(dataspace != null, () -> "Can't find data space '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
-        return dataspace;
+        Root_meta_pure_metamodel_dataProduct_DataProduct dataProduct = (Root_meta_pure_metamodel_dataProduct_DataProduct) context.pureModel.getPackageableElement_safe(fullPath);
+        Assert.assertTrue(dataProduct != null, () -> "Can't find data product '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return dataProduct;
     }
 
     public static Root_meta_pure_metamodel_dataProduct_DataProduct resolveDataProduct(String fullPath, SourceInformation sourceInformation, CompileContext context)

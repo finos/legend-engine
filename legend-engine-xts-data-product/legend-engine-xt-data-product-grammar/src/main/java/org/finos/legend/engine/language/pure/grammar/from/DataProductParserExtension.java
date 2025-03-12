@@ -79,7 +79,7 @@ public class DataProductParserExtension implements PureGrammarParserExtension
     public Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
     {
         return org.eclipse.collections.api.factory.Lists.immutable.with(
-                MappingIncludeParser.newParser("dataspace", DataProductParserExtension::parseMappingInclude)
+                MappingIncludeParser.newParser("dataproduct", DataProductParserExtension::parseMappingInclude)
         );
     }
 
@@ -97,6 +97,6 @@ public class DataProductParserExtension implements PureGrammarParserExtension
     @Override
     public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
     {
-        return org.eclipse.collections.api.factory.Lists.immutable.with(new DataspaceDataElementReferenceParser());
+        return org.eclipse.collections.api.factory.Lists.immutable.with(new DataProductDataElementReferenceParser());
     }
 }

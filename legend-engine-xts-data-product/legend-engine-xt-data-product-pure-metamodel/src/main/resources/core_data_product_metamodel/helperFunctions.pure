@@ -17,6 +17,6 @@ import meta::pure::metamodel::dataProduct::*;
 function  meta::pure::metamodel::dataProduct::get(ds: DataProduct[1], key:String[1]):DataProductExecutionContext[1]
 {
   let context = $ds.executionContexts->cast(@DataProductExecutionContext)->filter(x| $x.name == $key->toOne());
-  assert($context->isNotEmpty(),| 'The key value provided is not present in the dataspace contexts');
+  assert($context->isNotEmpty(),| 'The key value provided is not present in the dataproduct contexts');
   $context->at(0);
 }

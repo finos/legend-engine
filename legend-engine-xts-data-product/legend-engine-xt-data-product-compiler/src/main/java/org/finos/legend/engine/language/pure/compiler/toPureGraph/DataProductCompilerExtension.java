@@ -108,7 +108,7 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                     // execution context
                     if (dataProduct.executionContexts.isEmpty())
                     {
-                        throw new EngineException("Data space must have at least one execution context", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
+                        throw new EngineException("Data product must have at least one execution context", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
                     }
                     HashSet<String> executionContextSet = new HashSet<>();
                     metamodel._executionContexts(ListIterate.collect(dataProduct.executionContexts, executionContext ->
@@ -126,7 +126,7 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                         }
                         else
                         {
-                            throw new EngineException("Data space execution context, " + executionContext.name + ", is not unique", executionContext.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data product execution context, " + executionContext.name + ", is not unique", executionContext.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }));
                     Assert.assertTrue(dataProduct.defaultExecutionContext != null, () -> "Default execution context is missing", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
@@ -148,7 +148,7 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                     metamodel._executionContexts().forEach(dataProductExecutionContext -> dataProductExecutionContextIndex.put(dataProductExecutionContext._name(), dataProductExecutionContext));
                     dataProduct.executionContexts.forEach(executionContext ->
                     {
-                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' Second Pass")));
+                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("DataProduct '" + metamodel._name() + "' Second Pass")));
                         dataProductExecutionContextIndex.get(executionContext.name)._testData(data);
                     });
                 },
@@ -183,7 +183,7 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                     {
                         if (executable.executionContextKey != null && !dataProduct.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(executable.executionContextKey))
                         {
-                            throw new EngineException("Data space template executable's executionContextKey, " + executable.executionContextKey + ", is not valid. Please specify one from " + dataProduct.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataProduct.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data product template executable's executionContextKey, " + executable.executionContextKey + ", is not valid. Please specify one from " + dataProduct.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataProduct.sourceInformation, EngineErrorType.COMPILATION);
                         }
                         if (executable instanceof DataProductPackageableElementExecutable)
                         {
@@ -219,7 +219,7 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                             }
                             else
                             {
-                                throw new EngineException("Data space executable id, " + executableId + ", is not unique", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data product executable id, " + executableId + ", is not unique", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else if (executable instanceof DataProductTemplateExecutable)
@@ -236,12 +236,12 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                             }
                             else
                             {
-                                throw new EngineException("Data space executable id, " + executable.id + ", is not unique", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data product executable id, " + executable.id + ", is not unique", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else
                         {
-                            throw new EngineException("Data space executables could only be template or executable", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data product executables could only be template or executable", dataProduct.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }) : Lists.immutable.empty());
 
@@ -433,10 +433,10 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
     @Override
     public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
-        return Collections.singletonList(this::compileDataspaceDataElementReference);
+        return Collections.singletonList(this::compileDataProductDataElementReference);
     }
 
-    private Root_meta_pure_data_EmbeddedData compileDataspaceDataElementReference(EmbeddedData embeddedData, CompileContext compileContext, ProcessingContext processingContext)
+    private Root_meta_pure_data_EmbeddedData compileDataProductDataElementReference(EmbeddedData embeddedData, CompileContext compileContext, ProcessingContext processingContext)
     {
         if (embeddedData instanceof DataElementReference
                 && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
@@ -449,10 +449,10 @@ public class DataProductCompilerExtension implements CompilerExtension, Embedded
                 Root_meta_pure_metamodel_dataProduct_DataProduct dataProduct = (Root_meta_pure_metamodel_dataProduct_DataProduct) packageableElement;
                 return ((Root_meta_pure_data_DataElementReference) Optional
                         .ofNullable(dataProduct._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + dataElementPath + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
+                        .orElseThrow(() -> new EngineException("Data product " + dataElementPath + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
                 )._dataElement()._data();
             }
-            throw new EngineException("Dataspace " + dataElementPath + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Data product " + dataElementPath + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
     }
