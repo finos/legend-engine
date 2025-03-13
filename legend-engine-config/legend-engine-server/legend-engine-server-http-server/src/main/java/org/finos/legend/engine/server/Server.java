@@ -83,6 +83,9 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
+import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.deephaven.plugin.DeephavenStoreExecutorConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
@@ -296,12 +299,15 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         ElasticsearchV7StoreExecutorConfiguration elasticsearchV7StoreExecutorConfiguration = ElasticsearchV7StoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
         ElasticsearchV7StoreExecutor elasticsearchV7StoreExecutor = (ElasticsearchV7StoreExecutor) new ElasticsearchV7StoreExecutorBuilder().build(elasticsearchV7StoreExecutorConfiguration);
 
+        DeephavenStoreExecutorConfiguration deephavenExecutorConfiguration = DeephavenStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
+        DeephavenStoreExecutor deephavenStoreExecutor = new DeephavenStoreExecutorBuilder().build(deephavenExecutorConfiguration);
+
         PlanExecutor planExecutor;
         ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = null;
         if (serverConfiguration.graphFetchExecutionConfiguration != null)
         {
             GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = serverConfiguration.graphFetchExecutionConfiguration;
-            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, InMemory.build());
             if (graphFetchExecutionConfiguration.canExecuteInParallel())
             {
                 parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
@@ -310,7 +316,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         }
         else
         {
-            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, deephavenStoreExecutor, InMemory.build());
         }
 
         // Session Management
