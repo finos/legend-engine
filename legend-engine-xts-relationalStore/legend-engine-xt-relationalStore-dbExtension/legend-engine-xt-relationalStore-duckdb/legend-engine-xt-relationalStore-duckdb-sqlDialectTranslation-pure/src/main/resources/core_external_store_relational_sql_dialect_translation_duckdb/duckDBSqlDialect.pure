@@ -65,9 +65,7 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
     pair('FuncTests - sha1(0/1)', 'Current Version of DuckDB does not support sha1'),
     pair('FuncTests - sha1(1/1)', 'Current Version of DuckDB does not support sha1'),
     pair('FuncTests - sha256(0/1)', 'Current Version of DuckDB does not support sha256'),
-    pair('FuncTests - sha256(1/1)', 'Current Version of DuckDB does not support sha256'),
-    pair('FuncTests - string_agg(0/0)', 'Tests for aggregate functions not supported yet!'),
-    pair('FuncTests - denseRank(0/0)', 'Tests for aggregate functions not supported yet!')
+    pair('FuncTests - sha256(1/1)', 'Current Version of DuckDB does not support sha256')
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -252,8 +250,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round,simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
-    pair(Sum, simpleFunctionProcessor('sum')),
     pair(Floor, simpleFunctionProcessor('floor')),
 
     // String
@@ -277,7 +273,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
-    //pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
