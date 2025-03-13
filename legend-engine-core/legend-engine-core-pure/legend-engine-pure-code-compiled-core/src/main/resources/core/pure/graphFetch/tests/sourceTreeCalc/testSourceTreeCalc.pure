@@ -2558,4 +2558,120 @@ function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::ser
   assertEquals($expected, $sourceTree->asString(true)); 
 }
 
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::*;
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testMultipleSubtypes():Boolean[1]
+{
+   let tree = #{
+      A {
+         b->subType(@B1) {
+          b1
+         },
+         b->subType(@B2) {
+          b2
+         }
+      }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         c,
+         c->subType(@_C1) {
+          c1 {
+            d
+          }
+         },
+         c->subType(@_C2) {
+          c2 {
+            e
+          }
+         }
+      }
+   }#;
+
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::A
+{
+   b: B[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::B
+{
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::B1 extends B
+{
+   b1: String[0..1];
+   b2: String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::B2 extends B
+{
+   b1: String[0..1];
+   b2: String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_A
+{
+   c: _C[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_C
+{
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_C1 extends _C
+{
+   c1: _D[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_C2 extends _C
+{
+   c2: _E[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_D
+{
+   d: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::_E
+{
+   e: String[1];
+}
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMultipleSubtypes::testMapping
+(
+  *B : Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+
+   *A: Pure
+      {
+         ~src _A
+         b[b1]: $src.c->map(x | $x->match([x1: _C1[1] | $x1, a: Any[*] | []])),
+         b[b2]: $src.c->map(x | $x->match([x2: _C2[1] | $x2, a: Any[*] | []]))
+      }
+
+    *B1[b1] : Pure
+    {
+      ~src _C1
+      b1: $src.c1.d
+    }
+
+    *B2[b2] : Pure
+    {
+      ~src _C2
+      b2: $src.c2.e
+    }
+)

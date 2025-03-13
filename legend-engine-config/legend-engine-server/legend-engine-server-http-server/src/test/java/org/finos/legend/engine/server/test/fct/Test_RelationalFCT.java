@@ -14,7 +14,7 @@
  * //  limitations under the License.
  */
 
-package org.finos.legend.engine.server.test.pureClient.stores;
+package org.finos.legend.engine.server.test.fct;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.map.MutableMap;
@@ -27,7 +27,7 @@ import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuit
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTReportH2
+public class Test_RelationalFCT extends RelationalFCTReportH2
 {
     public static Test suite()
     {
@@ -35,9 +35,10 @@ public class Test_RelationalFCT_UsingPureClientTestSuite extends RelationalFCTRe
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return wrapSuite(
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalExecuteWrapperLegendQuery_TestParameters_1__Boolean_1_", true,false,executionSupport),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalEvaluator__FCTEvaluator_1_", "meta::relational::fct::relationalAdaptorH2__FCTAdapter_1_",executionSupport),
                 PureWithEngineHelper::cleanUp
         );
-    }
+
+   }
 
 }

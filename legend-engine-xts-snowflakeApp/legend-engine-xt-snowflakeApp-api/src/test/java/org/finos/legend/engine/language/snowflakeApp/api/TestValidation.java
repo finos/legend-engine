@@ -53,7 +53,7 @@ public class TestValidation
                         "   function: a::f():TabularDataSet[1];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null, null);
-        Assert.assertEquals("[]", response.getEntity().toString());
+        Assert.assertEquals("{\"errors\":[],\"warnings\":[]}", response.getEntity().toString());
     }
 
     @Test

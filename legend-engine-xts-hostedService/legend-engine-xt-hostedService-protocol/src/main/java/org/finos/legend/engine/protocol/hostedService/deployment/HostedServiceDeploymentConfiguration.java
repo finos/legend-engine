@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.hostedService.deployment;
 
+import org.finos.legend.engine.protocol.functionActivator.deployment.ExtraDeploymentConfigurations;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 
 public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
@@ -22,4 +23,6 @@ public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeplo
     public String domain;
     public int port;
     public String path;
+    public String serviceDetails;
+    public ExtraDeploymentConfigurations extraConfigurations;
 }

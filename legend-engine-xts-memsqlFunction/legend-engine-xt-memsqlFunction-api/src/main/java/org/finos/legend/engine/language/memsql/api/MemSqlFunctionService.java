@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -68,7 +69,7 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, List<MemSqlFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         return this.validateArtifact(artifact);
@@ -79,7 +80,7 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
     {
         MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
 
-        MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
+        MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact).getErrors();
 
         Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration) activator._activationConfiguration());
         return validationErrors.notEmpty() ?
@@ -105,11 +106,11 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
         return Lists.mutable.withAll(configurations).select(e -> e instanceof MemSqlFunctionDeploymentConfiguration).collect(e -> (MemSqlFunctionDeploymentConfiguration) e);
     }
 
-    private MutableList<? extends FunctionActivatorError> validateArtifact(MemSqlFunctionArtifact artifact)
+    private FunctionActivatorResult validateArtifact(MemSqlFunctionArtifact artifact)
     {
         int size = ((MemSqlFunctionContent)artifact.content).sqlExpressions.size();
         return size == 1 ?
-                Lists.fixedSize.empty() :
-                Lists.fixedSize.with(new MemSqlFunctionError("MemSql Function can't be used with a plan containing '" + size + "' SQL expressions", ((MemSqlFunctionContent)artifact.content).sqlExpressions));
+                new FunctionActivatorResult() :
+                new FunctionActivatorResult(Lists.fixedSize.with(new MemSqlFunctionError("MemSql Function can't be used with a plan containing '" + size + "' SQL expressions", ((MemSqlFunctionContent)artifact.content).sqlExpressions)));
     }
 }

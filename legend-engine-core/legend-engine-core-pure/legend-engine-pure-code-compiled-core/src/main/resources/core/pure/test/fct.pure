@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::*;
+import meta::pure::extension::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::configuration::*;
 import meta::pure::runtime::*;
@@ -24,7 +27,19 @@ import meta::pure::fct::*;
 
 Profile meta::pure::test::fct::model::FCT
 {
-    stereotypes : [feature,test, adapter, testCollection];
+    stereotypes : [feature,test, adapter, evaluator, testCollection];
+}
+
+Class  meta::pure::test::fct::FCTAdapter //store specific code
+{
+  runtime:Function<{FCTMappingTest[1]->Runtime[1]}>[1];
+  setup:Function<{Function<{->FCTMappingTest[1]}>[1]->Any[1]}>[0..1]; 
+}
+
+Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute
+{
+  eval: Function<{TestParameters[1]->TestResult[1]}>[1];
+  assertion: Function<{TestResult[1],TestParameters[1]->Boolean[1]}>[0..1];
 }
 
 
@@ -65,7 +80,7 @@ Class  meta::pure::test::fct::JSONSetupData extends meta::pure::test::fct::Setup
 }
 Class  meta::pure::test::fct::InstanceSetupData extends meta::pure::test::fct::SetupData
 {
-  Instance: Map<Class<Any>, List<Any>>[1];
+  instance: Map<Class<Any>, List<Any>>[1];
 }
 
 
@@ -76,6 +91,12 @@ Class  meta::pure::test::fct::FCTMappingTest
    assertions:meta::pure::test::fct::Test[*];
 
 }
+
+function meta::pure::test::fct::adaptorSetupFunction(adaptor:Function<{->FCTAdapter[1]}>[1]):Function<{Function<{->FCTMappingTest[1]}>[1]->Any[1]}>[0..1] 
+{
+    $adaptor->eval().setup; 
+}
+
 
  function meta::pure::test::fct::createTestParameters(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
  {
@@ -140,7 +161,7 @@ Class  meta::pure::test::fct::TestParameters
   expectedLineageResult:ExpectedLineage[0..1];
   runtime:meta::core::runtime::Runtime[1];
   mapping:meta::pure::mapping::Mapping[1];
-  test:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[1]  ;
+  test:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[1];
 
 }
 
@@ -157,37 +178,42 @@ Profile  meta::pure::fct::TestReturnType
 }
 
 
-function   meta::pure::fct::tests::testRunnerAssertionWithDBType(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1],DatabaseType[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1], databaseType:DatabaseType[1]): AssertionRun[*]
-{
-          let mappingTest =  $mappingTestFn->eval();
-          let runtime = $runtimeFn->eval($mappingTest,$databaseType);
-          $mappingTest->createTestParameters($runtime)->map(p   |   ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
-                                                     );
-}
-function   meta::pure::fct::tests::testRunnerAssertionH2(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1],DatabaseType[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
-{
-      meta::pure::fct::tests::testRunnerAssertionWithDBType($toEval,$runtimeFn,$mappingTestFn,DatabaseType.H2);
-}      
 
-function   meta::pure::fct::tests::testRunnerAssertion(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
 {
           let mappingTest =  $mappingTestFn->eval();
-          let runtime = $runtimeFn->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
+          let runtime = $adapter.runtime->eval($mappingTest);
+          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
                                                      );
 }
+
+function   meta::pure::fct::tests::testRunnerAssertion(adapterFN:Function<{->FCTAdapter[1]}>[1], evaluatorFN:Function<{->FCTEvaluator[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+{
+          let adapter = $adapterFN->eval();
+          let evaluator = $evaluatorFN->eval();
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $adapter.runtime->eval($mappingTest);
+          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
+                                                     );
+}
+
+
 
 
 Class meta::pure::fct::AssertionRun
 {
-  evalFn:Function<{TestParameters[1]->Boolean[1]}>[1];
+  evaluator:FCTEvaluator[1];
   parameter:TestParameters[1] ;
   
 }
 
 function  meta::pure::fct::tests::execute::AssertionRunExecute(assertion:meta::pure::fct::AssertionRun[1]):Boolean[1]
 {
-   $assertion.evalFn->eval($assertion.parameter);
+ let result = $assertion.evaluator.eval->eval($assertion.parameter);
+ if($assertion.evaluator.assertion->isNotEmpty() && $assertion.parameter.expectedErrorMessage->isEmpty(),
+    |$assertion.evaluator.assertion->toOne()->eval($result,$assertion.parameter),
+    |true);
+ 
 
 }
 
@@ -198,10 +224,10 @@ function meta::pure::test::fct::expectedLineage( storeLineage:String[*], classLi
 }
 
 
-function meta::pure::test::fct::assertLineageResult( result:meta::pure::test::fct::TestResult[1],expected:ExpectedLineage[0..1],sourceDetail:String[1]):Boolean[1]
+function meta::pure::test::fct::assertLineageResult( result:meta::pure::test::fct::TestResult[1],parameter:TestParameters[1]):Boolean[1]
 {
    
-   $expected->isNotEmpty() &&  meta::pure::test::fct::assertLineageResult($expected->toOne().storeLineage,$expected->toOne().classLineage,$expected->toOne().reportLineage,$result,$sourceDetail);
+   $parameter.expectedLineageResult->isNotEmpty() &&  meta::pure::test::fct::assertLineageResult($parameter.expectedLineageResult->toOne().storeLineage,$parameter.expectedLineageResult->toOne().classLineage,$parameter.expectedLineageResult->toOne().reportLineage,$result,$parameter.test->elementToPath());
 }
 
 function meta::pure::test::fct::assertLineageResult( storeLineage:String[*], classLineage:String[*], reportLineage:String[1],result:meta::pure::test::fct::TestResult[1], sourceDetail:String[1]):Boolean[1]
@@ -213,3 +239,27 @@ function meta::pure::test::fct::assertLineageResult( storeLineage:String[*], cla
            | true);
 }
 
+
+
+function   meta::pure::test::fct::executeFCTLegendQuery(parameters:meta::pure::test::fct::TestParameters[1],extensions:Extension[*]):StringResult[1]
+{ 
+  let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence->cast(@SimpleFunctionExpression)->toOne();
+  if($parameters.test->hasStereotype('graphFetch',QueryType),
+            | let graph =  $fn->cast(@SimpleFunctionExpression)->toOne().parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>);
+              if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                            meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime)->serialize($graph), [], ^meta::pure::runtime::ExecutionContext(), $extensions),
+                                            $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime)->serialize($graph), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
+                  );,
+            |if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                            meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(),$extensions),
+                                            $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
+               ));
+}

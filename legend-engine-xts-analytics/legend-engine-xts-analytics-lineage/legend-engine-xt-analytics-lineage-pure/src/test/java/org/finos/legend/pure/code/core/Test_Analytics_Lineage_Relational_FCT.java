@@ -24,7 +24,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
-public class Test_Analytics_Lineage_FCT  extends LineageFCTReport
+public class Test_Analytics_Lineage_Relational_FCT extends LineageRelationalFCTReport
 {
 
     public static Test suite()
@@ -33,7 +33,9 @@ public class Test_Analytics_Lineage_FCT  extends LineageFCTReport
         CompiledExecutionSupport support = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__Boolean_1_", false, true,support);
+        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::LineageFCTEvaluator__FCTEvaluator_1_",  "meta::relational::fct::relationalMockAdaptor__FCTAdapter_1_",support);
+
+
         return wrapSuite(
                 () -> true,
                 () -> suite,

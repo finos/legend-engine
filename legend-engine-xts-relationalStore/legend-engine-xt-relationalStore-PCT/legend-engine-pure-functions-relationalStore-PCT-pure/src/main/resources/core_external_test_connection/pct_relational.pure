@@ -69,6 +69,14 @@ function <<PCT.adapter>> {PCT.adapterName='Databricks'} meta::relational::tests:
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='Spanner'} meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.Spanner)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([
