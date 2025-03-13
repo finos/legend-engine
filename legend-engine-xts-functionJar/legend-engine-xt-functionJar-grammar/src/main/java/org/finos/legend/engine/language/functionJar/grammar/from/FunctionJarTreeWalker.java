@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.FunctionJarParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
-import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarDeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionJar.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
@@ -72,10 +71,6 @@ public class FunctionJarTreeWalker
         {
             ctx.execEnvs().stream().map(this::visitExecutionEnvironment).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
         }
-        if (ctx.deploymentConfigs() != null && !ctx.deploymentConfigs().isEmpty())
-        {
-            ctx.deploymentConfigs().stream().map(this::visitDeploymentConfig).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        }
     }
 
     private FunctionJar visitFunctionJar(FunctionJarParserGrammar.ServiceContext ctx)
@@ -94,16 +89,9 @@ public class FunctionJarTreeWalker
                 walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
         );
         FunctionJarParserGrammar.ServiceOwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceOwnership(), "ownership", functionJar.sourceInformation);
-        if (ownerContext.userList() != null)
-        {
-            FunctionJarParserGrammar.UserListContext userListOwnersContext = ownerContext.userList();
-            functionJar.ownership = new UserList(ListIterate.collect(userListOwnersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)));
-        }
-//        else
-//        {
-//            FunctionJarParserGrammar.DeploymentContext deploymentOwnerContext = ownerContext.deployment();
-//            functionJar.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(deploymentOwnerContext.STRING().getText(), true));
-//        }
+        FunctionJarParserGrammar.DeploymentContext deploymentOwnerContext = ownerContext.deployment();
+        functionJar.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(deploymentOwnerContext.STRING().getText(), true));
+
         FunctionJarParserGrammar.ServiceDocumentationContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceDocumentation(), "documentation", functionJar.sourceInformation);
         if (descriptionContext != null)
         {
@@ -141,12 +129,6 @@ public class FunctionJarTreeWalker
             stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext.identifier());
             return stereotypePtr;
         });
-    }
-
-    private FunctionJarDeploymentConfiguration visitDeploymentConfig(FunctionJarParserGrammar.DeploymentConfigsContext ctx)
-    {
-        FunctionJarDeploymentConfiguration config = new FunctionJarDeploymentConfiguration();
-        return config;
     }
 
     //execution environment parsing

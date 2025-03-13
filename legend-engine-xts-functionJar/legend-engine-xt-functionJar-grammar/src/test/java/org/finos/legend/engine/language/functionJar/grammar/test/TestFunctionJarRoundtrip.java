@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ public class TestFunctionJarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###FunctionJar\n" +
                 "FunctionJar <<a::A.test>> {a::A.val = 'ok'} package1::MyFunctionJar\n" +
                 "{\n" +
-                "   ownership : UserList { users: [\n" +
-                "    'user1'\n" +
-                "    ] };\n" +
+                "   ownership : Deployment { identifier: '17' };\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
                 "   documentation : 'My jar';\n" +
                 "}\n");

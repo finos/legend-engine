@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,9 +29,7 @@ public class TestFunctionJarCompilationFromGrammar extends TestCompilationFromGr
         "###FunctionJar\n" +
         "FunctionJar anything::Name\n" +
         "{" +
-        "   ownership : UserList { users: [\n" +
-        "    'user1'\n" +
-        "    ] };\n" +
+        "   ownership : Deployment { identifier: '17' };\n" +
         "   documentation : 'blah';" +
         "   function : a::f():String[1];" +
         "}\n";
@@ -40,7 +38,7 @@ public class TestFunctionJarCompilationFromGrammar extends TestCompilationFromGr
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-9:58]: Duplicated element 'anything::Name'";
+        return "COMPILATION error at [5:1-7:58]: Duplicated element 'anything::Name'";
     }
 
     @Test
@@ -49,9 +47,7 @@ public class TestFunctionJarCompilationFromGrammar extends TestCompilationFromGr
         test("###FunctionJar\n" +
                 "FunctionJar model::NewActivator\n" +
                 "{\n" +
-                "   ownership : UserList { users: [\n" +
-                "    'user1'\n" +
-                "    ] };\n" +
+                "   ownership : Deployment { identifier: '17' };\n" +
                 "   function : model::Firm_QueryFunction():Integer[1];\n" +
                 "   documentation : '';\n" +
                 "}\n" +

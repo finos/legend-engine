@@ -16,19 +16,19 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE | IMPORT
                                         | SERVICE_OWNERSHIP | SERVICE_DOCUMENTATION | SERVICE_MAPPING
                                         | SERVICE_FUNCTION| SERVICE_BINDING| SERVICE_CONTENT_TYPE| SERVICE_ACTIVATION | SERVICE_LINEAGE | SERVICE_MODEL
-                                        |SERVICE_RUNTIME| SERVICE_CONFIGURATION| SERVICE_DEPLOYMENT_STAGE
+                                        |SERVICE_RUNTIME
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT  | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
                                         | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
-                                        | EXEC_ENV| SERVICE_EXECUTION_EXECUTIONS | SERVICE_OWNERSHIP_USERLIST |SERVICE_OWNERSHIP_USERLIST_USERS
-      //                                  | SERVICE_OWNERSHIP_DEPLOYMENT | SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER | POST_DEPLOYMENT_ACTIONS
+                                        | EXEC_ENV| SERVICE_EXECUTION_EXECUTIONS
+                                        | SERVICE_OWNERSHIP_DEPLOYMENT | SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER
 ;
 
 
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                             imports
-                                            (service| execEnvs| deploymentConfigs )*
+                                            (service| execEnvs)*
                                         EOF
 ;
 imports:                                (importStatement)*
@@ -69,17 +69,15 @@ taggedValue:                            qualifiedName DOT identifier EQUAL STRIN
 serviceActivationConfiguration:         SERVICE_ACTIVATION COLON qualifiedName SEMI_COLON
 ;
 
-serviceOwnership:                          SERVICE_OWNERSHIP COLON userList SEMI_COLON
+serviceOwnership:                          SERVICE_OWNERSHIP COLON deployment SEMI_COLON
 ;
-userList:                               SERVICE_OWNERSHIP_USERLIST
-                                            BRACE_OPEN
-                                                SERVICE_OWNERSHIP_USERLIST_USERS COLON
-                                                    BRACKET_OPEN
-                                                         (STRING (COMMA STRING)*)?
-                                                    BRACKET_CLOSE
-                                            BRACE_CLOSE
 
+deployment:                             SERVICE_OWNERSHIP_DEPLOYMENT
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER COLON STRING
+                                            BRACE_CLOSE
 ;
+
 
 serviceBindingOrContent:                (serviceBinding|serviceContentType) SEMI_COLON
 ;
@@ -195,12 +193,4 @@ runtimePointer:                         qualifiedName SEMI_COLON
 embeddedRuntime:                        ISLAND_OPEN (embeddedRuntimeContent)* SEMI_COLON
 ;
 embeddedRuntimeContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
-;
-
-// ----------------------------------- Deployment ------------------------------------------------------
-deploymentConfigs:                      SERVICE_CONFIGURATION qualifiedName
-                                            BRACE_OPEN
-                                            BRACE_CLOSE
-;
-deploymentStage:                        SERVICE_DEPLOYMENT_STAGE COLON STRING SEMI_COLON
 ;

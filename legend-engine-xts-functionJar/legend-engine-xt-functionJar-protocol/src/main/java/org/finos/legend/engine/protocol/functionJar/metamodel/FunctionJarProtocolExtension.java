@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarArtifact;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarContent;
-import org.finos.legend.engine.protocol.functionJar.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -39,7 +38,7 @@ public class FunctionJarProtocolExtension implements PureProtocolExtension
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Jar_Service");
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Function_Jar");
     }
 
     @Override
@@ -50,15 +49,8 @@ public class FunctionJarProtocolExtension implements PureProtocolExtension
                         .withSubtype(FunctionJar.class, packageJSONType)
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Ownership.class)
-                        .withSubtype(UserList.class, "userList")
-//                        .withSubtype(Deployment.class, "deployment")
+                        .withSubtype(DeploymentOwner.class, "deployment")
                         .build(),
-                ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
-                        .withSubtype(FunctionJarDeploymentConfiguration.class, "functionJarDeploymentConfiguration")
-                        .build(),
-//                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
-//                        .withSubtype(org.finos.legend.engine.protocol.functionJar.deployment.JarServiceDeploymentConfiguration.class, "functionJarDeploymentConfig")
-//                        .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
                         .withSubtype(FunctionJarArtifact.class, "functionJarArtifact")
                         .build(),

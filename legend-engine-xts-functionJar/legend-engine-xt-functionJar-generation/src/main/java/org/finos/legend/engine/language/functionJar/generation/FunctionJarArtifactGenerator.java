@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarArtifact;
-import org.finos.legend.engine.protocol.functionJar.deployment.model.GenerationInfoData;
-import org.finos.legend.engine.protocol.functionJar.deployment.model.lineage.Lineage;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -56,17 +54,9 @@ public class FunctionJarArtifactGenerator
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FunctionJarArtifactGenerator.class);
     static final MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
 
-    public static GenerationInfoData renderArtifact(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
-        Lineage lineage = new Lineage();
-        return new GenerationInfoData(plan, lineage);
-    }
-
     public static FunctionJarArtifact renderServiceArtifact(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
-        Lineage lineage = new Lineage();
         return new FunctionJarArtifact(FunctionJarArtifactGenerator.fetchFunctionJar(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
     }
 
@@ -92,12 +82,6 @@ public class FunctionJarArtifactGenerator
            return PlanGenerator.generateExecutionPlan((ConcreteFunctionDefinition)activator._function(), null, null, null, pureModel,
                     clientVersion,  PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
         }
-    }
-
-    public static String generateLineage(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        //TODO fix multiEnv
-        return core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_computeLineage_FunctionJar_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
     public static PureModelContextData fetchFunctionJar(Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContextData data, PureModel pureModel)

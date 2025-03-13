@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarArtifact;
-import org.finos.legend.engine.protocol.functionJar.deployment.model.GenerationInfoData;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -82,7 +81,6 @@ public class FunctionJarArtifactGenerationExtension implements ArtifactGeneratio
             LOGGER.info("Generating functionJar deploy artifact for " + element.getName());
             Root_meta_external_function_activator_functionJar_FunctionJar activator = (Root_meta_external_function_activator_functionJar_FunctionJar) element;
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
-            GenerationInfoData info = FunctionJarArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData serviceData = FunctionJarArtifactGenerator.fetchFunctionJar(activator, data, pureModel);
             result.add(new Artifact(mapper.writeValueAsString(new FunctionJarArtifact(generatePointerForActivator(serviceData, data), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
             LOGGER.info("Generated artifacts for " + element.getName());
