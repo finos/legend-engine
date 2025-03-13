@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -29,9 +30,11 @@ import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 public class LegendCompileVSProtocol extends AbstractNative
 {
-
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     public LegendCompileVSProtocol()
@@ -64,18 +67,19 @@ public class LegendCompileVSProtocol extends AbstractNative
                 "        }";
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification compileExec(String code, String base, final ExecutionSupport es)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification compileExec(String code, String base, ExecutionSupport es)
     {
+        ValueSpecification vs;
+        PureModelContextData pmcd;
         try
         {
-            ValueSpecification vs = OBJECT_MAPPER.readValue(code, ValueSpecification.class);
-            PureModelContextData pmcd = base != null ? OBJECT_MAPPER.readValue(base, PureModelContextData.class) : PureModelContextData.newPureModelContextData();
-            return org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompileVS(vs, pmcd, ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata());
+            vs = OBJECT_MAPPER.readValue(code, ValueSpecification.class);
+            pmcd = base != null ? OBJECT_MAPPER.readValue(base, PureModelContextData.class) : PureModelContextData.newPureModelContextData();
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
-
+        return LegendCompile.doCompileVS(vs, pmcd, ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata());
     }
 }
