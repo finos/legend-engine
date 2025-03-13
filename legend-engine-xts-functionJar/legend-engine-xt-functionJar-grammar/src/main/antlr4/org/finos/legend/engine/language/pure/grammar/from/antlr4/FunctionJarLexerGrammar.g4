@@ -13,8 +13,8 @@ SERVICE:                                    'FunctionJar';
 IMPORT:                                     'import';
 
 SERVICE_OWNERSHIP:                          'ownership';
-SERVICE_OWNERSHIP_USERLIST:                 'UserList';
-SERVICE_OWNERSHIP_USERLIST_USERS:           'users';
+SERVICE_OWNERSHIP_DEPLOYMENT:               'Deployment';
+SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER:    'identifier';
 SERVICE_ACTIVATION:                         'activationConfiguration';
 SERVICE_DOCUMENTATION:                      'documentation';
 SERVICE_LINEAGE:                            'generateLineage';
@@ -44,7 +44,3 @@ SERVICE_MAPPING:                            'mapping';
 SERVICE_RUNTIME:                            'runtime';
 SERVICE_EXECUTION_EXECUTIONS:               'executions';
 
-
-// ------------------------------------- CONFIGURATION -------------------------------
-SERVICE_CONFIGURATION:                      'FunctionJarDeploymentConfiguration';
-SERVICE_DEPLOYMENT_STAGE:                    'stage';

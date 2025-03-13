@@ -155,9 +155,8 @@ function meta::external::function::activator::hostedService::generation::isMulti
   $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
 }
 
-function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
+function meta::external::function::activator::hostedService::generation::getEnvironmentkeyMain(func: PackageableFunction<Any>[1]):String[1]
 {
-    let func = $h.function;
     let exprs = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($func->cast(@ConcreteFunctionDefinition<Any>),multiExecFuncs());
     let pv = $exprs->first()->toOne('Found no multiExecution expressions')->cast(@SimpleFunctionExpression).parametersValues->at(1);
     assert($pv->instanceOf(VariableExpression));
@@ -165,11 +164,16 @@ function meta::external::function::activator::hostedService::generation::getEnvi
 
 }
 
+function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
+{
+    $h.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyMain();
+}
+
 function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
-{ 
+{
    let exprs = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($func->cast(@ConcreteFunctionDefinition<Any>),multiExecFuncs());
-  let elements = $exprs ->map(e| $e.parametersValues->at(0)->reactivate());
-  $elements->cast(@PackageableElement);
+   let elements = $exprs ->map(e| $e.parametersValues->at(0)->reactivate());
+   $elements->cast(@PackageableElement);
 }
 
 function meta::external::function::activator::hostedService::generation::multiExecFuncs(): Function<Any>[*]
@@ -183,37 +187,43 @@ function meta::external::function::activator::hostedService::generation::multiEx
 
 function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParams(h:HostedService[1] ):Pair<String,HostedService>[*]
 {
-    let execParam = getExecutionParam($h.function);
+    let rebuildExpression = rebuildServiceUsingFlattenedParamsMain($h.function);
+    $rebuildExpression->map(
+       exp | let newHostedService = ^$h(function=$exp.second);
+              pair($exp.first, $newHostedService);
+    );
+}
+
+function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParamsMain(func:PackageableFunction<Any>[1]):Pair<String,PackageableFunction<Any>>[*]
+{
+    let execParam = getExecutionParam($func);
     $execParam->match([
                        e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
-                                                             rebuildFromExpressionForExecutionEnv($h, $e->cast(@ExecutionEnvironmentInstance)->toOne());,
+                                                             rebuildFromExpressionForExecutionEnv($func, $e->cast(@ExecutionEnvironmentInstance)->toOne());,
                        d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
                                                               $d.executionContexts->map(
-                                                                ec | let newFunc = rebuildFromExpression($h.function, $ec.mapping, $ec.defaultRuntime.runtimeValue);
-                                                                let newHostedService = ^$h(function = $newFunc);
-                                                                pair($ec.name, $newHostedService);
+                                                                ec | let newFunc = rebuildFromExpression($func, $ec.mapping, $ec.defaultRuntime.runtimeValue);
+                                                                pair($ec.name, $newFunc);
                                                               );,
                        a : Any[1]                          | fail('unexpected type'); [];
     ]);
 }
 
-function meta::external::function::activator::hostedService::generation::rebuildFromExpressionForExecutionEnv(h:HostedService[1], e:ExecutionEnvironmentInstance[1]): Pair<String,HostedService>[*]
+function meta::external::function::activator::hostedService::generation::rebuildFromExpressionForExecutionEnv(func:PackageableFunction<Any>[1], e:ExecutionEnvironmentInstance[1]): Pair<String,PackageableFunction<Any>>[*]
 {
-  
-  let shouldMergeRuntime = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($h.function->cast(@ConcreteFunctionDefinition<Any>),getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_)->isNotEmpty();
-  if($shouldMergeRuntime, 
+
+  let shouldMergeRuntime = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($func->cast(@ConcreteFunctionDefinition<Any>),getWithRuntime_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_)->isNotEmpty();
+  if($shouldMergeRuntime,
     |$e.executionParameters->map(
       p | assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
-          let newFunc = rewriteUsingRuntimeComponents($h.function->cast(@ConcreteFunctionDefinition<Any>), $p->cast(@SingleExecutionParameters));
-          let newHostedService = ^$h(function=$newFunc);
-          pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
+          let newFunc = rewriteUsingRuntimeComponents($func->cast(@ConcreteFunctionDefinition<Any>), $p->cast(@SingleExecutionParameters));
+          pair($p->cast(@SingleExecutionParameters).key, $newFunc);
         ),
     |
     $e.executionParameters->map(
         p | assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
-            let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters).mapping, $p->cast(@SingleExecutionParameters).runtime->toOne());
-            let newHostedService = ^$h(function=$newFunc);
-            pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
+            let newFunc = rebuildFromExpression($func, $p->cast(@SingleExecutionParameters).mapping, $p->cast(@SingleExecutionParameters).runtime->toOne());
+            pair($p->cast(@SingleExecutionParameters).key, $newFunc);
       )
   );
 }
@@ -239,7 +249,7 @@ function meta::external::function::activator::hostedService::generation::rewrite
                                                      parametersValues = [
                                                       ^InstanceValue(genericType=^GenericType(rawType = Any),multiplicity=ZeroMany, values = [$getWithModelQueryExpression , $runtimeComp.runtime->toOne()])
                                                      ]
-                                                  );                                               
+                                                  );
   let serializeExpr =$originalFunction.expressionSequence->toOne()->cast(@SimpleFunctionExpression);
   let fromExpr = $serializeExpr->evaluateAndDeactivate().parametersValues;
   let newFrom  = ^SimpleFunctionExpression(

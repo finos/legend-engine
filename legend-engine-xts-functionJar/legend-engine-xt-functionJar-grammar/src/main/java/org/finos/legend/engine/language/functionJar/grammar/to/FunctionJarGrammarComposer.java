@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2025 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.language.functionJar.grammar.from.FunctionJarGrammarParserExtension;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
-import org.finos.legend.engine.protocol.functionJar.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
@@ -90,9 +89,9 @@ public class FunctionJarGrammarComposer implements PureGrammarComposerExtension
 
     private static String renderServiceOwner(Ownership owner)
     {
-        if (owner instanceof UserList)
+        if (owner instanceof DeploymentOwner)
         {
-            return "UserList { users: [\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "] };\n";
+            return "Deployment { identifier: '" + ((DeploymentOwner)owner).id + "' };\n";
         }
         throw new RuntimeException("Owner type invalid");
     }

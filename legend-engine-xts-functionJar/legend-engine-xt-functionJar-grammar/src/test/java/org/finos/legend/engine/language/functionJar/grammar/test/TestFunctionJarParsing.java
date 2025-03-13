@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class TestFunctionJarParsing extends TestGrammarParser.TestGrammarParserT
                 "FunctionJar " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "   function : a::f():String[1];\n" +
-                "   ownership : UserList {users: ['user1']};\n" +
+                "   ownership : Deployment { identifier: '17' };\n" +
                 "   documentation : 'sass';\n" +
                 "}\n";
     }

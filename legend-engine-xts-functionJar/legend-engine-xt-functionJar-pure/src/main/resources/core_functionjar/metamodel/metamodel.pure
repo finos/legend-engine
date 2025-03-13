@@ -6,31 +6,8 @@ Class meta::external::function::activator::functionJar::FunctionJar extends Func
 {
   documentation : String[0..1];
   ownership : meta::external::function::activator::Ownership[1];
-  binding: Binding[0..1];
-  contentType : String[0..1];
-  generateLineage: Boolean[0..1];
-  storeModel: Boolean[0..1];
 }
 
-
-
-
-Class meta::external::function::activator::functionJar::UserList extends meta::external::function::activator::Ownership
-{
-  users: String[*];
-}
-
-
- //Deployment config
-
- Class meta::external::function::activator::functionJar::FunctionJarDeploymentConfiguration extends DeploymentConfiguration
- {
- }
-
- Class meta::external::function::activator::functionJar::FunctionJarDeploymentResult extends DeploymentResult
- {
-
- } 
 
 // This section needs to be code generated from the section above 
 Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::FunctionJar extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator
@@ -42,11 +19,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar
 Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Ownership
 {
 
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::UserList extends meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Ownership
-{
-  users:String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Deployment extends meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Ownership

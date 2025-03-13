@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInf
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarArtifact;
-import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
-import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarDeploymentResult;
 import org.finos.legend.engine.language.functionJar.generation.FunctionJarArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarDeploymentResult;
+import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarDeploymentConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.*;
 
@@ -38,15 +38,11 @@ import java.util.List;
 public class FunctionJarService implements FunctionActivatorService<Root_meta_external_function_activator_functionJar_FunctionJar, FunctionJarDeploymentConfiguration, FunctionJarDeploymentResult>
 {
     private final FunctionJarArtifactGenerator functionJarArtifactgenerator;
-//    private final FunctionJarDeploymentManager functionJarDeploymentManager;
     private MutableList<FunctionActivatorValidator> extraValidators = Lists.mutable.empty();
-
 
     public FunctionJarService()
     {
-
         this.functionJarArtifactgenerator = new FunctionJarArtifactGenerator();
-//        this.functionJarDeploymentManager = new FunctionJarDeploymentManager();
     }
 
     public FunctionJarService(List<FunctionActivatorValidator> extraValidators)
@@ -58,7 +54,7 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Jar_Service");
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Function_Jar");
     }
 
     @Override
@@ -89,7 +85,7 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
         }
         catch (Exception e)
         {
-            errors.add(new FunctionJarError("FunctionJar can't be registered.", e));
+            errors.add(new FunctionJarError("Cannot create Jar", e));
         }
         this.extraValidators.select(v -> v.supports(activator)).forEach(v ->
         {
@@ -109,13 +105,14 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
     @Override
     public String generateLineage(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return this.functionJarArtifactgenerator.generateLineage(pureModel, activator, inputModel, routerExtensions);
+        return "";
     }
 
     @Override
     public List<FunctionJarDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof FunctionJarDeploymentConfiguration).collect(e -> (FunctionJarDeploymentConfiguration)e);
+        List<FunctionJarDeploymentConfiguration> result = Lists.mutable.empty();
+        return result;
     }
 
     @Override

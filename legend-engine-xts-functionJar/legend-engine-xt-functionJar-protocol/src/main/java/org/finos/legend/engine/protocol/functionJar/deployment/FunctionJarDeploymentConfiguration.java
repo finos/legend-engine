@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,5 +18,4 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 
 public class FunctionJarDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
-
 }

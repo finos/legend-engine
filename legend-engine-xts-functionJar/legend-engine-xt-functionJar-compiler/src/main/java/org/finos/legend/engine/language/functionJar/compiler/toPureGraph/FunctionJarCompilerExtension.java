@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,18 +23,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
-import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
-import org.finos.legend.engine.protocol.functionJar.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJar;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJarDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJarDeploymentConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJar_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_UserList_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -62,20 +57,11 @@ public class FunctionJarCompilerExtension implements CompilerExtension
     {
         return Lists.fixedSize.of(
                 Processor.newProcessor(
-                        FunctionJarDeploymentConfiguration.class,
-                        this::buildDeploymentConfig
-                ),
-                Processor.newProcessor(
                         FunctionJar.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(FunctionJarDeploymentConfiguration.class, ExecutionEnvironmentInstance.class, Function.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(ExecutionEnvironmentInstance.class, Function.class),
                         this::buildFunctionJar
                 )
         );
-    }
-
-    public Root_meta_external_function_activator_functionJar_FunctionJarDeploymentConfiguration buildDeploymentConfig(FunctionJarDeploymentConfiguration config, CompileContext context)
-    {
-        return new Root_meta_external_function_activator_functionJar_FunctionJarDeploymentConfiguration_Impl("", null, context.pureModel.getClass("meta::external::function::activator::functionJar::FunctionJarDeploymentConfiguration"));
     }
 
     public Root_meta_external_function_activator_functionJar_FunctionJar buildFunctionJar(FunctionJar app, CompileContext context)
@@ -92,8 +78,7 @@ public class FunctionJarCompilerExtension implements CompilerExtension
                     ._taggedValues(ListIterate.collect(app.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                     ._function(func)
                     ._documentation(app.documentation)
-                    ._ownership(buildFunctionJarOwner(app.ownership, context))
-                    ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((FunctionJarDeploymentConfiguration) app.activationConfiguration, context) : null);
+                    ._ownership(buildFunctionJarOwner(app.ownership, context));
         }
         catch (Exception e)
         {
@@ -103,13 +88,6 @@ public class FunctionJarCompilerExtension implements CompilerExtension
 
     public Root_meta_external_function_activator_Ownership buildFunctionJarOwner(Ownership owner, CompileContext context)
     {
-        if (owner instanceof UserList)
-        {
-            return new Root_meta_external_function_activator_functionJar_UserList_Impl("")._users(Lists.mutable.withAll(((UserList) owner).users));
-        }
-        else
-        {
-            return new Root_meta_external_function_activator_DeploymentOwnership_Impl(" ")._id(((DeploymentOwner)owner).id);
-        }
+        return new Root_meta_external_function_activator_DeploymentOwnership_Impl(" ")._id(((DeploymentOwner)owner).id);
     }
 }
