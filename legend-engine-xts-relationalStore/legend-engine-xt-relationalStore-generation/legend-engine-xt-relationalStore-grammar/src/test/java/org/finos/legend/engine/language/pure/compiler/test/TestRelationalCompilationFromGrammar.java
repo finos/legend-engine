@@ -371,6 +371,245 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "COMPILATION error at [8:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
         );
     }
+    
+    @Test
+    public void testSchemaStereotype()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Schema <<meta::pure::profiles::storeType.type2>> mySchema\n" +
+                "  (\n" +
+                "    Table Product\n" +
+                "    (\n" +
+                "      ProductID VARCHAR(30) PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::storeType\n" +
+                        "{\n" +
+                        "    stereotypes: [type1, type2];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "  Schema <<meta::pure::profiles::storeType.type3>> mySchema\n" +
+                        "  (\n" +
+                        "    Table Product\n" +
+                        "    (\n" +
+                        "      ProductID VARCHAR(30) PRIMARY KEY\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [10:44-48]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+        );
+    }
+    
+    @Test
+    public void testTableStereotype()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Table <<meta::pure::profiles::storeType.type2>> Product\n" +
+                "  (\n" +
+                "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::storeType\n" +
+                        "{\n" +
+                        "    stereotypes: [type1, type2];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "  Table <<meta::pure::profiles::storeType.type3>> Product\n" +
+                        "  (\n" +
+                        "    ProductID VARCHAR(30) PRIMARY KEY\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [10:43-47]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+        );
+    }
+    
+    @Test
+    public void testViewStereotype()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Table ProductTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    name VARCHAR(30)\n" +
+                "  )\n" +
+                "  View <<meta::pure::profiles::storeType.type2>> ProductView\n" +
+                "  (\n" +
+                "    id: ProductTable.id,\n" +
+                "    name: ProductTable.name\n" +
+                "  )\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::storeType\n" +
+                        "{\n" +
+                        "    stereotypes: [type1, type2];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "  Table ProductTable\n" +
+                        "  (\n" +
+                        "    id INTEGER PRIMARY KEY,\n" +
+                        "    name VARCHAR(30)\n" +
+                        "  )\n" +
+                        "  View <<meta::pure::profiles::storeType.type3>> ProductView\n" +
+                        "  (\n" +
+                        "    id: ProductTable.id,\n" +
+                        "    name: ProductTable.name\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [15:42-46]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+        );
+    }
+    
+    @Test
+    public void testColumnStereotype()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Table Product\n" +
+                "  (\n" +
+                "    ProductID <<meta::pure::profiles::storeType.type2>> VARCHAR(30) PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::storeType\n" +
+                        "{\n" +
+                        "    stereotypes: [type1, type2];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "  Table Product\n" +
+                        "  (\n" +
+                        "    ProductID <<meta::pure::profiles::storeType.type3>> VARCHAR(30) PRIMARY KEY\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [12:49-53]: Can't find stereotype 'type3' in profile 'meta::pure::profiles::storeType'"
+        );
+    }
+    
+    @Test
+    public void testTaggedValues()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::doc\n" +
+                "{\n" +
+                "    tags: [doc];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Schema {meta::pure::profiles::doc.doc = 'Schema documentation'} mySchema\n" +
+                "  (\n" +
+                "    Table {meta::pure::profiles::doc.doc = 'Table documentation'} Product\n" +
+                "    (\n" +
+                "      ProductID {meta::pure::profiles::doc.doc = 'Column documentation'} VARCHAR(30) PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "  View {meta::pure::profiles::doc.doc = 'View documentation'} ProductView\n" +
+                "  (\n" +
+                "    id: mySchema.Product.ProductID\n" +
+                "  )\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                        "Profile meta::pure::profiles::doc\n" +
+                        "{\n" +
+                        "    tags: [doc];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database app::db\n" +
+                        "(\n" +
+                        "  Schema {meta::pure::profiles::doc.unknown = 'Schema documentation'} mySchema\n" +
+                        "  (\n" +
+                        "    Table Product\n" +
+                        "    (\n" +
+                        "      ProductID VARCHAR(30) PRIMARY KEY\n" +
+                        "    )\n" +
+                        "  )\n" +
+                        ")",
+                "COMPILATION error at [10:37-43]: Can't find tag 'unknown' in profile 'meta::pure::profiles::doc'"
+        );
+    }
+    
+    @Test
+    public void testCombinedStereotypesAndTaggedValues()
+    {
+        test("###Pure\n" +
+                "Profile meta::pure::profiles::storeType\n" +
+                "{\n" +
+                "    stereotypes: [type1, type2];\n" +
+                "}\n" +
+                "\n" +
+                "Profile meta::pure::profiles::doc\n" +
+                "{\n" +
+                "    tags: [doc];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database app::db\n" +
+                "(\n" +
+                "  Schema <<meta::pure::profiles::storeType.type1>> {meta::pure::profiles::doc.doc = 'Schema documentation'} mySchema\n" +
+                "  (\n" +
+                "    Table <<meta::pure::profiles::storeType.type2>> {meta::pure::profiles::doc.doc = 'Table documentation'} Product\n" +
+                "    (\n" +
+                "      ProductID <<meta::pure::profiles::storeType.type1>> {meta::pure::profiles::doc.doc = 'Column documentation'} VARCHAR(30) PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "  View <<meta::pure::profiles::storeType.type2>> {meta::pure::profiles::doc.doc = 'View documentation'} ProductView\n" +
+                "  (\n" +
+                "    id: mySchema.Product.ProductID\n" +
+                "  )\n" +
+                ")\n");
+    }
 
     @Test
     public void testSelfJoin()
