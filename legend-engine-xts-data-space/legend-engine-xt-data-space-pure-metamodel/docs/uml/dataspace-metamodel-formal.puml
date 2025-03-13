@@ -1,0 +1,93 @@
+@startuml DataSpace Metamodel
+
+' Class definitions
+abstract class PackageableElement {
+  +name: String
+}
+
+class DataSpace {
+  +title: String[0..1]
+  +description: String[0..1]
+}
+
+class DataSpaceExecutionContext {
+  +name: String[1]
+  +title: String[0..1]
+  +description: String[0..1]
+}
+
+class DataSpaceDiagram {
+  +title: String[1]
+  +description: String[0..1]
+}
+
+abstract class DataSpaceExecutable {
+  +title: String[1]
+  +id: String[1]
+  +description: String[0..1]
+  +executionContextKey: String[0..1]
+}
+
+class DataSpacePackageableElementExecutable {
+}
+
+class DataSpaceTemplateExecutable {
+}
+
+abstract class DataSpaceSupportInfo {
+  +documentationUrl: String[0..1]
+}
+
+class DataSpaceSupportEmail {
+  +address: String[1]
+}
+
+class DataSpaceSupportCombinedInfo {
+  +emails: String[*]
+  +website: String[0..1]
+  +faqUrl: String[0..1]
+  +supportUrl: String[0..1]
+}
+
+class Mapping
+class PackageableRuntime
+class Diagram
+class FunctionDefinition
+class EmbeddedData
+
+' Inheritance relationships
+PackageableElement <|-- DataSpace
+DataSpaceExecutable <|-- DataSpacePackageableElementExecutable
+DataSpaceExecutable <|-- DataSpaceTemplateExecutable
+DataSpaceSupportInfo <|-- DataSpaceSupportEmail
+DataSpaceSupportInfo <|-- DataSpaceSupportCombinedInfo
+
+' Associations
+DataSpace "1" *-- "1..*" DataSpaceExecutionContext : executionContexts
+DataSpace "1" *-- "1" DataSpaceExecutionContext : defaultExecutionContext
+DataSpace "1" *-- "*" DataSpaceDiagram : diagrams
+DataSpace "1" *-- "*" PackageableElement : elements
+DataSpace "1" *-- "*" DataSpaceExecutable : executables
+DataSpace "1" *-- "0..1" DataSpaceSupportInfo : supportInfo
+
+DataSpaceExecutionContext "1" --> "1" Mapping : mapping
+DataSpaceExecutionContext "1" --> "1" PackageableRuntime : defaultRuntime
+DataSpaceExecutionContext "1" --> "0..1" EmbeddedData : testData
+
+DataSpaceDiagram "1" --> "1" Diagram : diagram
+
+DataSpacePackageableElementExecutable "1" --> "1" PackageableElement : executable
+DataSpaceTemplateExecutable "1" --> "1" FunctionDefinition : query
+
+' Layout hints
+together {
+  class DataSpacePackageableElementExecutable
+  class DataSpaceTemplateExecutable
+}
+
+together {
+  class DataSpaceSupportEmail
+  class DataSpaceSupportCombinedInfo
+}
+
+@enduml
