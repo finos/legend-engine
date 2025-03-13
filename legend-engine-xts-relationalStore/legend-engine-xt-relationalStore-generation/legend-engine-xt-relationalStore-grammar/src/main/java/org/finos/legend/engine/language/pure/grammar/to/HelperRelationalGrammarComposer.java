@@ -264,7 +264,9 @@ public class HelperRelationalGrammarComposer
     {
         int baseIndentation = 1;
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append("Schema ").append(PureGrammarComposerUtility.convertIdentifier(schema.name)).append("\n");
+        builder.append(getTabString(baseIndentation)).append("Schema ");
+        builder.append(HelperDomainGrammarComposer.renderAnnotations(schema.stereotypes, schema.taggedValues));
+        builder.append(PureGrammarComposerUtility.convertIdentifier(schema.name)).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         boolean nonEmpty = false;
         if (!schema.tables.isEmpty())
@@ -292,7 +294,9 @@ public class HelperRelationalGrammarComposer
     public static String renderDatabaseTable(Table table, int baseIndentation, RelationalGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append("Table ").append(table.name).append("\n");
+        builder.append(getTabString(baseIndentation)).append("Table ");
+        builder.append(HelperDomainGrammarComposer.renderAnnotations(table.stereotypes, table.taggedValues));
+        builder.append(table.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         boolean nonEmpty = false;
         if (!table.milestoning.isEmpty())
@@ -340,6 +344,7 @@ public class HelperRelationalGrammarComposer
                 // so the composer need to compensate respectively
                 column.name.startsWith("\"") && column.name.endsWith("\"") ? column.name : PureGrammarComposerUtility.convertIdentifier(column.name, true)
         ).append(" ");
+        builder.append(HelperDomainGrammarComposer.renderAnnotations(column.stereotypes, column.taggedValues));
         if (column.type instanceof Char)
         {
             builder.append("CHAR(").append(((Char) column.type).size).append(")");
@@ -475,7 +480,9 @@ public class HelperRelationalGrammarComposer
     public static String renderDatabaseView(View view, int baseIndentation, RelationalGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append("View ").append(view.name).append("\n");
+        builder.append(getTabString(baseIndentation)).append("View ");
+        builder.append(HelperDomainGrammarComposer.renderAnnotations(view.stereotypes, view.taggedValues));
+        builder.append(view.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         builder.append(view.filter != null ? (getTabString(baseIndentation + 1) + renderFilterMapping(view.filter) + "\n") : "");
         builder.append(!view.groupBy.isEmpty()

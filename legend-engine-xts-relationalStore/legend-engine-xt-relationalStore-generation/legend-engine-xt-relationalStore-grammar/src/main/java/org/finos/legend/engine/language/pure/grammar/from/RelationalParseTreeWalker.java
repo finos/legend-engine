@@ -25,6 +25,8 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
+import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -127,6 +129,7 @@ public class RelationalParseTreeWalker
                 });
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        database.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
         List<View> views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, scopeInfo));
@@ -166,6 +169,22 @@ public class RelationalParseTreeWalker
         });
     }
 
+    private List<TaggedValue> visitTaggedValues(RelationalParserGrammar. TaggedValuesContext ctx)
+    {
+        return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
+        {
+            TaggedValue taggedValue = new TaggedValue();
+            TagPtr tagPtr = new TagPtr();
+            taggedValue.tag = tagPtr;
+            tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
+            tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
+            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
+            taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
+            taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
+            return taggedValue;
+        });
+    }
 
     // ----------------------------------------------- SCHEMA -----------------------------------------------
 
@@ -177,9 +196,10 @@ public class RelationalParseTreeWalker
         schema.tables = ListIterate.collect(ctx.table(), this::visitTable);
         schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.identifier().getStart()).build()));
         schema.tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
+        schema.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        schema.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         return schema;
     }
-
 
     // ----------------------------------------------- TABLE -----------------------------------------------
 
@@ -195,6 +215,8 @@ public class RelationalParseTreeWalker
         {
             table.milestoning = ListIterate.collect(ctx.milestoneSpec().milestoning(), this::visitMilestoning);
         }
+        table.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        table.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         return table;
     }
 
@@ -203,6 +225,8 @@ public class RelationalParseTreeWalker
         Column column = new Column();
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.name =  ctx.relationalIdentifier().getText();
+        column.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        column.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {
@@ -498,6 +522,8 @@ public class RelationalParseTreeWalker
         view.columnMappings = ListIterate.collect(ctx.viewColumnMapping(), viewColumnMappingCtx -> this.visitViewColumnMapping(viewColumnMappingCtx, primaryKeys, scopeInfo));
         view.primaryKey = primaryKeys;
         // TODO? mainTable: we might not need this while parsing
+        view.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
+        view.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
         return view;
     }
 

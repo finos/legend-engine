@@ -28,7 +28,7 @@ identifier:                                 unquotedIdentifier | STRING
 definition:                                 (database)*
                                             EOF
 ;
-database:                                   DATABASE stereotypes? qualifiedName
+database:                                   DATABASE stereotypes? taggedValues? qualifiedName
                                                 PAREN_OPEN
                                                     include*
                                                     (
@@ -51,9 +51,14 @@ stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereo
 
 stereotype:                         qualifiedName DOT identifier;
 
+taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
+;
+
 // -------------------------------------- SCHEMA & TABLE --------------------------------------
 
-schema:                                     SCHEMA identifier
+schema:                                     SCHEMA stereotypes? taggedValues? identifier
                                                 PAREN_OPEN
                                                     (
                                                         table
@@ -62,13 +67,13 @@ schema:                                     SCHEMA identifier
                                                     )*
                                                 PAREN_CLOSE
 ;
-table:                                      TABLE relationalIdentifier
+table:                                      TABLE stereotypes? taggedValues? relationalIdentifier
                                                 PAREN_OPEN
                                                     milestoneSpec?
                                                     (columnDefinition (COMMA columnDefinition)*)?
                                                 PAREN_CLOSE
 ;
-columnDefinition:                           relationalIdentifier identifier (PAREN_OPEN INTEGER (COMMA INTEGER)? PAREN_CLOSE)? (PRIMARY_KEY | NOT_NULL)?
+columnDefinition:                           relationalIdentifier stereotypes? taggedValues? identifier (PAREN_OPEN INTEGER (COMMA INTEGER)? PAREN_CLOSE)? (PRIMARY_KEY | NOT_NULL)?
 ;
 
 // -------------------------------------- MILESTONING --------------------------------------
@@ -114,7 +119,7 @@ processingMilestoning:                      PROCESSING_MILESTONING
 
 // -------------------------------------- VIEW --------------------------------------
 
-view:                                       VIEW relationalIdentifier
+view:                                       VIEW stereotypes? taggedValues?  relationalIdentifier
                                                 PAREN_OPEN
                                                     (viewFilterMapping)?
                                                     (viewGroupBy)?
