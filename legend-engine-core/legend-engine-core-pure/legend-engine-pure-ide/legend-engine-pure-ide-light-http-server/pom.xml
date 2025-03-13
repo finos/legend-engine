@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-ide</artifactId>
-        <version>4.69.1-SNAPSHOT</version>
+        <version>4.72.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -274,6 +274,11 @@
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -288,6 +293,12 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-pure-test</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-executionPlan-test</artifactId>
             <scope>runtime</scope>
             <version>${project.version}</version>
@@ -299,10 +310,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Engine extensions -->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -389,6 +405,20 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-server-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

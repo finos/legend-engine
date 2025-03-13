@@ -142,8 +142,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExe
                                           ->map(s|$s->findAllStoreIncludes())
                                           ->removeDuplicates()
                                           ->filter(s | !$s->instanceOf(meta::external::store::model::ModelStore))
-                                          ->map(c|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
-                         let transformedMappings = $mappings->map(m|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath()));
+                                          ->map(c|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.STORE,path=$c->elementToPath()));
+                         let transformedMappings = $mappings->map(m|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING,path=$m->elementToPath()));
                          ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer
                          (
                             _type='pointer',

@@ -90,7 +90,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 
    let conventions                         = $context.conventions;
 
-   let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
+   let class                               = $node.resultType->cast(@ClassResultType).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
    let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
    let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
@@ -330,7 +330,8 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 
    let constraintChecking = if($constraintContext.enableConstraints, | $dataClass->createConstraintCheckingForClass($class, $path, $context, $constraintContext, $debug), | newProject());
    let instanceSizing     = $dataClass->updateImplementationClassWithInstanceSizeMethods($context);
-   mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing])->toOneMany());
+   let withQPs            = $dataClass->meta::pure::executionPlan::platformBinding::legendJava::shared::createQualifiedPropertiesForClass($context.typeInfos->allQualifiedProperties($class), $context.conventions, $debug->indent());
+   mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing, $withQPs])->toOneMany());
 }
 
 function meta::external::format::shared::executionPlan::platformBinding::legendJava::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]

@@ -96,6 +96,8 @@ Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMap
 )
 
 ###Pure
+import meta::relational::functions::database::*;
+import meta::json::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
@@ -161,9 +163,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
   assertLambdaJSONEquals($expected, $actual);
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaAndJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
+{
+  assertLambdaEquals($expected, $actual);
+  assertLambdaJSONEquals($expected, $actual);
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {
-  assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
+  assertEquals($expected->functionCode(), $actual->functionCode());
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
+{
+  assertEquals($expected->functionCode(), $actual->functionCode());
 }
 
 
@@ -172,9 +185,34 @@ function meta::external::query::sql::transformation::queryToPure::tests::assertL
   assertEquals($expected->functionJSON(), $actual->functionJSON());
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
+{
+  assertEquals($expected->functionJSON(), $actual->functionJSON());
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::functionJSON(func:FunctionDefinition<Any>[1]): String[1]
 {
-  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(sqlExtensions())->meta::json::toJSON(100);
+  $func->transformLambda()->meta::json::toJSON(100);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::functionJSON(func:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): String[1]
+{
+  $func->meta::json::toJSON(100);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::functionCode(func:FunctionDefinition<Any>[1]): String[1]
+{
+  $func->printFunctionDefinition(^GContext(space=''))
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::functionCode(func:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): String[1]
+{
+  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(sqlExtensions());
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::transformLambda(func:FunctionDefinition<Any>[1]): meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
+{
+  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(sqlExtensions());
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::serviceToSource(service:Service[1]): SQLSource[1]
@@ -235,6 +273,13 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
       ));
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::Service1Relation(): Service[1]
+{
+  createService('/service/service1', | FlatInput.all()->project(
+    ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+  ));
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::Service2(): Service[1]
 {
   createService('/service/service2', | FlatInput.all()->project(
@@ -245,6 +290,14 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
           'ID', 'Integer', 'String'
         ]
       ));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service2Relation(): Service[1]
+{
+  createService('/service/service2', | FlatInput.all()
+          ->project(~[
+            ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn
+          ]))
 }
 
 
@@ -262,6 +315,19 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
       );})
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::Service3Relation(): Service[1]
+{
+  createService('/service/service3', {|
+        let const = 123;
+        FlatInput.all()->project(~[
+          ID : x | $x.idIn,
+          Integer : x | $x.integerIn,
+          'The Enum Value' : x | $x.enumVal,
+          'The Type' : x | $x.type,
+          Const : x | $const
+        ]);})
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::Service4(): Service[1]
 {
   createService('/service/service4/{id}', {id:String[1], ints:Integer[*], date:StrictDate[0..1] |
@@ -274,4 +340,35 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
           'ID', 'Integer', 'Enum'
         ]
       );})
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service4Relation(): Service[1]
+{
+  createService('/service/service4/{id}', {id:String[1], ints:Integer[*], date:StrictDate[0..1] |
+
+        FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(~[
+          ID : x | $x.idIn,
+          Integer : x | $x.integerIn,
+          Enum : x | $x.enumVal
+        ]
+      );})
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service5(): Service[1]
+{
+  createService('/service/service5', {|
+    tableToTDS(tableReference(meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase,'default','flat'))
+  });
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service6(): Service[1]
+{
+  createService('/service/service6/{id}', {id:Integer[1] |
+
+        FlatInput.all()->project([
+          col(x | $x.floatIn, 'float')
+        ])->extend([
+          col(r:TDSRow[1] | sqrt($r.getFloat('float') / $id), 'sqrt')
+        ]);
+    })
 }

@@ -1,0 +1,449 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::relational::metamodel::join::*;
+import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
+import meta::pure::tds::toRelation::*;
+
+Class meta::pure::tds::toRelation::TestClass
+{
+  string:String[1];
+  integer:Integer[1];
+  number:Number[1];
+  float:Float[1];
+  bool:Boolean[1];
+}
+
+
+function <<test.Test>> meta::pure::tds::toRelation::testProjectMulti():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project(
+          [
+            col(x | $x.string, 'str'),
+            col(x | $x.integer, 'int')
+          ]
+        )
+      },
+      {| TestClass.all()->project(
+                [
+                  x | $x.string,
+                  x | $x.integer
+                ], [
+                  'str',
+                  'int'
+                ]
+            )
+      }
+    ],
+    {|
+      TestClass.all()->project(~[
+        str: x | $x.string,
+        int: x | $x.integer
+      ])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testProjectSingle():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project(col(x | $x.string, 'str'))},
+      {| TestClass.all()->project(x | $x.string, 'str')}
+    ],
+    {| TestClass.all()->project(~[str: x | $x.string])}
+  );
+}
+
+
+function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectSingle():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+      ->project(col(x | $x.string, 'str'))
+      ->project(col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'))},
+    {| TestClass.all()
+        ->project(~[str: x | $x.string])
+        ->project(~[newCol : x | $x.str->toOne() + 'abc'])}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testTDSProjectMulti():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project([col(x | $x.string, 'str'), col(x | $x.integer, 'int')])
+        ->project([
+          col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'newCol'),
+          col(x:TDSRow[1] | $x.getString('str')->toOne() + 'def', 'newCol2')
+        ])},
+    {| TestClass.all()
+        ->project(~[str: x | $x.string, int: x | $x.integer])
+        ->project(~[
+          newCol : x | $x.str->toOne() + 'abc',
+          newCol2 : x | $x.str->toOne() + 'def'
+        ])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testExtendSingle():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project(col(x | $x.string, 'str'))
+        ->extend(
+            col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'col')
+        )
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string])
+      ->extend(~[
+        col: x | $x.str->toOne() + 'abc'
+      ])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testExtendMulti():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->project(col(x | $x.string, 'str'))
+        ->extend([
+            col(x:TDSRow[1] | $x.getString('str')->toOne() + 'abc', 'col1'),
+            col(x:TDSRow[1] | $x.getString('str')->toOne() + 'def', 'col2')
+        ])
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string])
+      ->extend(~[
+        col1: x | $x.str->toOne() + 'abc',
+        col2: x | $x.str->toOne() + 'def'
+      ])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testGroupAllMulti():Boolean[1]
+{
+  test(
+    {| TestClass.all()->groupBy(
+        [
+          x | $x.string,
+          x | $x.bool
+        ],
+        [
+          agg(x | $x.integer, y | $y->sum()),
+          agg(x | $x.float, y | $y->count())
+        ],
+        [
+          'str', 'boolean', 'sum', 'count'
+        ]
+       )
+    },
+    {|
+      TestClass.all()->project(~[
+        str : x | $x.string,
+        boolean : x | $x.bool,
+        sum : x | $x.integer,
+        count : x | $x.float
+      ])->groupBy(
+        ~[str, boolean],
+        ~[
+          sum : x | $x.sum : y | $y->sum(),
+          count : x | $x.count : y | $y->count()
+        ]
+      )
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testGroupBySingle():Boolean[1]
+{
+  test(
+    {| TestClass.all()->groupBy(x | $x.string, agg(x | $x.integer, y | $y->sum()), ['str', 'sum'])},
+    {| TestClass.all()->project(~[str : x | $x.string, sum : x | $x.integer])->groupBy(~[str], ~[sum : x | $x.sum : y | $y->sum()])}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testTDSGroupBy():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+      ->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int'),
+          col(x | $x.float, 'float')
+      ])
+      ->groupBy(
+        ['str', 'float'],
+        [
+          agg('sum', row | $row.getInteger('int'), y | $y->sum()),
+          agg('max', row | $row.getInteger('int'), y | $y->max())
+        ])
+    },
+    {| TestClass.all()
+      ->project(~[
+          str: x | $x.string,
+          int: x | $x.integer,
+          float: x | $x.float
+      ])
+      ->groupBy(
+        ~[str, float],
+        ~[
+          sum : row | $row.int : y | $y->sum(),
+          max : row | $row.int : y | $y->max()
+        ]
+      )
+    }
+  );
+}
+
+
+function <<test.Test>> meta::pure::tds::toRelation::testSortSingle():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->sort(asc('str'))},
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->sort(^SortInformation(column = 'str', direction = SortDirection.ASC))}
+    ],
+    {| TestClass.all()->project(~[str: x | $x.string])->sort(ascending(~str))}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testDistinct():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project(col(x | $x.string, 'str'))->distinct()},
+    {| TestClass.all()->project(~[str: x | $x.string])->distinct()}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testTakeLimit():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->limit(1)},
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->take(1)}
+    ],
+    {| TestClass.all()->project(~[str: x | $x.string])->limit(1)}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testSlice():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project(col(x | $x.string, 'str'))->slice(1, 2)},
+    {| TestClass.all()->project(~[str: x | $x.string])->slice(1, 2)}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testDrop():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project(col(x | $x.string, 'str'))->drop(1)},
+    {| TestClass.all()->project(~[str: x | $x.string])->drop(1)}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testConcatenate():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project(col(x | $x.string, 'str'))->concatenate(TestClass.all()->project(col(x | $x.float, 'str')))},
+    {| TestClass.all()->project(~[str: x | $x.string])->concatenate(TestClass.all()->project(~[str: x | $x.float]))}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFilter():Boolean[1]
+{
+  test(
+    {| TestClass.all()
+        ->filter(x | $x.string == 'abc')
+        ->project([
+          col(x | $x.string, 'str'),
+          col(x | $x.integer, 'int')
+        ])
+        ->filter(x |
+            ($x.getString('str') == 'abc') || ($x.getString('str') == 'def')
+            &&
+            ($x.getInteger('int')->toOne()->in([1, $x.getInteger('int')->toOne()]))
+          )
+    },
+    {| TestClass.all()
+          ->filter(x | $x.string == 'abc')
+          ->project(~[
+            str: x | $x.string,
+            int: x | $x.integer
+          ])
+          ->filter(x |
+            ($x.str == 'abc') || ($x.str == 'def')
+            &&
+            ($x.int->toOne()->in([1, $x.int->toOne()]))
+          )
+    }
+  );
+}
+
+
+function <<test.Test>> meta::pure::tds::toRelation::testRenameSingle():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->renameColumns(pair('str', 'STR'))},
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->renameColumns(^meta::pure::functions::collection::Pair<String, String>(first = 'str', second ='STR'))},
+      {| TestClass.all()->project(col(x | $x.string, 'str'))->renameColumn('str', 'STR')}
+    ],
+    {| TestClass.all()->project(~[str: x | $x.string])->rename(~str, ~STR)}
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRenameMulti():Boolean[1]
+{
+  test(
+    [
+      {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->renameColumns([
+        pair('str', 'STR'),
+        pair('int', 'INT')
+      ])}
+    ],
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->rename(~str, ~STR)
+      ->rename(~int, ~INT)
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRestrictDistinct():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->restrictDistinct('int')
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->select(~[int])
+      ->distinct()
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRestrictSingle():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->restrict('int')
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->select(~[int])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testRestrictMulti():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->restrict(['int', 'str'])
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->select(~[int, str])
+    }
+  );
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testOlap():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.number, 'int')
+       ])->olapGroupBy(['str'], asc('int'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+          ->olapGroupBy(['str'], desc('int'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
+          ->olapGroupBy(['str'], asc('int'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+          ->olapGroupBy(['str'], [], func('int', y | $y->max()), 'MAX')
+          ->olapGroupBy(['str'], func('int', y | $y->max()), 'MAX2')
+          ->olapGroupBy(func('int', y|$y->min()),'MIN')
+          ->olapGroupBy(asc('int'),func('int', y|$y->max()),'MAX3')
+          ->olapGroupBy(['int'], y|$y->meta::pure::functions::math::olap::rank(),'RANK2')
+          ->olapGroupBy(asc('int'), y|$y->meta::pure::functions::math::olap::rank(),'RANK3')
+    },
+
+    {| TestClass.all()
+        ->project(~[str: x | $x.string, int: x | $x.number])
+        ->extend(over(~[str], [~int->ascending()]), ~[ROW:{p,w,r| $p->rowNumber($r)}])
+        ->extend(over(~[str], [~int->descending()]), ~['DENSE RANK':{p,w,r| $p->denseRank($w, $r)}])
+        ->extend(over(~[str], [~int->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
+        ->extend(over(~[str], []), ~[MAX:{p,w,r|$r.int}:y|$y->max()])
+        ->extend(over(~[str]), ~[MAX2:{p,w,r|$r.int}:y|$y->max()])
+        ->extend(over([], [], []), ~[MIN:{p,w,r|$r.int}:y|$y->min()])
+        ->extend(over(ascending(~int)), ~[MAX3:{p,w,r|$r.int}:y|$y->max()])
+        ->extend(over(~[int]), ~[RANK2:{p,w,r| $p->rank($w, $r)}])
+        ->extend(over([~int->ascending()]), ~[RANK3:{p,w,r| $p->rank($w, $r)}])
+    }
+  )
+}
+
+function <<test.Test>> meta::pure::tds::toRelation::testFrom():Boolean[1]
+{
+  test(
+    {| TestClass.all()->project([
+        col(x | $x.string, 'str'),
+        col(x | $x.integer, 'int')
+      ])->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    },
+    {| TestClass.all()
+      ->project(~[str: x | $x.string, int: x | $x.integer])
+      ->meta::pure::mapping::from(^meta::pure::mapping::Mapping(), ^meta::core::runtime::Runtime())
+    }
+  );
+}
+
+function meta::pure::tds::toRelation::test(inputs:LambdaFunction<Any>[*], expected:LambdaFunction<Any>[1]):Boolean[1]
+{
+  test($inputs, $expected, [])
+}
+
+function meta::pure::tds::toRelation::test(inputs:LambdaFunction<Any>[*], expected:LambdaFunction<Any>[1], extensions:Extension[*]):Boolean[1]
+{
+  $inputs->forAll(input |
+    let transformed = $input->meta::pure::tds::toRelation::transform($extensions);
+    assertLambdaJSONEquals($expected, $transformed);
+  )
+}
+
+function meta::pure::tds::toRelation::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]): Boolean[1]
+{
+  assertEquals($expected->functionJSON(), $actual->meta::json::toJSON(100));
+}
+
+function meta::pure::tds::toRelation::functionJSON(func:FunctionDefinition<Any>[1]): String[1]
+{
+  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda([])->meta::json::toJSON(100);
+}

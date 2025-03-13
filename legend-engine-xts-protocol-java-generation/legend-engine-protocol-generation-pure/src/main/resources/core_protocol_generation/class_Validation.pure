@@ -36,7 +36,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                 if ([
                         pair( | $mul->hasLowerBound() && $mul->getLowerBound() == 1 && $mul->hasUpperBound() && $mul->getUpperBound() == 1,
                               | j_if(j_eq(j_field(j_this($base), $p.name->toOne()), j_null()),
-                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property multiplicity violation'),
                                                                                 j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
                                                                                 j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' can\'t be null')
                                                                             ]))
@@ -44,7 +44,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                         ),
                         pair (| $mul->hasLowerBound() && !$mul->hasUpperBound(),
                               | j_if(j_lt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getLowerBound())),
-                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property multiplicity violation'),
                                                                                 j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
                                                                                 j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity lower bound is '+$mul->getLowerBound()->toString()))
                                                                             ]))
@@ -52,7 +52,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                         ),
                         pair (| !$mul->hasLowerBound() && $mul->hasUpperBound() && ($mul->getUpperBound() > 1),
                               | j_if(j_gt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getUpperBound())),
-                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property multiplicity violation'),
                                                                                 j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
                                                                                 j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity upper bound is '+$mul->getUpperBound()->toString()))
                                                                             ]))
@@ -62,7 +62,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                               | j_if(j_or(
                                       j_lt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getLowerBound())),
                                       j_gt(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()), j_int($mul->getUpperBound()))),
-                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property muliplicity violation'),
+                                  j_invoke($resultVar, 'add', j_new($resClass, [j_string('Property multiplicity violation'),
                                                                                 j_string($p.owner.name->toOne()+'.'+$p.name->toOne()),
                                                                                 j_string('The property \''+$p.owner.name->toOne()+'.'+$p.name->toOne()+'\' collection has a size of ')->j_plus(j_invoke(j_field(j_this($base), $p.name->toOne()),'size',[],javaInt()))->j_plus(j_string(' but its multiplicity lower bound is '+$mul->getLowerBound()->toString()+' and its upper bound is '+$mul->getUpperBound()->toString()))
                                                                             ]))
@@ -83,7 +83,7 @@ function meta::protocols::generation::java::generateValidate(base:meta::external
                 ]);
                 j_if($notedExpression,
                   j_invoke($resultVar, 'add', j_new($resClass, [j_string($c.name->toOne()),
-                                                                j_string($c.functionDefinition->printFunctionDefinition('')),
+                                                                j_string($c.functionDefinition->printFunctionDefinition(^GContext(space=''))),
                                                                 if($message->isEmpty(), |j_null(), |meta::external::language::java::transform::generateJava($message->toOne(), $context.conventions, noDebug()))
                                                                 ]))
                 );

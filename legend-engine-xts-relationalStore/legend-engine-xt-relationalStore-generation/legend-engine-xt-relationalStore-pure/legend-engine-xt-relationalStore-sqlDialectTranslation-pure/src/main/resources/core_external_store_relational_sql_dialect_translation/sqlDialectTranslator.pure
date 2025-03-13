@@ -73,6 +73,7 @@ Class meta::external::store::relational::sqlDialectTranslation::DbConfig
 {
   dbType: String[1];
   dbTimeZone: String[0..1];
+  quoteIdentifiers: Boolean[1] = false;
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::FormatConfig

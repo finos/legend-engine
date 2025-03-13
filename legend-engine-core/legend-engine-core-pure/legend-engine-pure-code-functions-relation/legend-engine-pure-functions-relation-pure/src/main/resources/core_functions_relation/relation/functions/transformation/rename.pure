@@ -41,3 +41,29 @@ function <<PCT.test>> meta::pure::functions::relation::tests::rename::testSimple
                   '   6,weq\n'+
                   '#', $res->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::rename::testSimpleRename_MultipleExpressions<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                  let t = #TDS
+                      val, str
+                      1, a
+                      3, ewe
+                      4, qw
+                      5, wwe
+                      6, weq
+                  #;
+                  $t->rename(~str, ~newStr);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,newStr\n'+
+                  '   1,a\n'+
+                  '   3,ewe\n'+
+                  '   4,qw\n'+
+                  '   5,wwe\n'+
+                  '   6,weq\n'+
+                  '#', $res->toString());
+}

@@ -16,7 +16,7 @@ package org.finos.legend.engine.repl.dataCube.server.handler;
 
 import com.sun.net.httpserver.HttpHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.repl.dataCube.server.DataCubeHelpers;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeExecutionInput;
 import org.finos.legend.engine.repl.dataCube.server.model.DataCubeExecutionResult;
@@ -50,7 +50,7 @@ public class DataCubeQueryExecutor
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeExecutionInput input = state.objectMapper.readValue(requestBody, DataCubeExecutionInput.class);
                         boolean debug = input.debug != null && input.debug;
-                        Lambda lambda = input.query;
+                        LambdaFunction lambda = input.query;
                         PureModelContextData data = DataCubeHelpers.injectNewFunction(input.model != null ? input.model : state.getCurrentPureModelContextData(), lambda).getOne();
                         DataCubeExecutionResult result = executeQuery(state.client, state.legendInterface, state.planExecutor, data, debug);
                         handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);
@@ -80,7 +80,7 @@ public class DataCubeQueryExecutor
                         String requestBody = bufferReader.lines().collect(Collectors.joining());
                         DataCubeGetExecutionPlanInput input = state.objectMapper.readValue(requestBody, DataCubeGetExecutionPlanInput.class);
                         boolean debug = input.debug != null && input.debug;
-                        Lambda lambda = input.query;
+                        LambdaFunction lambda = input.query;
                         PureModelContextData model = DataCubeHelpers.injectNewFunction(input.model != null ? input.model : state.getCurrentPureModelContextData(), lambda).getOne();
                         DataCubeGetExecutionPlanResult result = getExecutionPlan(state.client, state.legendInterface, model, debug);
                         handleJSONResponse(exchange, 200, state.objectMapper.writeValueAsString(result), state);

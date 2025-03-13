@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
-        <version>4.69.1-SNAPSHOT</version>
+        <version>4.72.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,8 +30,8 @@
         <module>legend-engine-xt-relationalStore-postgresSqlModel-pure</module>
         <module>legend-engine-xt-relationalStore-postgresSql-protocol</module>
         <module>legend-engine-xt-relationalStore-postgresSql-grammar</module>
-        <module>legend-engine-pure-functions-relationalStore-postgresSql-parser</module>
-        <module>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</module>
-        <module>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</module>
+        <module>legend-engine-xt-relationalStore-postgresSqlParser-pure</module>
+        <module>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</module>
+        <module>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</module>
     </modules>
 </project>

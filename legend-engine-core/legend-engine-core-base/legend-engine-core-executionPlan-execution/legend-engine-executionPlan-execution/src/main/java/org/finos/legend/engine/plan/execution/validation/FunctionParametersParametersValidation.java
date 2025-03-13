@@ -20,9 +20,10 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 
 import java.util.List;
@@ -33,12 +34,12 @@ import java.util.stream.Stream;
 public class FunctionParametersParametersValidation
 {
 
-    public static void validate(RichIterable<Variable> functionParameters, List<ParameterValidationContext> parameterValidationContext, ExecutionState executionState)
+    public static void validate(RichIterable<Variable> functionParameters, List<ParameterValidationContext> parameterValidationContext, ExecutionState executionState, FunctionParametersValidationNode functionParametersValidationNode)
     {
         Map<String, Result> providedParameterValues = executionState.getResults();
         validateNoMissingMandatoryParamaters(functionParameters, providedParameterValues);
         validateParameterValues(functionParameters, parameterValidationContext, providedParameterValues);
-        FunctionParametersNormalizer.normalizeParameters(functionParameters, executionState);
+        FunctionParametersNormalizer.normalizeParameters(functionParameters,parameterValidationContext, executionState, functionParametersValidationNode);
         FunctionParameterProcessor.processParameters(functionParameters, parameterValidationContext, executionState);
     }
 

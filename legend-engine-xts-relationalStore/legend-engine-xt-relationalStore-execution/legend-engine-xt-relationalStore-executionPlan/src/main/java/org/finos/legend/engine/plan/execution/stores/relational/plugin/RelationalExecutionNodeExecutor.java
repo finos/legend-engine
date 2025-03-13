@@ -78,6 +78,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.DatabaseIdentifiersCaseSensitiveVisitor;
+import org.finos.legend.engine.plan.execution.stores.relational.result.DeferredRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
@@ -132,9 +133,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -152,7 +153,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -381,11 +381,16 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof RelationalTdsInstantiationExecutionNode)
         {
             RelationalTdsInstantiationExecutionNode relationalTdsInstantiationExecutionNode = (RelationalTdsInstantiationExecutionNode) executionNode;
-            SQLExecutionResult sqlExecutionResult = null;
+            Result sqlExecutionResult = null;
             try
             {
-                sqlExecutionResult = (SQLExecutionResult) this.visit((SQLExecutionNode) relationalTdsInstantiationExecutionNode.executionNodes.get(0));
-                RelationalResult relationalTdsResult = new RelationalResult(sqlExecutionResult, relationalTdsInstantiationExecutionNode);
+                if (this.executionState.inAllocation && !this.executionState.realizeInMemory)
+                {
+                    return new DeferredRelationalResult((RelationalTdsInstantiationExecutionNode) executionNode, this.identity, this.executionState.copy());
+                }
+
+                sqlExecutionResult = this.visit(relationalTdsInstantiationExecutionNode.executionNodes.get(0));
+                RelationalResult relationalTdsResult = new RelationalResult((SQLExecutionResult) sqlExecutionResult, relationalTdsInstantiationExecutionNode);
 
                 if (this.executionState.inAllocation)
                 {
@@ -897,8 +902,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
-                String requestId = new RequestIdGenerator().generateId();
-                String fileName = tempTableName + requestId;
+                String requestId = RequestIdGenerator.generateId();
+                String tempTableNameForFileName = tempTableName.startsWith("\"") && tempTableName.endsWith("\"") ? tempTableName.substring(1, tempTableName.length() - 1) : tempTableName;
+                String fileName = tempTableNameForFileName + requestId;
                 try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
                 {
                     CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);
@@ -1026,6 +1032,31 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
 
         realizedRelationalResult.addRow(pkRowNormalized, pkRowTransformed);
+    }
+
+    private int addXStoreKeyRowToRealizedRelationalResult(Object obj, List<Method> keyGetters, RealizedRelationalResult realizedRelationalResult, boolean isMultiEqualXStoreExpression) throws InvocationTargetException, IllegalAccessException
+    {
+        int keyCount = keyGetters.size();
+        List<Object> pkRowTransformed = FastList.newList(keyCount);
+        List<Object> pkRowNormalized = FastList.newList(keyCount);
+
+        boolean shouldAddRow = !isMultiEqualXStoreExpression;
+
+        for (Method keyGetter : keyGetters)
+        {
+            Object key = keyGetter.invoke(RelationalGraphFetchUtils.resolveValueIfIChecked(obj));
+            if (key != null)
+            {
+                shouldAddRow = true;
+            }
+            pkRowTransformed.add(key);
+            pkRowNormalized.add(key);
+        }
+        if (shouldAddRow)
+        {
+            realizedRelationalResult.addRow(pkRowNormalized, pkRowTransformed);
+        }
+        return shouldAddRow ? 1 : 0;
     }
 
     private Class<?> getExecuteClass(ExecutionNode node)
@@ -1929,17 +1960,33 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     RealizedRelationalResult parentRealizedRelationalResult = RealizedRelationalResult.emptyRealizedRelationalResult(node.parentTempTableColumns);
                     List<Method> crossKeyGetters = nodeSpecifics.parentCrossKeyGetters();
 
+                    long rowCount = 0;
                     for (Object parentObject : parentsToDeepFetch)
                     {
-                        this.addKeyRowToRealizedRelationalResult(parentObject, crossKeyGetters, parentRealizedRelationalResult);
+                        rowCount += this.addXStoreKeyRowToRealizedRelationalResult(parentObject, crossKeyGetters, parentRealizedRelationalResult, nodeSpecifics.supportsCrossCaching());
                         parentToChildMap.put(parentObject, new ArrayList<>());
+                    }
+                    if (rowCount == 0)
+                    {
+                        if (cachingEnabled)
+                        {
+                            List<Method> getters = parentCrossKeyGettersOrderedPerTargetProperties;
+                            parentToChildMap.forEach((p, cs) ->
+                            {
+                                crossCache.put(
+                                        new RelationalGraphFetchUtils.RelationalCrossObjectGraphFetchCacheKey(p, getters),
+                                        cs
+                                );
+                            });
+                        }
+                        return new ConstantResult(childObjects);
                     }
 
                     if (node.parentTempTableStrategy != null)
                     {
                         try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName()).startActive(true))
                         {
-                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
+                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
                             if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                             {
                                 try

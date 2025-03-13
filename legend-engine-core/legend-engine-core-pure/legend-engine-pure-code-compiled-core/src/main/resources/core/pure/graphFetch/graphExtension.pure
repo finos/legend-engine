@@ -178,9 +178,9 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
 
    let nodeText = $node->match([
       rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
-      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
+      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(^GContext(space='')))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
       r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
-      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
+      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(^GContext(space='')))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
    ]) +  $requiredQPText + $constraintsExclusionsText;
 
   $nodeText +
@@ -254,11 +254,11 @@ function meta::pure::graphFetch::nodePathName(tree:GraphFetchTree[1]): String[1]
     ]);
 }
 
-function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):Type[1]
+function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):GenericType[1]
 {
    $g->match([
-      r : RootGraphFetchTree<Any>[1] | $r.class,
-      p : PropertyGraphFetchTree[1]  | if($p.subType->isNotEmpty(), | $p.subType->toOne(), | $p.property->functionReturnType().rawType->toOne())
+      r : RootGraphFetchTree<Any>[1] | ^GenericType(rawType = $r.class),
+      p : PropertyGraphFetchTree[1]  | if($p.subType->isNotEmpty(), |^GenericType(rawType = $p.subType->toOne()), |$p.property->functionReturnType())
    ])
 }
 
@@ -622,7 +622,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
                                             ).first;
 
    let srcClass = $setImplementation.srcClass->toOne();
-   let srcNodeOwner = $srcNode->typeFromGraphFetchTree();
+   let srcNodeOwner = $srcNode->typeFromGraphFetchTree().rawType->toOne();
 
    if($srcClass->instanceOf(Class) && $setImplementation.filter->isNotEmpty() && $srcClass == $srcNodeOwner,
       | $subTrees->enrichSourceTreeNodeForExpression($srcClass->cast(@Class<Any>), $setImplementation.filter.expressionSequence->at(0)),

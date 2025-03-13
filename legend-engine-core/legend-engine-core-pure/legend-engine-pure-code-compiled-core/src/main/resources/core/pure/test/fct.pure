@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::runtime::*;
 import meta::pure::extension::configuration::*;
 import meta::pure::runtime::*;
 import meta::pure::testCoverage::featureMatrix::*;
@@ -20,6 +21,12 @@ import meta::core::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::test::fct::*;
 import meta::pure::fct::*;
+
+Profile meta::pure::test::fct::model::FCT
+{
+    stereotypes : [feature,test, adapter, testCollection];
+}
+
 
 Class meta::pure::test::fct::TestResult
 {
@@ -47,9 +54,20 @@ Class meta::pure::test::fct::StringResult extends meta::pure::test::fct::TestRes
   result:String[1];
 }
 
-Class  meta::pure::test::fct::SetupData
+Class  meta::pure::test::fct::SetupData 
 {
 }
+
+Class  meta::pure::test::fct::JSONSetupData extends meta::pure::test::fct::SetupData
+{
+  class: Class<Any>[1];
+  json:String[1];
+}
+Class  meta::pure::test::fct::InstanceSetupData extends meta::pure::test::fct::SetupData
+{
+  Instance: Map<Class<Any>, List<Any>>[1];
+}
+
 
 Class  meta::pure::test::fct::FCTMappingTest
 {
@@ -76,10 +94,12 @@ Class  meta::pure::test::fct::FCTMappingTest
                                                                                  );
 
  }
+ 
 
 Class  meta::pure::test::fct::Test
 {
-  tests:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[*]  ;
+  tests:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[*]  ;
+
 }
 
 Class  meta::pure::test::fct::CSVResult extends ExecutionResult
@@ -120,7 +140,7 @@ Class  meta::pure::test::fct::TestParameters
   expectedLineageResult:ExpectedLineage[0..1];
   runtime:meta::core::runtime::Runtime[1];
   mapping:meta::pure::mapping::Mapping[1];
-  test:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[1]  ;
+  test:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[1]  ;
 
 }
 
@@ -137,28 +157,38 @@ Profile  meta::pure::fct::TestReturnType
 }
 
 
+function   meta::pure::fct::tests::testRunnerAssertionWithDBType(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1],DatabaseType[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1], databaseType:DatabaseType[1]): AssertionRun[*]
+{
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $runtimeFn->eval($mappingTest,$databaseType);
+          $mappingTest->createTestParameters($runtime)->map(p   |   ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
+                                                     );
+}
+function   meta::pure::fct::tests::testRunnerAssertionH2(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1],DatabaseType[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+{
+      meta::pure::fct::tests::testRunnerAssertionWithDBType($toEval,$runtimeFn,$mappingTestFn,DatabaseType.H2);
+}      
 
-
-
-function   meta::pure::fct::tests::testRunnerAssertion<T>(toEval:Function<{TestParameters[1]->Function<{FunctionDefinition<{->T[*]}>[1]->Boolean[1]}>[1]}>[1], runtimeFn:Function<{FCTMappingTest[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+function   meta::pure::fct::tests::testRunnerAssertion(toEval:Function<{TestParameters[1]->Boolean[1]}>[1], runtimeFn:Function<{FCTMappingTest[1]->Runtime[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
 {
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $runtimeFn->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |   let evalFN = $toEval->eval($p);
-                                                                    ^meta::pure::fct::AssertionRun(evalFn=$evalFN,testFn=$p.test);
+          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(evalFn=$toEval,parameter=$p);
                                                      );
 }
 
 
 Class meta::pure::fct::AssertionRun
 {
-  evalFn:Function<{FunctionDefinition<{->Any[*]}>[1]->Boolean[1]}>[1];
-  testFn:ConcreteFunctionDefinition<{Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1]->Boolean[1]}>[1] ;
+  evalFn:Function<{TestParameters[1]->Boolean[1]}>[1];
+  parameter:TestParameters[1] ;
   
 }
+
 function  meta::pure::fct::tests::execute::AssertionRunExecute(assertion:meta::pure::fct::AssertionRun[1]):Boolean[1]
 {
-    $assertion.testFn->eval($assertion.evalFn);
+   $assertion.evalFn->eval($assertion.parameter);
+
 }
 
 function meta::pure::test::fct::expectedLineage( storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):ExpectedLineage[1]

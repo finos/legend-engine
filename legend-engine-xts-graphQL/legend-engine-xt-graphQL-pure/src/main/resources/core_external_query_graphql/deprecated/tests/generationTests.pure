@@ -127,16 +127,16 @@ Enum meta::external::query::graphQL::generation::tests::model::IncType
 Class meta::external::query::graphQL::generation::tests::model::Firm
 {
   id: Integer[1];
-  legalName : String[1];
-  incType : meta::external::query::graphQL::generation::tests::model::IncType[1];
+  legalName: String[1];
+  incType: meta::external::query::graphQL::generation::tests::model::IncType[1];
 }
 
 Class meta::external::query::graphQL::generation::tests::model::Person
 {
   id: Integer[1];
-  firstName : String[0..1];
-  lastName : String[1];
-  age : Integer[1];
+  firstName: String[0..1];
+  lastName: String[1];
+  age: Integer[1];
 }
 
 Class meta::external::query::graphQL::generation::tests::model::ClassWithCustomScalars

@@ -21,7 +21,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.core.legend.LegendInterface;
 import org.finos.legend.engine.repl.core.legend.LocalLegendInterface;
@@ -95,7 +95,7 @@ public class TestDataCubeHelpers
     public void testExecuteSort()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->sort([~FIRSTNAME->ascending()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"John\",\"Doe\"]},{\"values\":[\"Nicole\",\"Doe\"]},{\"values\":[\"Tim\",\"Smith\"]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"John\",\"Doe\"]},{\"values\":[\"Nicole\",\"Doe\"]},{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -104,7 +104,7 @@ public class TestDataCubeHelpers
     public void testExecuteFilter()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | ($c.FIRSTNAME != 'Doe' && $c.LASTNAME != 'Doe'))->sort([~FIRSTNAME->ascending()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"LASTNAME\",\"type\":\"String\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null)) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null)) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -112,7 +112,7 @@ public class TestDataCubeHelpers
     public void testExecuteGroupBy()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\"},{\"name\":\"count\",\"type\":\"Integer\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", count(\\\"test0_0\\\".FIRSTNAME) as \\\"count\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) group by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"count\"],\"rows\":[{\"values\":[\"John\",1]},{\"values\":[\"Nicole\",1]},{\"values\":[\"Tim\",1]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"count\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", count(\\\"test0_0\\\".FIRSTNAME) as \\\"count\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) group by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"count\"],\"rows\":[{\"values\":[\"John\",1]},{\"values\":[\"Nicole\",1]},{\"values\":[\"Tim\",1]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -120,7 +120,7 @@ public class TestDataCubeHelpers
     {
         try
         {
-            Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, false);
+            LambdaFunction lambda = (LambdaFunction) DataCubeHelpers.parseQuery(code, false);
             PureModelContextData data = DataCubeHelpers.injectNewFunction(pureModelContextData, lambda).getOne();
             DataCubeExecutionResult result = executeQuery(null, legendInterface, planExecutor, data, false);
             Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(result.result));
@@ -197,7 +197,7 @@ public class TestDataCubeHelpers
     {
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
-        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)", false), pureModelContextData);
+        testTypeahead(expectedResult, code, (LambdaFunction) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->select(~FIRSTNAME)->from(test::test)", false), pureModelContextData);
     }
 
     @Test
@@ -207,7 +207,7 @@ public class TestDataCubeHelpers
         String code = "->extend(~[newCol:c|'ok', colX: c|$c.";
         String expectedResult = "{\"completion\":[{\"completion\":\"FIRSTNAME\",\"display\":\"FIRSTNAME\"}]}";
         PureModelContextData pmcd = PureModelContextData.newBuilder().build();
-        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>)", false), pmcd);
+        testTypeahead(expectedResult, code, (LambdaFunction) DataCubeHelpers.parseQuery("|''->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String)>)", false), pmcd);
 
         // pmcd is minimal
         pmcd = legendInterface.parse(
@@ -220,7 +220,7 @@ public class TestDataCubeHelpers
                         "     )\n" +
                         ")"
         );
-        testTypeahead(expectedResult, code, (Lambda) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#", false), pmcd);
+        testTypeahead(expectedResult, code, (LambdaFunction) DataCubeHelpers.parseQuery("|#>{test::TestDatabase.TEST0}#", false), pmcd);
     }
 
     @Test
@@ -239,7 +239,7 @@ public class TestDataCubeHelpers
         testTypeahead(expectedResult, code, null, pureModelContextData);
     }
 
-    private void testTypeahead(String expectedResult, String code, Lambda lambda, PureModelContextData data)
+    private void testTypeahead(String expectedResult, String code, LambdaFunction lambda, PureModelContextData data)
     {
         try
         {
@@ -313,7 +313,7 @@ public class TestDataCubeHelpers
     {
         try
         {
-            Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, false);
+            LambdaFunction lambda = (LambdaFunction) DataCubeHelpers.parseQuery(code, false);
             Assert.assertEquals(expectedResult, objectMapper.writeValueAsString(DataCubeHelpers.getRelationReturnType(legendInterface, lambda, data)));
         }
         catch (IOException e)
@@ -354,7 +354,7 @@ public class TestDataCubeHelpers
     {
         EngineException e = Assert.assertThrows(EngineException.class, () ->
         {
-            Lambda lambda = (Lambda) DataCubeHelpers.parseQuery(code, true);
+            LambdaFunction lambda = (LambdaFunction) DataCubeHelpers.parseQuery(code, true);
             DataCubeHelpers.getRelationReturnType(legendInterface, lambda, data);
         });
         Assert.assertEquals(errorMessage, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), e.getErrorType()));

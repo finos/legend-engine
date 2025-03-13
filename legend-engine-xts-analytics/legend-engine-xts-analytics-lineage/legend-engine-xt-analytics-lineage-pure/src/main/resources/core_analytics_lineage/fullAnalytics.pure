@@ -64,6 +64,17 @@ Class meta::analytics::lineage::ReportColumn
    columns : ColumnWithContext[*];
 }
 
+Class meta::analytics::lineage::ServiceLineage
+{
+   columns : ServiceColumn[*];
+}
+
+Class meta::analytics::lineage::ServiceColumn
+{
+   serviceColumn : String[1];
+   dataSetMappingEnrichedPropertyTree : DataSetMappingEnrichedPropertyTree[1];
+}
+
 Class meta::analytics::lineage::PropertyLineage
 {
    propertyTransforms : PropertyTransform[*];
@@ -116,7 +127,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
                                 |$updatedFuncBody,
                                 |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
 
-   let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity))));
+   let vars = $f->functionType().parameters->evaluateAndDeactivate()->map(p| pair($p.name, ^List<PlanVarPlaceHolder>(values = ^PlanVarPlaceHolder(name=$p.name, genericType = $p.genericType, multiplicity=$p.multiplicity))));
    let classLineageMapping = if($modelToModelMappings->isEmpty() && $mappings->size() == 1, | $sourceMapping, | $modelToModelMappings);
    ^FunctionAnalytics
    (
@@ -197,6 +208,30 @@ function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecificatio
    (
       columns = $result.columns
    );
+}
+
+function meta::analytics::lineage::buildServiceLineage(funcBody:ValueSpecification[1], mapping:Mapping[1], vars:Map<String, List<Any>>[1]):ServiceLineage[1]
+{
+   let project = $funcBody->meta::pure::lineage::scanProject::scanProject($vars);
+   let groupedProject = $project.columns->groupBy(c| $c.first);
+
+   let colPropertyTreePair = $groupedProject->keys()->map(gp|let propertiesPaths = $groupedProject->get($gp).values->map(c| $c.second.expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()))->removeDuplicates();
+                                                pair($gp, $propertiesPaths.result->buildPropertyTree()););
+
+   let result = $colPropertyTreePair->fold({p, lineage|
+                                            let res= $p.second->enrichPropertyPathTreeWithDataSetMapping($mapping);
+                                            ^ServiceLineage(columns=$lineage.columns->concatenate(^ServiceColumn(serviceColumn = $p.first, dataSetMappingEnrichedPropertyTree = $res->removeDuplicates()->toOne())));},
+                                            ^ServiceLineage(columns=[]));
+}
+
+function meta::analytics::lineage::asString(sl:ServiceLineage[1], space:String[1]):String[1]
+{
+  $sl.columns->fold({c, lst|$lst + $space + '{' + $space + ' serviceColumn: ' + $c.serviceColumn + $space + ' dataSetMappingEnrichedPropertyTree: ' + $c.dataSetMappingEnrichedPropertyTree->asString($space + '       ') + $space + '}'}, '');
+}
+
+function meta::analytics::lineage::asString(r:ReportLineage[1], space:String[1]):String[1]
+{
+  $r.columns->fold({c, lst|$lst + $space + '{' + $space + ' column: ' + $c.name + $space + ' columns: ' + $c.columns.column->asString($space + '       ') + $space + ' propertyTree: ' + $c.propertyTree->meta::pure::lineage::scanProperties::propertyTree::printTree($space + '       ') + $space + '}'}, '');
 }
 
 function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:ConcreteFunctionDefinition<Any>[1]):Flow[1]

@@ -42,11 +42,11 @@ function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsW
    let columnName = 'row_number';
    let func = ^DynaFunction(name = meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_.functionName->toOne()) ;
    let sortDirection = if($selectQuery.orderBy->isNotEmpty(),
-                   | $selectQuery.orderBy->at(0).direction, //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | $selectQuery.orderBy->at(0).direction,
                    | []
                    );
    let sortBy = if($selectQuery.orderBy->isNotEmpty(),
-                   | $selectQuery.orderBy.column->at(0), //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | $selectQuery.orderBy.column->at(0),
                    | $selectQuery.columns->at(0)
                    )
                   ->match([
@@ -59,7 +59,7 @@ function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsW
           relationalElement = ^meta::relational::metamodel::WindowColumn(
                 columnName = $columnName,
                 func= $func,
-                window = ^meta::relational::metamodel::Window(partition=[],sortBy=$sortBy, sortDirection=$sortDirection)
+                window = ^meta::relational::metamodel::Window(partition=[],sortBy=^SortByInfo(sortByElement = $sortBy, sortDirection = $sortDirection))
              )
           );
 
@@ -288,34 +288,23 @@ function meta::relational::functions::sqlQueryToString::default::processWindowCo
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(',')+' ',
         |'')
    + if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+$w.window.sortBy->toOne()->processOperation($sgc)
-              + if($w.window.sortDirection->isNotEmpty(), | ' ' +$w.window.sortDirection->toOne().name, | '')
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', ')
               +')',
         |')') ;
 }
-
-function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryWithCTEsDefault(s:SelectSQLQueryWithCommonTableExpressions[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
-{
-   if($s.commonTableExpressions->isNotEmpty(),
-   | 'WITH ' + $s.commonTableExpressions->processCommonTableExpressionsDefault($sgc, $isSubSelect),
-   | '') + $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect);
-}
-
 
 function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsDefault(
-  ctes:CommonTableExpression[*],
-  sgc:SqlGenerationContext[1],
-  isSubSelect:Boolean[1]
-): String[1]
+function meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   $ctes->map(cte |
-     $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
-   )->joinStrings(', \n') + ' \n';
+   if($ctes->isNotEmpty(),
+   | 'WITH ' + $ctes->map(cte |
+                    $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte.sqlQuery, ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')'
+                  )->joinStrings(', \n') + ' \n',
+   | '');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]

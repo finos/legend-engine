@@ -8,7 +8,7 @@ import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::transform::autogen::*;
 
-function meta::relational::transform::autogen::schemaToModel(schema:Schema[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[*]
+function meta::relational::transform::autogen::schemaToModel(schema:Schema[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[*]
 {
    $schema.tables->map(t | $t->tableToClass($packageStr, columnFilterPredicate_Column_1__Boolean_1_));
 }
@@ -18,9 +18,9 @@ function <<access.private>> meta::relational::transform::autogen::columnFilterPr
    true;
 }
 
-function meta::relational::transform::autogen::tableToClass(table:Table[1], packageStr:String[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+function meta::relational::transform::autogen::tableToClass(table:Table[1], packageStr:String[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Class
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class
    (
       _type = 'class',
       name = createValidClassName($table.name),
@@ -32,11 +32,11 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
    );
 }
 
-function meta::relational::transform::autogen::createPureGeneratedTaggedDoc():meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
+function meta::relational::transform::autogen::createPureGeneratedTaggedDoc():meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue
    (
-      tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(
+      tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(
           profile = 'meta::pure::profiles::doc',
           value = 'doc'
       ),
@@ -44,13 +44,13 @@ function meta::relational::transform::autogen::createPureGeneratedTaggedDoc():me
    );
 }
 
-function <<access.private>> meta::relational::transform::autogen::columnToProperty(column:Column[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+function <<access.private>> meta::relational::transform::autogen::columnToProperty(column:Column[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property
    (
       name = $column.name->createSQLSafeName()->createValidPropertyName(),
       multiplicity = if($column.nullable == false, | PureOne, | ZeroOne)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-      genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()))
+      genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()))
    );
 }
 
@@ -77,12 +77,12 @@ function <<access.private>> meta::relational::transform::autogen::replaceUnsuppo
    }, '');
 }
 
-function meta::relational::transform::autogen::databaseToAssociationJoinPair(database:Database[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]
+function meta::relational::transform::autogen::databaseToAssociationJoinPair(database:Database[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association, Join>[*]
 {
    $database.joins->map(j | $j->joinToAssociation($packageStr)->pair($j));
 }
 
-function meta::relational::transform::autogen::joinToAssociation(join:Join[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Association[1]
+function meta::relational::transform::autogen::joinToAssociation(join:Join[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[1]
 {
    let joinName = $join.name->toOne();
    let leftTableAliasColumn = getJoinOperationTableAliasColumnAtIndex($join, 0);
@@ -96,7 +96,7 @@ function meta::relational::transform::autogen::joinToAssociation(join:Join[1], p
    let p2Mult = $multPair.second;
    let p1 = generateAssociationProperty($joinName, $packageStr, $leftTable, $p1Mult);
    let p2 = generateAssociationProperty($joinName, $packageStr, $rightTable, $p2Mult);
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Association
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association
    (
      _type = 'association',
      name = $joinName,
@@ -130,15 +130,15 @@ function <<access.private>> meta::relational::transform::autogen::getAssociation
    $multiplicityMap->get(pair($isP1PrimaryKey, $isP2PrimaryKey))->toOne();
 }
 
-function <<access.private>> meta::relational::transform::autogen::generateAssociationProperty(joinName:String[1], packageStr:String[1], table:Table[1], multiplicity:Multiplicity[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+function <<access.private>> meta::relational::transform::autogen::generateAssociationProperty(joinName:String[1], packageStr:String[1], table:Table[1], multiplicity:Multiplicity[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[1]
 {
    let schemaName = $table.schema.name;
    let tableName = $table.name;
    let propertyName = $joinName + '_' + $schemaName + '_' + $tableName;
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
      name = $propertyName->createSQLSafeName()->createValidPropertyName(),
      multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-     genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)))
+     genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)))
    );
 }
 
@@ -196,7 +196,7 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassMa
 
                                                                  ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping(
                                                                     _type = 'relationalPropertyMapping',
-                                                                    property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$classPath, property=$propertyName),
+                                                                    property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$classPath, property=$propertyName),
                                                                     target = $propertyRawReturnType->match([
                                                                        c:Class<Any>[1] | $c->elementToPath()->replace('::', '_'),
                                                                        t:Type[0..1] | ''
@@ -234,7 +234,7 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassMa
    );
 }
 
-function meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings(store:Database[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], associationJoinPairs:Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*]
+function meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings(store:Database[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], associationJoinPairs:Pair<meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association, Join>[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*]
 {
    $associationJoinPairs->map(p |
      let association = $p.first;
@@ -251,12 +251,12 @@ function meta::relational::transform::autogen::associationsAndJoinsToAssociation
    );
 }
 
-function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMappings(association:meta::protocols::pure::vX_X_X::metamodel::domain::Association[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], join:Join[1], store:Database[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[*]
+function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMappings(association:meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], join:Join[1], store:Database[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[*]
 {
    let p1 = $association.properties->at(0);
    let p2 = $association.properties->at(1);
-   let p1ClassPath = $p2.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath;
-   let p2ClassPath = $p1.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath;
+   let p1ClassPath = $p2.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath;
+   let p2ClassPath = $p1.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath;
    let p1ClassName = getClassNameFromClassPath($p1ClassPath);
    let p2ClassName = getClassNameFromClassPath($p2ClassPath);
    let associationAlias = $join.aliases->at(0);
@@ -283,7 +283,7 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
    ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping
      (
        _type = 'relationalPropertyMapping',
-       property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$classPath, property=$propertyName),
+       property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$classPath, property=$propertyName),
        source = if($isFirstProperty, |$p1ClassID, |$p2ClassID),
        target = if($isFirstProperty, |$p2ClassID, |$p1ClassID),
        relationalOperation = ^RelationalOperationElementWithJoin(
@@ -295,7 +295,7 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
      )
 }
 
-function meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping(mapping: meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classes: meta::protocols::pure::vX_X_X::metamodel::domain::Class[*], associations: meta::protocols::pure::vX_X_X::metamodel::domain::Association[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
+function meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping(mapping: meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classes: meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[*], associations: meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
    (
@@ -319,7 +319,7 @@ function meta::relational::transform::autogen::getAllDatabases(database : Databa
    if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::relational::transform::autogen::getAllDatabases($visited->concatenate($database)))));
 }
 
-function meta::relational::transform::autogen::generateModelsFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]
+function meta::relational::transform::autogen::generateModelsFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]
 {
    let allClasses = $database.schemas->map(schema | $schema->meta::relational::transform::autogen::schemaToModel($classesPackage));
    let allAssociationJoinPairs = meta::relational::transform::autogen::databaseToAssociationJoinPair($database, $associationsPackage);
@@ -330,7 +330,7 @@ function meta::relational::transform::autogen::generateModelsFromDatabase(databa
    $mapping->concatenate($allClasses)->concatenate($allAssociations);
 }
 
-function meta::relational::transform::autogen::buildPMCD(elements: meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]):String[1]
+function meta::relational::transform::autogen::buildPMCD(elements: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]):String[1]
 {
    let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
    (

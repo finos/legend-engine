@@ -17,37 +17,20 @@ package org.finos.legend.engine.api.analytics.fct;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+
 import org.finos.legend.engine.test.fct.FCTReport;
-import org.finos.legend.engine.test.fct.FCTReportBuilder;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
-import org.finos.legend.pure.code.core.Test_Analytics_Lineage_FCT;
-import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
+import org.finos.legend.pure.code.core.LineageFCTReport;
+import org.finos.legend.pure.code.core.relational.dbSpecific.RelationalFCTReportH2;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import java.util.List;
 
 public class FCTReportCollector
 {
-
-
-    public static void main(String[] args)
+     public static List<FCTTestReport> collectReports(MutableList<? extends Root_meta_pure_extension_Extension> extensions)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), null, DeploymentMode.PROD);
-        MutableList<? extends Root_meta_pure_extension_Extension> extensions  = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        collectReports(extensions);
-    }
-
-    public static List<FCTTestReport> collectReports(MutableList<? extends Root_meta_pure_extension_Extension> extensions)
-    {
-        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new Test_Analytics_Lineage_FCT(), new RelationalFCTReport());
+        ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new LineageFCTReport(), new RelationalFCTReportH2());
         return FCTReportBuilder.generateReport(testAnalytics, extensions);
     }
-
-
-
-
 
 }

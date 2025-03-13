@@ -45,5 +45,5 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testPaginatedB
    let f3 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->paginated(2, 3);};
 
    let snowflake3 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" limit 50) as "subselect" order by "firstName" limit ${3?number} offset ${((2?number - 1?number)?number * 3?number)}', $snowflake3);
+   assertEquals('select "subselect"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" limit 50) as "subselect" order by "firstName" limit ${3?number} offset ${((2?number - 1?number)?number * 3?number)}', $snowflake3);
 }

@@ -23,7 +23,7 @@ meta::external::store::elasticsearch::specification::metamodel::GenerationState
 {
   spec: Model[1];
   debug: Boolean[1];
-  generated: meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*];
+  generated: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*];
   nameToClasses: Pair<TypeName, String>[*];
   pkgPrefix: String[1];
 
@@ -51,7 +51,7 @@ meta::external::store::elasticsearch::specification::metamodel::GenerationState
 
 function meta::external::store::elasticsearch::specification::metamodel::generatePureCode(specAsJson: String[1], pkgPrefix: String[1], apisToGenerate: String[*], debug: Boolean[1]): String[1]
 {
-  let esProfile = ^meta::protocols::pure::vX_X_X::metamodel::domain::Profile(
+  let esProfile = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile(
     _type = 'profile',
     package = $pkgPrefix,
     name = 'ESProfile',
@@ -59,23 +59,23 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
     tags = ['esQuirk', 'docURL', 'specLocation', 'since', 'stability', 'name', 'internalTag']
   );
 
-  let literalOrExpression = ^meta::protocols::pure::vX_X_X::metamodel::domain::Class(
+  let literalOrExpression = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class(
      _type = 'class',
      package = $pkgPrefix,
      name = 'LiteralOrExpression<T>',
      properties = [
-        ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+        ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
           name = 'value',
-          genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='T')),
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath='T')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         ),
-        ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+        ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
           name = 'expression',
-          genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath='String')),
+          genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath='String')),
           multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
         )
      ],
-    stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $pkgPrefix + '::ESProfile', value = 'TaggedUnion')
+    stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $pkgPrefix + '::ESProfile', value = 'TaggedUnion')
   )->addConstraints();
 
   let generated = $specAsJson->parse()->specToPure($pkgPrefix, $apisToGenerate, $debug).generated;
@@ -91,38 +91,38 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::addConstraints(class: meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+meta::external::store::elasticsearch::specification::metamodel::addConstraints(class: meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]): meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
   let constraints = if ($class.stereotypes->filter(s | $s.value->in(['TaggedUnion', 'ContainerVariant']))->isNotEmpty(),
     |
-      let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'this');
+      let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type = 'var', name = 'this');
 
       let properties = $class.properties
                 ->filter(p | $p.stereotypes->filter(s | $s.value == 'ContainerProperty')->isEmpty())
-                ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar))
-                ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction(_type = 'func', function = 'isNotEmpty', fControl = 'isNotEmpty_Any_$0_1$__Boolean_1_', parameters = $p));
+                ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar))
+                ->map(p | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction(_type = 'func', function = 'isNotEmpty', fControl = 'isNotEmpty_Any_$0_1$__Boolean_1_', parameters = $p));
       
-      let collection = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection(
+      let collection = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection(
         _type = 'collection',
         values = $properties,
         multiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
       );
 
-      let filterLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+      let filterLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                           (
                               _type = 'lambda',
-                              body = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'b'),
+                              body = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type = 'var', name = 'b'),
                               parameters = [
-                                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(
+                                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(
                                   _type = 'var',
                                   name = 'b',
-                                  genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'Boolean')),
+                                  genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = 'Boolean')),
                                   multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                                 )
                               ]
                           );
 
-      let filterFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+      let filterFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                         (
                           _type = 'func', 
                           function = 'filter',
@@ -130,7 +130,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                           parameters = [$collection, $filterLambda]
                         );
 
-      let sizeFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+      let sizeFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                         (
                           _type = 'func', 
                           function = 'size',
@@ -138,25 +138,25 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                           parameters = $filterFunc
                         );
 
-      let equalFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+      let equalFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                         (
                           _type = 'func', 
                           function = 'equal',
                           fControl = 'equal_Any_MANY__Any_MANY__Boolean_1_', 
                           parameters = [
                               $sizeFunc,
-                              ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger(_type = 'integer', value = 1)
+                              ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger(_type = 'integer', value = 1)
                             ]
                         );
 
-      let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+      let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                           (
                               _type = 'lambda',
                               body = $equalFunc,
                               parameters = $thisVar
                           );      
 
-      ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint(name = 'singleValueContainer', functionDefinition = $constraintLambda);
+      ^meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint(name = 'singleValueContainer', functionDefinition = $constraintLambda);
       ,
     | 
       [];
@@ -171,18 +171,18 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::singleKeyMapConstraint(p: meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[0..1]
+meta::external::store::elasticsearch::specification::metamodel::singleKeyMapConstraint(p: meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[1]): meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint[0..1]
 {
-  let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'this');
+  let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(_type = 'var', name = 'this');
 
-  let mapProperty = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar);
+  let mapProperty = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar);
 
-  let lambdaParameter = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(
+  let lambdaParameter = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(
                 _type = 'var',
                 name = 'b'
               );
 
-  let keysFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+  let keysFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                     (
                       _type = 'func', 
                       function = 'keys',
@@ -190,14 +190,14 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                       parameters = $lambdaParameter
                     );            
 
-  let mapLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+  let mapLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                       (
                           _type = 'lambda',
                           body = $keysFunc,
                           parameters = $lambdaParameter
                       );
 
-  let mapFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+  let mapFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                     (
                       _type = 'func', 
                       function = 'map',
@@ -205,7 +205,7 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                       parameters = [$mapProperty, $mapLambda]
                     );
 
-  let sizeFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+  let sizeFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                     (
                       _type = 'func', 
                       function = 'size',
@@ -213,24 +213,24 @@ meta::external::store::elasticsearch::specification::metamodel::singleKeyMapCons
                       parameters = $mapFunc
                     );
 
-  let lessThanEqualFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+  let lessThanEqualFunc = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                     (
                       _type = 'func', 
                       function = 'lessThanEqual',
                       fControl = 'lessThanEqual_Number_1__Number_1__Boolean_1_', 
                       parameters = [
                           $sizeFunc,
-                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger(_type = 'integer', value = 1)
+                          ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger(_type = 'integer', value = 1)
                         ]
                     );
 
-  let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+  let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                     (
                         _type = 'lambda',
                         body = $lessThanEqualFunc,
                         parameters = $thisVar
                     );    
-  ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint(name = 'singleKeyMap_' + $p.name, functionDefinition = $constraintLambda);
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint(name = 'singleKeyMap_' + $p.name, functionDefinition = $constraintLambda);
 }
 
 function
@@ -333,7 +333,7 @@ meta::external::store::elasticsearch::specification::metamodel::typeToPureClass(
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::createClass(type: TypeDefinition[1], namePrefix: String[1], generics: TypeName[*], inherits: Inherits[0..1], implements: Inherits[*], behaviors: Behavior[*], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+meta::external::store::elasticsearch::specification::metamodel::createClass(type: TypeDefinition[1], namePrefix: String[1], generics: TypeName[*], inherits: Inherits[0..1], implements: Inherits[*], behaviors: Behavior[*], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
   assert($implements->isEmpty(), |'Not support implements definitions!');
 
@@ -359,7 +359,7 @@ meta::external::store::elasticsearch::specification::metamodel::createClass(type
       | fail('unsupported behavior: ' + $x.type.name);[];
     )))
   )->map({p | 
-      let modelProp = $p->createProperty($state)->map(x | ^$x(stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'AdditionalProperty')));
+      let modelProp = $p->createProperty($state)->map(x | ^$x(stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'AdditionalProperty')));
     });
 
   let typeProperty = if($superTypes->isNotEmpty(),
@@ -367,12 +367,12 @@ meta::external::store::elasticsearch::specification::metamodel::createClass(type
     |[]
   );
 
-  let class = ^meta::protocols::pure::vX_X_X::metamodel::domain::Class(
+  let class = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class(
       _type = 'class',
       name = $namePrefix + $type.name->getPureName($state) + $genericsForString,
       package = $type.name->getPurePkg($state),
       taggedValues = addDocumentation($type.description, $type.docUrl, $type.specLocation, [], $type.esQuirk, $type.deprecation, $state),
-      stereotypes = $type.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated')),
+      stereotypes = $type.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = 'doc', value = 'deprecated')),
       superTypes = $superTypes,
       properties = $typeProperty->concatenate($behaviorProperties)
   );
@@ -384,14 +384,14 @@ meta::external::store::elasticsearch::specification::metamodel::createClass(type
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::addDocumentation(description: String[0..1], docUrl: String[0..1], specLocation: String[0..1], since: String[0..1], esQuirk: String[0..1], deprecation: Deprecation[0..1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[*]
+meta::external::store::elasticsearch::specification::metamodel::addDocumentation(description: String[0..1], docUrl: String[0..1], specLocation: String[0..1], since: String[0..1], esQuirk: String[0..1], deprecation: Deprecation[0..1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[*]
 {
-  $description->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile='doc', value='doc'), value = $x->cleanDocumentation()))
-    ->concatenate($esQuirk->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='esQuirk'), value = $x)))
-    ->concatenate($docUrl->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='docURL'), value = $x)))
-    ->concatenate($specLocation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='specLocation'), value = $x)))
-    ->concatenate($since->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='since'), value = $x)))
-    ->concatenate($deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile='doc', value='doc'), value = 'Deprecated: %s'->format([$x.description->cleanDocumentation()]))));
+  $description->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile='doc', value='doc'), value = $x->cleanDocumentation()))
+    ->concatenate($esQuirk->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='esQuirk'), value = $x)))
+    ->concatenate($docUrl->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='docURL'), value = $x)))
+    ->concatenate($specLocation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='specLocation'), value = $x)))
+    ->concatenate($since->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='since'), value = $x)))
+    ->concatenate($deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile='doc', value='doc'), value = 'Deprecated: %s'->format([$x.description->cleanDocumentation()]))));
 }
 
 function
@@ -403,7 +403,7 @@ meta::external::store::elasticsearch::specification::metamodel::cleanDocumentati
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::createProperty(property: _Property[1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Property[0..1]
+meta::external::store::elasticsearch::specification::metamodel::createProperty(property: _Property[1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[0..1]
 {
   $state.log(|'Processing property started: %s (kind: %s)'->format([$property.name, $property.type->type()->elementToPath()]));
 
@@ -413,12 +413,12 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
     {literal: LiteralValue[1] |
       let pureProperty = $literal.value->toOne()->match([
         {stringVal: String[1] |
-          ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+          ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
             name = $name,
-            genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = 'String')),
+            genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = 'String')),
             multiplicity = PureOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-            defaultValue = ^meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue(
-              value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString(_type = 'string', value = $stringVal)
+            defaultValue = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::DefaultValue(
+              value = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString(_type = 'string', value = $stringVal)
             )
           );
         }
@@ -427,35 +427,35 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
     {any: Any[1] |
       let pureType = $property.type->propertyTypeToPureType($state);
       let multiplicity = $property.type->propertyTypeMultiplicity($property.required, $state);
-      let pureProperty = ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+      let pureProperty = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property(
         name = $name,
-        genericType = ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType(_type='packageableType', fullPath = $pureType)),
+        genericType = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType(rawType=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType(_type='packageableType', fullPath = $pureType)),
         multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
       );
     }
   ]);
 
-  let nameTag = if ($property.name != $name, |^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='name'), value = $property.name), |[]);
+  let nameTag = if ($property.name != $name, |^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='name'), value = $property.name), |[]);
 
-  let containerStereotype = $property.containerProperty->filter(x | $x)->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ContainerProperty'));
+  let containerStereotype = $property.containerProperty->filter(x | $x)->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ContainerProperty'));
 
-  let docs = $property.stability->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile = $state.pkgPrefix + '::ESProfile', value = 'stability'), value = $x.name));
+  let docs = $property.stability->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile = $state.pkgPrefix + '::ESProfile', value = 'stability'), value = $x.name));
 
   let fullProp = ^$toAnnotate(
-    stereotypes = $property.type->propertyTypeStereotypes($state)->concatenate($containerStereotype->concatenate($property.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated')))),
+    stereotypes = $property.type->propertyTypeStereotypes($state)->concatenate($containerStereotype->concatenate($property.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = 'doc', value = 'deprecated')))),
     taggedValues = addDocumentation($property.description, $property.docUrl, [], $property.since, $property.esQuirk, $property.deprecation, $state)->concatenate($docs)->concatenate($nameTag)
   );
 
   $state.log(|'Processing property finished: %s (kind: %s)'->format([$property.name, $property.type->type()->elementToPath()]));
-  if($fullProp.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
+  if($fullProp.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath == 'Nil' || $name == '{dynamic_property}', |[], |$fullProp);
 }
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::propertyTypeStereotypes(type: ValueOf[1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[*]
+meta::external::store::elasticsearch::specification::metamodel::propertyTypeStereotypes(type: ValueOf[1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr[*]
 {
   $type->match([
-    mapT: DictionaryOf[1] | if($mapT.singleKey, |^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'SingleKeyMap'), |[]),
+    mapT: DictionaryOf[1] | if($mapT.singleKey, |^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'SingleKeyMap'), |[]),
     any: Any[1] | []
   ]);
 }
@@ -581,22 +581,22 @@ meta::external::store::elasticsearch::specification::metamodel::enumTypeToPure(t
   $state.log(|'Generating started for enum: %s.%s'->format([$type.name.namespace, $type.name.name]));  
   let values = $type.members->map({em |
     let name = defaultIfEmpty($em.codegenName, $em.name)->toOne()->replace('-', '_')->map(x | $x->in(['true', 'false'])->if(|'_' + $x, |$x))->meta::external::language::java::transform::sanitizeIdentifier();
-    let nameTag = if ($em.name != $name, |^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='name'), value = $em.name), |[]);
-    ^meta::protocols::pure::vX_X_X::metamodel::domain::EnumValue(
+    let nameTag = if ($em.name != $name, |^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='name'), value = $em.name), |[]);
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::type::EnumValue(
       value = $name,
       taggedValues = addDocumentation($em.description, [], [], $em.since, [], $em.deprecation, $state)->concatenate($nameTag),
-      stereotypes = $em.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated'))
+      stereotypes = $em.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = 'doc', value = 'deprecated'))
     );}
   );
   let name = $type.name->getPureName($state);
   let pkg = $type.name->getPurePkg($state);
-  let enum = ^meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration(
+  let enum = ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration(
     _type = 'Enumeration',
     name = $name,
     package = $pkg,
     values = $values,
     taggedValues = addDocumentation($type.description, $type.docUrl, $type.specLocation, [], $type.esQuirk, $type.deprecation, $state),
-    stereotypes = $type.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated'))
+    stereotypes = $type.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = 'doc', value = 'deprecated'))
   );
   $state->registerType($type.name, $pkg + '::' + $name);
   $state->registerForGeneration($enum);
@@ -625,14 +625,14 @@ meta::external::store::elasticsearch::specification::metamodel::aliasTypeToPure(
       $state.log(|'Generating started for alias: %s.%s using external tagging'->format([$type.name.namespace, $type.name.name]));
       let items = $type.type->collectInstanceOfInterface($state);
       let names = $items->map(x | $state.type($x.type)).variantName;
-      let stereotype = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ExternalTagged');
+      let stereotype = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ExternalTagged');
       $type->taggedUnionAliasTypeToPure($names, $items, $stereotype, [], $state);
     },
     {internalTag: InternalTag[1] |
       $state.log(|'Generating started for alias: %s.%s unsing internal tagging'->format([$type.name.namespace, $type.name.name]));
       let items = $type.type->collectInstanceOfInterface($state);
       let names = $items->map(x | $state.type($x.type))->cast(@Interface).properties->filter(x | $x.name == $internalTag.tag).type->cast(@LiteralValue).value->cast(@String);
-      let tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='internalTag'), value =  $internalTag.tag);
+      let tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='internalTag'), value =  $internalTag.tag);
       $type->taggedUnionAliasTypeToPure($names, $items, [], $tag, $state);
     },
     {none: Any[0] |
@@ -653,7 +653,7 @@ meta::external::store::elasticsearch::specification::metamodel::aliasTypeToPure(
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::taggedUnionAliasTypeToPure(type: TypeAlias[1], codegenNames: String[*], unions: ValueOf[*], extraStereoType: meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[*], extraTags: meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[*], state: GenerationState[1]): String[1]
+meta::external::store::elasticsearch::specification::metamodel::taggedUnionAliasTypeToPure(type: TypeAlias[1], codegenNames: String[*], unions: ValueOf[*], extraStereoType: meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr[*], extraTags: meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[*], state: GenerationState[1]): String[1]
 {
   assert($codegenNames->size() == $unions->size(), |'Expects union to have 1-1 to codenames');
 
@@ -661,7 +661,7 @@ meta::external::store::elasticsearch::specification::metamodel::taggedUnionAlias
 
   let aliasClass = $type->createClass('', $type.generics, [], [], [], $state);
   let stereotypes = $aliasClass.stereotypes->concatenate(
-        ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'TaggedUnion'))
+        ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'TaggedUnion'))
       ->concatenate($extraStereoType);
 
   let tags = $aliasClass.taggedValues->concatenate($extraTags);
@@ -690,7 +690,7 @@ meta::external::store::elasticsearch::specification::metamodel::interfaceTypeToP
       |$class,
       {|
         let stereotypes = $class.stereotypes
-            ->concatenate(^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ContainerVariant'));
+            ->concatenate(^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ContainerVariant'));
         ^$class(stereotypes = $stereotypes);
       }
   );
@@ -780,7 +780,7 @@ meta::external::store::elasticsearch::specification::metamodel::responseTypeToPu
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::registerForGeneration(state: GenerationState[1], class: meta::protocols::pure::vX_X_X::metamodel::PackageableElement[1]): meta::protocols::pure::vX_X_X::metamodel::PackageableElement[1]
+meta::external::store::elasticsearch::specification::metamodel::registerForGeneration(state: GenerationState[1], class: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[1]): meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[1]
 {
   $state->mutateAdd('generated', $class);
   $class;

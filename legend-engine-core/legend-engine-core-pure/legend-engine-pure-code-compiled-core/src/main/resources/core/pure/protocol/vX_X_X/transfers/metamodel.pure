@@ -24,7 +24,7 @@ import meta::protocols::alloy::function::*;
 import meta::pure::milestoning::*;
 import meta::json::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(packageableElement:PackageableElement[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(packageableElement:PackageableElement[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[1]
 {
    $packageableElement->match([
      class:Class<Any>[1]             | transformClass($class, $extensions),
@@ -36,18 +36,18 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    ])
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass($class, false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]
 {
    let properties = $class.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
    let qualifiedProperties = $class.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>);
    let originalMilestonedProperties = $class.originalMilestonedProperties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Class
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Class
    (
       _type = 'class',
       name = $class.name->toOne(),
@@ -62,14 +62,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint[1]
 {
     meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint($constraint,false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformConstraint(constraint:Constraint[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::constraint::Constraint
    (
       name               = $constraint.name->toOne(),
       functionDefinition = $constraint.functionDefinition->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($useAppliedFunction, $extensions),
@@ -91,13 +91,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::r
     let updatedMessageFunction = ^$messageFunction(classifierGenericType = $updatedClassifierGenericType);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(association:Association[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Association[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(association:Association[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[1]
 {
    let properties = $association.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
    let qualifiedProperties = $association.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>);
    let originalMilestonedProperties = $association.originalMilestonedProperties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Association
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association
    (
       _type = 'association',
       name = $association.name->toOne(),
@@ -110,12 +110,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMeasure(measure:Measure[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Measure[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMeasure(measure:Measure[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Measure[1]
 {
    let canonicalUnit = $measure.canonicalUnit;
    let nonCanonicalUnits = $measure.nonCanonicalUnits;
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Measure
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Measure
    (
       _type = 'measure',
       name = $measure.name->toOne(),
@@ -125,12 +125,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformUnit(unit:Unit[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Unit[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformUnit(unit:Unit[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Unit[1]
 {
    let measure = $unit.measure;
    let conversionFunction = $unit.conversionFunction;
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Unit
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Unit
    (
       name = $unit.name->toOne(),
       measure = $measure->toOne()->elementToPath(),
@@ -138,14 +138,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(genericType:GenericType[1]):meta::protocols::pure::vX_X_X::metamodel::type::GenericType[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(genericType:GenericType[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1]
 {
     let rawType = $genericType.rawType->match([
-        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::type::relationType::RelationType
+        rel: meta::pure::metamodel::relation::RelationType<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType
                                (
                                  _type='relationType',
                                  columns=$rel.columns->map(c |
-                                        ^meta::protocols::pure::vX_X_X::metamodel::type::relationType::Column
+                                        ^meta::protocols::pure::vX_X_X::metamodel::m3::relation::Column
                                         (
                                             name = $c.name->toOne(),
                                             genericType = $c.classifierGenericType.typeArguments->at(1)->transformGenericType(),
@@ -153,26 +153,28 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
                                         )
                                     )
                                ),
-        type: Type[1] | ^meta::protocols::pure::vX_X_X::metamodel::type::PackageableType
+        type: Type[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType
                         (
                           _type='packageableType',
                           fullPath=$genericType.rawType->toOne()->elementToPath()
                         )
     ]);
 
-    ^meta::protocols::pure::vX_X_X::metamodel::type::GenericType
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType
     (
         rawType = $rawType,
         typeArguments = $genericType.typeArguments->map(ta|$ta->transformGenericType()),
-        multiplicityArguments = $genericType.multiplicityArguments->map(ma|$ma->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
+        multiplicityArguments = $genericType.multiplicityArguments->map(ma|$ma->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+        typeVariableValues = $genericType.typeVariableValues->map(x|$x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, []))
     );
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformProperty(property:Property<Nil,Any|*>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformProperty(property:Property<Nil,Any|*>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property
    (
       defaultValue = if($property.defaultValue->isEmpty(),|[],|$property.defaultValue->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue($extensions)->toOne()),
+      aggregation = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAggregation($property.aggregation, $extensions),
       name = $property.name->toOne(),
       multiplicity = $property.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       genericType = transformGenericType($property.genericType),
@@ -181,19 +183,31 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    )
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAggregation(aggKind:AggregationKind[0..1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind[0..1]
+{
+  if (
+    [
+      pair(|$aggKind == AggregationKind.Shared, |meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind.SHARED),
+      pair(|$aggKind == AggregationKind.Composite, |meta::protocols::pure::vX_X_X::metamodel::m3::function::property::AggregationKind.COMPOSITE),
+      pair(|$aggKind == AggregationKind.None, |[])
+    ],
+    |[];
+  )
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::QualifiedProperty[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty($qualifiedProperty,false, $extensions);
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformQualifiedProperty(qualifiedProperty:QualifiedProperty<Any>[1], useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::property::QualifiedProperty[1]
 {
    let fType = $qualifiedProperty->functionType();
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::QualifiedProperty
    (
       name = $qualifiedProperty.name->toOne(),
-      parameters = $fType.parameters->tail()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)),
+      parameters = $fType.parameters->tail()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)),
       returnGenericType = transformGenericType($fType.returnType),
       returnMultiplicity = $fType.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       body = $qualifiedProperty->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions),
@@ -202,37 +216,37 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype(s:Stereotype[1]): meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype(s:Stereotype[1]): meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile=$s.profile->elementToPath(), value=$s.value)
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr(profile=$s.profile->elementToPath(), value=$s.value)
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformTaggedValue(t:TaggedValue[1]): meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformTaggedValue(t:TaggedValue[1]): meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag=^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$t.tag.profile->elementToPath(), value=$t.tag.value), value=$t.value)
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue(tag=^meta::protocols::pure::vX_X_X::metamodel::m3::extension::TagPtr(profile=$t.tag.profile->elementToPath(), value=$t.tag.value), value=$t.value)
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(multiplicity:Multiplicity[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(multiplicity:Multiplicity[1]): meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=$multiplicity.lowerBound.value, upperBound=$multiplicity.upperBound.value)
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=$multiplicity.lowerBound.value, upperBound=$multiplicity.upperBound.value)
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue(d:meta::pure::metamodel::function::property::DefaultValue[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue(d:meta::pure::metamodel::function::property::DefaultValue[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::m3::function::property::DefaultValue[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue(
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::DefaultValue(
        value = $d.functionDefinition.expressionSequence->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)),true, $extensions)
    )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformEnum(enum:Enumeration<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformEnum(enum:Enumeration<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration[1]
 {
    let pack = $enum->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::enumPackage();
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration
    (
       _type = 'Enumeration',
       name = $enum->enumName(),
       package = if($pack == '',|[], |$pack),
-      values = $enum->enumValues()->map(e|^	meta::protocols::pure::vX_X_X::metamodel::domain::EnumValue
+      values = $enum->enumValues()->map(e|^	meta::protocols::pure::vX_X_X::metamodel::m3::type::EnumValue
                                            (
                                               value=$e->cast(@Enum).name,
                                               stereotypes = $e->cast(@AnnotatedElement).stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
@@ -253,17 +267,17 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformFunction(f:ConcreteFunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Function[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformFunction(f:ConcreteFunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::Function[1]
 {
 
-   ^meta::protocols::pure::vX_X_X::metamodel::domain::Function
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::Function
    (
       _type = 'function',
       name = $f.name->toOne(),
       package=$f.package->toOne()->elementToPath(),
       body = $f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody(true, $extensions),
       parameters = $f->functionType().parameters->map(p |
-         $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)
+         $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)
       ),
       returnGenericType = transformGenericType($f->functionReturnType()),
       returnMultiplicity = $f->functionReturnMultiplicity()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
@@ -274,9 +288,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transform
 
    )
 }
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformProfile(p:Profile[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Profile[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformProfile(p:Profile[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile[1]
 
-{   ^meta::protocols::pure::vX_X_X::metamodel::domain::Profile(_type = 'profile',
+{   ^meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile(_type = 'profile',
                                                                name = $p.name->toOne(),
                                                                package = if($p.package->isEmpty(),|[],|$p.package->toOne()->elementToPath()),
                                                                stereotypes = $p.p_stereotypes->map(s|$s.value),

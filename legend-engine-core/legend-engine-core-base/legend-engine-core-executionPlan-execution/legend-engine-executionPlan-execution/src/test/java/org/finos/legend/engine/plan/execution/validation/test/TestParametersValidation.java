@@ -205,7 +205,7 @@ public class TestParametersValidation
         Streams.zip(validValues.stream(), expectedValues.stream(), (validValue, expectedValue) ->
         {
             ExecutionState state = newExecutionState(parameter.name, validValue);
-            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), state);
+            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), state,null);
             Object actualValue = ((ConstantResult) state.getResult(parameter.name)).getValue();
             Assert.assertEquals(String.valueOf(validValue), expectedValue, actualValue);
             return true;
@@ -213,7 +213,7 @@ public class TestParametersValidation
 
         for (Object invalidValue : invalidValues)
         {
-            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), newExecutionState(parameter.name, invalidValue)));
+            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), newExecutionState(parameter.name, invalidValue),null));
             Assert.assertEquals(getExpectedExceptionMessage(cls, invalidValue, exceptionSuffix), e.getMessage());
         }
     }
@@ -225,7 +225,7 @@ public class TestParametersValidation
         Streams.zip(validValues.stream(), expectedValues.stream(), (validValue, expectedValue) ->
         {
             ExecutionState state = newExecutionState(parameter.name, validValue);
-            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), state);
+            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), state,null);
             Object actualValue = ((ConstantResult) state.getResult(parameter.name)).getValue();
             Assert.assertEquals(String.valueOf(validValue), expectedValue, actualValue);
             return null;
@@ -233,7 +233,7 @@ public class TestParametersValidation
 
         for (Object invalidValue : invalidValues)
         {
-            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), newExecutionState(parameter.name, invalidValue)));
+            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), Collections.emptyList(), newExecutionState(parameter.name, invalidValue),null));
             String expectedPrefix = getExpectedExceptionMessagePrefix(cls);
             String message = e.getMessage();
             if ((message == null) || !message.startsWith(expectedPrefix))

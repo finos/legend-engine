@@ -27,60 +27,61 @@ import meta::pure::router::metamodel::clustering::*;
 import meta::pure::graphFetch::*;
 import meta::pure::metamodel::path::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]
 {
     meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($f,false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]
 {
    $f.expressionSequence->map(e|$e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($f->functionType().parameters->evaluateAndDeactivate().name, $f->openVariableValues(),false,$useAppliedFunction, $extensions));
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
-    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($v, $inScope, $open,false, $extensions);
+    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($v, $inScope, $open, false, $extensions);
 }
 
 
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1],isParameter:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1],isParameter:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($v, $inScope, $open,$isParameter,false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1],isParameter:Boolean[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification(v:ValueSpecification[1], inScope:String[*], open:Map<String,List<Any>>[1],isParameter:Boolean[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
    $v->evaluateAndDeactivate()->match(
       [
          f:FunctionRoutedValueSpecification[1]|$f.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          e:ExtendedRoutedValueSpecification[1]|$e.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          e:ClusteredValueSpecification[1]|$e.val->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
+         nsrvs:NoSetRoutedValueSpecification[1] | $nsrvs.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          funcExp:FunctionExpression[1]|
                   let fe = meta::pure::milestoning::reverseMilestoningTransforms($funcExp);
                   let spec = $fe.func->match(
                                           [
                                              p:Property<Nil,Any|*>[1]|
-                                                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty
+                                                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty
                                                 (
                                                    _type = 'property',
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions))
                                                 ),
                                              p:QualifiedProperty<Any>[1]|
-                                                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty
+                                                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty
                                                 (
                                                    _type = 'property',
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
                                                 ),
                                              p:meta::pure::metamodel::relation::Column<Nil,Any|*>[1]|
-                                                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty
+                                                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty
                                                 (
                                                    _type = 'property',
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
-                                                ),                                                
+                                                ),
                                              f:Function<Any>[1]|
                                                 let passToTransformAny =
                                                    [
@@ -103,7 +104,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
 
                                               let isExtractEnum = $fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::hasExtractEnumValue();
                                                 if($isExtractEnum,
-                                                 |^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty
+                                                 |^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty
                                                       (
                                                          _type = 'property',
                                                         property = $fe.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@String),
@@ -122,12 +123,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                            $updatedProperty->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope,$open,false,$useAppliedFunction, $extensions);
 
                                                        ,|   if($passToTransformAny->contains($fe.func) || (new_Class_1__String_1__KeyExpression_MANY__T_1_ == $fe.func && $fe.parametersValues->at(0).genericType.typeArguments.rawType->cast(@Class<Any>)->at(0)->isWithinPackage(meta::pure) && !($fe.parametersValues->at(0).genericType.typeArguments.rawType->cast(@Class<Any>)->at(0)->cast(@PackageableElement)->meta::alloy::isMetaAlloyTestDependency())),
-                                                                       |$fe->reactivate($fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->newMap())->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
+                                                                       |$fe->reactivate($fe->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->concatenate($open->keyValues())->newMap())->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
                                                                        |let package = if($fe.func->instanceOf(PackageableFunction), |$fe.func->cast(@PackageableFunction<Any>).package->toOne(), |::);
                                                                         if($fe.func->instanceOf(FunctionDefinition) && $useAppliedFunction && (!$package->isWithinPackage(meta) && !$package->meta::alloy::isMetaAlloyTestDependency() || $package->meta::alloy::isMetaAlloyTestDependencyForGeneration() ),
                                                                            |let functionName = $fe.functionName->toOne();
                                                                             let packagePath = $package->elementToPath() + '::';
-                                                                            ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                                                                            ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                                                                                   (
                                                                                       _type = 'func',
                                                                                      function = if($functionName->startsWith($packagePath),|$functionName,|$packagePath + $functionName),
@@ -161,7 +162,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                                                         )
                                                                                      }
                                                                                    ),
-                                                                                 |^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                                                                                 |^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                                                                                   (
                                                                                       _type = 'func',
                                                                                      function = $fe.func.functionName->toOne(),
@@ -220,9 +221,9 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
     $v.values->isEmpty() && $v.multiplicity == PureOne && (($rawType->instanceOf(DataType) && !$rawType->instanceOf(Unit)) || $rawType->instanceOf(Class) && (($ishacked && $rawType.name != 'Class') || (!$ishacked && $rawType.name == 'Class')));
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedClass(v:InstanceValue[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedClass(v:InstanceValue[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance
    (
       _type = 'genericTypeInstance',
       genericType = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType)
@@ -230,19 +231,19 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 }
 
 //here
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformVar(v:VariableExpression[1], isParameter:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformVar(v:VariableExpression[1], isParameter:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]
 {
    //xStore generates 'that' but provides no context on what the class is so we need to leave the class in
 //   if(($isParameter  &&$v.name != 'this' ) || $v.name == 'v_automap' || $v.name == 'that' ,
    if($isParameter && !$v.genericType->instanceOf(InferredGenericType) && $v.name != 'this',
-      |^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable
+      |^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable
              (
                 _type = 'var',
                 multiplicity = $v.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
                 name = $v.name,
                 genericType = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType)
             );
-    ,|^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable
+    ,|^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable
                 (
                    _type = 'var',
                    name = $v.name
@@ -251,149 +252,155 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedUnit(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedUnit(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance(_type='genericTypeInstance', genericType=meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType));
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance(_type='genericTypeInstance', genericType=meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType($v.genericType));
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformUnitInstance(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformUnitInstance(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::UnitInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance(_type='unitInstance', unitType=$v.genericType.rawType->toOne()->elementToPath(), unitValue=$v->cast(@InstanceValue).values->toOne()->cast(@Number));
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::UnitInstance(_type='unitInstance', unitType=$v.genericType.rawType->toOne()->elementToPath(), unitValue=$v->cast(@InstanceValue).values->toOne()->cast(@Number));
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($l, $inScope, $open, $m, 0 , [], $extensions)
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], depth:Integer[1], fe:FunctionExpression[0..1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], depth:Integer[1], fe:FunctionExpression[0..1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($l, $inScope, $open, $m, $depth,$fe, false, $extensions)
 
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], depth:Integer[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny(l:Any[*], inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], depth:Integer[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
    $l->match(
                $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_valueSpecification_transformAny->map(f|$f->eval($inScope, $open, $m, $fe, $useAppliedFunction, $extensions))->concatenate([
                   n:Nil[0] |
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection
                      (
                         _type = 'collection',
                         multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                      ),
                   s:String[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString
                      (
                         _type = 'string',
                         value = $s
                      ),
                   i:Integer[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CInteger
                      (
                         _type = 'integer',
                         value = $i
                      ),
                   d:Decimal[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDecimal
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDecimal
                      (
                         _type = 'decimal',
                         value = $d
                      ),
                   f:Float[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CFloat
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CFloat
                      (
                         _type = 'float',
                         value = $f
                      ),
                   b:Boolean[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CBoolean
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CBoolean
                      (
                         _type = 'boolean',
                         value = $b
                      ),
                   d:StrictDate[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CStrictDate
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictDate
                      (
                         _type = 'strictDate',
                         value = $d->map(st|$st->toString())
                      ),
                   d:DateTime[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDateTime
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CDateTime
                      (
                         _type = 'dateTime',
                         value = $d->map(st|$st->toString())
                      ),
+                  d:StrictTime[1]|
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CStrictTime
+                     (
+                        _type = 'strictTime',
+                        value = $d->map(st|$st->toString())
+                     ),
                   l:LatestDate[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CLatestDate
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CLatestDate
                      (
                         _type = 'latestDate'
                      ),
                   c:meta::pure::metamodel::relation::ColSpec<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpec',
                             value = $c.name->transformColSpec()
                           );,
                   c:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|
-                     
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpecArray',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray
                                     (
                                       colSpecs = $c.names->map(n|$n->transformColSpec())
                                     )
                           );,
                   f:meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpec',
                             value = $f->transformFuncColSpec($extensions)
                           );,
                   f:meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpecArray',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray
                                     (
                                       colSpecs = $f.funcSpecs->map(c|$c->transformFuncColSpec($extensions))
                                     )
                           );,
                   a:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpec',
                             value = $a->transformAggColSpec($extensions)
                           );,
                   a:meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'colSpecArray',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpecArray
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray
                                     (
                                       colSpecs = $a.aggSpecs->map(c|$c->transformAggColSpec($extensions))
                                     )
                           );,
-                      
+
                   r:meta::pure::store::RelationStoreAccessor<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = '>',
-                            value = ^meta::protocols::pure::vX_X_X::metamodel::store::RelationStoreAccessor
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::dsl::store::valuespecification::constant::classInstance::RelationStoreAccessor
                                     (
                                       path = $r.path
                                     )
                           ),
                   c:Class<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                      (
                         _type = 'packageableElementPtr',
                         fullPath = $c->at(0)->elementToPath()
@@ -401,45 +408,45 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                   l:LambdaFunction<Any>[1]|
                      let nInScope = $l->functionType().parameters->evaluateAndDeactivate().name;
                      let nOpen = $open->putAll($l->openVariableValues()->keyValues()->filter(v|$v.second.values->isNotEmpty()));
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
                      (
                         _type = 'lambda',
-                        parameters = $l->at(0)->functionType().parameters->evaluateAndDeactivate()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($nInScope, $nOpen, true,$useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)),
+                        parameters = $l->at(0)->functionType().parameters->evaluateAndDeactivate()->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($nInScope, $nOpen, true,$useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)),
                         body = $l.expressionSequence->map(e|$e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($nInScope, $nOpen,false,$useAppliedFunction, $extensions))
                      );,
                   e:Enum[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumValue
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::EnumValue
                      (
                         _type = 'enumValue',
                         fullPath = $e->genericType().rawType->toOne()->elementToPath(),
                         value = $e->id()
                      ),
                   e:Enumeration<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                      (
                         _type = 'packageableElementPtr',
                         fullPath = $e->elementToPath()
                      ),
                   u:Unit[1]|
-                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::UnitType
+                    ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                     (
-                       _type = 'unitType',
+                       _type = 'packageableElementPtr',
                        fullPath = $u->elementToPath()
                     ),
                   v:ValueSpecification[1]|$v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
                   a:Path<Nil,Any|*>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'path',
-                       value =  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path
+                       value =  ^meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::Path
                                 (
                                     name = if ($a.name->isEmpty(),|'',|$a.name->toOne()),
                                     startType = $a.start.rawType->toOne()->elementToPath(),
                                     path = $a.path->map(
                                                 p|$p->match(
                                                   [
-                                                      p:PropertyPathElement[1]|^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyPathElement(
+                                                      p:PropertyPathElement[1]|^meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::PropertyPathElement(
                                                                                     _type='propertyPath',
                                                                                     property=$p.property.name->toOne(),
                                                                                     parameters = $p.parameters->map(pa|$pa->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, $extensions))
@@ -451,54 +458,54 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                      )
                      ;,
                   a:meta::pure::functions::collection::AggregateValue<Any, Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'aggregateValue',
                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
                                 (
-                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                 )
                      ),
                   a:meta::pure::tds::AggregateValue<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'tdsAggregateValue',
                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
                                 (
                                     name = $a.name,
-                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                 )
                      ),
                   oo:meta::pure::tds::OlapOperation<Any>[1]|
                      $oo->match([
                         oa : meta::pure::tds::TdsOlapAggregation<Any>[1]|
-                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                          ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsOlapAggregation',
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
                                     (
                                         columnName = $oa.colName,
-                                        function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           ),
                         or :  meta::pure::tds::TdsOlapRank<Any>[1]|
-                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                           ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsOlapRank',
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
                                     (
-                                        function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           )
                         ]),
                   si:meta::pure::tds::SortInformation[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsSortInformation',
@@ -509,18 +516,18 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     )
                           ),
                   co:meta::pure::tds::BasicColumnSpecification<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsColumnInformation',
                             value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
                                     (
                                         name = $co.name,
-                                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
                                     )
                           ),
                   pair:Pair<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'pair',
@@ -531,13 +538,13 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     )
                           ),
                  m:meta::pure::mapping::Mapping[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                      (
                         _type = 'packageableElementPtr',
                         fullPath = $m->elementToPath()->toOne()
                      ),
                  r:meta::core::runtime::Runtime[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                       (
                         _type = 'classInstance',
                         type = 'runtimeInstance',
@@ -547,13 +554,14 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                 )
                       ),
                  l:List<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::List
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection
                      (
                         _type = 'collection',
+                        multiplicity = ^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=$l.values->size(), upperBound=$l.values->size()),
                         values = $l.values->map(la|$la->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions))
                      ),
                   a:AlloySerializationConfig[1] |
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                       (
                         _type = 'classInstance',
                         type = 'alloySerializationConfig',
@@ -570,14 +578,14 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                 )
                       ),
                   g:GraphFetchTree[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'rootGraphFetchTree',
                             value = $g->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)
                           ),
                   k:KeyExpression[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression
                      (
                         _type = 'keyExpression',
                         add =  $k.add,
@@ -585,7 +593,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         expression = $k.expression->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions)
                      );,
                     p:PrimitiveType[1]|
-                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                    ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                     (
                         _type = 'packageableElementPtr',
                         fullPath = $p.name->toOne()
@@ -593,7 +601,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                   a:Any[1]|
                      meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction($a, $m, $fe,  $inScope, $open, $extensions);,
                   a:Any[*]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection
                      (
                         _type = 'collection',
                         multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
@@ -603,26 +611,26 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
               );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformColSpec(c:String[1]):meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformColSpec(c:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
 {
-  ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec
   (
     name = $c
   )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformFuncColSpec(f:FuncColSpec<Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformFuncColSpec(f:FuncColSpec<Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
 {
-  ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec
   (
     name = $f.name,
     function1 = $f.function->cast(@FunctionDefinition<Any>)->transformLambda($extensions)
   )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformAggColSpec(a:AggColSpec<Any, Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation::transformAggColSpec(a:AggColSpec<Any, Any, Any>[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
 {
-  ^meta::protocols::pure::vX_X_X::metamodel::relation::ColSpec
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec
   (
     name = $a.name,
     function1 = $a.map->cast(@FunctionDefinition<Any>)->transformLambda($extensions),
@@ -630,10 +638,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::relation:
   )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction(any:Any[1], m:Multiplicity[1],fe:FunctionExpression[0..1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction(any:Any[1], m:Multiplicity[1],fe:FunctionExpression[0..1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
-   if($fe->isNotEmpty() && $fe.functionName== 'new',
-      |let serialized =   ^	meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction(
+   if($fe->isNotEmpty() && $fe.functionName == 'new',
+      |let serialized =   ^	meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction(
                                  _type = 'func',
                                  function = $fe.func.functionName->toOne(),
                                  fControl = $fe.func.name->toOne(),
@@ -643,7 +651,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
 
 
       | let class = $any->genericType().rawType->toOne()->cast(@PackageableElement);
-        ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString
+        ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString
         (
           _type = 'string',
           value = $class->elementToPath() + ' can\'t be translated'
@@ -651,29 +659,29 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformNewClass(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformNewClass(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
    (
       _type = 'packageableElementPtr',
       fullPath = $v.genericType.typeArguments->at(0).rawType->toOne()->elementToPath()
    );
 }
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree(tree: GraphFetchTree[1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree(tree: GraphFetchTree[1], inScope:String[*], open:Map<String,List<Any>>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::GraphFetchTree[1]
 {
    let base = $tree->match([
-      r: RootGraphFetchTree<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree(
+      r: RootGraphFetchTree<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::RootGraphFetchTree(
                                          _type = 'rootGraphFetchTree',
                                          class = $r.class->elementToPath()
                                       ),
-      p: PropertyGraphFetchTree[1]  | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyGraphFetchTree(
+      p: PropertyGraphFetchTree[1]  | ^meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::PropertyGraphFetchTree(
                                          _type = 'propertyGraphFetchTree',
                                          property   = $p.property.name->toOne(),
                                          parameters = $p.parameters->map(p| $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, $extensions)),
                                          alias      = $p.alias,
                                          subType    = $p.subType->map(st| $st->elementToPath())
                                       ),
-      s: SubTypeGraphFetchTree[1]   | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree(
+      s: SubTypeGraphFetchTree[1]   | ^meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::SubTypeGraphFetchTree(
                                         _type = 'subTypeGraphFetchTree',
                                         subTypeClass = $s.subTypeClass->elementToPath()
                                       ),
@@ -686,8 +694,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
    ]);
 
    let subTypeTrees = $tree->match([
-      c: ClusteredGraphFetchTree[1] | $c.tree.subTypeTrees->map(stt|$stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree)),
-      g: GraphFetchTree[1] | $g.subTypeTrees->map(stt | $stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree))
+      c: ClusteredGraphFetchTree[1] | $c.tree.subTypeTrees->map(stt|$stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::SubTypeGraphFetchTree)),
+      g: GraphFetchTree[1] | $g.subTypeTrees->map(stt | $stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::SubTypeGraphFetchTree))
    ]);
 
    ^$base(subTrees=$subtrees, subTypeTrees=$subTypeTrees);
@@ -732,38 +740,45 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
          i:InstanceValue[1]| $i.values->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
          l:LambdaFunction<Any>[1]|$l.openVariables,
          f:FunctionExpression[1]|$f.parametersValues->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
-         a:Any[1]|[]
+         k:KeyExpression[1]|$k.expression->map(p|$p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::scan()),
+         a:Any[1]|  [];
       ]
    )
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
    meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($f, false, $extensions);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction
    (
       _type = 'lambda',
       body = $f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions),
       parameters = $f->functionType().parameters->map(p |
-         $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, $useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)
+         $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, $useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)
       )
    );
 }
 
 ###Pure
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::*;
 import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::resolveFControlFunction(af : AppliedFunction[1], fControlToFunctionMapping : Map<String,meta::pure::functions::collection::List<Function<Any>>>[1]):Function<Any>[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::resolveFControlFunction(af : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1], fControlToFunctionMapping : Map<String,meta::pure::functions::collection::List<Function<Any>>>[1]):Function<Any>[1]
 {
    let fMatches = $fControlToFunctionMapping->get($af.fControl->toOne()).values;
    let f        = if($fMatches->size() <= 1,
@@ -781,12 +796,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(vs : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(vs : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):String[1]
 {
   meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($vs, [])
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(vs : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(vs : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], extensions:meta::pure::extension::Extension[*]):String[1]
 {
   let state = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::defaultAlloyToPureState($extensions);
   meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($state, $vs);
@@ -814,7 +829,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   infixFunctions = getSignFunctions(),
                   coreImportPackages = $imports,
                   funcs = $fControlToFunctionMapping,
-                  removeFunctionPaths = false
+                  removeFunctionPaths = false,
+                  keyExpressionsOnNewLine = false
                 );
 }
 
@@ -826,6 +842,9 @@ Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPure
    funcs : Map<String, meta::pure::functions::collection::List<Function<Any>>>[1];
    coreImportPackages : Package[*];
    removeFunctionPaths:Boolean[1];
+   injectFirstParamFuncs: Function<Any>[*];
+   keyExpressionsOnNewLine: Boolean[1];
+
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::domainToPure(domain:meta::protocols::pure::vX_X_X::metamodel::domain::Domain[0..1]):String[1]
@@ -837,47 +856,47 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
    $profiles+$enums+$classes+$associations;
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::domainToPure(elements:meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::domainToPure(elements:meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement[*]):String[1]
 {
-   let profiles = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::domain::Profile))->cast(@meta::protocols::pure::vX_X_X::metamodel::domain::Profile)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::profilesToPure();
-   let enums = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration))->cast(@meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::enumsToPure();
-   let classes = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::domain::Class))->cast(@meta::protocols::pure::vX_X_X::metamodel::domain::Class)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure('');
-   let associations = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::domain::Association))->cast(@meta::protocols::pure::vX_X_X::metamodel::domain::Association)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::associationsToPure();
+   let profiles = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile))->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::profilesToPure();
+   let enums = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration))->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::enumsToPure();
+   let classes = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::type::Class))->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::type::Class)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure('');
+   let associations = $elements->filter(e | $e->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association))->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::associationsToPure();
    $profiles + $enums + $classes + $associations;
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::profilesToPure(ps:meta::protocols::pure::vX_X_X::metamodel::domain::Profile[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::profilesToPure(ps:meta::protocols::pure::vX_X_X::metamodel::m3::extension::Profile[*]):String[1]
 {
    $ps->map(p | 'Profile '+if($p.package->isEmpty(),|$p.name,|$p.package->toOne()+'::'+$p.name)+'\n{\n '+  if($p.stereotypes->isNotEmpty() ,|'stereotypes: '+$p.stereotypes->makeString('[',',','];'),|'tags: '+$p.tags->makeString('[',',','];'))+'\n}\n')->makeString();
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::enumsToPure(es:meta::protocols::pure::vX_X_X::metamodel::domain::Enumeration[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::enumsToPure(es:meta::protocols::pure::vX_X_X::metamodel::m3::type::Enumeration[*]):String[1]
 {
    $es->map(e | 'Enum '+if($e.package->isEmpty(),|$e.name,|$e.package->toOne()+'::'+$e.name)+'\n{\n '+ $e.values.value->makeString() +'\n}\n')->makeString();
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::associationsToPure(as:meta::protocols::pure::vX_X_X::metamodel::domain::Association[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::associationsToPure(as:meta::protocols::pure::vX_X_X::metamodel::m3::relationship::Association[*]):String[1]
 {
    $as->map(a| 'Association '+if($a.package->isEmpty(),|$a.name,|$a.package->toOne()+'::'+$a.name)+'\n{'+$a.properties->classElementsToPure('\n')+$a.qualifiedProperties->classElementsToPure('\n')+'\n}\n')->makeString()
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(as:Any[*], separator:String[1]):String[1]{
-   $as->map(a|$a->match([ c:meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]| let nonAnySuperTypes = $c.superTypes->filter(s|$s != 'meta::pure::metamodel::type::Any');
+   $as->map(a|$a->match([ c:meta::protocols::pure::vX_X_X::metamodel::m3::type::Class[1]| let nonAnySuperTypes = $c.superTypes->filter(s|$s != 'meta::pure::metamodel::type::Any');
                                                                                        '\nClass '+ if($c.stereotypes->isNotEmpty(),|'\t<<'+$c.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($c.taggedValues->isNotEmpty(),|'\t{'+$c.taggedValues->classElementsToPure(',')+'}\n',|'') + if($c.package->isEmpty(),|$c.name,|$c.package->toOne()+'::'+$c.name) + if($nonAnySuperTypes->isNotEmpty(),| ' extends '+$nonAnySuperTypes->makeString(','),|'') +'\n{\n' + $c.properties->classElementsToPure('\n') + '\n' + $c.qualifiedProperties->classElementsToPure('\n')+'\n}\n';,
-                          p:meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]| if($p.stereotypes->isNotEmpty(),|'\t<<'+$p.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($p.taggedValues->isNotEmpty(),|'\t{'+$p.taggedValues->classElementsToPure(',')+'}\n',|'') + '\t'+$p.name+':'+$p.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath+'['+$p.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
-                          q:meta::protocols::pure::vX_X_X::metamodel::domain::QualifiedProperty[1]| '\t'+$q.name+'('+$q.parameters->tail()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(',')+'){'+$q.body->toPure()->replace('\n','')+'}:'+$q.returnGenericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath+'['+$q.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
-                          v:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[1]|$v.name + ':' + $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne() +'['+$v.multiplicity->toOne()->mapToString()+']',
-                          s:meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[1]|$s.profile+'.'+$s.value,
-                          t:meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]|$t.tag.profile+'.'+$t.tag.value+'=\''+$t.value->replace('\'','\\\'')->replace('\n',' ')+'\''
+                          p:meta::protocols::pure::vX_X_X::metamodel::m3::function::property::Property[1]| if($p.stereotypes->isNotEmpty(),|'\t<<'+$p.stereotypes->classElementsToPure(',') + '>>\n',|'') + if($p.taggedValues->isNotEmpty(),|'\t{'+$p.taggedValues->classElementsToPure(',')+'}\n',|'') + '\t'+$p.name+':'+$p.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath+'['+$p.multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
+                          q:meta::protocols::pure::vX_X_X::metamodel::m3::function::property::QualifiedProperty[1]| '\t'+$q.name+'('+$q.parameters->tail()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::classElementsToPure(',')+'){'+$q.body->toPure()->replace('\n','')+'}:'+$q.returnGenericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath+'['+$q.returnMultiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString() +'];',
+                          v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]|$v.name + ':' + $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne() +'['+$v.multiplicity->toOne()->mapToString()+']',
+                          s:meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr[1]|$s.profile+'.'+$s.value,
+                          t:meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[1]|$t.tag.profile+'.'+$t.tag.value+'=\''+$t.value->replace('\'','\\\'')->replace('\n',' ')+'\''
    ]))->makeString($separator)
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(state : AlloyToPureState[1], vs : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*]):String[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure(state : AlloyToPureState[1], vs : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):String[1]
 {
    $vs->map(x|
       $x->match([
-         {af:AppliedFunction[1]|
+         {af:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]|
 
             let f = $af->resolveFControlFunction($state.funcs);
 
@@ -895,6 +914,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   let p2 = $state->toPure($af.parameters->at(1));
 
                   'let %s = %s'->format([$p1, $p2]);
+                  }),
+                  ^meta::pure::functions::collection::Pair<Function<Any>, FunctionDefinition<{->String[1]}>>(first = new_Class_1__String_1__KeyExpression_MANY__T_1_, second = {|
+                  let p1 = $state->toPure( $af.parameters->at(0));
+                  let keys = $af.parameters->at(2)->match([c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | $c.values->map(v| $state->toPure($v) )->joinStrings(','),
+                                                           v: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*] | $state->toPure($v)]);
+                  '^%s(%s)'->format([$p1,$keys]);
                   })
             ];
 
@@ -912,7 +937,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                             let pValues = if($values->size() == 1,
                                              | $values->match([
                                                    col:Collection[1]|$col.values,
-                                                   vs: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*]|$vs
+                                                   vs: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]|$vs
                                                   ]),
                                              | $values
                                              )
@@ -938,7 +963,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
 						       not_Boolean_1__Boolean_1_,
                                asc_String_1__SortInformation_1_,
                                desc_String_1__SortInformation_1_
-					           ]);
+					           ]->concatenate($state.injectFirstParamFuncs));
 					        let iStr = if($injectFirstParam == false || $af.parameters->isEmpty(),
 									| '',
 									|
@@ -960,8 +985,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                             );
             );
          },
-         ap : AppliedProperty[1]|
-            $state->toPure($ap.parameters->at(0)) + '.' + $ap.property + if($ap.parameters->tail()->isEmpty(),|'',| $ap.parameters->tail()->map(p|$state->toPure($p))->joinStrings('(', ',',')')),
+         ap : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty[1]|
+            $state->toPure($ap.parameters->at(0)) + '.' + escape($ap.property) + if($ap.parameters->tail()->isEmpty(),|'',| $ap.parameters->tail()->map(p|$state->toPure($p))->joinStrings('(', ',',')')),
          ci : CInteger[1]|'%s'->format($ci.value),
          ci : CDecimal[1]|'%s'->format($ci.value),
          ci : CFloat[1]|'%s'->format($ci.value),
@@ -981,45 +1006,46 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   '%s.%s'->format([$enumName, $ev.value]);
                   ,
          col:Collection[1]| $col.values->map(v|$state->toPure($v))->joinStrings('[',',',']'),
-         l : Lambda[1]|
+         l : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]|
             let pStr = $l.parameters->map(p|$p->match([
-               v : Variable[1]|
-               if ($v.genericType->isEmpty(),
+               v : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]|
+               if ($v.genericType->isEmpty() || $v.genericType.rawType->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::relation::RelationType),
                    |$v.name,
-                   |let cName = if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->in([Float, Any, String, Integer, Boolean, Date, DateTime, StrictDate]->map(x|$x->makeString())),
-                     | $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->makeString(),
-                     | if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->isInMeta(),
-                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->substring($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()->lastIndexOf('::')+2),
-                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne()
+                   |let cName = if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->in([Float, Any, String, Integer, Boolean, Date, DateTime, StrictDate]->map(x|$x->makeString())),
+                     | $v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne()->makeString(),
+                     | if($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne()->isInMeta(),
+                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne()->substring($v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne()->lastIndexOf('::')+2),
+                          |$v.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne()
                        );
                      )->toOne();
                     let m = $v.multiplicity->toOne()->mapToString();
                     '%s:%s[%s]'->format([$v.name, $cName, $m]);
-                )
+                );
                ]))->joinStrings(', ');
 
             let bStr = $state->toPure($l.body);
 
             '{%s|%s}'->format([$pStr, $bStr]);,
-         v : Variable[1]|'$' + $v.name,
-         hackedClass :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]|'@' + $hackedClass.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath,
+         v : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]|'$' + $v.name,
+         hackedClass :meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::GenericTypeInstance[1]|'@' + $hackedClass.genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath,
          ci : ClassInstance[1] |
             $ci.value->match(
                 [
                      aggValue : TDSAggregateValue[1]| 'agg(\'%s\', %s, %s)'->format([$aggValue.name, $state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      aggValue : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue[1]| 'agg(%s, %s)'->format([$state->toPure($aggValue.mapFn), $state->toPure($aggValue.aggregateFn)]),
                      sortInfo : TDSSortInformation[1]| '^SortInformation(column = \'%s\', direction = SortDirection.%s)'->format([$sortInfo.column, $sortInfo.direction]),
-                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@Lambda).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::type::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
+                     extendInfo: TDSColumnInformation[1] | '^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$extendInfo.columnFn->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->at(0).genericType.rawType->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableType).fullPath->toOne(), $extendInfo.name, $state->toPure($extendInfo.columnFn)]),
                      path : Path[1]| '#/%s/%s%s#'->format([$path.startType, $path.path->map(p|$p->match([ppe:PropertyPathElement[1]|$ppe.property]))->joinStrings('.'), if($path.name->isEmpty() || ($path.name->toOne()->length() == 0), |'', |'!' + $path.name->toOne())]);,
                      or : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank[1]|
                         '^TdsOlapRank<TDSRow>(func = %s)'->format($state->toPure($or.function)),
                      oa : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation[1]|
                         '^TdsOlapAggregation<TDSRow>(colName = \'%s\', func = %s)'->format([$oa.columnName, $state->toPure($oa.function)]),
-                     a :meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Whatever[1]|fail('Unsupported type in alloy protocol ' + $a.class);'';,
                      r : RuntimeInstance[1]|'',
                      e : ExecutionContextInstance[1]|'',
+                     c : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray[1] | '~[%s]'->format($c.colSpecs->map(c | $c->colSpecToPure(true, $state))->joinStrings(', ')),
+                     c : meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1] | $c->colSpecToPure(false, $state),
                      pv : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair[1]|
-                                            let tMatcher = {val:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]| $val->match([
+                                            let tMatcher = {val:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]| $val->match([
                                                   x : EnumValue[1]| $x.fullPath,
                                                   x : CInteger[1]| Integer->toString(),
                                                   x : CDecimal[1]| Decimal->toString(),
@@ -1040,20 +1066,41 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
          ev: PackageableElementPtr[1] | let enumName = if($ev.fullPath->isInMeta(),
                                                     | $ev.fullPath->substring($ev.fullPath->lastIndexOf('::') + 2),
                                                     | $ev.fullPath
-                                                     )
+                                                     ),
 
+         k:meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]  |  $k.key->cast(@CString).value + '='  + toPure($state,$k.expression)   + if($state.keyExpressionsOnNewLine,|'\n',|'') ;
          ]);
       )->joinStrings('', ';\n', if($vs->size() <= 1, | '', | ';'));
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString(m : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[1]):String[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::escape(name:String[1]):String[1]
+{
+  let escape = [' ', '(', ')', '[', ']', '{', '}', '/', '\\'];
+
+  if ($escape->exists(e | $name->contains($e)), | '\''+$name+'\'', |$name);
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::colSpecToPure(c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1], inArray:Boolean[1], state : AlloyToPureState[1]):String[1]
+{
+  let name = escape($c.name);
+
+  let prefix = if ($inArray, | '', | '~');
+
+  if ($c.function1->isEmpty(),
+    | '%s%s'->format([$prefix, $name]),
+    | if ($c.function2->isEmpty(),
+       | '%s%s : %s'->format([$prefix, $name, toPure($state, $c.function1->toOne())]),
+       | '%s%s : %s : %s'->format([$prefix, $name, toPure($state, $c.function1->toOne()), toPure($state, $c.function2->toOne())])));
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::mapToString(m : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1]):String[1]
 {
    [
-      pair(^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=0, upperBound=0), PureZero->printMultiplicity()),
-      pair(^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=1, upperBound=1), PureOne->printMultiplicity()),
-      pair(^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=0, upperBound=1), ZeroOne->printMultiplicity()),
-      pair(^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=1), OneMany->printMultiplicity()),
-      pair(^meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity(lowerBound=0), ZeroMany->printMultiplicity())
+      pair(^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=0, upperBound=0), PureZero->printMultiplicity()),
+      pair(^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=1, upperBound=1), PureOne->printMultiplicity()),
+      pair(^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=0, upperBound=1), ZeroOne->printMultiplicity()),
+      pair(^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=1), OneMany->printMultiplicity()),
+      pair(^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=0), ZeroMany->printMultiplicity())
    ]
    ->filter(p|$p.first == $m)->toOne().second;
 }
@@ -1184,14 +1231,14 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 }
 
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::isAutoMapFunction(af:AppliedFunction[1]):Boolean[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::isAutoMapFunction(af:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]):Boolean[1]
 {
-   $af.parameters->at(1)->instanceOf(meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
-      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).parameters->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)
-      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).parameters->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)->toOne().name == 'v_automap'
+   $af.parameters->at(1)->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction)
+      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->toOne()->instanceOf(meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)
+      && $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).parameters->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable)->toOne().name == 'v_automap'
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::getAutoMapProperty(af:AppliedFunction[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::getAutoMapProperty(af:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
-   $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda).body->toOne();
+   $af.parameters->at(1)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction).body->toOne();
 }

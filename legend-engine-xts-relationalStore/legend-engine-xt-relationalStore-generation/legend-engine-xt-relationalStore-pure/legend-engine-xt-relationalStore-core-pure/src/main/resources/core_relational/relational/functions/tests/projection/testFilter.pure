@@ -134,3 +134,20 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filt
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"name":"Address_1"}}', $res);
 }
 
+function <<test.Test>> meta::relational::tests::projection::filter::testFilterAfterJoinInRelation():Boolean[1]
+{
+   let func = {
+                |meta::relational::tests::model::simple::Firm.all()->project(
+                  ~[
+                    name: x|$x.legalName,
+                    employeeName: x|$x.employees.firstName
+                  ]
+                )->filter(
+                  x|$x.name == 'foo'
+                )
+              };
+
+    let actualPlan =  meta::pure::executionPlan::executionPlan($func,meta::relational::tests::simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions())
+                        ->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions());
+    assertSameSQL('Relational(type=TDS[(name,String,VARCHAR(1024),""),(employeeName,String,VARCHAR(1024),"")]resultColumns=[("name",VARCHAR(200)),("employeeName",VARCHAR(200))]sql=select"root".LEGALNAMEas"name","persontable_0".FIRSTNAMEas"employeeName"fromfirmTableas"root"leftouterjoinpersonTableas"persontable_0"on("root".ID="persontable_0".FIRMID)where"root".LEGALNAME=\'foo\'connection=TestDatabaseConnection(type="H2"))', $actualPlan);
+}

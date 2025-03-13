@@ -99,7 +99,7 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
            ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::FunctionParametersValidationNode(
               _type = 'function-parameters-validation',
               resultType = $exp.resultType->transformResultType($mapping, $extensions),
-              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::v1_18_0::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity())))
+              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::v1_18_0::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.genericType.rawType->toOne()->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity())))
            ),
          g:meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
@@ -210,14 +210,14 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
          partialClass:meta::pure::executionPlan::PartialClassResultType[1]|^meta::protocols::pure::v1_18_0::metamodel::executionPlan::PartialClassResultType
                                                                             (
                                                                               _type = 'partialClass',
-                                                                               class = $partialClass.type->elementToPath(),
+                                                                               class = $partialClass.genericType.rawType->toOne()->elementToPath(),
                                                                                setImplementations=$partialClass.setImplementations->map(s|$s->transformSetImplementation($extensions)),
                                                                                propertiesWithParameters = $partialClass.propertiesWithParameters->map(x | ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::PropertyWithParameters(property = $x.property.name->toOne(), parameters = $x.parameters->map(x | $x->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String,List<Any>>(), $extensions))))
                                                                             ),
          class:meta::pure::executionPlan::ClassResultType[1]|^meta::protocols::pure::v1_18_0::metamodel::executionPlan::ClassResultType
                                                              (
                                                                 _type='class',
-                                                                class = $class.type->elementToPath(),
+                                                                class = $class.genericType.rawType->toOne()->elementToPath(),
                                                                 setImplementations=$class.setImplementations->map(s|$s->transformSetImplementation($extensions))
                                                              ),
          void:meta::pure::executionPlan::VoidResultType[1]|^meta::protocols::pure::v1_18_0::metamodel::executionPlan::VoidResultType
@@ -227,12 +227,12 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
          rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::v1_18_0::metamodel::executionPlan::DataTypeResultType
                                                               (
                                                                  _type='dataType',
-                                                                 dataType=$rt.type->elementToPath()
+                                                                 dataType=$rt.genericType.rawType->toOne()->elementToPath()
                                                               ),
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::v1_18_0::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',
-                                                         dataType=$rt.type->elementToPath()
+                                                         dataType=$rt.genericType.rawType->toOne()->elementToPath()
                                                       )
       ])->toOneMany()
    );

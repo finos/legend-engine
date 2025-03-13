@@ -115,16 +115,19 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               // processResult
               if ($resultType->toOne()->instanceOf(PrimitiveType),
                 | let preResultFinal = $res.result.rows->at(0).values->at(0);
+                println($preResultFinal);
                   let resultFinal = 
                     if ([
+                          pair(|$preResultFinal == TDSNull, |[]),
                           pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
                           pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
                           pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
-                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat())
+                          pair(|$resultType->toOne()->subTypeOf(Float), |$preResultFinal->cast(@Number)->toFloat()),
+                          pair(|$resultType->toOne()->subTypeOf(Number), |$preResultFinal->cast(@Number))
                         ],
                       | $preResultFinal->toOne()
                     );
-                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString(','),|''));
+                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
                 | let tdsString = $res.result.columns->joinStrings(',') + '\n' +
                                   $res.result.rows->map(x|
@@ -236,7 +239,7 @@ function meta::relational::tests::pct::process::printRelationalOperationElement(
 function meta::relational::tests::pct::process::reprocess(connection:meta::external::store::relational::runtime::RelationalDatabaseConnection[1]):String[1]
 {
   '^meta::external::store::relational::runtime::RelationalDatabaseConnection('+
-  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], '')+','+
+  'type='+$connection.type->meta::pure::metamodel::serialization::grammar::printValueSpecification([], ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+','+
   'authenticationStrategy = '+$connection.authenticationStrategy->printNew()+','+ //^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),'+
   'datasourceSpecification = '+$connection.datasourceSpecification->printNew()+ //^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(path = \'\')'+
   ')'
@@ -289,7 +292,7 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
   $f->match(
     [
       z:FunctionDefinition<Any>[1]|
-            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, '')+'\n',|''));
+            print(if($debug.debug,|'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n',|''));
 
             // Init
             let initState = meta::relational::tests::pct::process::initState(
@@ -301,68 +304,19 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             let runtime = $initState.runtime;
 
             // Reprocess the function replacing values with Database elements
-            let reprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
+            let allReprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($initState));
 
-            // Add 'from'
-            let returnGenericType = $z.expressionSequence->evaluateAndDeactivate()->last().genericType->toOne();
-            let returnMultiplicity = $z.expressionSequence->evaluateAndDeactivate()->last().multiplicity->toOne();
-            let newFunction =   ^$z
-                                (
-                                  expressionSequence =  ^SimpleFunctionExpression
-                                                        (
-                                                          importGroup=system::imports::coreImport,
-                                                          func = if($reprocessed.mapping->isEmpty(),|with_T_m__Runtime_1__T_m_,|with_T_m__Mapping_1__Runtime_1__T_m_),
-                                                          functionName = 'with',
-                                                          genericType = $returnGenericType,
-                                                          multiplicity = $returnMultiplicity,                                                        
-                                                          parametersValues =    $reprocessed.current->toOne()->cast(@ValueSpecification)
-                                                                                ->concatenate(if ($reprocessed.mapping->isEmpty(),
-                                                                                              |[],
-                                                                                              |^InstanceValue
-                                                                                               (
-                                                                                                  genericType = ^GenericType(rawType=Mapping),
-                                                                                                  multiplicity = PureOne,
-                                                                                                  values = $reprocessed.mapping
-                                                                                               )
-                                                                                             ))
-                                                                                ->concatenate(^InstanceValue
-                                                                                              (
-                                                                                                genericType = ^GenericType(rawType=Runtime),
-                                                                                                multiplicity = PureOne,
-                                                                                                values = $runtime
-                                                                                              )
-                                                                                )
-                                                                            ,
-                                                          resolvedMultiplicityParameters = $returnMultiplicity,
-                                                          resolvedTypeParameters = $returnGenericType
-                                                        )                                                                
-                                );
+            let newFunction = ^$z(expressionSequence = $allReprocessed.current->cast(@ValueSpecification)->toOneMany())
+                  ->addWith($allReprocessed.mapping, $runtime);
 
-            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '') + '\n',|''));
+            print(if($debug.debug,|'AFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n',|''));
+
+            let otherFuncs = $allReprocessed.current->map(r | $r->meta::relational::tests::pct::extractDependentFunctions())->distinct();
+            let reprocessed = $allReprocessed->tail()->fold({prev, reproc |meta::relational::tests::pct::process::merge($prev, $reproc)}, $allReprocessed->head()->toOne());
 
             // Update the database ------------
-            let setUpSQLs = $reprocessed.csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($reprocessed.database->toOne(), $dbc.type);
-            print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
+            meta::relational::tests::pct::process::setupDatabase($reprocessed.csvs, $db, $reprocessed.runtime->toOne(), $debug);
 
-            let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
-            (
-                func = |'dummy',
-                mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
-                runtime = $reprocessed.runtime->toOne(),
-                rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
-                                      resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void),
-                                      executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)))
-                                    ),
-                authDependent = false
-            );
-
-            let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
-
-            let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
-
-            meta::legend::executePlanAsJSON($planAsJson, []);
-            // Update the database ------------
-            let otherFuncs = $reprocessed.current->cast(@FunctionExpression)->toOne()->meta::relational::tests::pct::extractDependentFunctions();
             let code =  '\n###Relational\n'+
                         $reprocessed.database->toOne()->printDatabase()+
                         if ($reprocessed.mapping->isEmpty(),
@@ -371,9 +325,9 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
                           $reprocessed.mapping->toOne()->printMapping()
                         )+
                         '\n###Pure\n'+
-                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, '');)->joinStrings('')+
+                        $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function '+$o->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('')+
                         'function test::lambdaContainer():Any[*]{\n'+
-                        '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, '')+'\n'+
+                        '  '+meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $ext, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))+'\n'+
                         '}'
                         ;
             //println($code);
@@ -383,9 +337,117 @@ function meta::relational::tests::pct::process::reprocess(f:Function<Any>[1], db
             //println($alloyCompiled.expressionSequence->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate().parametersValues);
 
             //pair($newFunction, $reprocessed->toOne());
-            pair($alloyCompiled, $reprocessed->toOne());
+            pair($alloyCompiled, $reprocessed);
     ]
   );
+}
+
+function meta::relational::tests::pct::process::addWith(func: FunctionDefinition<Any>[1], mapping: Mapping[*],runtime: Runtime[1]): FunctionDefinition<Any>[1]
+{
+  let returnGenericType = $func->functionReturnType();
+  let returnMultiplicity = $func->functionReturnMultiplicity();
+
+  assert($mapping->size() <= 1, 'Only one mapping supported');
+
+  // for single expression keep in-line behavior of with
+  // for multi, use the with that takes the whole function definition
+  // the reason for this is that the latter preeval, invalidating many PCT test as preeval will evaluate constant values that PCT aims to push to DB
+  $func.expressionSequence->evaluateAndDeactivate()->match([
+    vs: ValueSpecification[1] |
+      let withWith = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = if($mapping->isEmpty(), |from_T_m__Runtime_1__T_m_, |from_T_m__Mapping_1__Runtime_1__T_m_),
+        functionName = 'with',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    $vs
+                              ->concatenate(if ($mapping->isEmpty(),
+                                            |[],
+                                            |^InstanceValue
+                                              (
+                                                genericType = ^GenericType(rawType=Mapping),
+                                                multiplicity = PureOne,
+                                                values = $mapping->toOne()
+                                              )
+                                            ))
+                              ->concatenate(^InstanceValue
+                                            (
+                                              genericType = ^GenericType(rawType=Runtime),
+                                              multiplicity = PureOne,
+                                              values = $runtime
+                                            )
+                              )
+                          ,
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+      ^$func(expressionSequence = $withWith);
+    ,
+    multi: ValueSpecification[1..*] |
+      let withWith = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = if($mapping->isEmpty(), |from_FunctionDefinition_1__Runtime_1__T_m_, |from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_),
+        functionName = 'with',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    ^InstanceValue(
+                                              genericType = $func->genericType()->toOne(),
+                                              multiplicity = PureOne,
+                                              values = $func
+                                            )
+                              ->concatenate(if ($mapping->isEmpty(),
+                                            |[],
+                                            |^InstanceValue
+                                              (
+                                                genericType = ^GenericType(rawType=Mapping),
+                                                multiplicity = PureOne,
+                                                values = $mapping->toOne()
+                                              )
+                                            ))
+                              ->concatenate(^InstanceValue
+                                            (
+                                              genericType = ^GenericType(rawType=Runtime),
+                                              multiplicity = PureOne,
+                                              values = $runtime
+                                            )
+                              )
+                          ,
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+
+      ^$func(expressionSequence = $withWith);,
+      a: Any[*] | fail('not supported: ' + $a->type()->elementToPath() + ': ' + $a->size()->toString()); $func;
+  ]);
+}
+
+function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], database: Database[1], runtime: Runtime[1], debug: DebugContext[1]): String[1]
+{
+  let dbc = $runtime.connectionByElement($database)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+
+  // Update the database ------------
+  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $dbc.type);
+  print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
+
+  let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
+  (
+      func = |'dummy',
+      mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
+      runtime = $runtime->toOne(),
+      rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
+                            resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType=meta::pure::router::store::routing::Void)),
+                            executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $dbc))
+                          ),
+      authDependent = false
+  );
+
+  let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
+
+  let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+
+  meta::legend::executePlanAsJSON($planAsJson, []);
 }
 
 Class meta::relational::tests::pct::process::ProcessingState
@@ -886,7 +948,7 @@ Class meta::relational::tests::pct::process::tests::functionReprocess::SimpleCla
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testConstantFunctionReprocess():Boolean[1]
 {
   let newState = reprocess(|1+1, meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
-  assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|(1 + 1)->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
 }
@@ -896,7 +958,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
   let newState = reprocess(|#TDS
                             col
                             value#->filter(x|$x.col == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), noDebug());
-  assertEquals('{|RelationElementAccessor(RelationStoreAccessor)->filter({x|(col == \'test\')})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|RelationElementAccessor(RelationStoreAccessor)->filter({x|(col == \'test\')})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
 }
@@ -904,7 +966,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testClassReprocess():Boolean[1]
 {
   let newState = reprocess(|[^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')]->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
@@ -918,7 +980,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 {
   let vals = [^SimpleClass(value='myValue'), ^SimpleClass(value='myValue2')];
   let newState = reprocess(|$vals->filter(x|$x.value == 'test'), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|meta::relational::tests::pct::process::tests::functionReprocess::SimpleClass.all()->filter({x|($x.value == \'test\')})->from(myMapping, Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEquals(1, $newState.second.mapping->size());
   assertEquals(1, $newState.second.database.schemas->at(0).tables->size());
   assertEquals( 'leSchema\n'+
@@ -931,7 +993,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveListReprocess():Boolean[1]
 {
   let newState = reprocess(|[1,2,3,4]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[1, 2, 3, 4]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);
@@ -940,7 +1002,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testPrimitiveAnyReprocess():Boolean[1]
 {
   let newState = reprocess(|[1,'a']->filter(x|$x == 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[1, \'a\']->filter({x|($x == 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);
@@ -950,7 +1012,7 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::functionRep
 function <<test.Test>> meta::relational::tests::pct::process::tests::functionReprocess::testEmptySetReprocess():Boolean[1]
 {
   let newState = reprocess(|[]->filter(x|$x > 1), meta::pure::testConnection::getTestConnection(DatabaseType.H2), debug());
-  assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ''));
+  assertEquals('{|[]->filter({x|($x > 1)})->from(Runtime(MyDatabase))}', meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newState.first, ^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assertEmpty($newState.second.mapping);
   assertEmpty($newState.second.database.schemas->at(0).tables);
   assertEmpty($newState.second.csvs);

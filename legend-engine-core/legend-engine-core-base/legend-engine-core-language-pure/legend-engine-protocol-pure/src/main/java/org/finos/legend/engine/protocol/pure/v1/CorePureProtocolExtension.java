@@ -80,16 +80,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.GenericTypeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
@@ -280,11 +280,11 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     private static AppliedFunction convertNewBasicColumnSpecificationToColFunctionCall(AppliedFunction appliedFunction)
     {
         Collection collection = (Collection) appliedFunction.parameters.get(2);
-        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+        Optional<LambdaFunction> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
                 .map(KeyExpression.class::cast)
                 .map(x -> x.expression)
-                .filter(Lambda.class::isInstance)
-                .map(Lambda.class::cast);
+                .filter(LambdaFunction.class::isInstance)
+                .map(LambdaFunction.class::cast);
 
         Optional<CString> name = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("name"))
                 .map(KeyExpression.class::cast)
@@ -316,11 +316,11 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     private static AppliedFunction convertNewTdsOlapRankToFuncFunctionCall(AppliedFunction appliedFunction)
     {
         Collection collection = (Collection) appliedFunction.parameters.get(2);
-        Optional<Lambda> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
+        Optional<LambdaFunction> func = ListIterate.detectOptional(collection.values, x -> ((CString) ((KeyExpression) x).key).value.equals("func"))
                 .map(KeyExpression.class::cast)
                 .map(x -> x.expression)
-                .filter(Lambda.class::isInstance)
-                .map(Lambda.class::cast);
+                .filter(LambdaFunction.class::isInstance)
+                .map(LambdaFunction.class::cast);
 
         appliedFunction.function = "meta::pure::tds::func";
         appliedFunction.fControl = "func_FunctionDefinition_1__TdsOlapRank_1_";

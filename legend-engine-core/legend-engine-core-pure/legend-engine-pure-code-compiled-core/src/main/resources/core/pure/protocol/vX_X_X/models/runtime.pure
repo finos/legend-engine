@@ -1,0 +1,73 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+   queryTimeOutInSeconds: Integer[0..1];
+   enableConstraints: Boolean[0..1];
+     _type: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::AuthenticationContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+   runAs: String[0..1];
+}
+
+
+Class meta::protocols::pure::vX_X_X::metamodel::AnalyticsExecutionContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+   useAnalytics: Boolean[1];
+   toFlowSetFunction: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::Runtime
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::LegacyRuntime extends meta::protocols::pure::vX_X_X::metamodel::Runtime
+{
+   connections: meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::EngineRuntime extends meta::protocols::pure::vX_X_X::metamodel::Runtime
+{
+    mappings:meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[*];
+    connections: meta::protocols::pure::vX_X_X::metamodel::StoreConnections[*];
+    connectionStores: meta::protocols::pure::vX_X_X::metamodel::ConnectionStores[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::StoreConnections
+{
+   store: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[1];
+   storeConnections: meta::protocols::pure::vX_X_X::metamodel::IdentifiedConnection[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::ConnectionStores
+{
+   connection: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[1];
+   storeConnections: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::IdentifiedConnection
+{
+   id: String[1];
+   connection: meta::protocols::pure::vX_X_X::metamodel::runtime::Connection[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+   _type: String[1];
+   element: String[1];
+}

@@ -23,7 +23,7 @@ Class meta::pure::router::platform::metamodel::PlatformRoutedValueSpecification 
 
 Class meta::pure::router::platform::metamodel::PlatformRoutingStrategy extends RoutingStrategy
 {
-   
+  
 }
 
 Class meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification extends ClusteredValueSpecification

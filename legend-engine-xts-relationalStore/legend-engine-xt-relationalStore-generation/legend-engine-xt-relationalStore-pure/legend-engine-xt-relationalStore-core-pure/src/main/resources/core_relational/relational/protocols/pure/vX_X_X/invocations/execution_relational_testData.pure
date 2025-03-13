@@ -27,7 +27,7 @@ import meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration:
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::SeedDataGenerationInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
@@ -38,7 +38,7 @@ Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithSeedInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
@@ -50,7 +50,7 @@ Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::
 Class meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithDefaultSeedInput
 {
    clientVersion : String[1];
-   function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
+   function : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
    mapping : String[1];
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
    context : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[0..1];
@@ -84,7 +84,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = ExecutionMode->extractEnumValue($executionMode);
 
-   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
 
    let resultJSON = ^meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::SeedDataGenerationInput
    (
@@ -97,8 +97,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
                   |let stores =  $pureRuntime.connectionStores.element->cast(@meta::pure::store::Store)
                                     ->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()
-                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
-                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.STORE,path=$c->elementToPath()));
+                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING,path=$m->elementToPath());
                    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer
                    (
                       _type='pointer',
@@ -154,7 +154,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = ExecutionMode->extractEnumValue($executionMode);
 
-   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
 
    let resultJSON = ^meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithSeedInput
    (
@@ -167,8 +167,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
                   |let stores =  $pureRuntime.connectionStores.element->cast(@meta::pure::store::Store)
                                     ->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()
-                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
-                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.STORE,path=$c->elementToPath()));
+                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING,path=$m->elementToPath());
                    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer
                    (
                       _type='pointer',
@@ -225,7 +225,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = ExecutionMode->extractEnumValue($executionMode);
 
-   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
 
    let resultJSON = ^meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneration::TestDataGenerationWithDefaultSeedInput
    (
@@ -239,11 +239,11 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testDataGeneratio
                      $element->match([
                         store:meta::pure::store::Store[1] | $store->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()
-                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));,
+                                    ->map(c|^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.STORE,path=$c->elementToPath()));,
                         a:Any[*] | []
                      ]);
                    );
-                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                   let mapping = ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.MAPPING,path=$m->elementToPath());
                    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextPointer
                    (
                       _type='pointer',

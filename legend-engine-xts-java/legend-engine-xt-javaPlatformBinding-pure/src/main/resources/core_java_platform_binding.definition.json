@@ -12,6 +12,7 @@
         "core",
         "core_external_language_java",
         "core_external_language_java_conventions_essential",
-        "core_external_language_java_conventions_standard"
+        "core_external_language_java_conventions_standard",
+        "core_external_language_java_feature_based_generation"
     ]
 }

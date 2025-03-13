@@ -65,17 +65,12 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
    $q->map(r| $r->match([
                     v:ViewSelectSQLQuery[1]|$v.selectSQLQuery->search($runtime);,
                     c:CommonTableExpression[1] | $c.sqlQuery->search($runtime),
-                    s:SelectSQLQueryWithCommonTableExpressions[1] | let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
+                    s:SelectSQLQuery[1] | let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
                                                                     let cols = $s.columns;
                                                                     let cteSearch = $s.commonTableExpressions->fold({c, res |
                                                                       $res->concatenate($c->search($runtime));
                                                                       }, []);
                                                                     $dataProcessed->concatenate($cols->search($runtime))->concatenate($s.filteringOperation->search($runtime))->concatenate($cteSearch);,
-
-                    s:SelectSQLQuery[1]|  let dataProcessed = if($s.data->isNotEmpty(), | $s.data->toOne()->search($runtime), | []);
-                                          let cols = $s.columns;
-                                          $dataProcessed->concatenate($cols->search($runtime))
-                                          ->concatenate($s.filteringOperation->search($runtime));,
                      ta:TableAlias[1]| let name = $ta.name; let relElement = $ta.relationalElement;
                                        $relElement->match([t:Table[1]|[],
                                                            tf:TabularFunction[1]|[],
@@ -144,7 +139,7 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
                 va:VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->replace($m)));,
                 d:DynaFunction[1] |  ^$d(parameters=$d.parameters->map(p | $p->replace($m)));,
                 wc:WindowColumn[1] |^$wc(window = $wc.window->replace($m)->cast(@meta::relational::metamodel::Window),func=$wc.func->replace($m)->cast(@DynaFunction));,
-                w:meta::relational::metamodel::Window[1]|^$w(partition=$w.partition->map(p|$p->replace($m)), sortBy=$w.sortBy->map(p|$p->replace($m)));,
+                w:meta::relational::metamodel::Window[1]|^$w(partition=$w.partition->map(p|$p->replace($m)), sortBy=$w.sortBy->map(p|^$p(sortByElement = $p.sortByElement->replace($m))));,
                 j:JoinStrings[1] |  ^$j(strings=$j.strings->map(v | $v->replace($m)),
                                          prefix=if($j.prefix->isEmpty(), | [], | $j.prefix->toOne()->replace($m)),
                                          separator=if($j.separator->isEmpty(), | [], | $j.separator->toOne()->replace($m)),

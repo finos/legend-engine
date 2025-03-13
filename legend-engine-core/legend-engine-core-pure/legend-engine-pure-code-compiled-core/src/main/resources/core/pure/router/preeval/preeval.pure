@@ -84,11 +84,11 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
     if(!$r->anyModified(),
        |
          $state->printDebug(|'No changes made for: ');
-         $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));,
+         $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')));,
        |
          let res = $r.value->toOne();
          $state->printDebug('Transformed To:');
-         $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));
+         $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
     );
     $r;  
   }, 'preval');
@@ -857,6 +857,8 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : meta::external::format::shared::ExternalFormatExternalizeConfig[1] | true,
             p : meta::external::format::shared::ExternalFormatInternalizeConfig[1] | true,
             f : SimpleFunctionExpression[1]| $f.func->in([letFunction_String_1__T_m__T_m_]),
+            a : meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>[1] | true,
+            f : meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1] | true,
             a : Any[*]| $a->type()
                           ->match([
                               c:Class<Any>[1]|$c->isSimpleType(),

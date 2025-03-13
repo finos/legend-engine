@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
@@ -81,7 +81,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("workspace", null, "ws1")
         );
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = function.body;
         lambda.parameters = function.parameters;
 
@@ -97,8 +97,17 @@ public class TestFunctionSQLSourceProvider
     @Test
     public void testCoordinates()
     {
-        String functionName = "simple::func::simpleFunction_String_MANY__TabularDataSet_1_";
+        testCoordinates("simple::func::simpleFunction_String_MANY__TabularDataSet_1_");
+    }
 
+    @Test
+    public void testRelation()
+    {
+        testCoordinates("simple::func::relationFunction_String_MANY__Relation_1_");
+    }
+
+    private void testCoordinates(String functionName)
+    {
         ProjectCoordinateWrapper coordinates = ProjectCoordinateWrapper.coordinates("proj1:art:1.0.0");
 
         PureModelContextData pmcd = loadPureModelContextFromResource("function-pmcd.pure", this.getClass());
@@ -111,7 +120,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("coordinates", null, "proj1:art:1.0.0")
         );
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = function.body;
         lambda.parameters = function.parameters;
 
@@ -152,7 +161,7 @@ public class TestFunctionSQLSourceProvider
                 new TableSourceArgument("coordinates", null, "proj1:art:1.0.0")
         );
 
-        testException(tableSource, EngineException.class, "Function " + functionName + " does not return Tabular data type");
+        testException(tableSource, EngineException.class, "Function " + functionName + " does not return a supported data type. Supported types: [meta::pure::tds::TabularDataSet, meta::relational::mapping::TableTDS, meta::pure::metamodel::relation::Relation]");
     }
 
     private <T extends Throwable> void testException(TableSource tableSource, Class<T> throwable, String expected)

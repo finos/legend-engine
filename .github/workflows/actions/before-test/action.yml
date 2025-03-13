@@ -1,0 +1,45 @@
+# Copyright 2025 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Before Test
+
+description: Before Test
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: 11
+        distribution: zulu
+        server-id: ossrh
+        server-username: CI_DEPLOY_USERNAME
+        server-password: CI_DEPLOY_PASSWORD
+
+    - name: Cache Maven dependencies
+      uses: actions/cache/restore@v4
+      env:
+        cache-name: cache-mvn-deps
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+        fail-on-cache-miss: true
+
+    - name: Restore build output artifacts
+      uses: actions/cache/restore@v4
+      with:
+        path: "**/target/"
+        key: target-outputs-${{ runner.os }}-${{ github.run_id }}
+        fail-on-cache-miss: true

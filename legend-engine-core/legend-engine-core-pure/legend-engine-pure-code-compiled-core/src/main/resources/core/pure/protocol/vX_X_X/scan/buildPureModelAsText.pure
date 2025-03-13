@@ -18,7 +18,15 @@ import meta::pure::extension::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::io::*;
-import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::graph::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::dsl::path::valuespecification::constant::classInstance::*;
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::*;
+
 
 Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::CodeSection {
    name: String[1];

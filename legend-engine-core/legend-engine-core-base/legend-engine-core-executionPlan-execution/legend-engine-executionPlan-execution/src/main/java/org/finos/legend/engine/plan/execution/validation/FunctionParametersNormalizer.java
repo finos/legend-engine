@@ -15,12 +15,20 @@
 package org.finos.legend.engine.plan.execution.validation;
 
 import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.date.EngineDate;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ProtocolObjectValidationContext;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,23 +36,31 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
 class FunctionParametersNormalizer
 {
-    static void normalizeParameters(RichIterable<Variable> functionParameters, ExecutionState executionState)
+    static void normalizeParameters(RichIterable<Variable> functionParameters, List<ParameterValidationContext> parameterValidationContexts, ExecutionState executionState, FunctionParametersValidationNode functionParametersValidationNode)
     {
-        functionParameters.forEach(p -> normalizeParameter(p, executionState));
+        if (parameterValidationContexts == null)
+        {
+            functionParameters.forEach(p -> normalizeParameter(p, null, executionState, functionParametersValidationNode));
+        }
+        else
+        {
+            functionParameters.forEach(p -> normalizeParameter(p, parameterValidationContexts.stream().filter(x -> x.varName.equals(p.name)).findAny().orElse(null), executionState, functionParametersValidationNode));
+        }
     }
 
-    private static void normalizeParameter(Variable parameter, ExecutionState executionState)
+    private static void normalizeParameter(Variable parameter, ParameterValidationContext parameterValidationContext, ExecutionState executionState, FunctionParametersValidationNode functionParametersValidationNode)
     {
         Result paramResult = executionState.getResult(parameter.name);
         if (paramResult instanceof ConstantResult)
         {
             Object paramValue = ((ConstantResult) paramResult).getValue();
-            Object normalized = normalizeParameterValue(parameter, paramValue);
+            Object normalized = normalizeParameterValue(parameter, parameterValidationContext, paramValue, functionParametersValidationNode, executionState);
             if (normalized != paramValue)
             {
                 ConstantResult updatedDateTime = new ConstantResult(normalized);
@@ -53,7 +69,7 @@ class FunctionParametersNormalizer
         }
     }
 
-    public static Object normalizeParameterValue(Variable parameter, Object paramValue)
+    public static Object normalizeParameterValue(Variable parameter, ParameterValidationContext parameterValidationContext, Object paramValue, FunctionParametersValidationNode functionParametersValidationNode, ExecutionState executionState)
     {
         if (paramValue == null)
         {
@@ -91,8 +107,33 @@ class FunctionParametersNormalizer
             }
             default:
             {
+                if (parameterValidationContext instanceof ProtocolObjectValidationContext)
+                {
+                    return normalizeParameterValue(paramValue, x -> normalizeProtocolObjectParameterValue((ProtocolObjectValidationContext) parameterValidationContext, x, functionParametersValidationNode, executionState));
+                }
                 return paramValue;
             }
+        }
+    }
+
+    private static Object normalizeProtocolObjectParameterValue(ProtocolObjectValidationContext parameterValidationContext, Object paramValue, FunctionParametersValidationNode functionParametersValidationNode, ExecutionState executionState)
+    {
+        try
+        {
+
+            if (!(functionParametersValidationNode.implementation instanceof JavaPlatformImplementation))
+            {
+                throw new RuntimeException("Only Java implementations are currently supported, found: " + functionParametersValidationNode.implementation);
+            }
+            JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) functionParametersValidationNode.implementation;
+            String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
+            String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
+            return ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(functionParametersValidationNode, executionClassName, executionMethodName, Arrays.asList(String.class, Object.class), Arrays.asList(parameterValidationContext.parameterClassName, paramValue), executionState, Identity.getAnonymousIdentity());
+
+        }
+        catch (RuntimeException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 

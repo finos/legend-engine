@@ -46,12 +46,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.*;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import javax.ws.rs.core.MediaType;
@@ -199,9 +198,9 @@ public class MappingTestRunner
         throw new RuntimeException("Unsupported type of MappingTestAssert: " + this.mappingTestLegacy._assert.getClass().getName());
     }
 
-    protected Result executeLegend(Lambda lambda, String mappingPath)
+    protected Result executeLegend(LambdaFunction lambda, String mappingPath)
     {
-        LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(lambda, new CompileContext.Builder(this.pureModel).withElement(mappingPath).build());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(lambda, new CompileContext.Builder(this.pureModel).withElement(mappingPath).build());
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = this.pureModel.getMapping(mappingPath);
         SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(pureLambda, pureMapping, this.runtime, null, this.pureModel, this.pureVersion, PlanPlatform.JAVA, null, this.extensions, this.planTransformers);
         return this.executor.execute(executionPlan);

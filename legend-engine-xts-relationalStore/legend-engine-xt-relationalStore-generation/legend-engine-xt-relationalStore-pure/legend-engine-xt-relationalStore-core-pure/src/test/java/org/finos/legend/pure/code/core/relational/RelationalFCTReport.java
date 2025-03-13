@@ -27,6 +27,18 @@ import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramew
 
 public class RelationalFCTReport extends FCTReport
 {
+    private String databaseType;
+
+       public RelationalFCTReport(String databaseType)
+    {
+        this.databaseType = databaseType;
+    }
+
+    public String getDatabaseType()
+    {
+        return databaseType;
+    }
+
 
     protected static MutableList<ExclusionSpecification> getExpectedFailures()
     {
@@ -46,9 +58,9 @@ public class RelationalFCTReport extends FCTReport
     }
 
     @Override
-    public String getreportID()
+    public String getReportID()
     {
-        return "RelationalFCTExecution";
+        return "Execution";
     }
 
     @Override

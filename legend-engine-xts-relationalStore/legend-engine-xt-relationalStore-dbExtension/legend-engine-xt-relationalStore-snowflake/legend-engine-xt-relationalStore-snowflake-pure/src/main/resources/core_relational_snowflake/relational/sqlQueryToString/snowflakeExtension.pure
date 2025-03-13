@@ -56,7 +56,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       joinProcessor = meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSnowflake_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
-      selectSQLQueryWithCTEsProcessor = processSelectSQLQueryWithCTEsDefault_SelectSQLQueryWithCommonTableExpressions_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaIdentifierToString = meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
@@ -228,6 +228,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='MONTH(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
@@ -279,7 +280,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
    assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
    assert($params->size()==1 || dateFormatsSnowFlake()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
-   let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',| $params->at(1));
+   let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',
+                                              |//DDMMMYYYY is the same format as DDMONYYYY aligned with SybaseIQ, need to be removed and find better way for format translation
+                                               if($params->at(1) == '\'ddMMMyyyy\'',| '\'ddMONyyyy\'',| $params->at(1));
+                                              );
    //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
    'to_date('+$params->at(0)+','+$dateFormat +')';
 }
@@ -304,7 +308,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::dateFormatsSnowFlake():String[*]
 {
-   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd','DD/MM/YYYY', 'YYYY/MM/DD'];
+   ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd', 'ddMMMyyyy', 'ddMONyyyy', 'DD/MM/YYYY', 'YYYY/MM/DD'];
 }
 
 

@@ -45,13 +45,25 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTy
 
 // ---------------------- Boolean ----------------------------------------------
 
-Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BooleanSqlType extends SqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::BooleanSqlType extends SqlType {}
 
 // -----------------------------------------------------------------------------
 
+// ---------------------- String ----------------------------------------------
 
-// For functions like coalesce, where return type could be anything
-Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AnySqlType extends SqlType {}
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractStringSqlType extends SqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::CharSqlType extends AbstractStringSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::VarcharSqlType extends AbstractStringSqlType {}
+
+// -----------------------------------------------------------------------------
+
+// ---------------------- Date & Time ----------------------------------------------
+
+Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::AbstractTemporalSqlType extends SqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::DateSqlType extends AbstractTemporalSqlType {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::TimestampSqlType extends AbstractTemporalSqlType {}
+
+// -----------------------------------------------------------------------------
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::orderedSubTypes(cls: Class<SqlType>[1]): Class<SqlType>[1..*]
 {

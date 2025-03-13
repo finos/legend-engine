@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::st
    let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                          testMapping,
                          meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2float as decimal) as `string2Float` from dataTable as `root`',$memSql);
+   assertEquals('select `root`.string2float :> DOUBLE as `string2Float` from dataTable as `root`',$memSql);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::toString::testToSQLStringToString_MemSQL():Boolean[1]

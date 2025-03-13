@@ -46,7 +46,7 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::gen", false));
 
         String expected = ">>>test::gen::dataRecord\n" +
-                "Class test::gen::dataRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::dataRecord\n" +
                 "{\n" +
                 "  Name: String[1];\n" +
                 "  Employed: Integer[0..1];\n" +
@@ -82,7 +82,7 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::gen", true));
 
         String expected = ">>>test::gen::DataRecord\n" +
-                "Class test::gen::DataRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::DataRecord\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  employed: Integer[0..1];\n" +
@@ -128,7 +128,7 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::gen", true, "PeopleSet"));
 
         String expected = ">>>test::gen::DataRecord\n" +
-                "Class test::gen::DataRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::DataRecord\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  employed: Integer[0..1];\n" +
@@ -139,13 +139,13 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
                 "}\n" +
                 "\n" +
                 ">>>test::gen::HeaderRecord\n" +
-                "Class test::gen::HeaderRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::HeaderRecord\n" +
                 "{\n" +
                 "  nationality: String[1];\n" +
                 "}\n" +
                 "\n" +
                 ">>>test::gen::PeopleSet\n" +
-                "Class test::gen::PeopleSet extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::PeopleSet\n" +
                 "{\n" +
                 "}\n" +
                 "\n" +
@@ -199,7 +199,7 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::gen", true, "PeopleSet"), true, "test::gen::TargetBinding");
 
         String expected = ">>>test::gen::DataRecord\n" +
-                "Class test::gen::DataRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::DataRecord\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  employed: Integer[0..1];\n" +
@@ -210,13 +210,13 @@ public class TestFlatDataToModelGeneration extends SchemaToModelGenerationTest
                 "}\n" +
                 "\n" +
                 ">>>test::gen::HeaderRecord\n" +
-                "Class test::gen::HeaderRecord extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::HeaderRecord\n" +
                 "{\n" +
                 "  nationality: String[1];\n" +
                 "}\n" +
                 "\n" +
                 ">>>test::gen::PeopleSet\n" +
-                "Class test::gen::PeopleSet extends meta::pure::metamodel::type::Any\n" +
+                "Class test::gen::PeopleSet\n" +
                 "{\n" +
                 "}\n" +
                 "\n" +

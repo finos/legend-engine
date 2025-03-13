@@ -84,7 +84,7 @@ function meta::pure::router::printer::asString(f:ValueSpecification[1], pref:Pre
                                                                      a:Any[1]|$a->genericType().rawType.name->toOne()+' '+$a->toString();
                                                                    ]))->joinStrings(', ')+if($i.values->size() < 2,|'',|']');,
                    v:VariableExpression[1] | '$'+$v.name,
-                   s:SimpleFunctionExpression[1] | $s->asString($pref),
+                   s:FunctionExpression[1] | $s->asString($pref),
                    e:ExtendedRoutedValueSpecification[1] | $e->toString($pref),
                    r:NoSetRoutedValueSpecification[1]|'[Routed No Sets:'+$r.value->evaluateAndDeactivate()->asString($pref)+']',
                    f:FunctionRoutedValueSpecification[1]|'[Routed Func:'+$f.value->asString($pref)+']',
@@ -124,7 +124,7 @@ function meta::pure::router::printer::functionName(f:Function<Any>[1], pref:Pref
 {
   if($pref->efq() && $f->instanceOf(PackageableElement),
     |$f->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$f.functionName->toOne(),
-    |$f.functionName->toOne()
+    |$f.functionName->defaultIfEmpty('LambdaFunction')->toOne()
   );
 }
 

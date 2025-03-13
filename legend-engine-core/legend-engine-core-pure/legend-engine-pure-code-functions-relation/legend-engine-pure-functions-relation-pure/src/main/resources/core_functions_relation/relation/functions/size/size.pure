@@ -33,6 +33,22 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testSimpleSi
     assertEquals(3, $res);
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                let t = #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #;
+                 $t->size();
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(3, $res);
+}
 
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupBySize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -58,6 +74,31 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
     assertEquals(6, $res);
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                let t = #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #;
+                let t2 = $t->groupBy(~[grp], ~[newCol : x | $x.name : y | $y->joinStrings(''), YoCol : x | $x.id : y | $y->plus()]);
+                $t2->size();
+               };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(6, $res);
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -67,6 +108,24 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparis
                    3, ewe
                    4, qw
                  #->size() > 0;
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(true, $res);
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                let t = #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                 #;
+                 let s = $t->size(); 
+                 $s > 0;
               };
 
     let res =  $f->eval($expr)->toOne();

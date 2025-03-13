@@ -1,0 +1,12 @@
+import protocol::support::*;
+function protocol::f(): Any[*]
+{
+  f(x: Integer[1]|$x + 1);
+  f({z: String[1],x: Integer[1]|$z + $x->toString()});
+  ['s']->filter(z|$z == 'test');
+}
+
+function protocol::support::f(x: Function<Any>[1]): Nil[*]
+{
+  []
+}

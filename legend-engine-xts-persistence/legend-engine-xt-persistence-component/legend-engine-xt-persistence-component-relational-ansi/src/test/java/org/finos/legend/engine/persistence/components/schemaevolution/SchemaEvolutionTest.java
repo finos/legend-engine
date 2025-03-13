@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.AnsiDatatypeToDefaultSizeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.scenarios.BitemporalDeltaSourceSpecifiesFromAndThroughScenarios;
@@ -60,6 +61,7 @@ public class SchemaEvolutionTest extends IngestModeTest
                             Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
                     Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
                     Collections.singletonMap(DataType.FLOAT, EnumSet.of(DataType.DOUBLE)),
+                    new AnsiDatatypeToDefaultSizeMapping(),
                     SqlGenUtils.QUOTE_IDENTIFIER,
                     AnsiSqlSink.LOGICAL_PLAN_VISITOR_BY_CLASS,
                     (x, y, z) ->
@@ -80,6 +82,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     private RelationalSink relationalSink = new TestSink();
 
     // Column missing in main table and add_column capability allowed
+    // Add column
+    // biz_date DATE
     @Test
     void testSnapshotMilestoningWithAddColumnAndUserProvidedSchemaEvolutionCapability()
     {
@@ -109,7 +113,9 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
     }
 
-    // Column missing in main table and add_column capability allowed
+    // Column missing in main table and add_column capability allowed (ignore case)
+    // Add column
+    // biz_date DATE
     @Test
     void testSnapshotMilestoningWithAddColumnAndIgnoreCase()
     {
@@ -140,6 +146,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Column missing in main table and add_column capability allowed with upper case optimizer enabled
+    // Add column
+    // BIZ_DATE DATE
     @Test
     void testSnapshotMilestoningWithAddColumnEvolutionUpperCase()
     {
@@ -170,6 +178,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Column missing in main table but add_column capability not allowed --> throws exception
+    // Add column
+    // biz_date DATE
     @Test
     void testSnapshotMilestoningWithAddColumnWithoutUserProvidedSchemaEvolutionCapability()
     {
@@ -199,6 +209,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Data sizing change in main table column and data_type_size_change capability allowed
+    // Alter column
+    // description: VARCHAR -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolution()
     {
@@ -223,10 +235,12 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-        Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
+        Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
     }
 
     // Data sizing change (length) in main table column and data_type_size_change capability allowed with upper case optimizer enabled
+    // Alter column
+    // DESCRIPTION: VARCHAR -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolutionWithUpperCase()
     {
@@ -252,16 +266,18 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-        Assertions.assertEquals(expectedSchemaEvolutionModifySizeWithUpperCase, sqlsForSchemaEvolution.get(0));
+        Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
     }
 
-    //Data sizing (length) changes but user capability doesn't allow it --> throws exception
+    // Data sizing (length) changes decrement --> throws exception
+    // Alter column
+    // DESCRIPTION: VARCHAR(1000) -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolutionAndUserProvidedSchemaEvolutionCapability()
     {
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-                .schema(baseTableSchemaWithDataLengthChange)
+                .schema(baseTableSchemaWithLongDescription)
                 .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
@@ -271,7 +287,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SCALE_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
         try
@@ -281,11 +298,13 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length changes couldn't be performed on column \"description\" since sink/user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"1000\" to \"64\" for column \"description\"", e.getMessage());
         }
     }
 
     // Data sizing change (scale) in main table column and data_type_size_change capability allowed
+    // Alter column
+    // decimal_col: DECIMAL(10, 0) -> DECIMAL(10, 2)
     @Test
     void testSnapshotMilestoningWithColumnScaleChangeEvolution()
     {
@@ -314,6 +333,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     //Data sizing (scale) changes but user capability doesn't allow it --> throws exception
+    // Alter column
+    // decimal_col: DECIMAL(10, 0) -> DECIMAL(10, 2)
     @Test
     void testSnapshotMilestoningWithColumnScaleChangeEvolutionAndUserProvidedSchemaEvolutionCapability()
     {
@@ -344,6 +365,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Implicit data type conversion is automatically handled by DB. No additional alter statement generated
+    // Alter column
+    // amount: DOUBLE -> FLOAT
     @Test
     void testSnapshotMilestoningWithImplicitDataTypeEvolution()
     {
@@ -370,6 +393,9 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Nullability change required in main table column and column_nullability_changed capability allowed
+    // Alter column
+    // amount: DOUBLE NOT NULL -> FLOAT
+    // biz_date: DATE NOT NULL -> DATE
     @Test
     void testSnapshotMilestoningWithImplicitDataTypeEvolutionAndAlterNullability()
     {
@@ -400,6 +426,9 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Nullability change required in main table column and column_nullability_changed capability not allowed --> throws exception
+    // Alter column
+    // amount: DOUBLE NOT NULL -> DOUBLE
+    // biz_date: DATE NOT NULL -> DATE
     @Test
     void testSnapshotMilestoningWithAlterNullabilityWithoutUserCapability()
     {
@@ -428,6 +457,9 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Nullability change required in main table column and column_nullability_changed capability allowed
+    // Alter column
+    // amount: DOUBLE NOT NULL -> DOUBLE
+    // biz_date: DATE NOT NULL -> DATE
     @Test
     void testSnapshotMilestoningWithAlterNullabilityAndUserCapability()
     {
@@ -458,6 +490,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 
 
     // Data type change required in main table column (float --> double) and data_type_conversion capability allowed
+    // Alter column
+    // Amount: FLOAT -> DOUBLE
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolution()
     {
@@ -482,10 +516,12 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-        Assertions.assertEquals(expectedSchemaNonBreakingChange, sqlsForSchemaEvolution.get(0));
+        Assertions.assertEquals(expectedSchemaNonBreakingChangeWithAmount, sqlsForSchemaEvolution.get(0));
     }
 
     // Data type change required in main table column (float --> double) and data_type_conversion capability not allowed--> throws exception
+    // Alter column
+    // Amount: FLOAT -> DOUBLE
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndUserProvidedSchemaEvolutionCapability()
     {
@@ -517,6 +553,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 
     // Data type & sizing change required in main table column (float --> double(8))
     // and data_type_conversion capability allowed but sizing not allowed --> throws exception
+    // Alter column
+    // Amount: FLOAT -> DOUBLE(8)
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndSizingChange()
     {
@@ -542,12 +580,14 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length changes couldn't be performed on column \"amount\" since sink/user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type length changes couldn't be performed on column \"Amount\" since sink/user capability does not allow it", e.getMessage());
         }
     }
 
     // Data type & sizing change required in main table column (float --> double(8))
     // and data_type_conversion capability and sizing  allowed
+    // Alter column
+    // Amount: FLOAT -> DOUBLE(8)
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndSizingChangeAllowed()
     {
@@ -577,6 +617,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Breaking data type change from DOUBLE --> VARCHAR. Throws exception
+    // Alter column
+    // amount: DOUBLE -> VARCHAR(32)
     @Test
     void testSnapshotMilestoningWithBreakingDataTypeEvolution()
     {
@@ -607,6 +649,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Nullability change required in main table column since column missing in staging table and column_nullability_changed capability allowed
+    // Missing column
+    // biz_date
     @Test
     void testSnapshotMilestoningWithColumnMissingInStagingTableAndUserCapability()
     {
@@ -622,7 +666,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
-        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.MARK_MISSING_COLUMN_AS_NULLABLE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, false);
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -636,6 +680,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 
     // Nullability change required in main table column since column missing in staging table
     // and column_nullability_changed capability not allowed --> throws exception
+    // Missing column
+    // biz_date
     @Test
     void testSnapshotMilestoningWithColumnMissingInStagingTableWithoutUserCapability()
     {
@@ -659,11 +705,13 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Column \"biz_date\" couldn't be made nullable since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Column \"biz_date\" is missing from incoming schema, but user capability does not allow marking it to nullable", e.getMessage());
         }
     }
 
     //Column missing in staging table is already nullable column in main table --> no change require
+    // Missing column
+    // biz_date
     @Test
     void testSnapshotMilestoningWithNullableColumnMissingInStagingTable()
     {
@@ -688,6 +736,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
 
+    // No change
     @Test
     void testBitemporalDeltaSourceSpeciesBothFieldsSchemaEvolution()
     {
@@ -712,6 +761,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertTrue(sqlsForSchemaEvolution.isEmpty());
     }
 
+    // No change
     @Test
     void testBitemporalDeltaSourceSpeciesFromOnlyFieldsSchemaEvolution()
     {

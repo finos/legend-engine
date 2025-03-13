@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
 
@@ -95,6 +96,16 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
   );
 }
 
+function meta::external::query::sql::transformation::compile::utils::var(name:String[1]):VariableExpression[1]
+{
+  var($name, [], [])->evaluateAndDeactivate();
+}
+
+function meta::external::query::sql::transformation::compile::utils::var(name:String[1], multiplicity:Multiplicity[0..1], genericType:GenericType[0..1]):VariableExpression[1]
+{
+  ^VariableExpression(genericType = $genericType->orElse(^InferredGenericType()), multiplicity = $multiplicity->orElse(ZeroOne), name=  $name)->evaluateAndDeactivate();
+}
+
 function meta::external::query::sql::transformation::compile::utils::createTypedFunction(pairs:Pair<Type, Function<Any>>[*], default:Function<Any>[1], type:Type[0..1], null:Boolean[1], args:ValueSpecification[*]):ValueSpecification[1]
 {
   let func = if ($type->isEmpty(), | $default, | $pairs->getValue($type->toOne(), $default));
@@ -166,4 +177,37 @@ function meta::external::query::sql::transformation::compile::utils::processExtr
 function meta::external::query::sql::transformation::compile::utils::processExtractEnumValue(enumeration:Enumeration<Enum>[1], value:ValueSpecification[1]):FunctionExpression[1]
 {
   sfe(extractEnumValue_Enumeration_1__String_1__T_1_, ^GenericType(rawType = $enumeration), [], [iv($enumeration), $value]);
+}
+
+function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:LambdaFunction<Any>[1], removeFunctions:String[*], extensions:Extension[*]):LambdaFunction<Any>[1]
+{
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($l, $extensions)->removeLambdaTDSFunction($removeFunctions)->compileViaProtocol($extensions);
+}
+
+function meta::external::query::sql::transformation::compile::utils::compileViaProtocol(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], extensions:Extension[*]):LambdaFunction<Any>[1]
+{
+  $l->meta::alloy::metadataServer::alloyToJSON()
+    ->meta::external::query::sql::legendCompileVSProtocol([])
+    ->match([
+      l:LambdaFunction<Any>[1] | $l,
+      i:InstanceValue[1] | $i.values->at(0)->cast(@LambdaFunction<Any>)
+    ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeLambdaTDSFunction(l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
+{
+  $l->removeTDSFunction($functions)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::compile::utils::removeTDSFunction(a:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], functions:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  $a->match([
+    l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(body = $l.body->map(b | $b->removeTDSFunction($functions))),
+    c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | ^$c(values = $c.values->map(v | $v->removeTDSFunction($functions))),
+    f:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1] |
+      if ($f.function->in($functions),
+        | $f.parameters->at(0)->removeTDSFunction($functions),
+        | ^$f(parameters = $f.parameters->map(p | $p->removeTDSFunction($functions))));,
+    v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $v;
+  ]);
 }

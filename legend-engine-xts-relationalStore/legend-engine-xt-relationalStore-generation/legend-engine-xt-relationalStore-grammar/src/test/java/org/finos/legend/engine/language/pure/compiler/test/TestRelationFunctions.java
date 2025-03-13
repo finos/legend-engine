@@ -21,7 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Test;
 
@@ -50,7 +50,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "Database a::A (Table tb(id Integer))\n"
         );
 
-        Lambda lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select()");
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select()");
         GenericType genericType = Compiler.getLambdaReturnGenericType(lambda, pureModelPair.getTwo());
         String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(genericType);
         JsonAssert.assertJsonEquals(

@@ -94,7 +94,15 @@ public class FunctionExecutionInterpretedWithDebugSupport extends FunctionExecut
         }
         catch (CompletionException e)
         {
-            throw (RuntimeException) e.getCause();
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+            else
+            {
+                throw new RuntimeException(cause);
+            }
         }
     }
 }

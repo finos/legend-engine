@@ -1,0 +1,179 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::protocols::pure::vX_X_X::transformation::helpers::*;
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::var(name:String[1]): meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]
+{
+  var($name, [], [])
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::var(name:String[1], multiplicity:Multiplicity[0..1], genericType:meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[0..1]): meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable(
+    _type = 'var',
+    name = $name,
+    genericType = $genericType,
+    multiplicity = if ($multiplicity->isNotEmpty(), | $multiplicity->toOne()->multiplicity(), | [])
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::multiplicity(value:Any[*]):meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound = $value->size(), upperBound = $value->size())
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::lambda(expressionSequence:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
+{
+  lambda($expressionSequence, [])
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::lambda(expressionSequence:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*], parameters: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[*]):meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction(
+    _type = 'lambda',
+    parameters = $parameters,
+    body = $expressionSequence
+  )
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::collection(values:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection(_type = 'collection',
+              values = $values,
+              multiplicity = ^meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity(lowerBound=$values->size(), upperBound=$values->size())
+  )
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecArrayInstance(names:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance[1]
+{
+  createColSpecArrayInstance(createColSpecArray($names))
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecArrayInstance(colSpecs:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance[1]
+{
+  createColSpecArrayInstance($colSpecs->createColSpecArray())
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecArrayInstance(colSpecs:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance(
+      _type = 'classInstance',
+      type = 'colSpecArray',
+      value = $colSpecs
+    )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecInstance(colSpec:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance(
+    _type = 'classInstance',
+    type = 'colSpec',
+    value = $colSpec
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpec(name:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
+{
+  createColSpec($name, [], []);
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpec(name:String[1], func1:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
+{
+  createColSpec($name, $func1, []);
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpec(name:String[1], func1:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1], func2: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec(
+      name = $name,
+      function1 = $func1,
+      function2 = $func2
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecArray(colspecs: meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpec[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray(
+    colSpecs = $colspecs
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecInstance(name:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance[1]
+{
+  createColSpecInstance(createColSpec($name, [], []))
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::createColSpecArray(names:String[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::relation::ColSpecArray[1]
+{
+  createColSpecArray($names->map(n | $n->createColSpec([], [])))
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::appliedFunction(f:Function<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]
+{
+  appliedFunction($f, []);
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::appliedFunction(f:Function<Any>[1], parameters:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction(
+    _type = 'func',
+    function = $f.functionName->toOne(),
+    fControl = $f.name,
+    parameters = $parameters
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::property(name:String[1], parameters:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty(
+          _type = 'property',
+          property = $name,
+          parameters = $parameters
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::processExtractEnumValue(enum:Enum[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  processExtractEnumValue($enum->type()->cast(@Enumeration<Enum>), $enum->toString());
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::processExtractEnumValue(enumeration:Enumeration<Enum>[1], value:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  processExtractEnumValue($enumeration, ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString(_type = 'string', value = $value))
+}
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::processExtractEnumValue(enumeration:Enumeration<Enum>[1], value:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedProperty(
+    _type = 'property',
+    property = $value->match([
+      c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString[1] | $c.value
+    ]),
+    parameters = transformAny($enumeration, [])
+  )
+}
+
+
+function meta::protocols::pure::vX_X_X::transformation::helpers::transformAny(value:Any[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($value, [], ^Map<String,meta::pure::functions::collection::List<Any>>(), PureOne, $extensions);
+}

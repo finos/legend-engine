@@ -41,10 +41,10 @@ import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -274,7 +274,7 @@ public class DataQualityTreeWalker
         });
     }
 
-    private Lambda visitLambda(DataQualityParserGrammar.CombinedExpressionContext combinedExpressionContext)
+    private LambdaFunction visitLambda(DataQualityParserGrammar.CombinedExpressionContext combinedExpressionContext)
     {
         DomainParser parser = new DomainParser();
         // prepare island grammar walker source information
@@ -285,13 +285,13 @@ public class DataQualityTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(combinedExpressionContext.start.getStartIndex(), combinedExpressionContext.stop.getStopIndex()));
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext);
-        if (valueSpecification instanceof Lambda)
+        if (valueSpecification instanceof LambdaFunction)
         {
-            return (Lambda) valueSpecification;
+            return (LambdaFunction) valueSpecification;
         }
         // NOTE: If the user just provides the body of the lambda, we will wrap a lambda around it
         // we might want to reconsider this behavior and throw error if this convenience causes any trouble
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = new ArrayList<>();
         lambda.body.add(valueSpecification);
         lambda.parameters = new ArrayList<>();

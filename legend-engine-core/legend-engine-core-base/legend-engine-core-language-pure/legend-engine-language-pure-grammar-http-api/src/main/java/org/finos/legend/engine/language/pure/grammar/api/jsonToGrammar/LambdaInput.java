@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar;
 
 import org.finos.legend.engine.protocol.Protocol;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 
 import java.util.Map;
@@ -24,6 +24,6 @@ import java.util.Map;
 public class LambdaInput
 {
     public Protocol serializer;
-    public Map<String, Lambda> lambdas;
+    public Map<String, LambdaFunction> lambdas;
     public Map<String, ParserError> lambdaErrors;
 }

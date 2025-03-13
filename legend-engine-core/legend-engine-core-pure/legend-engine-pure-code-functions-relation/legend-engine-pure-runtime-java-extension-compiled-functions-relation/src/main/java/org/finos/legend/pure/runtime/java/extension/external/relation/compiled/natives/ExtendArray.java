@@ -30,7 +30,7 @@ public class ExtendArray extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())");
+        StringBuilder result = Extend.buildCode(transformedParams, s -> "Lists.mutable.withAll(" + transformedParams.get(1) + "._funcSpecs())", true);
         return result.toString();
     }
 }

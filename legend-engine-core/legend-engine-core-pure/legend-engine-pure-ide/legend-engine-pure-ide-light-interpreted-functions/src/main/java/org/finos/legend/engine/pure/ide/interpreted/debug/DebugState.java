@@ -142,6 +142,10 @@ public class DebugState
         {
             type = M3Paths.ConcreteFunctionDefinition + "<Any>";
         }
+        else if (processorSupport.type_subTypeOf(genericType.getValueForMetaPropertyToOne(M3Properties.rawType), debugSupport.getPureRuntime().getCoreInstance(M3Paths.NativeFunction)))
+        {
+            type = M3Paths.NativeFunction + "<Any>";
+        }
         else
         {
             type = GenericType.print(genericType, true, processorSupport);

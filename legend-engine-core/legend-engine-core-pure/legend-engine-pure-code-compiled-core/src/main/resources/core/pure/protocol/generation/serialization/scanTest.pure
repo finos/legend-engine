@@ -15,7 +15,7 @@
 import meta::protocols::generation::scan::*;
 import meta::protocols::generation::scan::tests::model::*;
 
-Class meta::protocols::generation::scan::tests::model::Super extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement
+Class meta::protocols::generation::scan::tests::model::Super extends meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::m3::extension::AnnotatedElement
 {
     intVal : Integer[1];
 }

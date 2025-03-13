@@ -979,7 +979,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithUnion():
    assertSize($result.values, 1);
    assertEquals([1184.0], $result.values.rows.values);
    
-   assertSameSQL('select "sum" as "sum" from (select sum("unionalias_1"."Quantity") as "sum", count(1) as "count" from (select "root".quantity as "Quantity" from tradeTable as "root" UNION ALL select "root".quantity as "Quantity" from tradeTable as "root") as "unionalias_1") as "subselect" where "count" > 0', $result);
+   assertSameSQL('select "subselect"."sum" as "sum" from (select sum("unionalias_1"."Quantity") as "sum", count(1) as "count" from (select "root".quantity as "Quantity" from tradeTable as "root" UNION ALL select "root".quantity as "Quantity" from tradeTable as "root") as "unionalias_1") as "subselect" where "subselect"."count" > 0', $result);
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testGroupByAndFilterIsolatedJoinMerge():Boolean[1]
@@ -1267,7 +1267,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByEmptyColsNon
       meta::relational::extension::relationalExtensions());
 
    assertEquals([], $result.values.rows->map(r|$r.values->makeString('|')));
-   assertSameSQL('select "Firm Count" as "Firm Count" from (select count("root".LEGALNAME) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
+   assertSameSQL('select "subselect"."Firm Count" as "Firm Count" from (select count("root".LEGALNAME) as "Firm Count" from firmTable as "root") as "subselect" where "subselect"."Firm Count" > 10', $result);
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithWavgAggregation() : Boolean[1]

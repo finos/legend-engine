@@ -120,14 +120,14 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        List<ValidationError> result = new ArrayList<ValidationError>();\n'+
                 '        if (this.value == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "ASimpleConstraint.value",\n'+
                 '                                           "The property \'ASimpleConstraint.value\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (!(!this.value.startsWith("x") || this.value.endsWith("eee")))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("constraintIdOne",\n'+
-                '                                           "{this|($this.value->startsWith(\'x\')->not() || $this.value->endsWith(\'eee\'))}",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::ASimpleConstraint[1]|$this.value->startsWith(\'x\')->not() || $this.value->endsWith(\'eee\')",\n'+
                 '                                           Arrays.asList("The ", this.value, " is not set properly")\n'+
                 '                                                 .stream()\n'+
                 '                                                 .collect(Collectors.joining(""))));\n'+
@@ -165,14 +165,14 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        if (!!Library.equals(this.value, "bad value"))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0",\n'+
-                '                                           "{this|not(($this.value == \'bad value\'))}",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::ASimpleConstraintLight[1]|not($this.value == \'bad value\')",\n'+
                 '                                           null));\n'+
                 '        }\n'+
                 '        if (!(Library.equals(this.value, "tst") && !((Object) Library\n'+
                 '                     .toOne(this.anyValue) instanceof MultiplicityAndChain)))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("1",\n'+
-                '                                           "{this|(($this.value == \'tst\') && $this.anyValue->toOne()->instanceOf(meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain)->not())}",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::ASimpleConstraintLight[1]|($this.value == \'tst\') && $this.anyValue->toOne()->instanceOf(meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain)->not()",\n'+
                 '                                           null));\n'+
                 '        }\n'+
                 '        if (this.anyValue != null)\n'+
@@ -255,41 +255,41 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        result.addAll(super.validate());\n'+
                 '        if (this.value == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain.value",\n'+
                 '                                           "The property \'MultiplicityAndChain.value\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (this.childrenMinOne.size() < 1)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain.childrenMinOne",\n'+
                 '                                           "The property \'MultiplicityAndChain.childrenMinOne\' collection has a size of " + this.childrenMinOne\n'+
                 '                                                                                                                                .size() + " but its multiplicity lower bound is 1"));\n'+
                 '        }\n'+
                 '        if (this.childrenInRange.size() < 3 || this.childrenInRange.size() > 5)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain.childrenInRange",\n'+
                 '                                           "The property \'MultiplicityAndChain.childrenInRange\' collection has a size of " + this.childrenInRange\n'+
                 '                                                                                                                                 .size() + " but its multiplicity lower bound is 3 and its upper bound is 5"));\n'+
                 '        }\n'+
                 '        if (this.childrenMaxRange.size() > 7)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain.childrenMaxRange",\n'+
                 '                                           "The property \'MultiplicityAndChain.childrenMaxRange\' collection has a size of " + this.childrenMaxRange\n'+
                 '                                                                                                                                  .size() + " but its multiplicity upper bound is 7"));\n'+
                 '        }\n'+
                 '        if (this.child == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain.child",\n'+
                 '                                           "The property \'MultiplicityAndChain.child\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (!Library.equals(this.value, "ok"))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("0",\n'+
-                '                                           "{this|($this.value == \'ok\')}",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain[1]|$this.value == \'ok\'",\n'+
                 '                                           null));\n'+
                 '        }\n'+
                 '        for (MultiplicityAndChain_Child val: this.childrenMinOne)\n'+
@@ -347,13 +347,15 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        List<ValidationError> result = new ArrayList<ValidationError>();\n'+
                 '        if (this.val == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain_Child.val",\n'+
                 '                                           "The property \'MultiplicityAndChain_Child.val\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (!(this.val > 2L))\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("0", "{this|($this.val > 2)}", null));\n'+
+                '            result.add(new ValidationError("0",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Child[1]|$this.val > 2",\n'+
+                '                                           null));\n'+
                 '        }\n'+
                 '        return result;\n'+
                 '    }\n'+
@@ -394,35 +396,39 @@ function <<test.Test>> meta::protocols::generation::java::tests::validate::testV
                 '        List<ValidationError> result = new ArrayList<ValidationError>();\n'+
                 '        if (this.ok == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain_Parent.ok",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.ok\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (this.enumVal == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain_Parent.enumVal",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.enumVal\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (this.b == null)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("Property muliplicity violation",\n'+
+                '            result.add(new ValidationError("Property multiplicity violation",\n'+
                 '                                           "MultiplicityAndChain_Parent.b",\n'+
                 '                                           "The property \'MultiplicityAndChain_Parent.b\' can\'t be null"));\n'+
                 '        }\n'+
                 '        if (!(this.ok < 2.0))\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("0", "{this|($this.ok < 2.0)}", null));\n'+
+                '            result.add(new ValidationError("0",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent[1]|$this.ok < 2.0",\n'+
+                '                                           null));\n'+
                 '        }\n'+
                 '        if (!Library.equals(this.enumVal, SomeEnum.getEnumFromPureName("On")))\n'+
                 '        {\n'+
                 '            result.add(new ValidationError("1",\n'+
-                '                                           "{this|($this.enumVal == meta::protocols::generation::java::tests::validate::model::SomeEnum->extractEnumValue(\'On\'))}",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent[1]|$this.enumVal == meta::protocols::generation::java::tests::validate::model::SomeEnum.On",\n'+
                 '                                           null));\n'+
                 '        }\n'+
                 '        if (!this.b)\n'+
                 '        {\n'+
-                '            result.add(new ValidationError("2", "{this|$this.b}", null));\n'+
+                '            result.add(new ValidationError("2",\n'+
+                '                                           "this: meta::protocols::generation::java::tests::validate::model::MultiplicityAndChain_Parent[1]|$this.b",\n'+
+                '                                           null));\n'+
                 '        }\n'+
                 '        return result;\n'+
                 '    }\n'+

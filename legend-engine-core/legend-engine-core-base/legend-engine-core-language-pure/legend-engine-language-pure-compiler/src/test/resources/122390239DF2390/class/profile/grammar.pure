@@ -1,0 +1,21 @@
+import protocol::support::*;
+Class <<AProfile.flag, protocol::support::AProfile.newFlag>> protocol::LightProfileStereotypes
+{
+  value: Integer[1];
+}
+
+Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileStereotypesTaggedValues
+{
+  value: Integer[1];
+}
+
+Class {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::LightProfileTaggedValues
+{
+  value: Integer[1];
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}

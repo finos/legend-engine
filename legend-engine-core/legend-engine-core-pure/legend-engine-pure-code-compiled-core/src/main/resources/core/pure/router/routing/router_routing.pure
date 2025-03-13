@@ -139,7 +139,7 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                           | // We match cast to Relation & RelationStoreAccessor.. However we're only processing the Accessor
                                                             if($i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor),
                                                               | if($state.routingStrategy.processRelationStoreAccessor->isEmpty(),
-                                                                  | fail('RelationStoreAccessor should be used with a from(Rumtime) expression.'); $state;,
+                                                                  | fail('RelationStoreAccessor should be used with a from(Runtime) expression.'); $state;,
                                                                   | $state.routingStrategy.processRelationStoreAccessor($i.values->at(0)->cast(@RelationStoreAccessor<Any>), $i, $state, $executionContext, $debug)
                                                                 ),
                                                               | $state
@@ -727,6 +727,12 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     max_Float_$1_MANY$__Float_1_,
     max_Number_MANY__Number_$0_1$_,
     max_Number_$1_MANY$__Number_1_,
+    min_Integer_MANY__Integer_$0_1$_,
+    min_Integer_$1_MANY$__Integer_1_,
+    min_Float_MANY__Float_$0_1$_,
+    min_Float_$1_MANY$__Float_1_,
+    min_Number_MANY__Number_$0_1$_,
+    min_Number_$1_MANY$__Number_1_,
     greatest_X_MANY__X_$0_1$_,
     greatest_X_$1_MANY$__X_1_,
     getAllForEachDate_Class_1__Date_MANY__T_MANY_,
@@ -789,13 +795,9 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     wavg_WavgRowMapper_MANY__Float_1_,
     meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_,
     rowNumber_Any_MANY__Map_1_,
-    max_Float_MANY__Float_$0_1$_,
-    max_Integer_MANY__Integer_$0_1$_,
     max_Date_MANY__Date_$0_1$_,
     max_StrictDate_MANY__StrictDate_$0_1$_,
     max_DateTime_MANY__DateTime_$0_1$_,
-    min_Float_MANY__Float_$0_1$_,
-    min_Integer_MANY__Integer_$0_1$_,
     min_Date_MANY__Date_$0_1$_,
     min_StrictDate_MANY__StrictDate_$0_1$_,
     min_DateTime_MANY__DateTime_$0_1$_,
@@ -838,7 +840,6 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
     concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_,
     renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_,
-    min_Number_MANY__Number_$0_1$_,
     olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
     olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_,
     olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_,
@@ -966,6 +967,7 @@ function <<access.private>> meta::pure::router::routing::checkValueSpecification
       [
          fe:FunctionExpression[1] | let funcRoutingSupported = $fe.func->match([p:Property<Nil,Any|*>[1]    | true,
                                                                                 q:QualifiedProperty<Any>[1] | true,
+                                                                                c:Column<Nil, Any|*>[1]     | true,
                                                                                 f:Function<Any>[1]          | $f->instanceOf(NativeFunction) || $f->shouldStop($extensions) || ($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1)
                                                                         ]);
                                     $funcRoutingSupported && $fe.parametersValues->forAll(param | $param->checkRoutingSupport($extensions));,

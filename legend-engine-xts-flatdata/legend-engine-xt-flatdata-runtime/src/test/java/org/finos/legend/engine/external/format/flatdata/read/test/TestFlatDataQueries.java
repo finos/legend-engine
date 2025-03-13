@@ -37,16 +37,14 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.generated.core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -151,8 +149,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         PureModel model = Compiler.compile(generated.combine(schemaData), DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         PureGrammarParser parser = PureGrammarParser.newInstance();
-        Lambda lambdaProtocol = parser.parseLambda("data:String[1]|test::gen::PricesRecord->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + tree + ")->serialize(" + tree + ")");
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
+        LambdaFunction lambdaProtocol = parser.parseLambda("data:String[1]|test::gen::PricesRecord->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + tree + ")->serialize(" + tree + ")");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
 
         MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
         extensions.addAll(formatExtensions);

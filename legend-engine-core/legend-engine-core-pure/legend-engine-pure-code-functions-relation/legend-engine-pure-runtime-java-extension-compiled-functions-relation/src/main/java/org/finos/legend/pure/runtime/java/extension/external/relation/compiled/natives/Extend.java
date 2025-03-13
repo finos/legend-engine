@@ -31,16 +31,17 @@ public class Extend extends AbstractNative implements Native
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        StringBuilder result = buildCode(transformedParams, s -> "Lists.mutable.with(" + transformedParams.get(1) + ")");
+        StringBuilder result = buildCode(transformedParams, s -> "Lists.mutable.with(" + transformedParams.get(1) + ")", true);
         return result.toString();
     }
 
-    static StringBuilder buildCode(ListIterable<String> transformedParams, Function<String, String> collection)
+    static StringBuilder buildCode(ListIterable<String> transformedParams, Function<String, String> collection, boolean includeExistingColumns)
     {
-        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.extend(");
+        StringBuilder result = new StringBuilder("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.projectExtend(");
         result.append(transformedParams.get(0) + ", ");
         result.append(collection.valueOf(transformedParams.get(1)));
         buildCollectFuncSpec(result, false);
+        result.append(", " + includeExistingColumns);
         result.append(", es)");
         return result;
     }

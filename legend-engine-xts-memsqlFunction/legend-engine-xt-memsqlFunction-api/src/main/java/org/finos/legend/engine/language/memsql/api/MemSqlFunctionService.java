@@ -19,7 +19,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;

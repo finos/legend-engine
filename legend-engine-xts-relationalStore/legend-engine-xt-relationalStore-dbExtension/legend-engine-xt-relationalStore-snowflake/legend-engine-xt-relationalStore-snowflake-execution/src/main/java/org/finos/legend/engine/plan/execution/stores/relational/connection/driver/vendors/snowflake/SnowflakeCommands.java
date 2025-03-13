@@ -69,6 +69,11 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
         return IngestionMethod.CLIENT_FILE;
     }
 
+    public boolean supportsHeaderOnCsvFile()
+    {
+        return false;
+    }
+
     @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {

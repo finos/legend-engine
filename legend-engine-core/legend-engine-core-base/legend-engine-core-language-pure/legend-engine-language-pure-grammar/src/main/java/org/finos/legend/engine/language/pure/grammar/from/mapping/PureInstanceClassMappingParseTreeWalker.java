@@ -29,7 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PureInstanceClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.util.Collections;
 
@@ -96,7 +96,7 @@ public class PureInstanceClassMappingParseTreeWalker
         return purePropertyMapping;
     }
 
-    private Lambda visitLambda(PureInstanceClassMappingParserGrammar.CombinedExpressionContext ctx, PureInstanceClassMapping pureInstanceClassMapping)
+    private LambdaFunction visitLambda(PureInstanceClassMappingParserGrammar.CombinedExpressionContext ctx, PureInstanceClassMapping pureInstanceClassMapping)
     {
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         DomainParser parser = new DomainParser();
@@ -108,7 +108,7 @@ public class PureInstanceClassMappingParseTreeWalker
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.parserContext);
         // add source parameter
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = Lists.mutable.empty();
         lambda.body.add(valueSpecification);
         lambda.parameters = Lists.mutable.empty();

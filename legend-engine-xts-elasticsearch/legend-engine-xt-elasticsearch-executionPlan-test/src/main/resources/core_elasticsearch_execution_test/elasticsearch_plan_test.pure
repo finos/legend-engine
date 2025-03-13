@@ -183,7 +183,7 @@ function <<paramTest.AfterPackage>> meta::external::store::elasticsearch::execut
 
 function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpression(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Boolean[1]
 {
-  let testCaseLambda = $toTest->printFunctionDefinitionExpressions('')->toOne();
+  let testCaseLambda = $toTest->printFunctionDefinitionExpressions(^meta::pure::metamodel::serialization::grammar::GContext(space=''))->toOne();
   let testCase = $testCaseLambda->substring($testCaseLambda->indexOf('->', 0) + 2);
   testTdsExpression($config, $toTest, $testCase);
 }
@@ -199,7 +199,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::tes
 
 function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpressionReturnsEmpty(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Boolean[1]
 {
-  let testCaseLambda = $toTest->printFunctionDefinitionExpressions('')->toOne();
+  let testCaseLambda = $toTest->printFunctionDefinitionExpressions(^meta::pure::metamodel::serialization::grammar::GContext(space=''))->toOne();
   let testCase = $testCaseLambda->substring($testCaseLambda->indexOf('->', 0) + 2);
   testTdsExpressionReturnsEmpty($config, $toTest, $testCase);
 }

@@ -81,7 +81,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
           inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
                 r:meta::core::runtime::Runtime[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                 (
                   _type = 'classInstance',
                   type = 'runtimeInstance',
@@ -91,7 +91,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                           )
                 ),
                 e:meta::pure::runtime::ExecutionContext[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance
                 (
                   _type = 'classInstance',
                   type = 'executionContextInstance',
@@ -101,7 +101,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                           )
                  ),
                 d:meta::relational::metamodel::Database[1]|
-                 ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                 ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
                   (
                      _type = 'packageableElementPtr',
                      fullPath = $d->elementToPath()

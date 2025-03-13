@@ -220,7 +220,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
   let name = $vs.name;
   let type = $vs.func->functionReturnType().rawType->toOne()->cast(@DataType)->map(x | $x->_subTypeOf(Enum)->if(|String, |$x));
 
-  $initReq.debug(|'Processing project - %s = %s'->format([$vs.name, $expr->printValueSpecification('')]));
+  $initReq.debug(|'Processing project - %s = %s'->format([$vs.name, $expr->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space=''))]));
 
   $expr->extractSimpleValue($initReq).first.values->match([
     tdsDetail: TDSESDetail[1] | pair(^$tdsDetail(name = $name, type = $type), $initReq),
@@ -360,7 +360,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(grou
               $initReq.supportedAggregationFunctions->findAndEvalSupportedFunction($aggFunc->cast(@FunctionExpression), $rawToAggregate.path(), $initReq)
             ,
             |
-              fail('Unsupported aggregation functions: ' + $aggFunc->printValueSpecification(''));
+              fail('Unsupported aggregation functions: ' + $aggFunc->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
               ^AggregationContainer();
           );
 
@@ -498,7 +498,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilter(vs : 
 
 function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda(vs : ValueSpecification[1], req: State[1]): State[1]
 {
-  $req.debug(|'-- processing filter lambda ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
+  $req.debug(|'-- processing filter lambda ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')));
   $vs->match([
     fr: FunctionRoutedValueSpecification[1] | $fr.value->processFilterLambda($req),
     iv: InstanceValue[1] |
@@ -507,7 +507,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda
           any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString())->cast(@State)
         ]),
     fe: FunctionExpression[1] |  $req.supportedFilterFunctions->findAndEvalSupportedFunction($fe, $req, $req),
-    any: Any[1] | fail('not supported: ' + $any->printValueSpecification(''))->cast(@State)
+    any: Any[1] | fail('not supported: ' + $any->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')))->cast(@State)
   ]);
 }
 
@@ -673,7 +673,7 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
 
 function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueSpecification[1], req: State[1]): State[1]
 {
-  $req.debug(|'-- processing VS ' + $vs->printValueSpecification('\n'));
+  $req.debug(|'-- processing VS ' + $vs->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')));
   $vs->match([
     fe: FunctionExpression[1] | $req.supportedRoutingFunctions->findAndEvalSupportedFunction($fe, $req, $req),
     tds: TDSRoutedValueSpecification[1] | $tds.value->process($req),
@@ -749,7 +749,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFun
 
 function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  $initReq.debug(|'-- processing equal ' + $vs->printValueSpecification('\n'));
+  $initReq.debug(|'-- processing equal ' + $vs->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')));
 
   assert($initReq.inFilter, 'equal only supporter on filter context');
 
@@ -1186,7 +1186,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : Fun
 
 function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : Any[1], req: State[1]): Pair<List<Any>, State>[1]
 {
-  $req.debug(|'-- processing simple value ' + $vs->match([vs: ValueSpecification[1] | $vs->printValueSpecification(''), a:Any[1] | $a->toString()]));
+  $req.debug(|'-- processing simple value ' + $vs->match([vs: ValueSpecification[1] | $vs->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')), a:Any[1] | $a->toString()]));
   $vs->match([
     rfe: FunctionExpression[1] |
       let fe = $rfe->deepByPassRouterInfo()->cast(@FunctionExpression);
@@ -1219,7 +1219,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::qualifiedPropertyTo
     {|
         let propertyName =  $params->at(1)->match([
         iv:InstanceValue[1]|$iv.values,
-        any: Any[1] | fail($any->printValueSpecification('\n') + ' not supported');
+        any: Any[1] | fail($any->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')) + ' not supported');
       ])->toOne()->toString();
 
       let tdsDetail = $req.tdsESDetails->filter(f | $f.name == $propertyName)
@@ -1283,20 +1283,20 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedSimpleValu
 
 function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
-  $req.debug(|'Reactivating FE: ' + $fe->printValueSpecification(''));
+  $req.debug(|'Reactivating FE: ' + $fe->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   pair($fe->cast(@FunctionExpression)->reactivate($req.sq.inScopeVars)->list(), $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::passthruForPainlessExpression(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
-  $req.debug(|'Passthru for painless: ' + $fe->printValueSpecification(''));
+  $req.debug(|'Passthru for painless: ' + $fe->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assert($req.inProject, |'Evaluation as runtime mapping expression only supported on project context');
   pair(list($fe), $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpressionNode(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
-  $req.debug(|'Converting to pure expression node: ' + $fe->printValueSpecification(''));
+  $req.debug(|'Converting to pure expression node: ' + $fe->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
   assert($req.inFilter, |'Evaluation as pure expression only supported on filter context');
   let type = $fe.func->functionReturnType();
   let multiplicity = $fe.func->functionReturnMultiplicity();
@@ -1304,12 +1304,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpre
   let varName = '@planVariable' + $req.counter->toString();
 
   let platformNode = processValueSpecification($fe, ^PlatformPlanGenerationState(inScopeVars = $req.sq.inScopeVars, exeCtx = $req.exeCtx), $req.extensions, $req.debug)
-      ->toOne('Expression currently not supported: ' + $fe->printFunctionExpression(''));
+      ->toOne('Expression currently not supported: ' + $fe->printFunctionExpression(^meta::pure::metamodel::serialization::grammar::GContext(space='')));
 
   let allocNode = ^AllocationExecutionNode(resultType = $platformNode.resultType, varName = $varName, executionNodes = $platformNode);
 
   pair(
-      list(^PlanVarPlaceHolder(type =  $platformNode.resultType.type, name = $varName, multiplicity = $fe.func->functionReturnMultiplicity())),
+      list(^PlanVarPlaceHolder(genericType =  $platformNode.resultType.genericType, name = $varName, multiplicity = $fe.func->functionReturnMultiplicity())),
       ^$req(extraNodes = $req.extraNodes->concatenate($allocNode), counter = $req.counter + 1)
   );
 }
@@ -1345,7 +1345,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
     float: Float[1] | $float->literal(),
     boolean: Boolean[1] | $boolean->literal(),
     date: Date[1] | $date->toString()->literal(),
-    var: VariableExpression[1] | expression(^PlanVarPlaceHolder(name = $var.name, type = $var.genericType.rawType->toOne(), multiplicity = $var.multiplicity), $supportZeroMult),
+    var: VariableExpression[1] | expression(^PlanVarPlaceHolder(name = $var.name, genericType = $var.genericType, multiplicity = $var.multiplicity), $supportZeroMult),
     planVar: PlanVarPlaceHolder[1] | $planVar->expression($supportZeroMult),
     enum: Enum[1] | $enum->toString()->literal(),
     none: Any[0] | [],
@@ -1362,17 +1362,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
 function meta::external::store::elasticsearch::v7::pureToEs::expression(var : PlanVarPlaceHolder[1], supportZeroMult: Boolean[1]): LiteralOrExpression<Any>[1]
 {
   assert($supportZeroMult  || ($var.multiplicity->toOne()->getLowerBound() > 0),
-    |'Operation does not support variable \'%s: %s[%s]\' with 0 lower bound multiplicity'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()])
+    |'Operation does not support variable \'%s: %s[%s]\' with 0 lower bound multiplicity'->format([$var.name, $var.genericType.rawType->toOne()->printType(), $var.multiplicity->toOne()->printMultiplicity()])
   );
 
-  let varType = $var.type;
+  let varType = $var.genericType.rawType;
   if ($varType == String,                                   | ^LiteralOrExpression<String>(expression = $var->varFreemarkerExpression(true)),
   | if ( $varType == Boolean,                               | ^LiteralOrExpression<Boolean>(expression = $var->varFreemarkerExpression(false)),
       | if ( $varType == Integer,                           | ^LiteralOrExpression<Integer>(expression = $var->varFreemarkerExpression(false)),
         | if ( $varType->in([Float, Number, Decimal]),      | ^LiteralOrExpression<Number>(expression = $var->varFreemarkerExpression(false)),
           | if ($varType->in([Date, DateTime, StrictDate]), | ^LiteralOrExpression<String>(expression = $var->varFreemarkerExpression(true)),
             {|
-              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
+              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.genericType.rawType->toOne()->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
               ^LiteralOrExpression<Any>(expression = $var.name);
             }
           )
@@ -1556,7 +1556,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
     {|
       let newValue = $value->match([
         date: Date[1] | $date->toEpochValue(DurationUnit.MILLISECONDS),
-        var: VariableExpression[1] | ^PlanVarPlaceHolder(name = $var.name, type = $var.genericType.rawType->toOne(), multiplicity = $var.multiplicity),
+        var: VariableExpression[1] | ^PlanVarPlaceHolder(name = $var.name, genericType = $var.genericType, multiplicity = $var.multiplicity),
         pv: PlanVarPlaceHolder[1] | $pv, // $pv.type
         any: Any[*] | fail()
       ]);

@@ -19,7 +19,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
-import org.finos.legend.engine.protocol.pure.v1.model.type.PackageableType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 
 import java.util.List;
@@ -53,7 +53,14 @@ class FunctionParameterProcessor
                 ValidationResult validationResult = FunctionParametersParametersValidation.validate(param, parameterValidationContext, val);
                 if (validationResult.isValid())
                 {
-                    return FunctionParametersNormalizer.normalizeParameterValue(param, val);
+                    if (parameterValidationContext != null)
+                    {
+                        return FunctionParametersNormalizer.normalizeParameterValue(param, parameterValidationContext.stream().filter(x -> x.varName.equals(param.name)).findAny().orElse(null), val, null, executionState);
+                    }
+                    else
+                    {
+                        return FunctionParametersNormalizer.normalizeParameterValue(param, null, val,null, executionState);
+                    }
                 }
                 else
                 {

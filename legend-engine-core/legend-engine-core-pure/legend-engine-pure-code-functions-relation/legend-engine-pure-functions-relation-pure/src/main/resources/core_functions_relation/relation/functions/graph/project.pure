@@ -17,6 +17,7 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::tests::project::*;
 
 native function <<PCT.function>> meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
+native function <<PCT.function>> meta::pure::functions::relation::project<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<Z>[1];
 
 Class meta::pure::functions::relation::tests::project::Address
 {
@@ -151,4 +152,32 @@ function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpl
                 '   ok,no,null\n'+
                 '   ok,other,null\n'+
                 '#', $res->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleRelationProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  4, qw
+                  5, wwe
+                  6, weq
+                #->project(~[
+                  name:c|$c.str->toOne() + $c.val->toOne()->toString()
+                ])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   name\n'+
+                  '   a1\n'+
+                  '   ewe3\n'+
+                  '   qw4\n'+
+                  '   wwe5\n'+
+                  '   weq6\n'+
+                  '#', $res->toString());
 }

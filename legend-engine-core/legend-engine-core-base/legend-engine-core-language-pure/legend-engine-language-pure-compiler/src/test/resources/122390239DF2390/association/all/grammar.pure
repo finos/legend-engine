@@ -1,0 +1,21 @@
+import protocol::support::*;
+Association <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::AnAssociation1
+{
+  a: protocol::support::AssociationClassA[1];
+  <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} (shared) b: AssociationClassB[1..*] = [^AssociationClassB()];
+  q() {$this.b->filter(x|true)}: protocol::support::AssociationClassB[*];
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}
+
+Class protocol::support::AssociationClassA
+{
+}
+
+Class protocol::support::AssociationClassB
+{
+}

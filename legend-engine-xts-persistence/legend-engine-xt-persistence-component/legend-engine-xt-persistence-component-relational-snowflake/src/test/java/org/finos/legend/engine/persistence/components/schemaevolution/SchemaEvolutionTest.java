@@ -81,6 +81,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     private String expectedAlterDecimalLength = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"decimal_col\" NUMBER(20,5)";
 
     // Data sizing change in main table column and data_type_size_change capability allowed
+    // Alter column
+    // description: VARCHAR -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolution()
     {
@@ -99,16 +101,20 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
-        Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
+        }
     }
 
     // Data sizing change (length) in main table column and data_type_size_change capability allowed with upper case optimizer enabled
+    // Alter column
+    // DESCRIPTION: VARCHAR -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolutionWithUpperCase()
     {
@@ -129,15 +135,20 @@ public class SchemaEvolutionTest extends IngestModeTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_LENGTH_CHANGE);
         SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet, true);
 
-        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
-        Assertions.assertEquals(expectedSchemaEvolutionModifySizeWithUpperCase, sqlsForSchemaEvolution.get(0));
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
+        }
     }
 
     //Data sizing (length) changes but user capability doesn't allow it --> throws exception
+    // Alter column
+    // description: VARCHAR -> VARCHAR(64)
     @Test
     void testSnapshotMilestoningWithColumnLengthChangeEvolutionAndUserProvidedSchemaEvolutionCapability()
     {
@@ -158,19 +169,17 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data type length changes couldn't be performed on column \"description\" since sink/user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type size is decremented from \"16777216\" to \"64\" for column \"description\"", e.getMessage());
         }
     }
 
     // Data sizing change (scale) in main table column and data_type_size_change capability allowed
+    // Alter column
+    // decimal_col: DECIMAL(10, 0) -> DECIMAL(10, 2)
     @Test
     void testSnapshotMilestoningWithColumnScaleChangeEvolution()
     {
@@ -192,11 +201,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaEvolutionModifyScale, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -205,6 +210,9 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Implicit data type conversion is automatically handled by DB. No additional alter statement generated
+    // Alter column
+    // id: BIGINT -> NUMERIC
+    // amount: DOUBLE -> FLOAT
     @Test
     void testSnapshotMilestoningWithImplicitDataTypeEvolution()
     {
@@ -231,6 +239,10 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Implicit data type conversion is automatically handled by DB. Alter statement is generated for length change
+    // Alter column
+    // id: BIGINT -> NUMERIC
+    // amount: DOUBLE -> FLOAT
+    // decimal_col: DECIMAL(10, 5) -> DECIMAL(20, 5)
     @Test
     void testSnapshotMilestoningWithImplicitDataTypeEvolutionAndLengthEvolution()
     {
@@ -258,6 +270,8 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(expectedAlterDecimalLength, sqlsForSchemaEvolution.get(0));
     }
 
+    // Add column
+    // biz_date: DATE
     @Test
     void testSnapshotMilestoningWithAddColumnAndIgnoreCase()
     {
@@ -289,6 +303,9 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
     }
 
+    // Alter column
+    // amount: DOUBLE NOT NULL -> DOUBLE
+    // biz_date: DATE NOT NULL -> DATE
     @Test
     void testSnapshotMilestoningWithAlterNullabilityAndUserCapability()
     {
@@ -321,6 +338,8 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
     // Data type change required in main table column (float --> double) and data_type_conversion capability allowed
+    // Alter column
+    // amount: FLOAT -> DOUBLE
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolution()
     {
@@ -342,11 +361,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         try
         {
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable.schema());
-            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
-            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaNonBreakingChange, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {

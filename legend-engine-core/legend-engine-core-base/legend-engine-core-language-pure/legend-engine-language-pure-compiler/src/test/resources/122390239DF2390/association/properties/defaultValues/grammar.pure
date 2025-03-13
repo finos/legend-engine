@@ -1,0 +1,14 @@
+import protocol::support::*;
+Association protocol::AnAssociation4
+{
+  a: protocol::support::AssociationClassA[1];
+  b: protocol::support::AssociationClassB[1..*] = [^AssociationClassB(), ^AssociationClassB()];
+}
+
+Class protocol::support::AssociationClassA
+{
+}
+
+Class protocol::support::AssociationClassB
+{
+}

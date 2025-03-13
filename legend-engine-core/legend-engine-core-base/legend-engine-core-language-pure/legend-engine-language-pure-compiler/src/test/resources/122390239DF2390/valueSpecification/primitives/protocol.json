@@ -1,0 +1,402 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "integer",
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          },
+          "value": 1
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "integer",
+              "sourceInformation": {
+                "endColumn": 4,
+                "endLine": 4,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 4
+              },
+              "value": 1
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 4,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 4
+          }
+        },
+        {
+          "_type": "float",
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 5,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 5
+          },
+          "value": 1.9
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "float",
+              "sourceInformation": {
+                "endColumn": 6,
+                "endLine": 6,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 6
+              },
+              "value": 1.9
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 6
+          }
+        },
+        {
+          "_type": "decimal",
+          "sourceInformation": {
+            "endColumn": 6,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 7
+          },
+          "value": 1.2
+        },
+        {
+          "_type": "func",
+          "function": "minus",
+          "parameters": [
+            {
+              "_type": "decimal",
+              "sourceInformation": {
+                "endColumn": 7,
+                "endLine": 8,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 8
+              },
+              "value": 1.2
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 8,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 8
+          }
+        },
+        {
+          "_type": "boolean",
+          "sourceInformation": {
+            "endColumn": 6,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 9
+          },
+          "value": true
+        },
+        {
+          "_type": "string",
+          "sourceInformation": {
+            "endColumn": 15,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 10
+          },
+          "value": "stringValue"
+        },
+        {
+          "_type": "strictDate",
+          "sourceInformation": {
+            "endColumn": 13,
+            "endLine": 11,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 11
+          },
+          "value": "2013-10-10"
+        },
+        {
+          "_type": "dateTime",
+          "sourceInformation": {
+            "endColumn": 22,
+            "endLine": 12,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 12
+          },
+          "value": "2013-10-10T10:10:10"
+        },
+        {
+          "_type": "strictTime",
+          "sourceInformation": {
+            "endColumn": 11,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 13
+          },
+          "value": "10:10:10"
+        },
+        {
+          "_type": "collection",
+          "multiplicity": {
+            "lowerBound": 11,
+            "upperBound": 11
+          },
+          "sourceInformation": {
+            "endColumn": 106,
+            "endLine": 14,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 14
+          },
+          "values": [
+            {
+              "_type": "integer",
+              "sourceInformation": {
+                "endColumn": 4,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 4,
+                "startLine": 14
+              },
+              "value": 1
+            },
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "integer",
+                  "sourceInformation": {
+                    "endColumn": 9,
+                    "endLine": 14,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 14
+                  },
+                  "value": 1
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 8,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 8,
+                "startLine": 14
+              }
+            },
+            {
+              "_type": "float",
+              "sourceInformation": {
+                "endColumn": 15,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 13,
+                "startLine": 14
+              },
+              "value": 1.9
+            },
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "float",
+                  "sourceInformation": {
+                    "endColumn": 22,
+                    "endLine": 14,
+                    "sourceId": "",
+                    "startColumn": 20,
+                    "startLine": 14
+                  },
+                  "value": 1.9
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 19,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 19,
+                "startLine": 14
+              }
+            },
+            {
+              "_type": "decimal",
+              "sourceInformation": {
+                "endColumn": 29,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 26,
+                "startLine": 14
+              },
+              "value": 1.2
+            },
+            {
+              "_type": "func",
+              "function": "minus",
+              "parameters": [
+                {
+                  "_type": "decimal",
+                  "sourceInformation": {
+                    "endColumn": 37,
+                    "endLine": 14,
+                    "sourceId": "",
+                    "startColumn": 34,
+                    "startLine": 14
+                  },
+                  "value": 1.2
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 33,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 33,
+                "startLine": 14
+              }
+            },
+            {
+              "_type": "boolean",
+              "sourceInformation": {
+                "endColumn": 44,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 41,
+                "startLine": 14
+              },
+              "value": true
+            },
+            {
+              "_type": "string",
+              "sourceInformation": {
+                "endColumn": 59,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 47,
+                "startLine": 14
+              },
+              "value": "stringValue"
+            },
+            {
+              "_type": "strictDate",
+              "sourceInformation": {
+                "endColumn": 72,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 62,
+                "startLine": 14
+              },
+              "value": "2013-10-10"
+            },
+            {
+              "_type": "dateTime",
+              "sourceInformation": {
+                "endColumn": 94,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 75,
+                "startLine": 14
+              },
+              "value": "2013-10-10T10:10:10"
+            },
+            {
+              "_type": "strictTime",
+              "sourceInformation": {
+                "endColumn": 105,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 97,
+                "startLine": 14
+              },
+              "value": "10:10:10"
+            }
+          ]
+        }
+      ],
+      "name": "f__Any_MANY_",
+      "package": "protocol",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "multiplicityArguments": [],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "Any",
+          "sourceInformation": {
+            "endColumn": 27,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 25,
+            "startLine": 1
+          }
+        },
+        "typeArguments": [],
+        "typeVariableValues": []
+      },
+      "returnMultiplicity": {
+        "lowerBound": 0
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 15,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "tests": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "protocol::f__Any_MANY_"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

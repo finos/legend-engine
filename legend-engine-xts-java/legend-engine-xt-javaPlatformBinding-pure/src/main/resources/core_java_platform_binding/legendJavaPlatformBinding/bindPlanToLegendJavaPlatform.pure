@@ -121,6 +121,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::generateLegendJ
                        | $node->match([
                             p:PureExpressionPlatformExecutionNode[1]                    | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
                             p:PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1] | $p->generateImplementationForPlatformPrimitiveQualifierLocalGraphFetchExecutionNode($path, $context, $extensions, $debug),
+                            f:FunctionParametersValidationNode[1]                       | $f->generateJavaClassForFunctionParameters($context, $debug),
                             e:ExecutionNode[1]                                          | ^GeneratedCode()
                          ])
                    );

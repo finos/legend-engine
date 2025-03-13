@@ -41,6 +41,30 @@ function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDist
                   '#', $res->sort(~val->ascending())->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                let t = #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #;
+                $t->distinct(~[val]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val\n'+
+                  '   1\n'+
+                  '   3\n'+
+                  '   5\n'+
+                  '#', $res->sort(~val->ascending())->toString());     
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -65,6 +89,31 @@ function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDist
                   '#', $res->sort([ascending(~val), ascending(~str)])->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                let t = #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #;
+                $t->distinct(~[val, str]);
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   1,qw\n'+
+                  '   3,ewe\n'+
+                  '   5,weq\n'+
+                  '#', $res->sort([ascending(~val), ascending(~str)])->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -76,6 +125,31 @@ function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDist
                   5, weq
                   5, weq
                 #->distinct()
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   val,str\n'+
+                  '   1,a\n'+
+                  '   1,qw\n'+
+                  '   3,ewe\n'+
+                  '   5,weq\n'+
+                  '#', $res->sort([ascending(~val), ascending(~str)])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctAll_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                let t = #TDS
+                  val, str
+                  1, a
+                  3, ewe
+                  1, qw
+                  5, weq
+                  5, weq
+                #;
+                $t->distinct();
                };
 
     let res =  $f->eval($expr);

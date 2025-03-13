@@ -1,0 +1,20 @@
+import protocol::support::*;
+Association <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::AnAssociation1
+{
+  a: protocol::support::AssociationClassA[1];
+  b: protocol::support::AssociationClassB[1..*];
+}
+
+Profile protocol::support::AProfile
+{
+  stereotypes: [flag, newFlag];
+  tags: [tag1, tag2];
+}
+
+Class protocol::support::AssociationClassA
+{
+}
+
+Class protocol::support::AssociationClassB
+{
+}

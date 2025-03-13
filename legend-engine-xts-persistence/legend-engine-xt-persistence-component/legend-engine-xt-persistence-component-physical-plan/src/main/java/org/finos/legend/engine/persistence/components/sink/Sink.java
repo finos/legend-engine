@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.sink;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolution;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
@@ -35,7 +36,13 @@ public interface Sink
 
     <L extends LogicalPlanNode> LogicalPlanVisitor<L> visitorForClass(Class<?> clazz);
 
+    @Deprecated
     Field evolveFieldLength(Field evolveFrom, Field evolveTo);
 
+    Optional<Integer> getEvolveToLength(String columnName, Optional<Integer> mainLength, Optional<Integer> stagingLength, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType);
+
+    Optional<Integer> getEvolveToScale(String columnName, Optional<Integer> mainScale, Optional<Integer> stagingScale, DataType mainType, DataType stagingType, SchemaEvolution.DataTypeEvolutionType dataTypeEvolutionType);
+
+    @Deprecated
     Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale);
 }

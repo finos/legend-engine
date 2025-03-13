@@ -27,9 +27,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.datatype.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.packageableElement.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 
 import java.util.Collections;
 import java.util.List;
@@ -61,7 +61,7 @@ public class SQLProviderUtils
         return elements.getOnly();
     }
 
-    public static Lambda tableToTDS(String databasePath, String schemaName, String tableName)
+    public static LambdaFunction tableToTDS(String databasePath, String schemaName, String tableName)
     {
         PackageableElementPtr databasePtr = new PackageableElementPtr();
         databasePtr.fullPath = databasePath;
@@ -76,7 +76,7 @@ public class SQLProviderUtils
         tableToTdsFunc.fControl = "tableToTDS_Table_1__TableTDS_1_";
         tableToTdsFunc.parameters = Collections.singletonList(tableReferenceFunc);
 
-        Lambda lambda = new Lambda();
+        LambdaFunction lambda = new LambdaFunction();
         lambda.body = Collections.singletonList(tableToTdsFunc);
 
         return lambda;

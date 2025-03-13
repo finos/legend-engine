@@ -142,7 +142,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 
    ^ExternalFormatExternalizeExecutionNode
    (
-      resultType      = ^ResultType(type=String),
+      resultType      = ^ResultType(genericType=^GenericType(rawType=String)),
       resultSizeRange = PureOne,
       checked         = $checked,
       binding         = $binding,
@@ -166,7 +166,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
    let contentType      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper()->cast(@InstanceValue).values->at(0)->cast(@String);
    ^ExternalFormatExternalizeTDSExecutionNode
    (
-      resultType      = ^ResultType(type=String),
+      resultType      = ^ResultType(genericType=^GenericType(rawType=String)),
       resultSizeRange = PureOne,
       contentType         = $contentType,
       executionNodes  = $children
@@ -200,7 +200,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
 
    ^ExternalFormatInternalizeExecutionNode
    (
-      resultType        = ^ClassResultType(type=$class),
+      resultType        = ^ClassResultType(genericType=^GenericType(rawType=$class)),
       config            = $config,
       resultSizeRange   = ZeroMany,
       binding           = $binding,
@@ -223,20 +223,20 @@ function <<access.private>> meta::external::format::shared::executionPlan::gener
 
 function <<access.private>> meta::external::format::shared::executionPlan::generateSourceNodeFromFunctionExpression(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]): ExecutionNode[1]
 {
-   $fe.parametersValues->at(2)->match([ var:VariableExpression[1]         | ^VariableResolutionExecutionNode(varName=$var.name->toOne(), resultType = ^DataTypeResultType(type = $var.genericType.rawType->toOne())),
+   $fe.parametersValues->at(2)->match([ var:VariableExpression[1]         | ^VariableResolutionExecutionNode(varName=$var.name->toOne(), resultType = ^DataTypeResultType(genericType = $var.genericType)),
                                         ins:InstanceValue[1]              | assert($ins.values->size() == 1 && ($ins.values->toOne()->instanceOf(String) || $ins.values->toOne()->instanceOf(PlanVarPlaceHolder)) , | 'Expected single string value as parameter for internalize. Please contact dev team with this issue!');
 
                                                                             if($ins.values->toOne()->instanceOf(String),
                                                                               | let varName           = 'internalizeVar$';
                                                                                 let allocationNode    = ^AllocationExecutionNode(varName        = $varName,
-                                                                                                                                executionNodes = ^ConstantExecutionNode(values=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = String)),
-                                                                                                                                resultType     = ^VoidResultType(type = meta::pure::router::store::routing::Void));
+                                                                                                                                executionNodes = ^ConstantExecutionNode(values=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = String))),
+                                                                                                                                resultType     = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void)));
                                                                                 let varResolutionNode = ^VariableResolutionExecutionNode(varName         = $varName,
-                                                                                                                                        resultType      = ^DataTypeResultType(type = String),
+                                                                                                                                        resultType      = ^DataTypeResultType(genericType = ^GenericType(rawType = String)),
                                                                                                                                         resultSizeRange = PureOne);
 
-                                                                                ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(type = String), resultSizeRange = PureOne);,
-                                                                              | ^VariableResolutionExecutionNode(varName=$ins.values->toOne()->cast(@PlanVarPlaceHolder).name, resultType = ^DataTypeResultType(type = String)));,
+                                                                                ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = String)), resultSizeRange = PureOne);,
+                                                                              | ^VariableResolutionExecutionNode(varName=$ins.values->toOne()->cast(@PlanVarPlaceHolder).name, resultType = ^DataTypeResultType(genericType = ^GenericType(rawType = String))));,
                                         c:ClusteredValueSpecification[1]  | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug)
                                       ]);
 }

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.69.1-SNAPSHOT</version>
+    <version>4.72.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -105,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.32.0</legend.pure.version>
+        <legend.pure.version>5.36.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -685,6 +685,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-ingest-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-ingest-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-repl-relational</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1172,11 +1182,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.engine</groupId>-->
-            <!--                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
@@ -2009,6 +2014,12 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-FCT-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-test-coverage-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2594,13 +2605,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgresSql-grammar</artifactId>
-                <version>${project.version}</version>
-                <type>test-jar</type>
-            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgresSql-grammar</artifactId>
@@ -2623,17 +2627,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-compiled</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relationalStore-postgresSql-parser</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgresSqlParser-functions-interpreted</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2952,26 +2956,6 @@
                 <artifactId>legend-pure-runtime-java-extension-interpreted-dsl-tds</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-engine-pure-functions-relation-pure</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.finos.legend.pure</groupId>-->
-            <!--                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>-->
-            <!--                <version>${legend.pure.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
@@ -3084,6 +3068,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xts-deployment-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
