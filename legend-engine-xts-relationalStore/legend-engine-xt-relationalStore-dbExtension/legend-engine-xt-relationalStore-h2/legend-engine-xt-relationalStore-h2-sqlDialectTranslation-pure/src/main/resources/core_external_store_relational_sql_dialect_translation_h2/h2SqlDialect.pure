@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
@@ -23,7 +24,6 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
-import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::h2::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
@@ -44,7 +44,7 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
   )
 }
 
-function <<db.ExtensionLoader>> meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension(): Extension[1]
+function  meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -299,7 +299,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
     pair(Sum, simpleFunctionProcessor('sum')),
    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 

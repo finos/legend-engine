@@ -145,12 +145,9 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-SDT-pure", "external-store-relational-sdt"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-duckdb"))
-<<<<<<< HEAD
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-FCT-pure", "relational_fct"))
                 .with(this.buildCore("legend-engine-xts-ingest/legend-engine-xt-ingest-pure", "ingest"))
-=======
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-h2"))
->>>>>>> 377fae5d00 (implementing native functions..)
                 ;
 
     }

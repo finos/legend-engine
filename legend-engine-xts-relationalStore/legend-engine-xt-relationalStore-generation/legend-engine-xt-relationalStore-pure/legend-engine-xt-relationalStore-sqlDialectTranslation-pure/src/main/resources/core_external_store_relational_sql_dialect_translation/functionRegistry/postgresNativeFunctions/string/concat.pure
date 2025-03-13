@@ -30,11 +30,25 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   (
     name = 'concat',
     variations = [
-      ^VariadicSqlFunctionVariation
+      ^SqlFunctionVariation
       (
-        parameterTypes = SqlType,
-        returnType = AbstractStringSqlType
+        parameterTypes = [SqlType, SqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType,SqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [SqlType, SqlType,SqlType,SqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
       )
+
     ],
     tests = [
       sqlFunctionTest(

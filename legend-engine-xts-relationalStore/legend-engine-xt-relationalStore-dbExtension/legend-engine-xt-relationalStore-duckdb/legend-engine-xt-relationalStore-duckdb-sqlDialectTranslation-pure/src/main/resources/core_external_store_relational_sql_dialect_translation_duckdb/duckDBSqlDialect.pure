@@ -44,7 +44,7 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
   )
 }
 
-function <<db.ExtensionLoader>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBSqlDialectExtension(): Extension[1]
+function  meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBSqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -252,7 +252,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round,simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
     pair(Sum, simpleFunctionProcessor('sum')),
     pair(Floor, simpleFunctionProcessor('floor')),
 
@@ -277,7 +277,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
-    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+    //pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
