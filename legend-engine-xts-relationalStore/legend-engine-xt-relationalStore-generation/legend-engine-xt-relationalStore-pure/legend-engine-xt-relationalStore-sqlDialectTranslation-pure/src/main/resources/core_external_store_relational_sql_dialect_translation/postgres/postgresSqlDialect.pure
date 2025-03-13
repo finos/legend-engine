@@ -43,7 +43,7 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   )
 }
 
-function <<db.ExtensionLoader>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(): Extension[1]
+function  meta::external::store::relational::sqlDialectTranslation::postgres::postgresSqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -248,7 +248,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    pair(DenseRank, simpleFunctionProcessor('denseRank')),
+    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
     pair(Sum, simpleFunctionProcessor('sum')),
     pair(Floor, simpleFunctionProcessor('floor')),
 
@@ -276,7 +276,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StrPos, simpleFunctionProcessor('strpos')),
     pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1',$f,$sqlDialect,$state,$config )})),
     pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256',$f,$sqlDialect,$state,$config )})),
-    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+   // pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
