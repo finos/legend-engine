@@ -1,0 +1,161 @@
+# DataSpace Metamodel with AccessPointProvider - ASCII Art Representation
+
+```
+                                 +-------------------+
+                                 | PackageableElement|
+                                 +--------+----------+
+                                          |
+                                          | extends
+                                          v
++-------------------+            +-------------------+            +-------------------+
+| DataSpaceExecutable|<----------| DataSpace         |----------->| DataSpaceDiagram  |
++---------+---------+            |                   |            +---------+---------+
+          |                      | title: String[0..1]            |         |
+          | extends              | description: String[0..1]      |         | references
+    +-----+------+               | accessPointProviders: [1..*]   |         |
+    |            |               | defaultAccessPointProvider: [1]|         v
+    v            v               | diagrams: [*]                  | +-------------------+
++-------------------+            | elements: [*]                  | | Diagram           |
+| PackageableElement|            | executables: [*]               | +-------------------+
+| Executable        |            | supportInfo: [0..1]            |
++-------------------+            +-----------+-------------+
+| executable:       |                        |
+| PackageableElement|                        | has
++-------------------+                        v
+                                  +-------------------+
++-------------------+             | AccessPointProvider|<---------+
+| TemplateExecutable|             | (abstract)         |          |
++-------------------+             |                    |          |
+| query:            |             | name: String[1]    |          |
+| FunctionDefinition|             | title: String[0..1]|          |
++-------------------+             | description: String[0..1]     |
+                                  +-------------------+          |
+                                           ^                     |
+                                           |                     |
+                                           | extends             |
+                                  +--------+--------+            |
+                                  |                 |            |
+                         +--------v-------+  +------v---------+  |
+                         | MappingAccess  |  | StoreAccess    |  |
+                         | Provider       |  | Provider       |  |
+                         +-----------------+  +----------------+  |
+                         | mapping: Mapping[1]| store: Store[1]|  |
+                         | defaultRuntime[1]  | defaultRuntime[1] |
+                         | testData[0..1]     +----------------+  |
+                         +-----------------+                      |
+                                                                 |
+                                                  +--------------v----+
+                                                  | IngestAccess      |
+                                                  | Provider          |
+                                                  +-------------------+
+                                                  | ingestMode: String[1]
+                                                  | targetStore: Store[1]
+                                                  +-------------------+
+                                           
++-------------------+                      
+| DataSpaceSupportInfo|<-------------------+
++---------+---------+
+          |
+          | extends
+    +-----+------+
+    |            |
+    v            v
++-------------------+            +-------------------+
+| SupportEmail      |            | CombinedInfo      |
++-------------------+            +-------------------+
+| address: String[1]|            | emails: String[*] |
++-------------------+            | website: String[0..1]
+                                 | faqUrl: String[0..1]
+                                 | supportUrl: String[0..1]
+                                 +-------------------+
+```
+
+## Key Class Relationships
+
+1. **Inheritance Relationships**
+   - DataSpace ← PackageableElement
+   - MappingAccessProvider ← AccessPointProvider
+   - StoreAccessProvider ← AccessPointProvider
+   - IngestAccessProvider ← AccessPointProvider
+   - DataSpacePackageableElementExecutable ← DataSpaceExecutable
+   - DataSpaceTemplateExecutable ← DataSpaceExecutable
+   - DataSpaceSupportEmail ← DataSpaceSupportInfo
+   - DataSpaceSupportCombinedInfo ← DataSpaceSupportInfo
+
+2. **Composition Relationships**
+   - DataSpace *-- AccessPointProvider [1..*] (accessPointProviders)
+   - DataSpace *-- AccessPointProvider [1] (defaultAccessPointProvider)
+   - DataSpace *-- DataSpaceDiagram [*] (diagrams)
+   - DataSpace *-- PackageableElement [*] (elements)
+   - DataSpace *-- DataSpaceExecutable [*] (executables)
+   - DataSpace *-- DataSpaceSupportInfo [0..1] (supportInfo)
+
+3. **Association Relationships**
+   - MappingAccessProvider --> Mapping [1] (mapping)
+   - MappingAccessProvider --> PackageableRuntime [1] (defaultRuntime)
+   - MappingAccessProvider --> EmbeddedData [0..1] (testData)
+   - StoreAccessProvider --> Store [1] (store)
+   - StoreAccessProvider --> PackageableRuntime [1] (defaultRuntime)
+   - IngestAccessProvider --> Store [1] (targetStore)
+   - DataSpaceDiagram --> Diagram [1] (diagram)
+   - DataSpacePackageableElementExecutable --> PackageableElement [1] (executable)
+   - DataSpaceTemplateExecutable --> FunctionDefinition [1] (query)
+
+## Property Details
+
+### DataSpace
+- title: String[0..1] - Optional title for the data space
+- description: String[0..1] - Optional description for the data space
+- accessPointProviders: AccessPointProvider[1..*] - One or more access point providers
+- defaultAccessPointProvider: AccessPointProvider[1] - Default access point provider
+- diagrams: DataSpaceDiagram[*] - Optional diagrams for visualization
+- elements: PackageableElement[*] - Optional elements included in the data space
+- executables: DataSpaceExecutable[*] - Optional executables in the data space
+- supportInfo: DataSpaceSupportInfo[0..1] - Optional support information
+
+### AccessPointProvider (abstract)
+- name: String[1] - Required name for the access point provider
+- title: String[0..1] - Optional title for the access point provider
+- description: String[0..1] - Optional description for the access point provider
+
+### MappingAccessProvider
+- mapping: Mapping[1] - Required mapping for data transformation
+- defaultRuntime: PackageableRuntime[1] - Required default runtime for execution
+- testData: EmbeddedData[0..1] - Optional test data for testing
+
+### StoreAccessProvider
+- store: Store[1] - Required store for direct data access
+- defaultRuntime: PackageableRuntime[1] - Required default runtime for execution
+
+### IngestAccessProvider
+- ingestMode: String[1] - Required ingest mode specification
+- targetStore: Store[1] - Required target store for data ingestion
+
+### DataSpaceDiagram
+- title: String[1] - Required title for the diagram
+- description: String[0..1] - Optional description for the diagram
+- diagram: Diagram[1] - Required reference to a diagram
+
+### DataSpaceExecutable
+- title: String[1] - Required title for the executable
+- id: String[1] - Required ID for the executable
+- description: String[0..1] - Optional description for the executable
+- accessPointProviderKey: String[0..1] - Optional access point provider key
+
+### DataSpacePackageableElementExecutable
+- executable: PackageableElement[1] - Required reference to a packagable element
+
+### DataSpaceTemplateExecutable
+- query: FunctionDefinition[1] - Required query as a function definition
+
+### DataSpaceSupportInfo
+- documentationUrl: String[0..1] - Optional documentation URL
+
+### DataSpaceSupportEmail
+- address: String[1] - Required email address
+
+### DataSpaceSupportCombinedInfo
+- emails: String[*] - Zero or more email addresses
+- website: String[0..1] - Optional website URL
+- faqUrl: String[0..1] - Optional FAQ URL
+- supportUrl: String[0..1] - Optional support URL
