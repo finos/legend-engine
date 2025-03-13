@@ -129,7 +129,10 @@ public class RelationalParseTreeWalker
                 });
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        database.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        if (ctx.taggedValues() != null)
+        {
+            database.taggedValues = this.visitTaggedValues(ctx.taggedValues());
+        }
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
         List<View> views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, scopeInfo));
@@ -196,8 +199,15 @@ public class RelationalParseTreeWalker
         schema.tables = ListIterate.collect(ctx.table(), this::visitTable);
         schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.identifier().getStart()).build()));
         schema.tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
-        schema.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        schema.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        if (ctx.stereotypes() != null)
+        {
+            schema.stereotypes = this.visitStereotypes(ctx.stereotypes());
+        }
+        if (ctx.taggedValues() != null)
+        {
+            schema.taggedValues = this.visitTaggedValues(ctx.taggedValues());
+
+        }
         return schema;
     }
 
@@ -215,8 +225,15 @@ public class RelationalParseTreeWalker
         {
             table.milestoning = ListIterate.collect(ctx.milestoneSpec().milestoning(), this::visitMilestoning);
         }
-        table.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        table.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        if (ctx.stereotypes() != null)
+        {
+            table.stereotypes = this.visitStereotypes(ctx.stereotypes());
+        }
+        if (ctx.taggedValues() != null)
+        {
+            table.taggedValues = this.visitTaggedValues(ctx.taggedValues());
+
+        }
         return table;
     }
 
@@ -225,8 +242,15 @@ public class RelationalParseTreeWalker
         Column column = new Column();
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.name =  ctx.relationalIdentifier().getText();
-        column.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        column.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        if (ctx.stereotypes() != null)
+        {
+            column.stereotypes = this.visitStereotypes(ctx.stereotypes());
+        }
+        if (ctx.taggedValues() != null)
+        {
+            column.taggedValues = this.visitTaggedValues(ctx.taggedValues());
+
+        }
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {
@@ -522,8 +546,15 @@ public class RelationalParseTreeWalker
         view.columnMappings = ListIterate.collect(ctx.viewColumnMapping(), viewColumnMappingCtx -> this.visitViewColumnMapping(viewColumnMappingCtx, primaryKeys, scopeInfo));
         view.primaryKey = primaryKeys;
         // TODO? mainTable: we might not need this while parsing
-        view.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        view.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        if (ctx.stereotypes() != null)
+        {
+            view.stereotypes = this.visitStereotypes(ctx.stereotypes());
+        }
+        if (ctx.taggedValues() != null)
+        {
+            view.taggedValues = this.visitTaggedValues(ctx.taggedValues());
+
+        }
         return view;
     }
 
