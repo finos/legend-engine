@@ -62,27 +62,11 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
 {
   [
     pair(
-      'FuncTests - string_agg(0/0)',
-      'Tests for aggregate functions not supported yet!'
-    ),
-    pair(
-      'FuncTests - denseRank(0/0)',
-      'Tests for aggregate functions not supported yet!'
-    ),
-    pair(
       'FuncTests - now(0/1)',
       'TimeZone Issue : Result is five hours ahead'
     ),
     pair(
       'FuncTests - now(1/1)',
-      'TimeZone Issue : Result is five hours ahead'
-    ),
-    pair(
-      'FuncTests - to_timestamp(0/3)',
-      'TimeZone Issue : Result is five hours ahead'
-    ),
-    pair(
-      'FuncTests - to_timestamp(1/3)',
       'TimeZone Issue : Result is five hours ahead'
     )
   ]->newMap()->cast(@Map<String, String>)
@@ -248,8 +232,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
-    pair(Sum, simpleFunctionProcessor('sum')),
     pair(Floor, simpleFunctionProcessor('floor')),
 
 
@@ -276,7 +258,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(StrPos, simpleFunctionProcessor('strpos')),
     pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1',$f,$sqlDialect,$state,$config )})),
     pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256',$f,$sqlDialect,$state,$config )})),
-   // pair(StringAgg, simpleFunctionProcessor('string_agg')),
     pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean

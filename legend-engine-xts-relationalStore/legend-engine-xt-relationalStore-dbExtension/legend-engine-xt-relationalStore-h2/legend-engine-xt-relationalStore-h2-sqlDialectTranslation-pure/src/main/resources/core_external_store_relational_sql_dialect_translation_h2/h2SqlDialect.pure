@@ -62,16 +62,6 @@ function  meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDia
 function meta::external::store::relational::sqlDialectTranslation::h2::h2FunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    pair('FuncTests - string_agg(0/0)', 'Tests for aggregate functions not supported yet!'),
-    pair('FuncTests - denseRank(0/0)', 'Tests for aggregate functions not supported yet!'),
-    pair(
-      'FuncTests - to_timestamp(0/3)',
-      'TimeZone Issue : Result is five hours ahead'
-    ),
-    pair(
-      'FuncTests - to_timestamp(1/3)',
-      'TimeZone Issue : Result is five hours ahead'
-    ),
      pair(
       'FuncTests - reverse(0/1)',
       'Reverse not supported in H2 version we use'
@@ -299,8 +289,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Round, simpleFunctionProcessor('round')),
     pair(Greatest, simpleFunctionProcessor('greatest')),
     pair(Least, simpleFunctionProcessor('least')),
-    //pair(DenseRank, simpleFunctionProcessor('denseRank')),
-    pair(Sum, simpleFunctionProcessor('sum')),
    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
 
