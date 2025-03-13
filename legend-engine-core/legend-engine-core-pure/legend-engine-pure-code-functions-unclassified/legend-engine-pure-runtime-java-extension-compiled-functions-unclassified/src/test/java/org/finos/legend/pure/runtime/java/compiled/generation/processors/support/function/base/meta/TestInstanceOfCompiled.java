@@ -14,11 +14,10 @@
 
 package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.base.meta;
 
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.meta.AbstractTestInstanceOf;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.tests.function.base.meta.AbstractTestInstanceOf;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
-import org.junit.After;
 import org.junit.BeforeClass;
 
 public class TestInstanceOfCompiled extends AbstractTestInstanceOf
@@ -27,12 +26,6 @@ public class TestInstanceOfCompiled extends AbstractTestInstanceOf
     public static void setUp()
     {
         setUpRuntime(getFunctionExecution(), JavaModelFactoryRegistryLoader.loader());
-    }
-
-    @After
-    public void cleanRuntime()
-    {
-        runtime.delete("fromString.pure");
     }
 
     protected static FunctionExecution getFunctionExecution()
