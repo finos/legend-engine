@@ -287,7 +287,7 @@ public class PureModel implements IPureModel
                 MutableMap<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>, Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>>> dependencyGraph = Maps.mutable.empty();
                 this.extensions.getExtraProcessors().forEach(x ->
                 {
-                    dependencyGraph.put(x.getElementClass(), (Collection<java.lang.Class<? extends org.finos.legend.engine.protocol.pure.m3.PackageableElement>>) x.getPrerequisiteClasses());
+                    dependencyGraph.getIfAbsentPut(x.getElementClass(), Lists.mutable::empty).addAll(x.getPrerequisiteClasses());
                     x.getReversePrerequisiteClasses().forEach(c -> dependencyGraph.getIfAbsentPut(c, Lists.mutable::empty).add(x.getElementClass()));
                 });
 
