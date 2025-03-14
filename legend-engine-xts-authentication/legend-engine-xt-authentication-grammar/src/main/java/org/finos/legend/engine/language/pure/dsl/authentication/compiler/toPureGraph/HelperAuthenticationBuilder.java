@@ -81,6 +81,13 @@ public class HelperAuthenticationBuilder
         }
 
         @Override
+        public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(PSKAuthenticationSpecification pskAuthenticationSpecification)
+        {
+            return new Root_meta_pure_runtime_connection_authentication_PSKAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::PSKAuthenticationSpecification"))
+                    ._psk(pskAuthenticationSpecification.psk);
+        }
+
+        @Override
         public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(AuthenticationSpecification catchAll)
         {
             return null;
