@@ -87,9 +87,24 @@
                     <scopeProviderMethod>org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions</scopeProviderMethod>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>

@@ -1036,6 +1036,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-unclassified</artifactId>
                 <version>${project.version}</version>
             </dependency>
