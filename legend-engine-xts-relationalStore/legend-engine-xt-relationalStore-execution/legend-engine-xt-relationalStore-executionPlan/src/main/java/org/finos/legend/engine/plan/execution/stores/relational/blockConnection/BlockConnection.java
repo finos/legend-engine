@@ -417,6 +417,7 @@ public class BlockConnection implements Connection
         }
 
     }
+
     private void close(LoggingEventType loggingEventType, List<String> queries)
     {
         Statement statement = null;

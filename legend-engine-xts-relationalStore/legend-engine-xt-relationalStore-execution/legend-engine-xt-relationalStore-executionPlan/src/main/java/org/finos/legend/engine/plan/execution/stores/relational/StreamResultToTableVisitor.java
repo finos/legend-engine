@@ -101,11 +101,13 @@ public class StreamResultToTableVisitor implements RelationalDatabaseCommandsVis
 
     private void streamTempTableResultToTable(TempTableStreamingResult tempTableStreamingResult, Statement statement, List<Column> columns) throws SQLException
     {
-        String columnMetadata = "(" + columns.stream().map(c -> c.name ).collect(Collectors.joining(", ")) + ")";
+        String columnMetadata = "(" + columns.stream().map(c -> c.name).collect(Collectors.joining(", ")) + ")";
         // Stream objects directly to the table
-        tempTableStreamingResult.inputStream.forEach(obj -> {
-            try {
-                StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName+ columnMetadata + " VALUES (");
+        tempTableStreamingResult.inputStream.forEach(obj ->
+        {
+            try
+            {
+                StringBuilder insertSQL = new StringBuilder("INSERT INTO " + tableName + columnMetadata + " VALUES (");
 
                 // Extract values from the object based on column names
                 for (int i = 0; i < columns.size(); i++)
@@ -121,7 +123,9 @@ public class StreamResultToTableVisitor implements RelationalDatabaseCommandsVis
 
                 insertSQL.append(")");
                 checkedExecute(statement, insertSQL.toString());
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 throw new RuntimeException("Error streaming temp table result to table", e);
             }
         });
@@ -131,7 +135,6 @@ public class StreamResultToTableVisitor implements RelationalDatabaseCommandsVis
     {
         try
         {
-
             if (obj instanceof ObjectNode)
             {
                 return ((com.fasterxml.jackson.databind.node.ObjectNode) obj).get(fieldName);
@@ -155,7 +158,7 @@ public class StreamResultToTableVisitor implements RelationalDatabaseCommandsVis
         //Object normalizedValue = ResultNormalizer.normalizeToSql(value, this.databaseTimeZone);
         if (value instanceof TextNode && !((TextNode) value).canConvertToLong())
         {
-            return "\'"+((TextNode) value).asText()+"\'";
+            return "\'" + ((TextNode) value).asText() + "\'";
         }
         else
         {

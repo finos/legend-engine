@@ -1269,7 +1269,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             BlockConnection blockConnection = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().getBlockConnection(((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)), createAndPopulateTempTableExecutionNode.connection, identity);
             try
             {
-                int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel(): Connection.TRANSACTION_NONE;
+                int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() : Connection.TRANSACTION_NONE;
                 blockConnection.setTransactionIsolation(isolationLevel);
                 blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
                 blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
