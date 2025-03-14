@@ -15,7 +15,7 @@
 import meta::external::query::graphQL::binding::*;
 import meta::external::query::graphQL::binding::fromPure::sdl::tests::*;
 
-Class <<GraphQL.CRUD>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::CRUDClass
+Class <<GraphQL.CRUD>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::CRUDTaggedEntity
 {
   name: String[1];
   description: String[0..1];

@@ -247,8 +247,8 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                       ))->concatenate(
                         if($isCRUDClass,
                           | [
-                              ^InputValueDefinition(name = '_id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false)),
-                              ^InputValueDefinition(name = '_version', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false))
+                              ^InputValueDefinition(name = '_id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = true)),
+                              ^InputValueDefinition(name = '_version', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = true))
                             ],
                           | []
                         )

@@ -19,48 +19,48 @@ import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testCRUDStereotype():Boolean[1]
 {
   // Test with default Int type
-  let resDefault = typesToGraphQLString([CRUDClass]);
+  let resDefault = typesToGraphQLString([CRUDTaggedEntity]);
   
   // Test with Long type override
-  let resLong = typesToGraphQLString([CRUDClass], 'Long');
+  let resLong = typesToGraphQLString([CRUDTaggedEntity], 'Long');
 
   // Verify default Int type
   assertEquals(
-    'type CRUDClass {\n' +
+    'type CRUDTaggedEntity {\n' +
     '  name: String!\n' +
     '  description: String\n' +
     '  _id: Int!\n' +
     '  _version: Int!\n' +
     '}\n' +
     '\n' +
-    'input CRUDClassInput {\n' +
+    'input CRUDTaggedEntityInput {\n' +
     '  name: String!\n' +
     '  description: String\n' +
-    '  _id: Int!\n' +
-    '  _version: Int!\n' +
+    '  _id: Int\n' +
+    '  _version: Int\n' +
     '}\n' +
     '\n' +
-    'input CRUDClass_bool_exp {\n' +
+    'input CRUDTaggedEntity_bool_exp {\n' +
     '  name: String_comparison_exp\n' +
     '  description: String_comparison_exp\n' +
-    '  _and: [CRUDClass_bool_exp!]\n' +
-    '  _or: [CRUDClass_bool_exp!]\n' +
+    '  _and: [CRUDTaggedEntity_bool_exp!]\n' +
+    '  _or: [CRUDTaggedEntity_bool_exp!]\n' +
     '}\n' +
     '\n' +
-    'input CRUDClass_exists_exp {\n' +
-    '  _exists: CRUDClass_bool_exp\n' +
+    'input CRUDTaggedEntity_exists_exp {\n' +
+    '  _exists: CRUDTaggedEntity_bool_exp\n' +
     '}\n' +
     '\n' +
     'type Mutation {\n' +
-    '  createCRUDClass(input: CRUDClassInput!): CRUDClass!\n' +
-    '  updateCRUDClass(id: Int!, input: CRUDClassInput!): CRUDClass!\n' +
-    '  deleteCRUDClass(id: Int!): Boolean!\n' +
+    '  createCRUDTaggedEntity(input: CRUDTaggedEntityInput!): CRUDTaggedEntity!\n' +
+    '  updateCRUDTaggedEntity(id: Int!, input: CRUDTaggedEntityInput!): CRUDTaggedEntity!\n' +
+    '  deleteCRUDTaggedEntity(id: Int!): Boolean!\n' +
     '}\n' +
     '\n' +
     'type Query {\n' +
-    '  getCRUDClassById(id: Int!): CRUDClass\n' +
-    '  listCRUDClass: [CRUDClass!]!\n' +
-    '}\n' +
+    '  getCRUDTaggedEntityById(id: Int!): CRUDTaggedEntity\n' +
+    '  listCRUDTaggedEntity: [CRUDTaggedEntity!]!\n' +
+    '}\n'+
     '\n' +
     'schema {\n' +
     '  query : Query\n' +
@@ -69,41 +69,41 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     
   // Verify Long type override
   assertEquals(
-    'type CRUDClass {\n' +
+    'type CRUDTaggedEntity {\n' +
     '  name: String!\n' +
     '  description: String\n' +
     '  _id: Long!\n' +
     '  _version: Long!\n' +
     '}\n' +
     '\n' +
-    'input CRUDClassInput {\n' +
+    'input CRUDTaggedEntityInput {\n' +
     '  name: String!\n' +
     '  description: String\n' +
-    '  _id: Long!\n' +
-    '  _version: Long!\n' +
+    '  _id: Long\n' +
+    '  _version: Long\n' +
     '}\n' +
     '\n' +
-    'input CRUDClass_bool_exp {\n' +
+    'input CRUDTaggedEntity_bool_exp {\n' +
     '  name: String_comparison_exp\n' +
     '  description: String_comparison_exp\n' +
-    '  _and: [CRUDClass_bool_exp!]\n' +
-    '  _or: [CRUDClass_bool_exp!]\n' +
+    '  _and: [CRUDTaggedEntity_bool_exp!]\n' +
+    '  _or: [CRUDTaggedEntity_bool_exp!]\n' +
     '}\n' +
     '\n' +
-    'input CRUDClass_exists_exp {\n' +
-    '  _exists: CRUDClass_bool_exp\n' +
+    'input CRUDTaggedEntity_exists_exp {\n' +
+    '  _exists: CRUDTaggedEntity_bool_exp\n' +
     '}\n' +
     '\n' +
     'type Mutation {\n' +
-    '  createCRUDClass(input: CRUDClassInput!): CRUDClass!\n' +
-    '  updateCRUDClass(id: Long!, input: CRUDClassInput!): CRUDClass!\n' +
-    '  deleteCRUDClass(id: Long!): Boolean!\n' +
+    '  createCRUDTaggedEntity(input: CRUDTaggedEntityInput!): CRUDTaggedEntity!\n' +
+    '  updateCRUDTaggedEntity(id: Long!, input: CRUDTaggedEntityInput!): CRUDTaggedEntity!\n' +
+    '  deleteCRUDTaggedEntity(id: Long!): Boolean!\n' +
     '}\n' +
     '\n' +
     'type Query {\n' +
-    '  getCRUDClassById(id: Long!): CRUDClass\n' +
-    '  listCRUDClass: [CRUDClass!]!\n' +
-    '}\n' +
+    '  getCRUDTaggedEntityById(id: Long!): CRUDTaggedEntity\n' +
+    '  listCRUDTaggedEntity: [CRUDTaggedEntity!]!\n' +
+    '}\n'+
     '\n' +
     'schema {\n' +
     '  query : Query\n' +
