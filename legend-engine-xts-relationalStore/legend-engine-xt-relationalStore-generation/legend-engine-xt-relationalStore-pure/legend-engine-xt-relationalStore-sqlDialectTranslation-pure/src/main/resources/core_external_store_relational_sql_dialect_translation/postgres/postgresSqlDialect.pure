@@ -34,10 +34,10 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   ^SqlDialect
   (
     dbType = 'Postgres',
-    quoteConfig = doubleQuotesConfiguration_default(),
+    quoteConfig = postgresQuoteConfiguration(),
     nodeProcessors = postgresDialectNodeProcessors(),
-    identifierProcessor = identifierProcessor_default(),
-    expressionPrecedenceComparator = expressionPrecedenceComparator_default(),
+    identifierProcessor = postgresIdentifierProcessor(),
+    expressionPrecedenceComparator = postgresExpressionPrecedenceComparator(),
     keywords = postgresKeywords(),
     functionProcessorMap = functionProcessorMap()
   )
@@ -72,28 +72,126 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
   ]->newMap()->cast(@Map<String, String>)
 }
 
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresQuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '"',
+    end = '"',
+    escape = '""'
+  )
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
 {
   newMap(
-    dialectStatementProcessors_default()
+    postgresDialectStatementProcessors()
     ->concatenate(
-      dialectRelationProcessors_default()
+      postgresDialectRelationProcessors()
     )
     ->concatenate(
-      dialectExpressionProcessors_default()
+      postgresDialectExpressionProcessors()
     )
     ->concatenate(
-      dialectLiteralProcessors_default()
+      postgresDialectLiteralProcessors()
     )
     ->concatenate(
-      dialectSelectItemProcessors_default()
+      postgresDialectSelectItemProcessors()
     )
     ->concatenate(
-      dialectOtherNodeProcessors_default()
+      postgresDialectOtherNodeProcessors()
     )
     ->map(n | pair($n.nodeType, $n))
   )
 }
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectStatementProcessors(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectRelationProcessors(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_default(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessor_default(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectLiteralProcessors(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectOtherNodeProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresIdentifierProcessor(): IdentifierProcessor[1]
+{
+  identifierProcessor_default()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]
 {
