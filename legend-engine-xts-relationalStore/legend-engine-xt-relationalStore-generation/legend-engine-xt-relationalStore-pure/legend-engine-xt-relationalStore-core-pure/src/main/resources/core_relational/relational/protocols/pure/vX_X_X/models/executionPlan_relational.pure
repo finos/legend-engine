@@ -125,6 +125,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromResultSet
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
 {
   finallyExecutionNodes : ExecutionNode[*];
+  isolationLevel : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::TransactionIsolationLevel[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CreateAndPopulateTempTableExecutionNode extends ExecutionNode

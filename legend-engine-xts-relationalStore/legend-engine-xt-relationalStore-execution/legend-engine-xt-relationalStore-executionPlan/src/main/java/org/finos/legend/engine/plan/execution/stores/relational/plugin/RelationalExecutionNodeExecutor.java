@@ -192,6 +192,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
             try
             {
+                // Set isolation level if specified
+                if (relationalBlockExecutionNode.isolationLevel != null)
+                {
+                    ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().setIsolationLevel(relationalBlockExecutionNode.isolationLevel);
+                }
                 Result res = new ExecutionNodeExecutor(this.identity, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
                 return res;
