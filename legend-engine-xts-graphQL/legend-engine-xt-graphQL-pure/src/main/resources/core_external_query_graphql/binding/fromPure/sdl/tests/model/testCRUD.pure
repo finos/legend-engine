@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Profile meta::external::query::graphQL::binding::GraphQL
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::*;
+
+Class <<GraphQL.CRUD>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::CRUDClass
 {
-  stereotypes : [Query, Mutation, Subscription, CRUD];
+  name: String[1];
+  description: String[0..1];
 }

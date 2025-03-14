@@ -123,4 +123,20 @@ function meta::external::query::graphQL::binding::hasGraphQLStereotype(t: Any[1]
       | $t->cast(@ElementWithStereotypes)->hasStereotype($s, GraphQL),
       | false
   )
+{
+  $t->hasGraphQLStereotype('CRUD')
+}
+
+{
+  [newProperty('_id', String, PureOne), newProperty('_version', Integer, PureOne)]
+}
+
+function meta::external::query::graphQL::binding::hasCRUDStereotype(t: Any[1]): Boolean[1]
+{
+  $t->hasGraphQLStereotype('CRUD')
+}
+
+function meta::external::query::graphQL::binding::getCRUDFields(): Property<Nil, Any|*>[*]
+{
+  [newProperty('_id', Long, PureOne), newProperty('_version', Long, PureOne)]
 }

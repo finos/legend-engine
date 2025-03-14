@@ -1,0 +1,64 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testCRUDStereotype():Boolean[1]
+{
+  let res = typesToGraphQLString([CRUDClass]);
+
+  assertEquals(
+    'type CRUDClass {\n' +
+    '  name: String!\n' +
+    '  description: String\n' +
+    '  _id: Long!\n' +
+    '  _version: Long!\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClassInput {\n' +
+    '  name: String!\n' +
+    '  description: String\n' +
+    '  _id: Long!\n' +
+    '  _version: Long!\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClass_bool_exp {\n' +
+    '  name: String_comparison_exp\n' +
+    '  description: String_comparison_exp\n' +
+    '  _and: [CRUDClass_bool_exp!]\n' +
+    '  _or: [CRUDClass_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClass_exists_exp {\n' +
+    '  _exists: CRUDClass_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Mutation {\n' +
+    '  createCRUDClass(input: CRUDClassInput!): CRUDClass!\n' +
+    '  updateCRUDClass(id: Long!, input: CRUDClassInput!): CRUDClass!\n' +
+    '  deleteCRUDClass(id: Long!): Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  getCRUDClassById(id: Long!): CRUDClass\n' +
+    '  listCRUDClass: [CRUDClass!]!\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '  mutation : Mutation\n' +
+    '}', $res);
+}

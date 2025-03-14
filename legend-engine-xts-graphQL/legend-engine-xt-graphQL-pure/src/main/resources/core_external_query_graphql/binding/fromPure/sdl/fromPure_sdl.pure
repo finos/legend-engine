@@ -66,6 +66,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
   let queryClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Query'))->cast(@Class<Any>);
   let mutationClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Mutation'))->cast(@Class<Any>);
   let subscriptionClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Subscription'))->cast(@Class<Any>);
+  let crudClasses = $allTypes->filter(t|$t->hasCRUDStereotype())->cast(@Class<Any>);
 
   // Gather all allowed operations
   let operationTypeQualifiedProperties = $queryClasses->concatenate($mutationClasses)->concatenate($subscriptionClasses).qualifiedProperties->cast(@AbstractProperty<Any>);
@@ -155,6 +156,10 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
   let query = $queryClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.query, type = $x.name->toOne()));
   let mutation = $mutationClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.mutation, type = $x.name->toOne()));
   let subscription = $subscriptionClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.subscription, type = $x.name->toOne()));
+  
+  // Generate query and mutation operations for CRUD classes
+  let crudQueries = if($crudClasses->isEmpty(), | [], | ^RootOperationTypeDefinition(operationType = OperationType.query, type = 'Query'));
+  let crudMutations = if($crudClasses->isEmpty(), | [], | ^RootOperationTypeDefinition(operationType = OperationType.mutation, type = 'Mutation'));
 
   let partitioned = $graphQLTypes->partition(type | $type->instanceOf(ScalarTypeDefinition));
   
@@ -171,6 +176,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
     ->concatenate($processingDirectives)
     ->concatenate($interfaces)
     ->concatenate(if($interfaces->isNotEmpty(), | hierarchyDirective(), | []))
+    ->concatenate(buildCRUDOperationTypes($crudClasses, $pureTypeToGraphQLScalarOverride))
     ->meta::pure::functions::collection::sortBy(t | 
       $t->match(
         [
@@ -183,11 +189,11 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
         ]
       )->toOne())
     ->concatenate(
-      if($query->concatenate($mutation)->concatenate($subscription)->isNotEmpty(),
+      if($query->concatenate($mutation)->concatenate($subscription)->concatenate($crudQueries)->concatenate($crudMutations)->isNotEmpty(),
         | 
           ^SchemaDefinition
           (
-            rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)
+            rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)->concatenate($crudQueries)->concatenate($crudMutations)
           ),
         |
           []
@@ -225,7 +231,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
 {
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
-
+  let isCRUDClass = $c->hasCRUDStereotype();
   let temporalStereotypes = $c->getTemporalStereotypes();
   $nonBuiltInScalars
     ->concatenate(
@@ -238,8 +244,16 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                       (
                         name = $p.name->toOne(),
                         type = buildInputTypeCompatibleTypeReference($p.genericType, $p.multiplicity, $pureTypeToGraphQLScalarOverride)
-                      ))
-      ));            
+                      ))->concatenate(
+                        if($isCRUDClass,
+                          | [
+                              ^InputValueDefinition(name = '_id', type = ^NamedTypeReference(name = 'Long', nullable = false)),
+                              ^InputValueDefinition(name = '_version', type = ^NamedTypeReference(name = 'Long', nullable = false))
+                            ],
+                          | []
+                        )
+                      )
+      ));           
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1], isListType: Boolean[1], isEnumType: Boolean[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[1]): TypeReference[1]
@@ -300,6 +314,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
   let isQueryClass = $c->hasGraphQLStereotype('Query');
+  let isCRUDClass = $c->hasCRUDStereotype();
   let temporalStereotypes = $c->getTemporalStereotypes();
   let extended = if($isExtended, | [$c.name], | []);
   $nonBuiltInScalars
@@ -333,6 +348,14 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                               | []
                             )
                           )
+                      )
+                    )->concatenate(
+                      if($isCRUDClass,
+                        | [
+                            ^FieldDefinition(name = '_id', type = ^NamedTypeReference(name = 'Long', nullable = false), argumentDefinitions = []),
+                            ^FieldDefinition(name = '_version', type = ^NamedTypeReference(name = 'Long', nullable = false), argumentDefinitions = [])
+                          ],
+                        | []
                       )
                     )
       ));
@@ -412,4 +435,67 @@ function meta::external::query::graphQL::binding::fromPure::sdl::findTypes(pElem
     ->filter(i|$i->instanceOf(meta::pure::metamodel::type::Type))
     ->cast(@meta::pure::metamodel::type::Type)
     ->removeDuplicates()
+}
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildCRUDOperationTypes(crudClasses: Class<Any>[*], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[1]): TypeSystemDefinition[*]
+{
+  if($crudClasses->isEmpty(),
+    | [],
+    | [
+        // Query type for CRUD operations
+        ^ObjectTypeDefinition(
+          name = 'Query',
+          fields = $crudClasses->map(c | 
+            [
+              // Get by ID query
+              ^FieldDefinition(
+                name = 'get' + $c.name->toOne() + 'ById',
+                type = ^NamedTypeReference(name = $c.name->toOne(), nullable = true),
+                argumentDefinitions = [
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false))
+                ]
+              ),
+              // List query
+              ^FieldDefinition(
+                name = 'list' + $c.name->toOne(),
+                type = ^ListTypeReference(itemType = ^NamedTypeReference(name = $c.name->toOne(), nullable = false), nullable = false),
+                argumentDefinitions = []
+              )
+            ]
+          )->flatten(),
+        ),
+        // Mutation type for CRUD operations
+        ^ObjectTypeDefinition(
+          name = 'Mutation',
+          fields = $crudClasses->map(c | 
+            [
+              // Create mutation
+              ^FieldDefinition(
+                name = 'create' + $c.name->toOne(),
+                type = ^NamedTypeReference(name = $c.name->toOne(), nullable = false),
+                argumentDefinitions = [
+                  ^InputValueDefinition(name = 'input', type = ^NamedTypeReference(name = toInputTypeName($c.name->toOne()), nullable = false))
+                ]
+              ),
+              // Update mutation
+              ^FieldDefinition(
+                name = 'update' + $c.name->toOne(),
+                type = ^NamedTypeReference(name = $c.name->toOne(), nullable = false),
+                argumentDefinitions = [
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false)),
+                  ^InputValueDefinition(name = 'input', type = ^NamedTypeReference(name = toInputTypeName($c.name->toOne()), nullable = false))
+                ]
+              ),
+              // Delete mutation
+              ^FieldDefinition(
+                name = 'delete' + $c.name->toOne(),
+                type = ^NamedTypeReference(name = 'Boolean', nullable = false),
+                argumentDefinitions = [
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false))
+                ]
+              )
+            ]
+          )->flatten()
+        )
+      ]
+  )
 }
