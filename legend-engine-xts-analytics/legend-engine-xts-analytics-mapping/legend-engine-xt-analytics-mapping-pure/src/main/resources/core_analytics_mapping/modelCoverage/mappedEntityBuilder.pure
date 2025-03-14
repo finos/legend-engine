@@ -304,7 +304,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
                   let srcClassPath = if($pureInstanceSetImplementation.srcClass->isNotEmpty(),|$pureInstanceSetImplementation.srcClass->toOne()->cast(@Class<Any>)->elementToPath(),|'');
                   $targetClassPath + '_' + $srcClassPath;,
                 |$pm.targetSetImplementationId);
-    processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', $isRootEntity, $config, []););
+    processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', false, $config, []););
     
     let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation) && $setImplementation->cast(@PureInstanceSetImplementation).srcClass->isNotEmpty() && $setImplementation->cast(@PureInstanceSetImplementation).srcClass->toOne()->instanceOf(Class),
                                  |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $isRootEntity, $config),

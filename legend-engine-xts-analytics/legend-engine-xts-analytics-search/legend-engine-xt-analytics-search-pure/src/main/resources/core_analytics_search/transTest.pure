@@ -132,6 +132,14 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","defaultExecutionContext":"testContext","name":"TestDataSpace","description":"This is a test description","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::TestDataSpace","type":"DataSpace","executionContexts":[{"runtimePath":"meta::analytics::search::transformation::test::TestRuntime","classes":[{"taggedValues":{},"package":"meta::analytics::search::transformation::test::Address","name":"Address","properties":[{"taggedValues":{},"name":"zipcode"}]},{"taggedValues":{},"stereotypes":["temporal.processingtemporal"],"package":"meta::analytics::search::transformation::test::Firm","name":"Firm","properties":[{"taggedValues":{},"name":"id"},{"taggedValues":{},"name":"employees"},{"taggedValues":{},"name":"incType"}]},{"taggedValues":{"doc.doc":"Entity Details"},"stereotypes":["temporal.processingtemporal","test.Test"],"package":"meta::analytics::search::transformation::test::LegalEntity","name":"LegalEntity","properties":[{"taggedValues":{},"stereotypes":["temporal.processingtemporal"],"name":"legalName"},{"taggedValues":{},"name":"address"},{"taggedValues":{},"stereotypes":["milestoning.generatedmilestoningdateproperty"],"name":"processingDate"},{"taggedValues":{},"stereotypes":["milestoning.generatedmilestoningdateproperty"],"name":"milestoning"}]},{"taggedValues":{"doc.doc":"Person Details"},"package":"meta::analytics::search::transformation::test::Person","name":"Person","properties":[{"taggedValues":{"doc.doc":"firstName of the person"},"name":"firstName"},{"taggedValues":{"doc.doc":"lastName of the person"},"name":"lastName"}]},{"taggedValues":{},"package":"meta::analytics::search::transformation::test::Street","name":"Street","properties":[{"taggedValues":{},"name":"streetName"}]}],"name":"testContext","mappingPath":"meta::analytics::search::transformation::test::sampleRelationalMapping"}]}');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testDataSpaceWithAutoMappedElements(): Boolean[1]
+{
+  let m2mMapping = meta::analytics::search::transformation::test::getM2MMapping();
+  let result = meta::analytics::search::transformation::dataspace::buildClassDocuments($m2mMapping)->at(0)->toOne();
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test::Target","name":"Target","properties":[{"taggedValues":{},"name":"tgtId"},{"taggedValues":{},"name":"shared"}]}');
+}
+
 function meta::analytics::search::transformation::test::getTestDataSpaceWithoutDescription(): meta::pure::metamodel::dataSpace::DataSpace[1]
 {
   let executionContext = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
@@ -276,6 +284,22 @@ function meta::analytics::search::transformation::test::getPackageableElement():
   );
 }
 
+function meta::analytics::search::transformation::test::getM2MMapping(): meta::pure::mapping::Mapping[1]
+{
+  let grammar = '###Mapping\n'+
+  'Mapping meta::analytics::search::transformation::test::simpleAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::search::transformation::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::search::transformation::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    shared: $src.shared\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+}
+
 function meta::analytics::search::transformation::test::getService(): meta::legend::service::metamodel::Service[1]
 {
   ^meta::legend::service::metamodel::Service(
@@ -379,6 +403,21 @@ Class meta::analytics::search::transformation::test::Address
 Class meta::analytics::search::transformation::test::Street extends meta::analytics::search::transformation::test::Address
 {
   streetName: String[1];
+}
+
+Class meta::analytics::search::transformation::test::Target
+{
+  tgtId: String[1];
+  shared: meta::analytics::search::transformation::test::Shared[1];
+}
+Class meta::analytics::search::transformation::test::Shared
+{
+  sharedId: String[1];
+}
+Class meta::analytics::search::transformation::test::Source
+{
+  srcId: String[1];
+  shared: meta::analytics::search::transformation::test::Shared[1];
 }
 
 ###Mapping
