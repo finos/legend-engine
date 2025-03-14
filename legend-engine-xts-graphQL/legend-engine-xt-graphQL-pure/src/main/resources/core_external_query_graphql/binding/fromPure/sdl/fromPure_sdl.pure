@@ -247,8 +247,8 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                       ))->concatenate(
                         if($isCRUDClass,
                           | [
-                              ^InputValueDefinition(name = '_id', type = ^NamedTypeReference(name = 'Long', nullable = false)),
-                              ^InputValueDefinition(name = '_version', type = ^NamedTypeReference(name = 'Long', nullable = false))
+                              ^InputValueDefinition(name = '_id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false)),
+                              ^InputValueDefinition(name = '_version', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false))
                             ],
                           | []
                         )
@@ -352,8 +352,8 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                     )->concatenate(
                       if($isCRUDClass,
                         | [
-                            ^FieldDefinition(name = '_id', type = ^NamedTypeReference(name = 'Long', nullable = false), argumentDefinitions = []),
-                            ^FieldDefinition(name = '_version', type = ^NamedTypeReference(name = 'Long', nullable = false), argumentDefinitions = [])
+                            ^FieldDefinition(name = '_id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false), argumentDefinitions = []),
+                            ^FieldDefinition(name = '_version', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false), argumentDefinitions = [])
                           ],
                         | []
                       )
@@ -451,7 +451,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                 name = 'get' + $c.name->toOne() + 'ById',
                 type = ^NamedTypeReference(name = $c.name->toOne(), nullable = true),
                 argumentDefinitions = [
-                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false))
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false))
                 ]
               ),
               // List query
@@ -481,7 +481,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                 name = 'update' + $c.name->toOne(),
                 type = ^NamedTypeReference(name = $c.name->toOne(), nullable = false),
                 argumentDefinitions = [
-                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false)),
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false)),
                   ^InputValueDefinition(name = 'input', type = ^NamedTypeReference(name = toInputTypeName($c.name->toOne()), nullable = false))
                 ]
               ),
@@ -490,7 +490,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                 name = 'delete' + $c.name->toOne(),
                 type = ^NamedTypeReference(name = 'Boolean', nullable = false),
                 argumentDefinitions = [
-                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = 'String', nullable = false))
+                  ^InputValueDefinition(name = 'id', type = ^NamedTypeReference(name = $pureTypeToGraphQLScalarOverride.integerScalarType, nullable = false))
                 ]
               )
             ]

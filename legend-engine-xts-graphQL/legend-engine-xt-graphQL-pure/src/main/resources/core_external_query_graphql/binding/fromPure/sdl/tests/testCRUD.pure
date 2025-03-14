@@ -18,8 +18,56 @@ import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testCRUDStereotype():Boolean[1]
 {
-  let res = typesToGraphQLString([CRUDClass]);
+  // Test with default Int type
+  let resDefault = typesToGraphQLString([CRUDClass]);
+  
+  // Test with Long type override
+  let resLong = typesToGraphQLString([CRUDClass], 'Long');
 
+  // Verify default Int type
+  assertEquals(
+    'type CRUDClass {\n' +
+    '  name: String!\n' +
+    '  description: String\n' +
+    '  _id: Int!\n' +
+    '  _version: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClassInput {\n' +
+    '  name: String!\n' +
+    '  description: String\n' +
+    '  _id: Int!\n' +
+    '  _version: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClass_bool_exp {\n' +
+    '  name: String_comparison_exp\n' +
+    '  description: String_comparison_exp\n' +
+    '  _and: [CRUDClass_bool_exp!]\n' +
+    '  _or: [CRUDClass_bool_exp!]\n' +
+    '}\n' +
+    '\n' +
+    'input CRUDClass_exists_exp {\n' +
+    '  _exists: CRUDClass_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'type Mutation {\n' +
+    '  createCRUDClass(input: CRUDClassInput!): CRUDClass!\n' +
+    '  updateCRUDClass(id: Int!, input: CRUDClassInput!): CRUDClass!\n' +
+    '  deleteCRUDClass(id: Int!): Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  getCRUDClassById(id: Int!): CRUDClass\n' +
+    '  listCRUDClass: [CRUDClass!]!\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '  mutation : Mutation\n' +
+    '}', $resDefault);
+    
+  // Verify Long type override
   assertEquals(
     'type CRUDClass {\n' +
     '  name: String!\n' +
@@ -60,5 +108,5 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'schema {\n' +
     '  query : Query\n' +
     '  mutation : Mutation\n' +
-    '}', $res);
+    '}', $resLong);
 }
