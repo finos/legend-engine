@@ -326,22 +326,22 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     public void testRelationalDatabase()
     {
         test("###Relational\n" +
-                "Database test::db\n" +
+                "Database <<equality.Key>> {doc.doc = 'database'} test::db\n" +
                 "(\n" +
                 "  include Store1\n" +
                 "  include test::Store2\n" +
                 "\n" +
-                "  Schema mySchema\n" +
+                "  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema\n" +
                 "  (\n" +
                 "  )\n" +
                 "\n" +
-                "  Table table1\n" +
+                "  Table <<equality.Key>> {doc.doc = 'table'} table1\n" +
                 "  (\n" +
                 "    col1 CHAR(32)\n" +
                 "  )\n" +
                 "  Table table2\n" +
                 "  (\n" +
-                "    col1 CHAR(32)\n" +
+                "    col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)\n" +
                 "  )\n" +
                 "  Table table3\n" +
                 "  (\n" +
@@ -898,6 +898,28 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
         );
 
     }
+
+    @Test
+    public void testRelationalElementsWithStereotypesAndTaggedValues()
+    {
+        test("###Relational\n" +
+                "Database <<equality.Key>> {doc.doc = 'schema'} test::db\n" +
+                "(\n" +
+                "  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema\n" +
+                "  (\n" +
+                "    Table <<equality.Key>> {doc.doc = 'table'} table1\n" +
+                "    (\n" +
+                "      col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  View <<equality.Key>> {doc.doc = 'view'} view1\n" +
+                "  (\n" +
+                "    col1: mySchema.table1.col1\n" +
+                "  )\n" +
+                ")\n");
+    }
+
 
     @Test
     public void testFunctionTest()

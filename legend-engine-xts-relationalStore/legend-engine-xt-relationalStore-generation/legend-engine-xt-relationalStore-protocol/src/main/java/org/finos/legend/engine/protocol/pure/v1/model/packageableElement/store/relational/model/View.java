@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
@@ -32,4 +34,6 @@ public class View
     public Boolean distinct;
     public List<ColumnMapping> columnMappings = Collections.emptyList();
     public SourceInformation sourceInformation;
+    public List<StereotypePtr> stereotypes;
+    public List<TaggedValue> taggedValues;
 }

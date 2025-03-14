@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.72.1-SNAPSHOT</version>
+        <version>4.73.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,5 +33,6 @@
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
         <module>legend-engine-xt-relationalStore-spanner-pure</module>
         <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
+        <module>legend-engine-xt-relationalStore-spanner-PCT</module>
     </modules>
 </project>

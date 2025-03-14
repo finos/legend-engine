@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
@@ -61,9 +62,9 @@ public class SpannerManager extends DatabaseManager
         Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_DATABASE_ID))
                 .ifPresent(database -> stringBuilder.append("databases/").append(database).append("?"));
 
-        if (authenticationStrategy == null || authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
+        if (authenticationStrategy == null || authenticationStrategy instanceof DefaultH2AuthenticationStrategy)
         {
-            stringBuilder.append("usePlainText=true;");
+            stringBuilder.append("autoConfigEmulator=true;").append("usePlainText=true;");
         }
         stringBuilder.append("lenient=true;");
 

@@ -15,14 +15,14 @@
 
 package org.finos.legend.engine.functionActivator.validation;
 
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 
 import java.util.List;
 
-public interface FunctionActivatorValidator<T extends Root_meta_external_function_activator_FunctionActivator, V extends FunctionActivatorArtifact>
+public interface FunctionActivatorValidator<T extends Root_meta_external_function_activator_FunctionActivator, V extends FunctionActivatorArtifact, W extends ActionContent>
 {
     boolean supports(T activator);
 
@@ -32,5 +32,5 @@ public interface FunctionActivatorValidator<T extends Root_meta_external_functio
 
     List<FunctionActivatorError> validate(Identity identity, V artifact);
 
-    List<FunctionActivatorError> validate(T activator, PureModel pureModel);
+    FunctionActivatorResult validateArtifactActions(List<W> actual, List<W> exists);
 }
