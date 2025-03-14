@@ -97,12 +97,18 @@ public abstract class Processor<T extends PackageableElement>
 
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass, BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass)
     {
-        return newProcessor(elementClass, null, firstPass);
+        return newProcessor(elementClass, null, null, firstPass);
     }
 
     public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass, Collection<? extends java.lang.Class<? extends PackageableElement>> prerequisiteClasses, BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass)
     {
+        return newProcessor(elementClass, prerequisiteClasses, null, firstPass);
+    }
+
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass, Collection<? extends java.lang.Class<? extends PackageableElement>> prerequisiteClasses, Collection<? extends Class<? extends PackageableElement>> reversePrerequisiteClasses, BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass)
+    {
         Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
+        Collection<? extends Class<? extends PackageableElement>> resolvedReversePrerequisiteClasses = (reversePrerequisiteClasses == null) ? Collections.emptyList() : reversePrerequisiteClasses;
         return new Processor<T>()
         {
             @Override
@@ -115,6 +121,12 @@ public abstract class Processor<T extends PackageableElement>
             public Collection<? extends Class<? extends PackageableElement>> getPrerequisiteClasses()
             {
                 return resolvedPrerequisiteClasses;
+            }
+
+            @Override
+            public Collection<? extends Class<? extends PackageableElement>> getReversePrerequisiteClasses()
+            {
+                return resolvedReversePrerequisiteClasses;
             }
 
             @Override
@@ -180,7 +192,7 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiFunction<? super T, CompileContext, RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement>> prerequisiteElementsPass)
     {
         Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
-        return new Processor<T>()
+         return new Processor<T>()
         {
             @Override
             public Class<T> getElementClass()

@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
 
 public class RelationTypeHelper
 {
@@ -34,5 +37,24 @@ public class RelationTypeHelper
             return col;
         }).toList();
         return res;
+    }
+
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> convert(RelationType src, CompileContext ctx)
+    {
+        ProcessorSupport processorSupport = ctx.pureModel.getExecutionSupport().getProcessorSupport();
+        return _RelationType.build(
+                ListIterate.collect(src.columns, c ->
+                        _Column.getColumnInstance(
+                                c.name,
+                                false,
+                                ctx.newGenericType(c.genericType),
+                                ctx.pureModel.getMultiplicity(c.multiplicity),
+                                SourceInformationHelper.toM3SourceInformation(c.sourceInformation),
+                                processorSupport
+                        )
+                ),
+                SourceInformationHelper.toM3SourceInformation(src.sourceInformation),
+                processorSupport
+        );
     }
 }
