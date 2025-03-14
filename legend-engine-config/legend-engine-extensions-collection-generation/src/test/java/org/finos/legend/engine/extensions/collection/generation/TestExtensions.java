@@ -29,7 +29,7 @@ import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDrive
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArtifactGenerationExtension;
-import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
+import org.finos.legend.engine.generation.DataProductAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
@@ -62,7 +62,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.DataProductParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
@@ -71,7 +71,7 @@ import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
-import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DataProductGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension;
@@ -302,7 +302,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.DataProductProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
@@ -347,7 +347,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
                 .with(CorePureGrammarParser.class)
-                .with(DataSpaceParserExtension.class)
+                .with(DataProductParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(HostedServiceGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
@@ -375,7 +375,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
                 .with(CorePureGrammarComposer.class)
-                .with(DataSpaceGrammarComposerExtension.class)
+                .with(DataProductGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
                 .with(PostDeploymentActionGrammarComposer.class)
@@ -414,7 +414,7 @@ public class TestExtensions
                 .with(HostedServiceCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(MemSqlFunctionCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataProductCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ProfileCompilerExtension.class)
@@ -507,7 +507,7 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
-                .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
+                .with(DataProductAnalyticsArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)

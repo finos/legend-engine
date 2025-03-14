@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.application.query.model;
 
-public class QueryDataSpaceExecutionContext extends QueryExecutionContext
+public class QueryDataProductExecutionContext extends QueryExecutionContext
 {
 
     public String dataSpacePath;

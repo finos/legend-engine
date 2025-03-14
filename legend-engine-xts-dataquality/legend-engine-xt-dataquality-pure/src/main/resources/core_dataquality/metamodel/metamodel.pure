@@ -1,4 +1,4 @@
-import meta::pure::metamodel::dataSpace::*;
+import meta::pure::metamodel::dataProduct::*;
 import meta::pure::graphFetch::*;
 import meta::pure::metamodel::constraint::*;
 import meta::core::runtime::*;
@@ -36,9 +36,9 @@ Class meta::external::dataquality::MappingAndRuntimeDataQualityExecutionContext 
   runtime: meta::core::runtime::Runtime[1];
 }
 
-Class meta::external::dataquality::DataSpaceDataQualityExecutionContext extends meta::external::dataquality::DataQualityExecutionContext
+Class meta::external::dataquality::DataProductDataQualityExecutionContext extends meta::external::dataquality::DataQualityExecutionContext
 {
-  dataSpace: DataSpace[1];
+  dataProduct: DataProduct[1];
   contextName: String[1];
 }
 

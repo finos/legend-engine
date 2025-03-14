@@ -99,7 +99,7 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+            <artifactId>legend-engine-xt-data-product-compiler</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

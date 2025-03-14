@@ -170,7 +170,7 @@ Diagram meta::analytics::search::ServiceDiagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_18(
-        type=meta::analytics::search::metamodel::dataspace::DataSpaceDocument,
+        type=meta::analytics::search::metamodel::dataspace::DataProductDocument,
         position=(1649.89982, 387.33149),
         width=232.08838,
         height=86.00000,
@@ -406,7 +406,7 @@ Diagram meta::analytics::search::ServiceDiagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_10(
-        property=meta::analytics::search::metamodel::dataspace::DataSpaceDocument.executionContexts,
+        property=meta::analytics::search::metamodel::dataspace::DataProductDocument.executionContexts,
         source=cview_18,
         target=cview_24,
         points=[(1758.31240,471.08164),(1758.31240,752.22449),(1772.09640,788.80668)],

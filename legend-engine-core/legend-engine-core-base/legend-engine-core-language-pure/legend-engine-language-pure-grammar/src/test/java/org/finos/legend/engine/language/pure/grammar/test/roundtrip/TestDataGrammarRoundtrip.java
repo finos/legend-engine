@@ -79,10 +79,10 @@ public class TestDataGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "            \"elements\": [\\n" +
                 "              {\\n" +
                 "                \"_type\": \"dataSpace\",\\n" +
-                "                \"name\": \"TestDataSpace\",\\n" +
+                "                \"name\": \"TestDataProduct\",\\n" +
                 "                \"package\": \"test::model\",\\n" +
                 "                \"groupId\": \"test.group\",\\n" +
-                "                \"artifactId\": \"test-data-space\",\\n" +
+                "                \"artifactId\": \"test-data-product\",\\n" +
                 "                \"versionId\": \"0.4.3\",\\n" +
                 "                \"executionContexts\": [\\n" +
                 "                  {\\n" +

@@ -1,0 +1,75 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "elements": [
+    {
+      "_type": "dataProduct",
+      "name": "TestDataProduct",
+      "package": "test::model",
+      "title": "My Data Space",
+      "executionContexts": [
+        {
+          "name": "INT",
+          "title": "Integration",
+          "description": "some description 1",
+          "mapping": {
+            "type": "MAPPING",
+            "path": "test::model::TestMapping"
+          },
+          "defaultRuntime": {
+            "type": "RUNTIME",
+            "path": "test::model::TestRuntime"
+          }
+        }
+      ],
+      "defaultExecutionContext": "INT",
+      "description": "some description 2",
+      "diagrams": [
+        {
+          "title": "Diagram 1",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
+        },
+        {
+          "title": "Diagram 2",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
+        }
+      ],
+      "elements": [
+        { "path": "test::model" },
+        { "path": "test::model::Class1" },
+        { "path": "test::model::Class2" },
+        { "path": "test::model::Assoc1" },
+        { "path": "test::model::MyEnum", "exclude": true }
+      ],
+      "executables": [
+        {
+          "title": "Executable 1",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataProductPackageableElementExecutable",
+          "title": "Executable 2",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataProductPackageableElementExecutable",
+          "title": "Executable 3",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        }
+      ],
+      "supportInfo": {
+        "_type": "combined",
+        "documentationUrl": "https://www.example.org",
+        "emails": ["testEmail@test.org"],
+        "website": "https://www.example.org",
+        "faqUrl": "https://www.example.org",
+        "supportUrl": "https://www.example.org"
+      }
+    }
+  ]
+}

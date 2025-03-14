@@ -118,8 +118,8 @@ Mapping execution::PersonMapping
 )
 
 
-###DataSpace
-DataSpace model::com::PersonDataspace
+###DataProduct
+DataProduct model::com::PersonDataspace
 {
     executionContexts:
     [

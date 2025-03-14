@@ -28,7 +28,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
-import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataProductDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
@@ -108,10 +108,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
             MappingAndRuntimeDataQualityExecutionContext context = (MappingAndRuntimeDataQualityExecutionContext) dataQuality.context;
             return "fromMappingAndRuntime(" + context.mapping.path + ", " + context.runtime.path + ")";
         }
-        else if (dataQuality.context instanceof DataSpaceDataQualityExecutionContext)
+        else if (dataQuality.context instanceof DataProductDataQualityExecutionContext)
         {
-            DataSpaceDataQualityExecutionContext context = (DataSpaceDataQualityExecutionContext) dataQuality.context;
-            return "fromDataSpace(" + context.dataSpace.path + ", '" + context.context + "')";
+            DataProductDataQualityExecutionContext context = (DataProductDataQualityExecutionContext) dataQuality.context;
+            return "fromDataProduct(" + context.dataSpace.path + ", '" + context.context + "')";
         }
         throw new EngineException("Unsupported DataQuality ExecutionContext");
     }

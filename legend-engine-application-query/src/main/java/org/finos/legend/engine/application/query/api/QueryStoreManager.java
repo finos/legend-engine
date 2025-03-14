@@ -172,10 +172,10 @@ public class QueryStoreManager
             validateNonEmptyQueryField(queryExplicitExecutionContext.mapping, "Query mapping is missing or empty");
             validateNonEmptyQueryField(queryExplicitExecutionContext.runtime, "Query runtime is missing or empty");
         }
-        else if (query.executionContext instanceof QueryDataSpaceExecutionContext)
+        else if (query.executionContext instanceof QueryDataProductExecutionContext)
         {
-            QueryDataSpaceExecutionContext queryDataSpaceExecutionContext = (QueryDataSpaceExecutionContext) query.executionContext;
-            validateNonEmptyQueryField(queryDataSpaceExecutionContext.dataSpacePath, "Query data Space execution context dataSpace path is missing or empty");
+            QueryDataProductExecutionContext queryDataProductExecutionContext = (QueryDataProductExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(queryDataProductExecutionContext.dataSpacePath, "Query data Space execution context dataSpace path is missing or empty");
         }
         else
         {
@@ -525,7 +525,7 @@ public class QueryStoreManager
         storeStats.setQueryCount(count);
         List<Bson> filters = new ArrayList<>();
         filters.add(Filters.and(Filters.eq("taggedValues.tag.profile", QUERY_PROFILE_PATH), Filters.eq("taggedValues.tag.value", QUERY_PROFILE_TAG_DATA_SPACE)));
-        storeStats.setQueryCreatedFromDataSpaceCount(this.getQueryCollection()
+        storeStats.setQueryCreatedFromDataProductCount(this.getQueryCollection()
                 .countDocuments(Filters.and(filters)));
         return storeStats;
     }

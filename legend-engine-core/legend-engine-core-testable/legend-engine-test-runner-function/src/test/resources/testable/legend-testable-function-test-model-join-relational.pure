@@ -11,8 +11,8 @@ Data com::entity::EntityData
 }
 
 
-###DataSpace
-DataSpace com::entity::EntityDataspace
+###DataProduct
+DataProduct com::entity::EntityDataspace
 {
   executionContexts:
   [

@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = MappingAndRuntimeDataQualityExecutionContext.class, name = "mappingAndRuntimeDataQualityExecutionContext"),
-        @JsonSubTypes.Type(value = DataSpaceDataQualityExecutionContext.class, name = "dataSpaceDataQualityExecutionContext")
+        @JsonSubTypes.Type(value = DataProductDataQualityExecutionContext.class, name = "dataSpaceDataQualityExecutionContext")
 })
 public abstract class DataQualityExecutionContext
 {   //add only stuff what users write
