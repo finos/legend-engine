@@ -1591,3 +1591,12 @@ function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(
 
   true;
 }
+
+
+function <<test.Test>> meta::pure::router::preeval::tests::testParseDate():Boolean[1]
+{
+  let input = {| parseDate('9999-01-01 01:01:01')};
+  let preEval =  $input->preval(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $input->openVariableValues(), [], noDebug()).value->toOne(); 
+  assert($preEval->evaluateAndDeactivate()->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@SimpleFunctionExpression).functionName=='parseDate');
+
+}
