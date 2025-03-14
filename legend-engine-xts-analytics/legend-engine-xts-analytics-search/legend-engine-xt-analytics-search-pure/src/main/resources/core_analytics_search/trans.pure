@@ -119,13 +119,13 @@ function meta::analytics::search::transformation::dataspace::buildClassDocuments
     ^meta::analytics::search::metamodel::class::SimpleClassElement(
       name = $e.path->split('::')->last()->toOne(),
       package = $e.path,
-      properties = $e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).properties->map(p| ^meta::analytics::search::metamodel::class::ClassProperty(
+      properties = $e.path->meta::pure::functions::meta::lenientPathToElement()->cast(@Class<Any>).properties->map(p| ^meta::analytics::search::metamodel::class::ClassProperty(
           name = $p.name->toOne(),
           stereotypes = meta::analytics::search::transformation::getStereotypes($p.stereotypes),
           taggedValues = meta::analytics::search::transformation::getTaggedValues($p.taggedValues))
         ),
-      stereotypes = meta::analytics::search::transformation::getStereotypes($e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).stereotypes),
-      taggedValues = meta::analytics::search::transformation::getTaggedValues($e.path->meta::pure::functions::meta::pathToElement()->cast(@Class<Any>).taggedValues))
+      stereotypes = meta::analytics::search::transformation::getStereotypes($e.path->meta::pure::functions::meta::lenientPathToElement()->cast(@Class<Any>).stereotypes),
+      taggedValues = meta::analytics::search::transformation::getTaggedValues($e.path->meta::pure::functions::meta::lenientPathToElement()->cast(@Class<Any>).taggedValues))
     );
 }
 
@@ -289,8 +289,8 @@ function meta::analytics::search::transformation::service::buildClassDocuments(t
                                     name = $n.name,
                                     stereotypes = meta::analytics::search::transformation::getStereotypes($n.class.properties->filter(p| $p.name == $n.name).stereotypes),
                                     taggedValues = meta::analytics::search::transformation::getTaggedValues($n.class.properties->filter(p| $p.name == $n.name).taggedValues))),
-    stereotypes = meta::analytics::search::transformation::getStereotypes($c->pathToElement().stereotypes),
-    taggedValues = meta::analytics::search::transformation::getTaggedValues($c->pathToElement().taggedValues)
+    stereotypes = meta::analytics::search::transformation::getStereotypes($c->lenientPathToElement().stereotypes),
+    taggedValues = meta::analytics::search::transformation::getTaggedValues($c->lenientPathToElement().taggedValues)
     );
   );
 }
