@@ -51,6 +51,11 @@ public abstract class RelationalDatabaseCommands
         return true;
     }
 
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        throw new RuntimeException("Create Temp not implemented for " + this.getClass().getSimpleName());
+    }
+
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)
 //    {
 //        buildTempTableFromResult(config, connection, result, tableName, this.getDefaultIngestionMethod());

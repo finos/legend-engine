@@ -28,6 +28,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
 {
     private final RelationalStoreState state;
     private boolean retainConnection;
+    private int isolationLevel;
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
     private boolean ignoreFreeMarkerProcessing = false;
@@ -95,6 +96,18 @@ public class RelationalStoreExecutionState implements StoreExecutionState
         this.retainConnection = retainConnection;
     }
 
+    public void setIsolationLevel(int level)
+    {
+        if (level > 0)
+        {
+            this.isolationLevel = level;
+        }
+    }
+    public int getIsolationLevel()
+    {
+        //use Connection.Enum value?
+        return this.isolationLevel;
+    }
     public BlockConnectionContext getBlockConnectionContext()
     {
         return this.blockConnectionContext;

@@ -272,7 +272,6 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                         {s:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
                         {s:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
                         {b: meta::pure::test::fct::TestParameters[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
-
                         {a : Any[1]|
                             assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
                             ^PrevalWrapper<Any>(value = $a, canPreval = true, modified = false);

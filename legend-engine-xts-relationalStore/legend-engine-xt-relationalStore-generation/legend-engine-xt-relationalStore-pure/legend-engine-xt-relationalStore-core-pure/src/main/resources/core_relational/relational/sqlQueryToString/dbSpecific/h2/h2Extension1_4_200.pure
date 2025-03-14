@@ -29,6 +29,7 @@ function meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbEx
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForH2_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
+      commitQueryProcessor = processCommitQueryForH2_CommitQuery_1__SqlGenerationContext_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
@@ -45,6 +46,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                 dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableForH2_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processCommitQueryForH2(b:CommitQuery[1], s: SqlGenerationContext[1]):String[1]
+{
+ 'COMMIT';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::translateCreateTableStatementForH2(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
