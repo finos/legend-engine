@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
@@ -38,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
+import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -47,6 +49,7 @@ import org.slf4j.Logger;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
@@ -161,9 +164,15 @@ public abstract class AlloyTestServer
 
     protected String executePlan(SingleExecutionPlan plan, Map<String, ?> params)
     {
-        RelationalResult result = (RelationalResult) planExecutor.execute(plan, params, null);
-        return result.flush(new RelationalResultToJsonDefaultSerializer(result));
+       return executePlan(plan, params, null);
     }
+
+    protected String executePlan(SingleExecutionPlan plan, Map<String, ?> params, StreamProvider inputStreamProvider)
+    {
+        ConstantResult result = (ConstantResult) planExecutor.execute(plan, params, inputStreamProvider);
+        return result.toString();
+    }
+
 
     protected SingleExecutionPlan buildPlan(String plan, String timeZone)
     {

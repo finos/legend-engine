@@ -34,9 +34,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      commitQueryProcessor = processCommitQueryForDuckDB_CommitQuery_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator()
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processCommitQueryForDuckDB(b:CommitQuery[1], s: SqlGenerationContext[1]):String[1]
+{
+  'COMMIT;';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]

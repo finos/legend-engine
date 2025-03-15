@@ -21,7 +21,7 @@
     "connector": {
       "maxRequestHeaderSize": "32KiB",
       "type": "http",
-      "port": 9200
+      "port": 8090
     },
     "requestLog": {
       "appenders": [

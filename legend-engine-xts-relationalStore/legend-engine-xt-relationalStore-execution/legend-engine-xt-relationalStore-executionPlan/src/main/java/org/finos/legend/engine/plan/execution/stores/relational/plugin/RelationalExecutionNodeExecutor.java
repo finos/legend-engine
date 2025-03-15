@@ -190,6 +190,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             RelationalBlockExecutionNode relationalBlockExecutionNode = (RelationalBlockExecutionNode) executionNode;
             ExecutionState connectionAwareState = new ExecutionState(this.executionState);
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
+            ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setIsolationLevel(relationalBlockExecutionNode.isolationLevel);
             try
             {
                 Result res = new ExecutionNodeExecutor(this.identity, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
@@ -245,6 +246,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     String columnName = ((RelationalResult) result).sqlColumns.get(0);
                     return ((RelationalResult) result).toStream().map(m -> m.get(columnName).asText());
                 }
+                if (result instanceof DeferredRelationalResult)
+                {
+                    RelationalResult r = ((DeferredRelationalResult) result).evaluate();
+                    return r.toStream().map(m -> m);
+                }
                 throw new IllegalArgumentException("Unexpected Result Type : " + result.getClass().getName());
             }).onClose(() -> results.forEach(Result::close));
 
@@ -281,7 +287,15 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
                 String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
-                databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
+                if (connectionManagerConnection.getTransactionIsolation() > 0)
+                {
+                    databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTableVisitor(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
+
+                }
+                else
+                {
+                    databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
+                }
             }
             catch (SQLException e)
             {
@@ -1253,9 +1267,18 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         if (((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).retainConnection())
         {
             BlockConnection blockConnection = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().getBlockConnection(((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)), createAndPopulateTempTableExecutionNode.connection, identity);
-            blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
-            blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
-            return blockConnection;
+            try
+            {
+                int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() : Connection.TRANSACTION_NONE;
+                blockConnection.setTransactionIsolation(isolationLevel);
+                blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                return blockConnection;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
         }
         throw new RuntimeException("CreateAndPopulateTempTableExecutionNode should be used within RelationalBlockExecutionNode");
     }

@@ -170,6 +170,7 @@ public class BlockConnection implements Connection
     @Override
     public void setTransactionIsolation(int level) throws SQLException
     {
+        verifyLevel(level);
         this.conn.setTransactionIsolation(level);
     }
 
@@ -399,6 +400,22 @@ public class BlockConnection implements Connection
     public boolean isWrapperFor(Class<?> iface) throws SQLException
     {
         return this.conn.isWrapperFor(iface);
+    }
+
+    private void verifyLevel(int level)
+    {
+        switch (level)
+        {
+            case Connection.TRANSACTION_NONE:
+            case Connection.TRANSACTION_REPEATABLE_READ:
+            case Connection.TRANSACTION_READ_UNCOMMITTED:
+            case Connection.TRANSACTION_SERIALIZABLE:
+            case Connection.TRANSACTION_READ_COMMITTED:
+                break;
+            default:
+                throw new RuntimeException("Invalid level: " + level);
+        }
+
     }
 
     private void close(LoggingEventType loggingEventType, List<String> queries)

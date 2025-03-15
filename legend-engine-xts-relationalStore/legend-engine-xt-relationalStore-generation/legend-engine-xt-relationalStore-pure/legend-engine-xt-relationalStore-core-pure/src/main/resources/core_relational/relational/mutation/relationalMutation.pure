@@ -179,20 +179,4 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
   );
 }
 
-function meta::relational::mutation::executionPlan::planWriteExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
-{
-  let fe = $sq.vs->cast(@FunctionExpression);
-  let store = $sq.store->cast(@Database);
-  let dbConnection = $runtime.connectionByElement($store)->cast(@DatabaseConnection);
-  let table = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RelationStoreAccessor<Any>).sourceElement->cast(@Table)->toOne();
-  let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-  let originalQuery = $fe.parametersValues->at(0)->toOne()->toSQLQuery($mapping, $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
-  let postProcessor = $originalQuery->postProcessSQLQuery($store, $ext, $mapping, $runtime, $exeCtx, $extensions);
-  let insertQuery = ^InsertIntoTableSQL(
-    selectQuery = $postProcessor.query,
-    table= $table
-  );
-  ^$postProcessor(
-    query = $insertQuery
-  )->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, false, $extensions);
-}
+

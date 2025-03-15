@@ -518,8 +518,8 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
 
                 let currentRoutingStrategy = $state.routingStrategy;
                 let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $mapping, $runtime, $extensions);
-
                 let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
+
                 let processedSave = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
                 let routedSave =
                   ^StoreMappingRoutedValueSpecification(
