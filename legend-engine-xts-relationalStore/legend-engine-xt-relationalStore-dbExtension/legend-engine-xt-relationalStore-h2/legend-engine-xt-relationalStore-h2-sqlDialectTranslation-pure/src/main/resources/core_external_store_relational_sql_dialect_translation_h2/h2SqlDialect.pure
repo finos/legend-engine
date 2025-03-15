@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;

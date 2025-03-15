@@ -43,12 +43,20 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         'A'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('chr', literal(98)),
-        'b'
+        simpleFunctionCall('chr', literal(122)),
+        'z'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('chr', literal(104)),
-        'h'
+        simpleFunctionCall('chr', literal(33)),
+        '!'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('chr', literal(54)),
+        '6'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('chr', literal(32)),
+        ' '
       )
     ]
   )

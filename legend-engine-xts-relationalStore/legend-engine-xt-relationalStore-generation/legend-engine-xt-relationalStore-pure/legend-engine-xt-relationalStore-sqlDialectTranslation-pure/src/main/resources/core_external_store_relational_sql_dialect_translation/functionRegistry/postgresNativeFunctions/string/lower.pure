@@ -47,8 +47,8 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         'hello'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('lower', literal('ABC')),
-        'abc'
+        simpleFunctionCall('lower', literal('AB123@C')),
+        'ab123@c'
       )
     ]
   )

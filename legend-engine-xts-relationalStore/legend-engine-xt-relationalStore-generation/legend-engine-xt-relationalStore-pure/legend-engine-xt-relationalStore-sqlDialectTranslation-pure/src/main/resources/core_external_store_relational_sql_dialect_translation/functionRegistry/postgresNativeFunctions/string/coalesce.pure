@@ -34,20 +34,17 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType,SqlType,SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = SqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = SqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [SqlType, SqlType,SqlType],
-        returnType = SqlType,
-        documentation = 'Right-pads the string (1st arg) with spaces, till the specified length (2nd arg).'
+        returnType = SqlType
       )
 
     ],
