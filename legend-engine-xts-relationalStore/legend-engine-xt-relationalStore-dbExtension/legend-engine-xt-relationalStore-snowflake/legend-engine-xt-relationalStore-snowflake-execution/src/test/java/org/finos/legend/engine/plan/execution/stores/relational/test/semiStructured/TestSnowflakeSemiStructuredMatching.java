@@ -117,7 +117,7 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
                 "          connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "        )\n" +
                 "      ) \n" +
-                "  finallyExecutionNodes = \n" +
+                "      finallyExecutionNodes = \n" +
                 "      (\n" +
                 "        SQL\n" +
                 "        (\n" +
