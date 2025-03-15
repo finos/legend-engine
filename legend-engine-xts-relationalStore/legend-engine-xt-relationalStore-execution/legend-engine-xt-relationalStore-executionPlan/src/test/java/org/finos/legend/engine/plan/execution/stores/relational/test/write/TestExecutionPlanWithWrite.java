@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.write;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured.AbstractTestSemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -54,21 +56,25 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
     {
         String plan = readContent(modelResourcePath());
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        executePlan(executionPlan, Maps.mutable.empty());
+        executePlanWrite(executionPlan, Maps.mutable.empty());
         System.out.println("DONE");
     }
-
 
     @Test
     public void testSimpleWriteMultiColumn() throws  IOException
     {
         String plan = readContent(modelResourcePath2());
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        String  result = executePlan(executionPlan, Maps.mutable.empty());
+        String result = executePlanWrite(executionPlan, Maps.mutable.empty());
         System.out.println("DONE");
 
     }
 
+    protected String executePlanWrite(SingleExecutionPlan plan, Map<String, ?> params)
+    {
+        ConstantResult result = (ConstantResult) planExecutor.execute(plan, params, null);
+        return result.toString();
+    }
 
     public String modelResourcePath()
     {
