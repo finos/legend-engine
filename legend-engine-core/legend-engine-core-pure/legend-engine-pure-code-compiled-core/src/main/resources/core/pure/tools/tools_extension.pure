@@ -30,6 +30,7 @@ function meta::pure::router::debug(s:String[1], start:String[1]):String[1]
 
 function meta::pure::router::byPassRouterInfo(source:ValueSpecification[1]):ValueSpecification[1]
 {
+  // println($source,2);
    $source->match([r:ExtendedRoutedValueSpecification[1]|$r.value->byPassRouterInfo(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|$f.value->byPassRouterInfo();, v:ValueSpecification[1]|$v]);
 }
 
@@ -47,6 +48,8 @@ function meta::pure::router::isOneFunction(k:ValueSpecification[1]):Boolean[1]
 
 function meta::pure::router::isFunction(k:ValueSpecification[1]):Boolean[1]
 {
+  //println('K------------------------------------------------->');
+  //println($k);
    let i = $k->byPassRouterInfo();
    $i->instanceOf(InstanceValue) && !$i->cast(@InstanceValue).values->isEmpty() && $i->cast(@InstanceValue).values->fold({v,a|$a && $v->instanceOf(Function)}, true);
 }

@@ -1,0 +1,198 @@
+{
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [
+    "<#function renderCollection collection separator prefix suffix replacementMap defaultValue><#if collection?size == 0><#return defaultValue><\/#if><#assign newCollection = collection><#list replacementMap as oldValue, newValue>   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))><\/#list><#return prefix + newCollection?join(suffix + separator + prefix) + suffix><\/#function>",
+    "<#function collectionSize collection> <#return collection?size?c> <\/#function>",
+    "<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause><\/#if><\/#function>",
+    "<#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#assign newParam = optionalParameter><#list replacementMap as oldValue, newValue>   <#assign newParam = newParam?replace(oldValue, newValue)><\/#list><#return prefix + newParam + suffix><\/#if><\/#function>",
+    "<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(\",\")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna><\/#if><\/#function>"
+  ],
+  "rootExecutionNode": {
+    "_type": "sequence",
+    "resultType": {
+      "dataType": "meta::pure::metamodel::type::Any",
+      "_type": "dataType"
+    },
+    "executionNodes": [
+      {
+        "varName": "a",
+        "_type": "allocation",
+        "resultType": {
+          "tdsColumns": [
+            {
+              "name": "firstname",
+              "type": "String",
+              "relationalType": "VARCHAR(1024)"
+            },
+            {
+              "name": "lastname",
+              "type": "String",
+              "relationalType": "VARCHAR(1024)"
+            }
+          ],
+          "_type": "tds"
+        },
+        "executionNodes": [
+          {
+            "_type": "relationalTdsInstantiation",
+            "resultType": {
+              "tdsColumns": [
+                {
+                  "name": "firstname",
+                  "type": "String",
+                  "relationalType": "VARCHAR(1024)"
+                },
+                {
+                  "name": "lastname",
+                  "type": "String",
+                  "relationalType": "VARCHAR(1024)"
+                }
+              ],
+              "_type": "tds"
+            },
+            "executionNodes": [
+              {
+                "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+                "sqlQuery": "select \"root\".FIRSTNAME as \"firstname\", \"root\".LASTNAME as \"lastname\" from personTable as \"root\"",
+                "resultColumns": [
+                  {
+                    "label": "\"firstname\"",
+                    "dataType": "VARCHAR(200)"
+                  },
+                  {
+                    "label": "\"lastname\"",
+                    "dataType": "VARCHAR(200)"
+                  }
+                ],
+                "connection": {
+                  "datasourceSpecification": {
+                    "_type": "h2Local"
+                  },
+                  "authenticationStrategy": {
+                    "_type": "test"
+                  },
+                  "type": "H2",
+                  "timeZone": "GMT",
+                  "_type": "RelationalDatabaseConnection",
+                  "element": ""
+                },
+                "_type": "sql",
+                "resultType": {
+                  "dataType": "meta::pure::metamodel::type::Any",
+                  "_type": "dataType"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "isolationLevel": 4,
+        "finallyExecutionNodes": [
+          {
+            "sqlQuery": "COMMIT;",
+            "connection": {
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "authenticationStrategy": {
+                "_type": "test"
+              },
+              "type": "H2",
+              "_type": "RelationalDatabaseConnection",
+              "element": ""
+            },
+            "_type": "sql",
+            "resultType": {
+              "_type": "void"
+            }
+          }
+        ],
+        "_type": "relationalBlock",
+        "resultType": {
+          "dataType": "meta::pure::metamodel::type::Any",
+          "_type": "dataType"
+        },
+        "executionNodes": [
+          {
+            "inputVarNames": [
+              "a"
+            ],
+            "tempTableName": "Temp_a",
+            "tempTableColumnMetaData": [
+              {
+                "column": {
+                  "label": "firstname",
+                  "dataType": "VARCHAR(1024)"
+                }
+              },
+              {
+                "column": {
+                  "label": "lastname",
+                  "dataType": "VARCHAR(1024)"
+                }
+              }
+            ],
+            "connection": {
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "authenticationStrategy": {
+                "_type": "test"
+              },
+              "type": "H2",
+              "_type": "RelationalDatabaseConnection",
+              "element": ""
+            },
+            "_type": "createAndPopulateTempTable",
+            "resultType": {
+              "_type": "void"
+            },
+            "implementation": {
+              "executionClassFullName": "_pure.plan.root.n2.n1.CreateAndPopulateTempTable",
+              "_type": "java"
+            }
+          },
+          {
+            "sqlQuery": "INSERT INTO PersonTable2 select * from Temp_a as \"root\"",
+            "connection": {
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "authenticationStrategy": {
+                "_type": "test"
+              },
+              "type": "H2",
+              "_type": "RelationalDatabaseConnection",
+              "element": ""
+            },
+            "isMutationSQL": true,
+            "_type": "sql",
+            "resultType": {
+              "dataType": "meta::pure::metamodel::type::Any",
+              "_type": "dataType"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "globalImplementationSupport": {
+    "classes": [
+      {
+        "package": "_pure.functions",
+        "name": "Functions__meta_external_language_java_transform",
+        "source": "package _pure.functions;\n\nimport java.math.*;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\n\npublic class Functions__meta_external_language_java_transform\n{\n    public static boolean checkForReservedWordsForGet_String_1__Boolean_1_(String propertyName)\n    {\n        return Library.equals(propertyName, \"class\") || Library.equals(propertyName, \"Class\");\n    }\n}"
+      },
+      {
+        "package": "_pure.plan.root.n2.n1",
+        "name": "CreateAndPopulateTempTable",
+        "source": "package _pure.plan.root.n2.n1;\n\nimport _pure.functions.Functions__meta_external_language_java_transform;\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.Optional;\nimport java.util.stream.Collector;\nimport java.util.stream.Collectors;\nimport java.util.stream.Stream;\nimport org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\n\npublic class CreateAndPopulateTempTable implements IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics\n{\n    public String getGetterNameForProperty(String p)\n    {\n        return p == null ? null\n                         : Arrays.asList(\"get\",\n                                         Functions__meta_external_language_java_transform.checkForReservedWordsForGet_String_1__Boolean_1_(p)\n                                                                                         ? Arrays.asList(\"_\",\n                                                                                                         Library.toOne(Optional.ofNullable(p)\n                                                                                                                               .map(Stream::of)\n                                                                                                                               .orElseGet(Stream::empty)\n                                                                                                                               .map(Library::toUpperFirstCharacter)\n                                                                                                                               .collect(Collectors.toList())))\n                                                                                                 .stream()\n                                                                                                 .collect(Collectors.joining(\"\"))\n                                                                                         : Library.toOne(Optional.ofNullable(p)\n                                                                                                                 .map(Stream::of)\n                                                                                                                 .orElseGet(Stream::empty)\n                                                                                                                 .map(Library::toUpperFirstCharacter)\n                                                                                                                 .collect(Collectors.toList())))\n                                 .stream()\n                                 .collect(Collectors.joining(\"\"));\n    }\n}"
+      }
+    ],
+    "_type": "java"
+  }
+}

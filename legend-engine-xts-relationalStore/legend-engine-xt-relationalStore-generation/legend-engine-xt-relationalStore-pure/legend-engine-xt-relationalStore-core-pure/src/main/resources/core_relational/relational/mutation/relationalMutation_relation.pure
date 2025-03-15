@@ -1,0 +1,101 @@
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::translation::*;
+import meta::relational::transform::fromPure::*;
+import meta::pure::graphFetch::domain::*;
+import meta::relational::mutation::executionPlan::*;
+import meta::relational::mutation::*;
+import meta::relational::mapping::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::store::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::mutation::executionPlan::planWriteExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
+{
+
+  let fe = $sq.vs->cast(@FunctionExpression);
+ 
+  let store = $sq.store->cast(@Database);
+  let dbConnection = $runtime.connectionByElement($store)->cast(@DatabaseConnection);
+  $fe.parametersValues->at(0)
+  ->match([
+    sfe: SimpleFunctionExpression[1]| $sfe,
+    iv:InstanceValue[1]| $iv.values->at(0)  
+  ])
+  ->match([ //object used for write expression is either a relation or its an expression 
+    p:PlanVarPlaceHolder[1]| generateNodeForPotentialCrossConnection($sq,  $fe, $ext, $mapping, $runtime, $exeCtx, $extensions, $debug),
+    f:FunctionExpression[1]| generateNodeForSameConnection($sq, $fe, $ext, $mapping, $runtime, $exeCtx, $extensions, $debug)
+  ]);
+  
+}
+
+function meta::relational::mutation::executionPlan::generateNodeForPotentialCrossConnection(sq: StoreQuery[1],  fe: FunctionExpression[1],  ext: RoutedValueSpecification[0..1], mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1] ):ExecutionNode[1]
+{
+  let var = $fe.parametersValues->at(0)->cast(@InstanceValue).values->cast(@PlanVarPlaceHolder);
+  let store = $sq.store->cast(@Database);
+  let dbConnection = $runtime.connectionByElement($sq.store)->cast(@DatabaseConnection);
+  let placeHolder = $sq.inScopeVars->get($var.name->at(0)).values->at(0)->cast(@PlanSetPlaceHolder);
+  let translationContext = ^TranslationContext(dbType = $dbConnection.type);
+  let table = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RelationStoreAccessor<Any>).sourceElement->cast(@Table)->toOne();
+  let tempName = 'Temp_'+ $var.name->toOne();
+  let createAndPopulateTempTableNode = ^CreateAndPopulateTempTableExecutionNode(
+                                        inputVarNames           = $var.name,
+                                        tempTableName           = $tempName,
+                                        tempTableColumnMetaData = $placeHolder.tdsColumns->map(c| ^TempTableColumnMetaData(
+                                                                      column = ^SQLResultColumn(label = $c.name,
+                                                                                                dataType = pureTypeToDataType($c.type->toOne(), $translationContext)->toOne())
+                                                                      )
+                                                                  ),
+                                        connection              = $dbConnection,
+                                        resultType              = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void))
+                                      );
+  
+  let insertQuery = ^InsertIntoTableSQL(
+      selectQuery = ^SelectSQLQuery(data = ^RootJoinTreeNode(alias= ^TableAlias(name='root', relationalElement = ^$table(name = $tempName )))),
+      table= $table
+  );
+  let select = ^PostProcessorResult(
+      query = $insertQuery
+  )->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, false, $extensions);
+  ^RelationalBlockExecutionNode(isolationLevel = 4, executionNodes = [$createAndPopulateTempTableNode, $select], resultType = $select.resultType, finallyExecutionNodes = generateCommit(^CommitQuery(), $dbConnection, $extensions));
+}
+
+
+
+function meta::relational::mutation::executionPlan::generateNodeForSameConnection(sq: StoreQuery[1], fe: FunctionExpression[1], ext: RoutedValueSpecification[0..1],  mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1] ):ExecutionNode[1]
+{
+  let store = $sq.store->cast(@Database);
+  let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
+  let originalQuery = $fe.parametersValues->at(0)->toOne()->toSQLQuery($mapping, $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
+  let postProcessor = $originalQuery->postProcessSQLQuery($store, $ext, $mapping, $runtime, $exeCtx, $extensions);
+  let table = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RelationStoreAccessor<Any>).sourceElement->cast(@Table)->toOne();
+
+  let insertQuery = ^InsertIntoTableSQL(
+      selectQuery = $postProcessor.query,
+      table= $table
+    );
+  let node =  ^$postProcessor(
+      query = $insertQuery
+    )->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, false, $extensions);
+    $node;
+}
+
+function meta::relational::mutation::generateCommit(commitQuery:CommitQuery[1],  connection:DatabaseConnection[1], extensions: Extension[*]): ExecutionNode[1]
+{
+   let sql = sqlQueryToString($commitQuery, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
+   ^SQLExecutionNode(resultType = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void)),
+                      sqlQuery = $sql, connection = $connection
+                      );
+}
+
+Class meta::relational::mutation::SQLTransactionNode extends ExecutionNode
+{
+  commands: String[*];
+}

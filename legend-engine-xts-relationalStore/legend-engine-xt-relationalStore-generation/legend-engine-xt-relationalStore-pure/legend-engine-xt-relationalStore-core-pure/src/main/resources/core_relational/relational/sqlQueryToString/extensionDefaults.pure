@@ -125,6 +125,7 @@ function meta::relational::functions::sqlQueryToString::default::getDefaultLiter
    let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
+      pair(meta::pure::metamodel::relation::Relation,    ^LiteralProcessor(format = '%s',                transform = {a:String[1],  dbTimeZone:String[0..1] | $a})),
       pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
       pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
       pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),

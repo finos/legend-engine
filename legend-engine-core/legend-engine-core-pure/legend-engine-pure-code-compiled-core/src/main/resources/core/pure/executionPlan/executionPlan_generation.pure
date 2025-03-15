@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::router::clustering::*;
@@ -142,7 +143,6 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
 function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-
    let openVars = $f->openVariableValues();
    let functionParameters = $f->stubFuncParameters();
    let inScopeVars = $functionParameters->map(ep|pair($ep.name, ^List<Any>(values=$ep)))->newMap()->putAll($openVars);
@@ -153,7 +153,6 @@ function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinit
 function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let functionParameters = $f->stubFuncParameters();
-
    print(if($debugContext.debug,|'\nGenerating Execution Plan:\n',|''));
    let node = if ($clusters->size() == 1,
        | print(if($debugContext.debug,|'Generating plan for cluster: '+$clusters->at(0)->meta::pure::router::printer::asString()+'\n',|''));
@@ -161,7 +160,8 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
                                              print(if($debugContext.debug,|'Generating plan for cluster: '+$c->meta::pure::router::printer::asString()+'\n',|''));
                                              let node = $c->plan($x, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));
-                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.genericType.rawType->toOne() == TabularDataSet,
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|
+                                                                                                    let varValues = if($a.resultType.genericType.rawType->toOne() ->in([ TabularDataSet, Relation]),
                                                                                                                        |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
                                                                                                                        |^PlanVarPlaceHolder(name=$a.varName,genericType = $a.resultType.genericType, multiplicity=$a.resultSizeRange));
                                                                                                     $x->put($a.varName, ^List<Any>(values=$varValues));,

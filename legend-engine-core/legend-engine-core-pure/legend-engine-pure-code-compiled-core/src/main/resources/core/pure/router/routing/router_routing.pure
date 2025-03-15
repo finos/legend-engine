@@ -290,8 +290,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                             ]);,
                                                   $extensions,
                                                   ^$debug(space = $debug.space+'  '));
-
-        let firstPass         = $firstPassResults.value->evaluateAndDeactivate()->cast(@ValueSpecification);
+        let firstPass         = $firstPassResults->evaluateAndDeactivate().value->cast(@ValueSpecification);
         let routed            = $firstPass->map(fp|$fp->match([f:FunctionRoutedValueSpecification[1]|$f.value,v:ValueSpecification[1]|$v]))->filter(p|!$p->isFunction() && $p->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification)->concatenate($state.routed->cast(@ExtendedRoutedValueSpecification)->evaluateAndDeactivate());
         // Second pass (lambdas)
         let preLastFirstPass  = $firstPassResults->last()->toOne();

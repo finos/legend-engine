@@ -47,4 +47,11 @@ public class RelationalDatabaseCommandsVisitorBuilder
                 new StreamResultToTempTableVisitor(config, connection, result, tableName, databaseTimeZone) :
                 extension.getStreamResultToTempTableVisitor().value(config, connection, result, tableName, databaseTimeZone);
     }
+
+    public static RelationalDatabaseCommandsVisitor<Boolean> getStreamResultToTableVisitor(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName, String databaseTimeZone)
+    {
+        return (extension == null) ?
+                new StreamResultToTableVisitor(config, connection, result, tableName, databaseTimeZone) :
+                extension.getStreamResultToTableVisitor().value(config, connection, result, tableName, databaseTimeZone);
+    }
 }

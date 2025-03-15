@@ -27,6 +27,13 @@ import java.util.stream.Collectors;
 
 public class H2Commands extends RelationalDatabaseCommands
 {
+
+    @Override
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        return "CREATE LOCAL TEMPORARY TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(", ")) + ");";
+    }
+
     @Override
     public String dropTempTable(String tableName)
     {

@@ -19,6 +19,8 @@ import java.util.List;
 
 public class RelationalBlockExecutionNode extends SequenceExecutionNode
 {
+    public int isolationLevel;
+
     public List<ExecutionNode> finallyExecutionNodes = Collections.emptyList();
 
     @Override

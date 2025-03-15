@@ -104,7 +104,7 @@ function meta::pure::router::printer::asString(f:FunctionExpression[1], pref:Pre
         fd:Function<Any>[1]      | let dispatch = [
                                                     pair('getAll', f:FunctionExpression[1]|$f.parametersValues->at(0)->asString($pref)+'.all('+$f.parametersValues->tail()->map(v|$v->asString($pref))->joinStrings(', ')+')'),
                                                     pair('equal', f:FunctionExpression[1]|$f.parametersValues->at(0)->asString($pref)+' == '+$f.parametersValues->at(1)->asString($pref)),
-                                                    pair('letFunction', f:FunctionExpression[1]|'let '+$f.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->toString()+' = '+$f.parametersValues->at(1)->asString($pref))
+                                                    pair('letFunction', f:FunctionExpression[1]|'let '+$f.parametersValues->at(0)->match([sfe:FunctionExpression[1]| $sfe->asString($pref), i:InstanceValue[1]| $i->cast(@InstanceValue).values->at(0)->toString()+' = '+ $f.parametersValues->at(1)->asString($pref)]))
                                                   ];
                                    let res = $dispatch->filter(p|$p.first == $f.func.functionName);
                                    if($res->size() == 1,

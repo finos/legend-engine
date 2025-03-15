@@ -112,6 +112,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
           [
                      rb:meta::pure::executionPlan::RelationalBlockExecutionNode[1]|
                                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode( _type = 'relationalBlock',
+                                                                                                                      isolationLevel = $rb.isolationLevel,
                                                                                                                        resultType = $rb.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
                                                                                                                        finallyExecutionNodes = $rb.finallyExecutionNodes->map(n|$n->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($extensions)));,
                      rel:meta::relational::mapping::SQLExecutionNode[1]|
@@ -176,6 +177,13 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            tempTableColumnMetaData = $cpt.tempTableColumnMetaData->map(col | $col->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformTempTableColumnMetaData()),
                            connection = $cpt.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                         ),
+                     st:meta::relational::mutation::SQLTransactionNode[1]|
+                      ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLTransactionNode
+                      (
+                        resultType = $st.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
+                        _type = 'sqlTransaction',
+                        commands = $st.commands
+                      ),
                      rel:meta::relational::graphFetch::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode(
                            _type = 'relationalRootQueryTempTableGraphFetch',

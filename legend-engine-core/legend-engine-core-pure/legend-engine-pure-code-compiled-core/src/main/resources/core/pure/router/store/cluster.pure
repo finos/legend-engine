@@ -468,7 +468,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                       if ($processed.cluster->instanceOf(StoreClusteredValueSpecification),
                         |$processed,
                         | 
-                          let store = if ($s.store->isEmpty(),
+                          let store = if ($s.store->isEmpty(), //|| ($s.runtime.connectionStores.element->cast(@Store)->toOne() != $s.store->toOne()) ,
                             |//Store is currently not specified for use cases like cos(2)->from($runtime)
                              $s.runtime.connectionStores.element->cast(@Store)->toOne(),
                             |$s.store->toOne()
