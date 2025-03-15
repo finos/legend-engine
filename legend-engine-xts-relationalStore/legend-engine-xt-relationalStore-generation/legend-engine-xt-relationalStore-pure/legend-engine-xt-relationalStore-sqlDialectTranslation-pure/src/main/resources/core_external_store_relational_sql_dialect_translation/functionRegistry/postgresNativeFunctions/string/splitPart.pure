@@ -43,8 +43,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         'def'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('split_part', [literal('abc,def,ghi'), literal(','), literal(3)]),
-        'ghi'
+        simpleFunctionCall('split_part', [literal('abc'), literal('|'), literal(1)]),
+        'abc'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('split_part', [literal('abc|'), literal('|'), literal(2)]),
+        ''
       )
     ]
   )

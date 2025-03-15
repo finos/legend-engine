@@ -33,7 +33,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
        ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
-        returnType = AbstractNumericSqlType
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [ 

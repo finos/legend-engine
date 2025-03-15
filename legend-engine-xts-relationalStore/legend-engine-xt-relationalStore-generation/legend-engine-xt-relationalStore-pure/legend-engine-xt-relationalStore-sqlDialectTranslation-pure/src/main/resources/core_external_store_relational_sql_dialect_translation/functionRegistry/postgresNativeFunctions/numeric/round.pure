@@ -30,7 +30,16 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   (
     name = 'round',
     variations = [
-      
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [DoubleSqlType, AbstractIntegerSqlType],
+        returnType = DoubleSqlType
+      ),
+      ^SqlFunctionVariation
+      (
+        parameterTypes = DoubleSqlType,
+        returnType = DoubleSqlType
+      ),
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractNumericSqlType, AbstractIntegerSqlType],

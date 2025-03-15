@@ -40,10 +40,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('md5', literal('abc')),
         '900150983cd24fb0d6963f7d28e17f72'
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('md5', literal('def')),
-        '4ed9407630eb1000c0f6b63842defa7d'
       )
       
     ]

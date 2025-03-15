@@ -29,21 +29,13 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod
   (
     name = 'mod',
-    variations = [
+    variations =orderedSubTypes(AbstractNumericSqlType)->map({numType |
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractIntegerSqlType, AbstractIntegerSqlType],
-        returnType = AbstractIntegerSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
-        returnType = AbstractNumericSqlType
+        parameterTypes = [$numType, $numType],
+        returnType = $numType
       )
-      
-      
-
-    ],
+    }),
     tests = [
       
       sqlFunctionTest(
@@ -57,6 +49,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
        sqlFunctionTest(
         simpleFunctionCall('mod', [literal(4), literal(4)]),
         0
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('mod', [literal(-2.3), literal(1.1)]),
+        -0.1
       )
     ]
   )

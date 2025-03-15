@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
@@ -61,14 +62,7 @@ function  meta::external::store::relational::sqlDialectTranslation::postgres::po
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    pair(
-      'FuncTests - now(0/1)',
-      'TimeZone Issue : Result is five hours ahead'
-    ),
-    pair(
-      'FuncTests - now(1/1)',
-      'TimeZone Issue : Result is five hours ahead'
-    )
+    
   ]->newMap()->cast(@Map<String, String>)
 }
 
