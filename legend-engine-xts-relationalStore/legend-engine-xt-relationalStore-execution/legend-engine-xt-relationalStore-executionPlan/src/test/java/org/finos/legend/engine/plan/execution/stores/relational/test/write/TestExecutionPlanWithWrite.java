@@ -21,6 +21,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Alloy
 import org.finos.legend.engine.plan.execution.stores.relational.test.semiStructured.AbstractTestSemiStructured;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.m3.tools.test.ToFix;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -43,6 +45,8 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
         statement.execute("Create Table personTable(firstName VARCHAR(100) , lastName VARCHAR(100));");
         statement.execute("Drop table if exists personTable2;");
         statement.execute("Create Table personTable2(firstName VARCHAR(100) , lastName VARCHAR(100));");
+        statement.execute("Drop table if exists personTable3;");
+        statement.execute("Create Table personTable3(firstName VARCHAR(100));");
 
         statement.execute("insert into personTable (firstName, lastName) values ('David', 'harte');");
         statement.execute("insert into personTable (firstName, lastName) values ('Pierre', 'debelen');");
@@ -52,12 +56,13 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
 //    public insertSingle(Statement statement)
 
     @Test
+    @ToFix
     public void testSimpleWrite() throws  IOException
     {
         String plan = readContent(modelResourcePath());
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        executePlanWrite(executionPlan, Maps.mutable.empty());
-        System.out.println("DONE");
+        String result = executePlanWrite(executionPlan, Maps.mutable.empty());
+        Assert.assertTrue("3".equals(result), () -> String.format("Results do not match. Expected: 3, Actual: %s",result));
     }
 
     @Test
@@ -66,14 +71,14 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
         String plan = readContent(modelResourcePath2());
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
         String result = executePlanWrite(executionPlan, Maps.mutable.empty());
-        System.out.println("DONE");
+        Assert.assertTrue("3".equals(result), () -> String.format("Results do not match. Expected: 3, Actual: %s",result));
 
     }
 
     protected String executePlanWrite(SingleExecutionPlan plan, Map<String, ?> params)
     {
         ConstantResult result = (ConstantResult) planExecutor.execute(plan, params, null);
-        return result.toString();
+        return result.getValue().toString();
     }
 
     public String modelResourcePath()

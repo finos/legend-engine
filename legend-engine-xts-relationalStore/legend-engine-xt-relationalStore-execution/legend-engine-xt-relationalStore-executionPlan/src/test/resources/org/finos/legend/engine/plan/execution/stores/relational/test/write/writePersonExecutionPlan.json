@@ -137,7 +137,7 @@
             }
           },
           {
-            "sqlQuery": "INSERT INTO PersonTable2 select * from Temp_a as \"root\"",
+            "sqlQuery": "INSERT INTO PersonTable3 select * from Temp_a as \"root\"",
             "connection": {
               "datasourceSpecification": {
                 "_type": "h2Local"

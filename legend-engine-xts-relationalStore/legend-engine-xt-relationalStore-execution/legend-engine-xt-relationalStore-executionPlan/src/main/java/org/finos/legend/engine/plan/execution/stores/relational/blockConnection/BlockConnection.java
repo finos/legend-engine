@@ -170,8 +170,11 @@ public class BlockConnection implements Connection
     @Override
     public void setTransactionIsolation(int level) throws SQLException
     {
-        verifyLevel(level);
-        this.conn.setTransactionIsolation(level);
+        if (level > Connection.TRANSACTION_READ_COMMITTED)
+        {
+            verifyLevel(level);
+            this.conn.setTransactionIsolation(level);
+        }
     }
 
     @Override
