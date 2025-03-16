@@ -87,6 +87,11 @@ Class meta::relational::metamodel::InsertIntoTableSQL extends SQLQuery
     selectQuery : RelationalOperationElement[1];
 }
 
+Class meta::relational::metamodel::CommitQuery extends SQLQuery
+{
+  
+}
+
 function meta::relational::metamodel::loadWith(c:CreateTableSQL[1], absolutePathToFile:meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]):SQLQuery[2]
 {
   [$c, ^LoadTableSQL(table = $c.table, absolutePathToFile=$absolutePathToFile, columnsToLoad=$c.table.columns->cast(@Column))]//TODO move function, asserts/constraints on columns
