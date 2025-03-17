@@ -91,6 +91,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
             j_null(),
                 $c->hierarchicalProperties()->fold(
                   {a,b |  let type = $a.genericType.rawType->toOne();
+                          println($type->elementToPath() + ' ' +classInScope($type, $configuration)->toString());
                           if($a.name != '_type' && classInScope($type, $configuration),
                             |if(!$a->meta::protocols::generation::java::translation::shouldTranslateReturn($configuration),
                                 |let propertyAccess = j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaObject());
@@ -100,11 +101,11 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                                                   |if(
                                                                     [
                                                                       pair(
-                                                                        |$a.genericType.rawType->toOne()->instanceOf(DateTime),
+                                                                        |$a.genericType.rawType->toOne()->subTypeOf(DateTime),
                                                                         | j_invoke(javaClass('public', javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromInstant', j_invoke($propertyAccess, 'toInstant', []))
                                                                       ),
                                                                       pair(
-                                                                        |$a.genericType.rawType->toOne()->instanceOf(Date),
+                                                                        |$a.genericType.rawType->toOne()->subTypeOf(Date),
                                                                         | j_invoke(javaClass('public', javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromDate', $propertyAccess)
                                                                       )
                                                                     ],
