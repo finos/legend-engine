@@ -176,18 +176,18 @@ public class TestQueryStoreManager
         }
 
 
-        TestQueryBuilder withDataSpaceExecution(String dataSpace, String key)
+        TestQueryBuilder withDataProductExecution(String dataSpace, String key)
         {
-            QueryDataSpaceExecutionContext dataSpaceExecutionContext = new QueryDataSpaceExecutionContext();
+            QueryDataProductExecutionContext dataSpaceExecutionContext = new QueryDataProductExecutionContext();
             dataSpaceExecutionContext.dataSpacePath = dataSpace;
             dataSpaceExecutionContext.executionKey = key;
             this.executionContext = dataSpaceExecutionContext;
             return this;
         }
 
-        TestQueryBuilder withDataSpaceExecution(String dataSpace)
+        TestQueryBuilder withDataProductExecution(String dataSpace)
         {
-            return this.withDataSpaceExecution(dataSpace, null);
+            return this.withDataProductExecution(dataSpace, null);
         }
 
         TestQueryBuilder withGroupId(String groupId)
@@ -399,14 +399,14 @@ public class TestQueryStoreManager
         queryExplicitExecutionContext.runtime = "";
         Assert.assertEquals("Query runtime is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithExplicitExecutionInvalidRuntime)).getMessage());
 
-        // DataSpace exec context
-        Query queryWithDataSpaceExec = TestQueryBuilder.create("1", "query1", "testUser").withDataSpaceExecution("my::dataspace").build();
-        QueryStoreManager.validateQuery(queryWithDataSpaceExec);
-        QueryDataSpaceExecutionContext queryDataSpaceExecutionContext = (QueryDataSpaceExecutionContext) queryWithDataSpaceExec.executionContext;
-        queryDataSpaceExecutionContext.dataSpacePath = null;
-        Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataSpaceExec)).getMessage());
-        queryDataSpaceExecutionContext.dataSpacePath = "";
-        Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataSpaceExec)).getMessage());
+        // DataProduct exec context
+        Query queryWithDataProductExec = TestQueryBuilder.create("1", "query1", "testUser").withDataProductExecution("my::dataspace").build();
+        QueryStoreManager.validateQuery(queryWithDataProductExec);
+        QueryDataProductExecutionContext queryDataProductExecutionContext = (QueryDataProductExecutionContext) queryWithDataProductExec.executionContext;
+        queryDataProductExecutionContext.dataSpacePath = null;
+        Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataProductExec)).getMessage());
+        queryDataProductExecutionContext.dataSpacePath = "";
+        Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataProductExec)).getMessage());
 
         // Content
         Query queryWithInvalidContent = _createTestQuery.get();
@@ -468,14 +468,14 @@ public class TestQueryStoreManager
     }
 
     @Test
-    public void testGetQueryStatsWithDataSpaceQueryCount() throws Exception
+    public void testGetQueryStatsWithDataProductQueryCount() throws Exception
     {
         String currentUser = "testUser";
         TaggedValue taggedValue1 = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", "value1");
         Assert.assertEquals(Long.valueOf(0), this.store.getQueryStoreStats().getQueryCount());
         Query query = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).withLegacyExecutionContext().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
-        Assert.assertEquals(Long.valueOf(1), this.store.getQueryStoreStats().getQueryCreatedFromDataSpaceCount());
+        Assert.assertEquals(Long.valueOf(1), this.store.getQueryStoreStats().getQueryCreatedFromDataProductCount());
     }
 
     @Test
@@ -618,8 +618,8 @@ public class TestQueryStoreManager
     {
         String currentUser = "testUser";
         Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build();
-        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withDataSpaceExecution("my::dataSpace").build();
-        Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withDataSpaceExecution("my::dataSpace", "myKey").build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withDataProductExecution("my::dataSpace").build();
+        Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withDataProductExecution("my::dataSpace", "myKey").build();
         store.createQuery(testQuery1, currentUser);
         store.createQuery(testQuery2, currentUser);
         store.createQuery(testQuery3, currentUser);
@@ -630,14 +630,14 @@ public class TestQueryStoreManager
         Assert.assertEquals(((QueryExplicitExecutionContext) query1.executionContext).mapping, "mapping");
 
         Query query2 = store.getQuery("2");
-        Assert.assertTrue(query2.executionContext instanceof QueryDataSpaceExecutionContext);
-        Assert.assertEquals(((QueryDataSpaceExecutionContext) query2.executionContext).dataSpacePath, "my::dataSpace");
-        Assert.assertNull(((QueryDataSpaceExecutionContext) query2.executionContext).executionKey);
+        Assert.assertTrue(query2.executionContext instanceof QueryDataProductExecutionContext);
+        Assert.assertEquals(((QueryDataProductExecutionContext) query2.executionContext).dataSpacePath, "my::dataSpace");
+        Assert.assertNull(((QueryDataProductExecutionContext) query2.executionContext).executionKey);
 
         Query query3 = store.getQuery("3");
-        Assert.assertTrue(query3.executionContext instanceof QueryDataSpaceExecutionContext);
-        Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).dataSpacePath, "my::dataSpace");
-        Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).executionKey, "myKey");
+        Assert.assertTrue(query3.executionContext instanceof QueryDataProductExecutionContext);
+        Assert.assertEquals(((QueryDataProductExecutionContext) query3.executionContext).dataSpacePath, "my::dataSpace");
+        Assert.assertEquals(((QueryDataProductExecutionContext) query3.executionContext).executionKey, "myKey");
     }
 
 
@@ -667,13 +667,13 @@ public class TestQueryStoreManager
     }
 
     @Test
-    public void testGetDataSpaceQueriesWithExecutionContext() throws Exception
+    public void testGetDataProductQueriesWithExecutionContext() throws Exception
     {
         String currentUser = "testUser";
         String dataspacePath = "test::Dataspace";
         TaggedValue taggedValue = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", dataspacePath);
-        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataSpaceExecution(dataspacePath).build();
-        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue)).withDataSpaceExecution(dataspacePath).build();
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataProductExecution(dataspacePath).build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue)).withDataProductExecution(dataspacePath).build();
         store.createQuery(testQuery1, currentUser);
         store.createQuery(testQuery2, currentUser);
 

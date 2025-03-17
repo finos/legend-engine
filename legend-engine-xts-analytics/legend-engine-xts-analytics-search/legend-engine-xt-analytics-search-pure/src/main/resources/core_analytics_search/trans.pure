@@ -3,7 +3,7 @@ import meta::analytics::search::transformation::*;
 function meta::analytics::search::transformation::buildDocument(element: PackageableElement[1], config: meta::analytics::search::metamodel::ProjectCoordinates[1]): meta::analytics::search::metamodel::BaseRootDocument[1]
 {
   let document = $element->match([
-    d: meta::pure::metamodel::dataSpace::DataSpace[1]| $d->meta::analytics::search::transformation::dataspace::buildDocument(),
+    d: meta::pure::metamodel::dataProduct::DataProduct[1]| $d->meta::analytics::search::transformation::dataspace::buildDocument(),
     s: meta::legend::service::metamodel::Service[1]| $s->meta::analytics::search::transformation::hackLegendServiceTests()->meta::analytics::search::transformation::service::buildDocument(),
     d: meta::pure::metamodel::diagram::Diagram[1]| $d->meta::analytics::search::transformation::diagram::buildDocument(),
     m: meta::pure::mapping::Mapping[1]| $m->meta::analytics::search::transformation::mapping::buildDocument(),
@@ -87,9 +87,9 @@ function meta::analytics::search::transformation::class::buildPropertyList(prope
 }
 
 // DATASPACE DOCUMENT
-function meta::analytics::search::transformation::dataspace::buildDocument(dataspace: meta::pure::metamodel::dataSpace::DataSpace[1]): meta::analytics::search::metamodel::dataspace::DataSpaceDocument[1]
+function meta::analytics::search::transformation::dataspace::buildDocument(dataspace: meta::pure::metamodel::dataProduct::DataProduct[1]): meta::analytics::search::metamodel::dataspace::DataProductDocument[1]
 {
-  ^meta::analytics::search::metamodel::dataspace::DataSpaceDocument(
+  ^meta::analytics::search::metamodel::dataspace::DataProductDocument(
     id = meta::analytics::search::transformation::getId($dataspace),
     name = meta::analytics::search::transformation::getName($dataspace),
     package = meta::analytics::search::transformation::getPackage($dataspace),
@@ -98,11 +98,11 @@ function meta::analytics::search::transformation::dataspace::buildDocument(datas
     diagrams = $dataspace.diagrams->map(d|$d.diagram->elementToPath()),
     executionContexts = $dataspace.executionContexts->map(c|$c->meta::analytics::search::transformation::dataspace::buildExecutionContextDocument()),
     taxonomies = $dataspace.taggedValues->filter(t|$t.tag.value == 'taxonomyNodes').value,
-    type = meta::analytics::search::metamodel::DocumentType.DataSpace
+    type = meta::analytics::search::metamodel::DocumentType.DataProduct
   );
 }
 
-function meta::analytics::search::transformation::dataspace::buildExecutionContextDocument(executionContext: meta::pure::metamodel::dataSpace::DataSpaceExecutionContext[1]): meta::analytics::search::metamodel::dataspace::ExecutionContext[1]
+function meta::analytics::search::transformation::dataspace::buildExecutionContextDocument(executionContext: meta::pure::metamodel::dataProduct::DataProductExecutionContext[1]): meta::analytics::search::metamodel::dataspace::ExecutionContext[1]
 {
   ^meta::analytics::search::metamodel::dataspace::ExecutionContext(
     name = $executionContext.name,

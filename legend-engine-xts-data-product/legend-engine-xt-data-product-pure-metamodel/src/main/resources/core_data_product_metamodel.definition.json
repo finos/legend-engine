@@ -1,0 +1,11 @@
+{
+  "name": "core_data_product_metamodel",
+  "pattern": "(meta::pure::metamodel::dataProduct|meta::pure::mapping)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "core_functions_unclassified",
+    "core",
+    "core_diagram_metamodel"
+  ]
+}
