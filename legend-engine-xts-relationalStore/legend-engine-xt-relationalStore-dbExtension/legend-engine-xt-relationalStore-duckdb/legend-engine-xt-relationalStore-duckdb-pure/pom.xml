@@ -74,6 +74,11 @@
                         <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -132,6 +137,11 @@
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -150,7 +160,10 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>

@@ -169,7 +169,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (EngineException e)
         {
-            Assert.assertEquals("COMPILATION error at [4:67-71]: The column 'naeme' can't be found in the relation (id:Integer, name:String)", e.toPretty());
+            Assert.assertEquals("COMPILATION error at [4:67-71]: The column 'naeme' can't be found in the relation (id:Int, name:Varchar(200))", e.toPretty());
         }
     }
 

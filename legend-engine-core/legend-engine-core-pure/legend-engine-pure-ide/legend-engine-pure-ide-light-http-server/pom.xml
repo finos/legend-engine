@@ -123,6 +123,12 @@
             <artifactId>legend-engine-pure-ide-light-interpreted-functions</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

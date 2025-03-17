@@ -213,6 +213,10 @@
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
         </dependency>

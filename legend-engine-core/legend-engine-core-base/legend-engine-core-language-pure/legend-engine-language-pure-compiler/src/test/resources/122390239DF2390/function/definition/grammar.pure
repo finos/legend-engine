@@ -9,7 +9,7 @@ function protocol::f2(r: meta::pure::metamodel::relation::Relation<(col:String, 
   []
 }
 
-function <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::f3(x: Integer[1], z: Property<Nil, String|*>[1..*], other: meta::external::catalog::precisePrimitives::Varchar(200)[1]): String[*]
+function <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} protocol::f3(x: Integer[1], z: Property<Nil, String|*>[1..*], other: meta::pure::precisePrimitives::Varchar(200)[1]): String[*]
 {
   []
 }

@@ -97,6 +97,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -175,6 +180,11 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-standard</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -216,6 +226,11 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
         </dependency>
 
         <dependency>

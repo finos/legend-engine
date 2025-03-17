@@ -142,11 +142,15 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                       range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
                                                                             | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
                                                                               if ([
-                                                                                    pair(|$type == 'Integer', |-2147483648),
-                                                                                    pair(|$type == 'String', |'null'),
-                                                                                    pair(|$type == 'DateTime', |'')
+                                                                                    pair(|$type == 'Integer' ||
+                                                                                          $type == 'meta::pure::precisePrimitives::Int', |-2147483648),
+                                                                                    pair(|$type == 'String' ||
+                                                                                          $type == 'meta::pure::precisePrimitives::Varchar', |'null'),
+                                                                                    pair(|$type == 'DateTime' ||
+                                                                                          $type == 'meta::pure::precisePrimitives::Timestamp' ||
+                                                                                          $type == 'meta::pure::precisePrimitives::Date', |'')
                                                                                   ],
-                                                                                  |fail();0;
+                                                                                  |fail($type->toOne()+' is not managed yet!');0;
                                                                               );,
                                                                             |$x.values->at($z)
                                                                         )

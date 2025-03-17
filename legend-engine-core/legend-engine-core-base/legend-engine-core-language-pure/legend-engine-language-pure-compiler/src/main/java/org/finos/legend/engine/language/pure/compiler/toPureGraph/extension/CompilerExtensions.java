@@ -32,6 +32,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.partition.PartitionIterable;
 import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -125,6 +126,7 @@ public class CompilerExtensions
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+    private final MutableMap<String, MutableSet<String>> extraSubTypesForFunctionMatching;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -159,6 +161,8 @@ public class CompilerExtensions
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
+        this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraSubTypesForFunctionMatching.putAll(e.getExtraSubtypesForFunctionMatching()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -336,6 +340,11 @@ public class CompilerExtensions
     public ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> getExtraValueSpecificationBuilderForFuncExpr()
     {
         return this.extraValueSpecificationBuilderForFuncExpr;
+    }
+
+    public MutableMap<String, MutableSet<String>> getExtraSubTypesForFunctionMatching()
+    {
+        return extraSubTypesForFunctionMatching;
     }
 
     public List<Processor<?>> sortExtraProcessors()

@@ -95,6 +95,11 @@
                         <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -182,6 +187,11 @@
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
                         <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

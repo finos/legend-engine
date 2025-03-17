@@ -587,7 +587,17 @@ public class CompileContext
         {
             rType = new PackageableType(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(genericType._rawType()));
         }
-        return new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
+        return new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(
+                rType,
+                genericType._typeVariableValues().collect(GraphValueSpecificationToProtocol::transform).toList(),
+                genericType._typeArguments().collect(CompileContext::convertGenericType).toList(),
+                genericType._multiplicityArguments().collect(CompileContext::convertMultiplicity).toList()
+        );
+    }
+
+    public static org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity convertMultiplicity(Multiplicity m)
+    {
+        return new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(m._lowerBound()._value().intValue(), m._upperBound()._value() == null ? null : m._upperBound()._value().intValue());
     }
 
     public GenericType newGenericType(org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType genericType)

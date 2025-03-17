@@ -34,6 +34,7 @@
         <module>legend-engine-pure-platform-dsl-path-java</module>
         <module>legend-engine-pure-platform-dsl-tds-java</module>
         <module>legend-engine-pure-platform-java</module>
+        <module>legend-engine-pure-platform-precisePrimitives-java</module>
         <module>legend-engine-pure-platform-store-relational-java</module>
     </modules>
 </project>
