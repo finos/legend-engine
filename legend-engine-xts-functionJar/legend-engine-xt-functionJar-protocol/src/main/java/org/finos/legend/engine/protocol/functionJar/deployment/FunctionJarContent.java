@@ -16,10 +16,12 @@ package org.finos.legend.engine.protocol.functionJar.deployment;
 
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 
 public class FunctionJarContent extends FunctionActivatorDeploymentContent
 {
-    public PureModelContext serviceData;
+    public PureModelContext functionJarData;
+    public ExecutionPlan executionPlan;
 
     public FunctionJarContent()
     {
@@ -34,6 +36,13 @@ public class FunctionJarContent extends FunctionActivatorDeploymentContent
     public FunctionJarContent(PureModelContext serviceData, String ownership)
     {
         this(ownership);
-        this.serviceData = serviceData;
+        this.functionJarData = serviceData;
+    }
+
+    public FunctionJarContent(PureModelContext functionJarData, String ownership, ExecutionPlan executionPlan)
+    {
+        this(ownership);
+        this.functionJarData = functionJarData;
+        this.executionPlan = executionPlan;
     }
 }
