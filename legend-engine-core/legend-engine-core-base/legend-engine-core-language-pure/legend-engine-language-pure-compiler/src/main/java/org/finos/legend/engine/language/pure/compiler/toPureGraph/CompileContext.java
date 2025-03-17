@@ -136,6 +136,12 @@ public class CompileContext
             this.pureModel = pureModel;
         }
 
+        public Builder(CompileContext source)
+        {
+            this.pureModel = source.pureModel;
+            this.imports = source.imports;
+        }
+
         public Builder withElement(String elementPath)
         {
             if (elementPath == null)
@@ -160,14 +166,14 @@ public class CompileContext
             // so system elements will always be resolved no matter what.
             if (section instanceof ImportAwareCodeSection)
             {
-                this.imports = META_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
+                this.imports = this.imports.newWithAll(((ImportAwareCodeSection) section).imports);
             }
             return this;
         }
 
         public Builder withImports(ImmutableSet<String> extraImports)
         {
-            this.imports = META_IMPORTS.newWithAll(extraImports);
+            this.imports = this.imports.newWithAll(extraImports);
             return this;
         }
 
