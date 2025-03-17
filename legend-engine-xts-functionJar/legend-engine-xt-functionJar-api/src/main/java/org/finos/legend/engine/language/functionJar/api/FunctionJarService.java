@@ -99,7 +99,7 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
     @Override
     public FunctionJarArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return this.functionJarArtifactgenerator.renderServiceArtifact(pureModel, activator, inputModel, clientVersion, routerExtensions);
+        return this.functionJarArtifactgenerator.renderArtifact(pureModel, activator, inputModel, clientVersion, routerExtensions);
     }
 
     @Override
