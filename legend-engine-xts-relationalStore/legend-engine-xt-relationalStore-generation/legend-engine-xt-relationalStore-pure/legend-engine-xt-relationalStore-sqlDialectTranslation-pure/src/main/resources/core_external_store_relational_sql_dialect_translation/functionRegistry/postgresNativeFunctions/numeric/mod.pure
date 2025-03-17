@@ -29,13 +29,25 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod
   (
     name = 'mod',
-    variations =orderedSubTypes(AbstractNumericSqlType)->map({numType |
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [$numType, $numType],
-        returnType = $numType
-      )
-    }),
+    variations = [
+          ^SqlFunctionVariation
+          (
+            parameterTypes = [AbstractIntegerSqlType, AbstractIntegerSqlType],
+            returnType = AbstractIntegerSqlType
+          ),
+          (
+            parameterTypes = [DoubleSqlType, DoubleSqlType],
+            returnType = DoubleSqlType
+          ),
+          ^SqlFunctionVariation
+          (
+            parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
+            returnType = AbstractNumericSqlType
+          )
+
+
+
+        ],
     tests = [
       
       sqlFunctionTest(
