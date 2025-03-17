@@ -18,12 +18,12 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 
 import java.util.List;
 
 public class FunctionJarArtifact extends FunctionActivatorArtifact
 {
-
     public FunctionJarArtifact()
     {
 
@@ -35,9 +35,9 @@ public class FunctionJarArtifact extends FunctionActivatorArtifact
         this.version = sdlc != null ? getVersionInfo(sdlc) : null;
     }
 
-    public FunctionJarArtifact(PureModelContext serviceData, String ownership, AlloySDLC sdlc)
+    public FunctionJarArtifact(PureModelContext functionJarData, String ownership, AlloySDLC sdlc, ExecutionPlan executionPlan)
     {
-        this.content = new FunctionJarContent(serviceData, ownership);
+        this.content = new FunctionJarContent(functionJarData, ownership, executionPlan);
         this.version = sdlc != null ? getVersionInfo(sdlc) : null;
     }
 }

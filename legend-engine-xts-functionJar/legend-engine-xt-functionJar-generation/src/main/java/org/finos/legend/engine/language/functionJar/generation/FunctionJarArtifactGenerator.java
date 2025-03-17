@@ -56,7 +56,7 @@ public class FunctionJarArtifactGenerator
     public static FunctionJarArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
-        return new FunctionJarArtifact(FunctionJarArtifactGenerator.fetchFunctionJar(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
+        return new FunctionJarArtifact(FunctionJarArtifactGenerator.fetchFunctionJar(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null, plan);
     }
 
     public static ExecutionPlan generatePlan(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion,Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
