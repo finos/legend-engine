@@ -153,8 +153,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_store_Store;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_store_Store_Impl;\n' +
                 'import org.finos.legend.pure.m4.coreinstance.CoreInstance;\n' +
-                'import org.finos.meta.pure.metamodel.extension.Stereotype;\n' +
-                'import org.finos.meta.pure.metamodel.extension.TaggedValue;\n' +
                 'import org.finos.pojo.PojoWithInheritance;\n' +
                 'import org.finos.scalar.Bool;\n' +
                 'import org.finos.scalar.Int32;\n' +
@@ -368,20 +366,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '        return store == null ? null\n' +
                 '                             : new Root_meta_protocols_generation_java_tests_model_store_Store_Impl("",                                                                       null,\n' +
                 '                                                                                                                                                                              pureModel.getType("meta::protocols::generation::java::tests::model::store::Store"))\n' +
-                '                                                                                                       ._includes(ListIterate.collect(store.includes == null\n' +
-                '                                                                                                                                           ? Collections.<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>emptyList()\n' +
-                '                                                                                                                                           : store.includes,\n' +
-                '                                                                                                                                      (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store x) -> this.translate(x, pureModel)))\n' +
-                '                                                                                                       ._package(this.translate(store._package, pureModel))\n' +
-                '                                                                                                       ._name(store.name)\n' +
-                '                                                                                                       ._stereotypes(ListIterate.collect(store.stereotypes == null\n' +
-                '                                                                                                                                              ? Collections.<Stereotype>emptyList()\n' +
-                '                                                                                                                                              : store.stereotypes,\n' +
-                '                                                                                                                                         (Stereotype x) -> this.translate(x, pureModel)))\n' +
-                '                                                                                                       ._taggedValues(ListIterate.collect(store.taggedValues == null\n' +
-                '                                                                                                                                               ? Collections.<TaggedValue>emptyList()\n' +
-                '                                                                                                                                               : store.taggedValues,\n' +
-                '                                                                                                                                          (TaggedValue x) -> this.translate(x, pureModel)));\n' +
+                '                                                                                                       ._name(store.name);\n' +
                 '    }\n' +
                 '}', $sources->at(0));
 }

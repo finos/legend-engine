@@ -52,12 +52,21 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
   $elem->match(
     [
       p: Package[1] | $p.children->filter(c | !$c->elementToPath()->in($configuration.elementsToBeExcluded))->map(c|generateProtocolToMetamodelTranslationMethods($c, $translatorClass, $taxonomies,$conventions, $configuration)),
-      c: meta::pure::metamodel::type::Class<Any>[1] | meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslationForClass($c, $translatorClass, $taxonomies, $conventions, $configuration),
+      c: meta::pure::metamodel::type::Class<Any>[1] | if(classInScope($c, $configuration),
+                                                        |meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslationForClass($c, $translatorClass, $taxonomies, $conventions, $configuration),
+                                                        |[]
+                                                      );,
       e: meta::pure::metamodel::type::Enumeration<Any>[1] | meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslationForEnumeration($e, $translatorClass, $taxonomies, $conventions, $configuration),
       s: Any[1] | []
     ]
   )
 }
+
+function <<access.private>> meta::protocols::generation::java::translation::classInScope(type : meta::pure::metamodel::type::Type[1], configuration:Configuration[1]):Boolean[1]
+{
+  isTypeInScope($type, $configuration) && ($type->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $type->toOne()->elementToPath()->startsWith($configuration.purePackage))
+}
+
 
 function <<access.private>> meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslationForClass(
                                       c:meta::pure::metamodel::type::Class<Any>[1],
@@ -81,7 +90,8 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
             j_eq($parameters->at(0), j_null()),
             j_null(),
                 $c->hierarchicalProperties()->fold(
-                  {a,b | if($a.name != '_type' && isTypeInScope($a.genericType.rawType->toOne(), $configuration),
+                  {a,b |  let type = $a.genericType.rawType->toOne();
+                          if($a.name != '_type' && classInScope($type, $configuration),
                             |if(!$a->meta::protocols::generation::java::translation::shouldTranslateReturn($configuration),
                                 |let propertyAccess = j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaObject());
                                 let processedPropertyAccess = if($a.multiplicity->isToMany(),
@@ -109,7 +119,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                 )
                               ),
                               |$b
-                        )
+                        );
                   },
                   j_new(javaClass('public', javaPackage('org.finos.legend.pure.generated'), 'Root_'+$c.package->toOne()->elementToPath('_')+'_'+$c.name->toOne()+'_Impl'),
                                             [
