@@ -96,17 +96,17 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                             |if(!$a->meta::protocols::generation::java::translation::shouldTranslateReturn($configuration),
                                 |let propertyAccess = j_field($parameters->at(0), $a.name->toOne()->sanitizeJavaKeywords(), javaObject());
                                 let processedPropertyAccess = if($a.multiplicity->isToMany(),
-                                                                  |let listsClass = javaClass('public', javaPackage('org.eclipse.collections.impl.factory'), 'Lists');
+                                                                  |let listsClass = javaClass(javaPackage('org.eclipse.collections.impl.factory'), 'Lists');
                                                                    j_invoke(j_field($listsClass, 'mutable', javaObject()), 'withAll', $propertyAccess, javaObject());,
                                                                   |if(
                                                                     [
                                                                       pair(
                                                                         |$a.genericType.rawType->toOne()->subTypeOf(DateTime),
-                                                                        | j_invoke(javaClass('public', javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromInstant', j_invoke($propertyAccess, 'toInstant', []))
+                                                                        | j_invoke(javaClass(javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromInstant', j_invoke($propertyAccess, 'toInstant', [], javaClass(javaPackage('java.time'), 'Instant')), javaClass(javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateTime'))
                                                                       ),
                                                                       pair(
                                                                         |$a.genericType.rawType->toOne()->subTypeOf(Date),
-                                                                        | j_invoke(javaClass('public', javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromDate', $propertyAccess)
+                                                                        | j_invoke(javaClass(javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'DateFunctions'), 'fromDate', $propertyAccess, javaClass(javaPackage('org.finos.legend.pure.m4.coreinstance.primitive.date'), 'PureDate'))
                                                                       )
                                                                     ],
                                                                     | $propertyAccess
