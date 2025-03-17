@@ -35,6 +35,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             parameterTypes = [AbstractIntegerSqlType, AbstractIntegerSqlType],
             returnType = AbstractIntegerSqlType
           ),
+          ^SqlFunctionVariation
           (
             parameterTypes = [DoubleSqlType, DoubleSqlType],
             returnType = DoubleSqlType
