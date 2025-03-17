@@ -20,7 +20,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.generation.FunctionActivatorGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -57,7 +56,7 @@ public class FunctionJarArtifactGenerator
     public static FunctionJarArtifact renderServiceArtifact(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         ExecutionPlan plan = generatePlan(pureModel, activator, inputModel, clientVersion, routerExtensions);
-        return new FunctionJarArtifact(FunctionJarArtifactGenerator.fetchFunctionJar(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), FunctionActivatorGenerator.generateActions(activator, pureModel), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
+        return new FunctionJarArtifact(FunctionJarArtifactGenerator.fetchFunctionJar(activator, (PureModelContextData)inputModel, pureModel), ((Root_meta_external_function_activator_DeploymentOwnership) activator._ownership())._id(), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
     }
 
     public static ExecutionPlan generatePlan(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion,Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

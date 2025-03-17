@@ -63,6 +63,6 @@ public class FunctionJarProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(FunctionJar.class, "meta::external::function::activator::functionJar::JarService");
+        return Maps.mutable.with(FunctionJar.class, "meta::external::function::activator::functionJar::FunctionJar");
     }
 }

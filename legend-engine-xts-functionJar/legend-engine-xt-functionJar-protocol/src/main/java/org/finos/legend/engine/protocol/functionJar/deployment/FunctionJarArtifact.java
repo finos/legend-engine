@@ -40,12 +40,4 @@ public class FunctionJarArtifact extends FunctionActivatorArtifact
         this.content = new FunctionJarContent(serviceData, ownership);
         this.version = sdlc != null ? getVersionInfo(sdlc) : null;
     }
-
-    public FunctionJarArtifact(PureModelContext serviceData, String ownership, List<ActionContent> actions, AlloySDLC sdlc)
-    {
-        this.content = new FunctionJarContent(serviceData, ownership);
-        this.version = sdlc != null ? getVersionInfo(sdlc) : null;
-        this.actions = actions;
-    }
-
 }
