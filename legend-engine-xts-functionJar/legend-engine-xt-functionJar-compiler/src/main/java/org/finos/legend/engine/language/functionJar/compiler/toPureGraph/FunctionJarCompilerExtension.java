@@ -40,7 +40,7 @@ public class FunctionJarCompilerExtension implements CompilerExtension
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Jar_Service");
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Function_Jar");
     }
 
     // Here only for dependency check error ...
