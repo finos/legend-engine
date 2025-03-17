@@ -153,7 +153,6 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_store_Store;\n' +
                 'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_store_Store_Impl;\n' +
                 'import org.finos.legend.pure.m4.coreinstance.CoreInstance;\n' +
-                'import org.finos.meta.pure.metamodel.ReferenceUsage;\n' +
                 'import org.finos.meta.pure.metamodel.extension.Stereotype;\n' +
                 'import org.finos.meta.pure.metamodel.extension.TaggedValue;\n' +
                 'import org.finos.pojo.PojoWithInheritance;\n' +
@@ -382,11 +381,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '                                                                                                       ._taggedValues(ListIterate.collect(store.taggedValues == null\n' +
                 '                                                                                                                                               ? Collections.<TaggedValue>emptyList()\n' +
                 '                                                                                                                                               : store.taggedValues,\n' +
-                '                                                                                                                                          (TaggedValue x) -> this.translate(x, pureModel)))\n' +
-                '                                                                                                       ._referenceUsages(ListIterate.collect(store.referenceUsages == null\n' +
-                '                                                                                                                                                  ? Collections.<ReferenceUsage>emptyList()\n' +
-                '                                                                                                                                                  : store.referenceUsages,\n' +
-                '                                                                                                                                             (ReferenceUsage x) -> this.translate(x, pureModel)));\n' +
+                '                                                                                                                                          (TaggedValue x) -> this.translate(x, pureModel)));\n' +
                 '    }\n' +
                 '}', $sources->at(0));
 }
