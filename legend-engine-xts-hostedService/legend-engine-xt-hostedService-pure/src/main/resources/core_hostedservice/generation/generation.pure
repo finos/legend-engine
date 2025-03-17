@@ -155,7 +155,7 @@ function meta::external::function::activator::hostedService::generation::isMulti
   $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
 }
 
-function meta::external::function::activator::hostedService::generation::getEnvironmentkeyMain(func: PackageableFunction<Any>[1]):String[1]
+function meta::external::function::activator::hostedService::generation::getEnvironmentkeyUtil(func: PackageableFunction<Any>[1]):String[1]
 {
     let exprs = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($func->cast(@ConcreteFunctionDefinition<Any>),multiExecFuncs());
     let pv = $exprs->first()->toOne('Found no multiExecution expressions')->cast(@SimpleFunctionExpression).parametersValues->at(1);
@@ -166,7 +166,7 @@ function meta::external::function::activator::hostedService::generation::getEnvi
 
 function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
 {
-    $h.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyMain();
+    $h.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyUtil();
 }
 
 function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
@@ -187,14 +187,14 @@ function meta::external::function::activator::hostedService::generation::multiEx
 
 function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParams(h:HostedService[1] ):Pair<String,HostedService>[*]
 {
-    let rebuildExpression = rebuildServiceUsingFlattenedParamsMain($h.function);
+    let rebuildExpression = rebuildServiceUsingFlattenedParamsUtil($h.function);
     $rebuildExpression->map(
        exp | let newHostedService = ^$h(function=$exp.second);
               pair($exp.first, $newHostedService);
     );
 }
 
-function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParamsMain(func:PackageableFunction<Any>[1]):Pair<String,PackageableFunction<Any>>[*]
+function meta::external::function::activator::hostedService::generation::rebuildServiceUsingFlattenedParamsUtil(func:PackageableFunction<Any>[1]):Pair<String,PackageableFunction<Any>>[*]
 {
     let execParam = getExecutionParam($func);
     $execParam->match([

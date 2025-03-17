@@ -18,7 +18,7 @@ function meta::external::function::activator::functionJar::generation::printPlan
 {
   let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
 
-  meta::pure::executionPlan::executionPlan($j->recomposeServiceFunction().function->cast(@FunctionDefinition<Any>), $extensions)->meta::pure::executionPlan::toString::planToString($extensions)->println();
+  meta::pure::executionPlan::executionPlan($j->recomposeFunction().function->cast(@FunctionDefinition<Any>), $extensions)->meta::pure::executionPlan::toString::planToString($extensions)->println();
 }
 
 function meta::external::function::activator::functionJar::validator::validateService(j:FunctionJar[1]):Boolean[1]
@@ -63,10 +63,10 @@ function meta::external::function::activator::functionJar::validator::validateEx
 }
 
 
-function meta::external::function::activator::functionJar::generation::recomposeServiceFunction(service:FunctionJar[1]):FunctionJar[1]
+function meta::external::function::activator::functionJar::generation::recomposeFunction(j:FunctionJar[1]):FunctionJar[1]
 {
-  let result = if($service.function->functionReturnType()->meta::external::function::activator::hostedService::generation::needsSerialization(),
-                  |let tree = meta::external::function::activator::hostedService::generation::getTree($service.function); //println($service.function->functionReturnType().rawType);
+  let result = if($j.function->functionReturnType()->meta::external::function::activator::hostedService::generation::needsSerialization(),
+                  |let tree = meta::external::function::activator::hostedService::generation::getTree($j.function); //println($service.function->functionReturnType().rawType);
 
                     let externalizeExpression = ^SimpleFunctionExpression(
                                               importGroup = system::imports::coreImport,
@@ -74,15 +74,15 @@ function meta::external::function::activator::functionJar::generation::recompose
                                               functionName = 'externalize',
                                               genericType = ^GenericType(rawType = String),
                                               multiplicity = PureOne,
-                                              parametersValues = $service.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence
+                                              parametersValues = $j.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence
                                                                   ->concatenate(^InstanceValue(multiplicity = PureOne,genericType=^GenericType(rawType=RootGraphFetchTree), values=$tree->toOne()))
                                             )->evaluateAndDeactivate();
-                    let serviceFunc = $service.function->cast(@ConcreteFunctionDefinition<Any>);
-                    let newServiceFunc = ^$serviceFunc(expressionSequence =$externalizeExpression->evaluateAndDeactivate());
-                    let newService = ^$service(function = $newServiceFunc);,
-                |$service;
+                    let jarFunc = $j.function->cast(@ConcreteFunctionDefinition<Any>);
+                    let newJarFunc = ^$jarFunc(expressionSequence =$externalizeExpression->evaluateAndDeactivate());
+                    let newJar = ^$j(function = $newJarFunc);,
+                |$j;
                 );
-  $service;
+  $j;
 }
 
 function meta::external::function::activator::functionJar::generation::isMultiEenvironmentService(j:FunctionJar[1]):Boolean[1]
@@ -92,12 +92,12 @@ function meta::external::function::activator::functionJar::generation::isMultiEe
 
 function meta::external::function::activator::functionJar::generation::getEnvironmentkey(j:FunctionJar[1] ):String[1]
 {
-    $j.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyMain();
+    $j.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyUtil();
 }
 
 function meta::external::function::activator::functionJar::generation::rebuildServiceUsingFlattenedParams(j:FunctionJar[1] ):Pair<String,FunctionJar>[*]
 {
-    let rebuildExpression = rebuildServiceUsingFlattenedParamsMain($j.function);
+    let rebuildExpression = rebuildServiceUsingFlattenedParamsUtil($j.function);
     $rebuildExpression->map(
        exp | let newFunctionJar = ^$j(function=$exp.second);
               pair($exp.first, $newFunctionJar);

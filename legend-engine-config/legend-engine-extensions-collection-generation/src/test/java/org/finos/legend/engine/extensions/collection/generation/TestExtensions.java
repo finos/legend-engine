@@ -43,7 +43,6 @@ import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.Hoste
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
-import org.finos.legend.engine.language.functionJar.generation.deployment.FunctionJarArtifactGenerationExtension;
 import org.finos.legend.engine.language.functionJar.grammar.from.FunctionJarGrammarParserExtension;
 import org.finos.legend.engine.language.functionJar.grammar.to.FunctionJarGrammarComposer;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
@@ -521,7 +520,6 @@ public class TestExtensions
                 .with(OpenApiArtifactGenerationExtension.class)
                 .with(SnowflakeAppArtifactGenerationExtension.class)
                 .with(HostedServiceArtifactGenerationExtension.class)
-                .with(FunctionJarArtifactGenerationExtension.class)
                 .with(FunctionActivatorArtifactGenerationExtension.class);
     }
 
