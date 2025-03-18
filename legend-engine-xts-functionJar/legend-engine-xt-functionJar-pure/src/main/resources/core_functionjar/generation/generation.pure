@@ -21,7 +21,7 @@ function meta::external::function::activator::functionJar::generation::printPlan
   meta::pure::executionPlan::executionPlan($j->recomposeFunction().function->cast(@FunctionDefinition<Any>), $extensions)->meta::pure::executionPlan::toString::planToString($extensions)->println();
 }
 
-function meta::external::function::activator::functionJar::validator::validateService(j:FunctionJar[1]):Boolean[1]
+function meta::external::function::activator::functionJar::validator::validateFunctionJar(j:FunctionJar[1]):Boolean[1]
 {
   $j.function->validateFunction();
   $j->validateReturnType();
@@ -85,7 +85,7 @@ function meta::external::function::activator::functionJar::generation::recompose
   $j;
 }
 
-function meta::external::function::activator::functionJar::generation::isMultiEenvironmentService(j:FunctionJar[1]):Boolean[1]
+function meta::external::function::activator::functionJar::generation::isMultiEenvironmentFunctionJar(j:FunctionJar[1]):Boolean[1]
 {
     $j.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
 }
@@ -95,7 +95,7 @@ function meta::external::function::activator::functionJar::generation::getEnviro
     $j.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyUtil();
 }
 
-function meta::external::function::activator::functionJar::generation::rebuildServiceUsingFlattenedParams(j:FunctionJar[1] ):Pair<String,FunctionJar>[*]
+function meta::external::function::activator::functionJar::generation::rebuildFunctionJarUsingFlattenedParams(j:FunctionJar[1] ):Pair<String,FunctionJar>[*]
 {
     let rebuildExpression = rebuildServiceUsingFlattenedParamsUtil($j.function);
     $rebuildExpression->map(

@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOw
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJar;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_functionJar_FunctionJar_Impl;
@@ -58,7 +57,7 @@ public class FunctionJarCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         FunctionJar.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(ExecutionEnvironmentInstance.class, Function.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(Function.class),
                         this::buildFunctionJar
                 )
         );

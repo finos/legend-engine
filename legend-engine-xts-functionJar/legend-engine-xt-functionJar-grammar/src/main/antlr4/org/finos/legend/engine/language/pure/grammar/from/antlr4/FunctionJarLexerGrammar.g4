@@ -9,38 +9,14 @@ import M3LexerGrammar;
 STEREOTYPES:                                'stereotypes';
 TAGS:                                       'tags';
 
-SERVICE:                                    'FunctionJar';
+FUNCTIONJAR:                                    'FunctionJar';
 IMPORT:                                     'import';
 
-SERVICE_OWNERSHIP:                          'ownership';
-SERVICE_OWNERSHIP_DEPLOYMENT:               'Deployment';
-SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER:    'identifier';
-SERVICE_ACTIVATION:                         'activationConfiguration';
-SERVICE_DOCUMENTATION:                      'documentation';
-SERVICE_LINEAGE:                            'generateLineage';
-SERVICE_MODEL:                              'storeModel';
-SERVICE_FUNCTION:                           'function';
-SERVICE_BINDING:                            'binding';
-SERVICE_CONTENT_TYPE:                       'contentType';
-SERVICE_TEST_SUITES:                        'testSuites';
-SERVICE_TEST_DATA:                          'data';
-SERVICE_TEST_CONNECTION_DATA:               'connections';
-SERVICE_TEST_TESTS:                         'tests';
-SERVICE_TEST_ASSERTS:                       'asserts';
-SERVICE_TEST_SERIALIZATION_FORMAT:          'serializationFormat';
-SERVICE_TEST_PARAMETERS:                    'parameters';
-ASSERT_FOR_KEYS:                            'keys';
-PARAM_GROUP:                                'list';
+FUNCTIONJAR_OWNERSHIP:                          'ownership';
+FUNCTIONJAR_OWNERSHIP_DEPLOYMENT:               'Deployment';
+FUNCTIONJAR_OWNERSHIP_DEPLOYMENT_IDENTIFIER:    'identifier';
+FUNCTIONJAR_ACTIVATION:                         'activationConfiguration';
+FUNCTIONJAR_DOCUMENTATION:                      'documentation';
+FUNCTIONJAR_FUNCTION:                           'function';
 
-SERVICE_POST_VALIDATION:                    'postValidations';
-SERVICE_POST_VALIDATION_DESCRIPTION:        'description';
-SERVICE_POST_VALIDATION_PARAMETERS:         'params';
-SERVICE_POST_VALIDATION_ASSERTIONS:         'assertions';
-
-// -------------------------------------- EXECUTION_ENVIRONMENT-------------------------
-
-EXEC_ENV:                                   'ExecutionEnvironment';
-SERVICE_MAPPING:                            'mapping';
-SERVICE_RUNTIME:                            'runtime';
-SERVICE_EXECUTION_EXECUTIONS:               'executions';
 
