@@ -16,9 +16,9 @@ package org.finos.legend.pure.runtime.java.interpreted.function.base.meta;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.engine.pure.code.core.functions.unclassified.base.meta.AbstractTestCompileValueSpecification;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.tests.RuntimeVerifier;
-import org.finos.legend.pure.m3.tests.function.base.meta.AbstractTestCompileValueSpecification;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.junit.BeforeClass;
 

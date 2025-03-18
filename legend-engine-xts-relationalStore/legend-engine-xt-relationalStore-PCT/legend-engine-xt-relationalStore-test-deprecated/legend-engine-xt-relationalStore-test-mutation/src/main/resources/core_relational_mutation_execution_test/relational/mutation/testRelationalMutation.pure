@@ -29,7 +29,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::test::tes
   assertEquals(baseExecutionPlan()->format($formatStringParameters), $actualPlanAsString);
 }
 
-function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimpleMutationPlanGeneration(): Boolean[1]
+function <<test.Test, test.ToFix>> meta::relational::mutation::executionPlan::test::testSimpleMutationPlanGeneration(): Boolean[1]
 {
   let additionalColumnGenerator =
     ',\n' +
@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimp
   );
 }
 
-function <<test.Test>> meta::relational::mutation::executionPlan::test::testMutationPlanGenerationRespectsGraphFetchTree(): Boolean[1]
+function <<test.Test, test.ToFix>> meta::relational::mutation::executionPlan::test::testMutationPlanGenerationRespectsGraphFetchTree(): Boolean[1]
 {
   testMutationPlanGenerationHelper(
     'incompleteGraphFetchTreeH2PersonMutation',

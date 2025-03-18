@@ -124,6 +124,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromResultSet
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
 {
+  isolationLevel: Integer[0..1];
   finallyExecutionNodes : ExecutionNode[*];
 }
 
@@ -134,6 +135,12 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CreateAndPopulate
    tempTableColumnMetaData     : meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableColumnMetaData[*];
    connection                  : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLTransactionNode extends ExecutionNode
+{
+   commands               : String[*];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLResultColumn
 {
    label : String[1];
