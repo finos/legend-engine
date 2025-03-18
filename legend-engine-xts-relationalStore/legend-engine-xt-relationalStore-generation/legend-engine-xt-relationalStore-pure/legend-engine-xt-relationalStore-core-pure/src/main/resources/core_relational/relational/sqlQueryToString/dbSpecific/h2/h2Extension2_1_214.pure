@@ -169,6 +169,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   ]);
 }
 
+function meta::relational::functions::sqlQueryToString::h2::v2_1_214::h2ReservedWord(word: String[1]): Boolean[1]
+{
+  $word->in(h2ReservedWords());
+}
+
 // words found in ParserUtil.KEYWORDS of h2database EXCEPT for anything listed explicitly as NON_KEYWORD for compatibility
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::h2ReservedWords():String[*]
 {

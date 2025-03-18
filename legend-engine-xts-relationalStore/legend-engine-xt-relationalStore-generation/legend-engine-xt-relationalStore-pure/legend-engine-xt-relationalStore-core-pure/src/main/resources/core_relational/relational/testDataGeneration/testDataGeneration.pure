@@ -682,7 +682,7 @@ function <<access.private>> meta::relational::testDataGeneration::createTempTabl
                               | ' NULL',
                               | ''
                           );
-         if(($dbType == DatabaseType.H2) || $c.name->startsWith('"'), | $c.name, | '"' + $c.name + '"') + ' ' + $sqlType + $nullSuffix;
+         if(($dbType == DatabaseType.H2) || $c.name->startsWith('"'), | if( meta::relational::functions::sqlQueryToString::h2::v2_1_214::h2ReservedWord(toLower($c.name)), | '"' + $c.name + '"',| $c.name),  | '"' + $c.name + '"') + ' ' + $sqlType + $nullSuffix;
       })->joinStrings('(', ',', ')');
 
       if ($dbType == DatabaseType.H2,
