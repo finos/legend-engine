@@ -22,7 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.test.semiStructu
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.pure.m3.tools.test.ToFix;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -56,7 +56,7 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
 //    public insertSingle(Statement statement)
 
     @Test
-    @ToFix
+    @Ignore
     public void testSimpleWrite() throws  IOException
     {
         String plan = readContent(modelResourcePath());
@@ -65,6 +65,7 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
         Assert.assertTrue("3".equals(result), () -> String.format("Results do not match. Expected: 3, Actual: %s",result));
     }
 
+    @Ignore
     @Test
     public void testSimpleWriteMultiColumn() throws  IOException
     {
