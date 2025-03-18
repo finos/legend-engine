@@ -1167,6 +1167,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-h2-execution-2.1.214</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -1207,13 +1212,7 @@
 <!--            <groupId>org.finos.legend.pure</groupId>-->
 <!--            <artifactId>legend-pure</artifactId>-->
 <!--            <scope>test</scope>-->
-	<!--        </dependency>-->
-	<dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-h2-PCT</artifactId>
-            <scope>test</scope>
-        </dependency>
-
+<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-server-shared</artifactId>
