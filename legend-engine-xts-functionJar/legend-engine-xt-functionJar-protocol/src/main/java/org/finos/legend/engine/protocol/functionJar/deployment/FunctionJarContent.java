@@ -33,10 +33,10 @@ public class FunctionJarContent extends FunctionActivatorDeploymentContent
         this.ownership = ownership;
     }
 
-    public FunctionJarContent(PureModelContext serviceData, String ownership)
+    public FunctionJarContent(PureModelContext functionJarData, String ownership)
     {
         this(ownership);
-        this.functionJarData = serviceData;
+        this.functionJarData = functionJarData;
     }
 
     public FunctionJarContent(PureModelContext functionJarData, String ownership, ExecutionPlan executionPlan)
