@@ -102,14 +102,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
         <!-- ENGINE -->
@@ -150,10 +142,6 @@
             <artifactId>legend-engine-language-pure-grammar</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-service</artifactId>
         </dependency>
         <!-- TEST -->
     </dependencies>

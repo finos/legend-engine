@@ -62,11 +62,11 @@ public class FunctionJarArtifactGenerator
     public static ExecutionPlan generatePlan(PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, String clientVersion,Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         ListIterable<PlanTransformer> transformers =  generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
-        if (core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_isMultiEenvironmentService_FunctionJar_1__Boolean_1_(activator, pureModel.getExecutionSupport()))
+        if (core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_isMultiEenvironmentFunctionJar_FunctionJar_1__Boolean_1_(activator, pureModel.getExecutionSupport()))
         {
             Map<String, SingleExecutionPlan> plans = Maps.mutable.empty();
             String execKey = core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_getEnvironmentkey_FunctionJar_1__String_1_(activator, pureModel.getExecutionSupport());
-            core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_rebuildServiceUsingFlattenedParams_FunctionJar_1__Pair_MANY_(activator, pureModel.getExecutionSupport()).forEach(p ->
+            core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_generation_rebuildFunctionJarUsingFlattenedParams_FunctionJar_1__Pair_MANY_(activator, pureModel.getExecutionSupport()).forEach(p ->
                     {
                         ExecutionPlan plan = PlanGenerator.generateExecutionPlan((ConcreteFunctionDefinition) p._second()._function(), null, null, null, pureModel,
                                 clientVersion, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
