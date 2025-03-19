@@ -118,23 +118,6 @@ function meta::pure::functions::collection::partition<I>(c:I[*], f:Function<{I[1
    );   
 }
 
-function meta::pure::functions::collection::and(vals:Boolean[*]):Boolean[1]
-{
-   $vals->fold({i,a|$i && $a}, true)
-}
-
-function meta::pure::functions::collection::or(vals:Boolean[*]):Boolean[1]
-{
-   $vals->fold({i,a|$i || $a}, false)
-}
-
-function meta::pure::functions::collection::or(vals:Boolean[1..*]):Boolean[1]
-{
-   $vals->fold({i,a|$i || $a}, false)
-}
-
-
-
 function meta::pure::functions::collection::newMultiValueMap<S,K>(values : Pair<K,S>[*]):Map<K,List<S>>[1]
 {
    $values->fold({pair,map|

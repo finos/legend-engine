@@ -99,6 +99,30 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
     assertEquals(6, $res);
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testWindowSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())
+                ->size();
+               };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(10, $res);
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {

@@ -62,7 +62,26 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""),
-            one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\"")
+            one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
+
+            // Average
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+
+            // Percentile
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::range(?)'"),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: OVER is not supported for ordered-set aggregate percentile_cont"),
+
+            // And
+            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
+            one("meta::pure::functions::collection::tests::and::testAnd_Relation_Aggregate_Function_1__Boolean_1_", "BOOLEAN_AS_BYTE not supported yet!"),
+            one("meta::pure::functions::collection::tests::and::testAnd_Relation_Window_Function_1__Boolean_1_", "BOOLEAN_AS_BYTE not supported yet!"),
+
+            // Or
+            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
+            one("meta::pure::functions::collection::tests::or::testOr_Relation_Aggregate_Function_1__Boolean_1_", "BOOLEAN_AS_BYTE not supported yet!"),
+            one("meta::pure::functions::collection::tests::or::testOr_Relation_Window_Function_1__Boolean_1_", "BOOLEAN_AS_BYTE not supported yet!")
     );
 
     public static Test suite()
