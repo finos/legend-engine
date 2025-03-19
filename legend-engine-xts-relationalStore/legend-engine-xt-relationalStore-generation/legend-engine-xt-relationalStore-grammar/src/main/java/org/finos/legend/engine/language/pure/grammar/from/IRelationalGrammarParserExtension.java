@@ -27,8 +27,10 @@ import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceS
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.queryGenerationConfigs.QueryGenerationConfigSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -71,6 +73,11 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
     static Milestoning process(MilestoningSpecificationSourceCode code, List<Function<MilestoningSpecificationSourceCode, Milestoning>> processors)
     {
         return process(code, processors, "Milestoning");
+    }
+
+    static RelationalQueryGenerationConfig process(QueryGenerationConfigSourceCode code, List<Function<QueryGenerationConfigSourceCode, RelationalQueryGenerationConfig>> processors)
+    {
+        return process(code, processors, "Relational Query Generation Config");
     }
 
     static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
@@ -130,6 +137,11 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
     }
 
     default List<Function<MilestoningSpecificationSourceCode, Milestoning>> getExtraMilestoningParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function<QueryGenerationConfigSourceCode, RelationalQueryGenerationConfig>> getExtraQueryGenerationConfigParsers()
     {
         return Collections.emptyList();
     }

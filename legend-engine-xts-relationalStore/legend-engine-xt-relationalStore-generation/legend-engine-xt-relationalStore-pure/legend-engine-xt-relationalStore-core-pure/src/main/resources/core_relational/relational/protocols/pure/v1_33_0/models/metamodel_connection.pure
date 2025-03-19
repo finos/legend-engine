@@ -98,6 +98,7 @@ Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::
    quoteIdentifiers : Boolean[0..1];
    queryTimeOutInSeconds: Integer[0..1];
    postProcessorWithParameter:	meta::protocols::pure::v1_33_0::metamodel::store::relational::PostProcessorWithParameter[*];
+   queryGenerationConfigs: meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalQueryGenerationConfig[*];
 }
 
 Class meta::protocols::pure::v1_33_0::metamodel::store::relational::PostProcessorWithParameter
@@ -124,4 +125,18 @@ Class <<typemodifiers.abstract>> meta::protocols::pure::v1_33_0::metamodel::stor
 Class <<typemodifiers.abstract>> meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
    _type: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalQueryGenerationConfig
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::GenerationFeaturesConfig extends meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalQueryGenerationConfig
+[
+  $this._type == 'generationFeaturesConfig'
+]
+{
+   enabled: String[*];
+   disabled: String[*];
 }

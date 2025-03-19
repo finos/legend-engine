@@ -13,7 +13,7 @@ options
 identifier:                             VALID_STRING | STRING
                                         | STORE
                                         | TYPE | QUERY_TIMEOUT | RELATIONAL_DATASOURCE_SPEC | RELATIONAL_AUTH_STRATEGY
-                                        | DB_TIMEZONE | QUOTE_IDENTIFIERS
+                                        | DB_TIMEZONE | QUOTE_IDENTIFIERS | QUERY_GENERATION_CONFIGS
 ;
 
 
@@ -29,6 +29,7 @@ definition:                             (
                                             | relationalDBAuth
                                             | relationalDBDatasourceSpec
                                             | relationalPostProcessors
+                                            | queryGenConfigs
                                         )*
                                         EOF
 ;
@@ -57,6 +58,13 @@ relationalDBAuth:                       RELATIONAL_AUTH_STRATEGY COLON specifica
 ;
 
 relationalDBDatasourceSpec:             RELATIONAL_DATASOURCE_SPEC COLON specification SEMI_COLON
+;
+
+queryGenConfigs:                        QUERY_GENERATION_CONFIGS COLON
+                                        BRACKET_OPEN
+                                            (specification (COMMA specification)*)?
+                                        BRACKET_CLOSE
+                                        SEMI_COLON
 ;
 
 
