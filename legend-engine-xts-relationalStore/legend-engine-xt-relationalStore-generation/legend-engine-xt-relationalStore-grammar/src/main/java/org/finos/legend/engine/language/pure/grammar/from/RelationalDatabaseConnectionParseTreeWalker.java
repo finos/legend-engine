@@ -19,10 +19,12 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.Rela
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.queryGenerationConfigs.QueryGenerationConfigSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -73,6 +75,9 @@ public class RelationalDatabaseConnectionParseTreeWalker
         //post processors
         RelationalDatabaseConnectionParserGrammar.RelationalPostProcessorsContext postProcessorsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.relationalPostProcessors(), "postProcessors", connectionValue.sourceInformation);
         connectionValue.postProcessors = postProcessorsContext != null ? this.visitRelationalPostProcessors(postProcessorsContext) : null;
+        // queryGenerationConfigs
+        RelationalDatabaseConnectionParserGrammar.QueryGenConfigsContext queryGenConfigsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.queryGenConfigs(), "queryGenerationConfigs", connectionValue.sourceInformation);
+        connectionValue.queryGenerationConfigs = queryGenConfigsContext != null ? this.visitQueryGenConfigs(queryGenConfigsContext) : null;
 
         RelationalDatabaseConnectionParserGrammar.ConnectionModeContext connectionModeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionMode(), "mode", connectionValue.sourceInformation);
         String localMode = connectionModeContext != null ? PureGrammarParserUtility.fromIdentifier(connectionModeContext.identifier()) : null;
@@ -138,6 +143,37 @@ public class RelationalDatabaseConnectionParseTreeWalker
         }
 
         return processor;
+    }
+
+    private List<RelationalQueryGenerationConfig> visitQueryGenConfigs(RelationalDatabaseConnectionParserGrammar.QueryGenConfigsContext queryGenConfigsContext)
+    {
+        List<RelationalDatabaseConnectionParserGrammar.SpecificationContext> specifications = queryGenConfigsContext.specification();
+        List<IRelationalGrammarParserExtension> extensions = IRelationalGrammarParserExtension.getExtensions();
+        List<Function<QueryGenerationConfigSourceCode, RelationalQueryGenerationConfig>> parsers = ListIterate.flatCollect(extensions, IRelationalGrammarParserExtension::getExtraQueryGenerationConfigParsers);
+        return ListIterate.collect(specifications, spec -> visitQueryGenConfig(spec, parsers));
+    }
+
+    private RelationalQueryGenerationConfig visitQueryGenConfig(RelationalDatabaseConnectionParserGrammar.SpecificationContext spec, List<Function<QueryGenerationConfigSourceCode, RelationalQueryGenerationConfig>> parsers)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(spec);
+        ParseTreeWalkerSourceInformation subParseTreeWalkerSourceInfo = ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, spec.getStart());
+
+        QueryGenerationConfigSourceCode code = new QueryGenerationConfigSourceCode(
+                spec.getText(),
+                spec.specificationType().getText(),
+                sourceInformation,
+                new ParseTreeWalkerSourceInformation.Builder(subParseTreeWalkerSourceInfo).withLineOffset(subParseTreeWalkerSourceInfo.getLineOffset() + 1).build() // Update line offset
+        );
+
+        RelationalQueryGenerationConfig relationalQueryGenerationConfig = IRelationalGrammarParserExtension.process(code, parsers);
+
+        if (relationalQueryGenerationConfig == null)
+        {
+            throw new EngineException("Unsupported syntax", sourceInformation, EngineErrorType.PARSER);
+        }
+
+        relationalQueryGenerationConfig.sourceInformation = sourceInformation;
+        return relationalQueryGenerationConfig;
     }
 
     private DatasourceSpecification visitRelationalDatabaseConnectionDatasourceSpecification(RelationalDatabaseConnectionParserGrammar.RelationalDBDatasourceSpecContext ctx)

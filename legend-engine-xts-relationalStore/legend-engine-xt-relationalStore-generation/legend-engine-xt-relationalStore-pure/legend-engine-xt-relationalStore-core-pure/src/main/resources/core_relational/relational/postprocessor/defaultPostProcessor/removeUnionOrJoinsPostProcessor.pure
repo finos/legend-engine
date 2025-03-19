@@ -18,7 +18,14 @@ import meta::relational::extension::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::postProcessor::*;
+import meta::relational::postProcessor::removeUnionOrJoins::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+
+function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName(): String[1]
+{
+  'REMOVE_UNION_OR_JOINS'
+}
 
 function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins(selectSQLQuery: SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]): Result<SelectSQLQuery|1>[1]
 {
@@ -31,7 +38,8 @@ function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins
     ) &&
     (
       $dbConnection.type.name->isNotEmpty() &&
-      $dbConnection.type.name->toOne()->in($extensions->map(e | $e.moduleExtension('relational')->cast(@RelationalExtension).relational_removeUnionOrJoinsPostProcessor_databaseTypesRequiringUnionOrJoinRemoval)->map(f | $f->eval()))
+      $dbConnection.type.name->toOne()->in($extensions->map(e | $e.moduleExtension('relational')->cast(@RelationalExtension).relational_removeUnionOrJoinsPostProcessor_databaseTypesRequiringUnionOrJoinRemoval)->map(f | $f->eval())) &&
+      (!$dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).disabled->contains(removeUnionOrJoinsGenerationFeatureName())))
     )
   );
 
