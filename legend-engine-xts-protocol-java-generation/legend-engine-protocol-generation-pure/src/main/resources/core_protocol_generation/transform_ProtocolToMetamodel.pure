@@ -64,7 +64,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
 
 function <<access.private>> meta::protocols::generation::java::translation::classInScope(type : meta::pure::metamodel::type::Type[1], configuration:Configuration[1]):Boolean[1]
 {
-  isTypeInScope($type, $configuration) && ($type->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $type->toOne()->elementToPath()->startsWith($configuration.purePackage))
+  isTypeInScope($type, $configuration) && ($type == Any || $type->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $type->toOne()->elementToPath()->startsWith($configuration.purePackage))
 }
 
 
