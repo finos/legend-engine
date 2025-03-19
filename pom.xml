@@ -177,7 +177,6 @@
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <jackson.version>2.10.5</jackson.version>
         <janino.version>3.1.0</janino.version>
-        <janino.version>3.1.0</janino.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <jaxrs.version>2.0.1</jaxrs.version>
@@ -1028,6 +1027,21 @@
                 <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -1346,11 +1360,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -2420,12 +2429,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-fct</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-test-fct</artifactId>
-                <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

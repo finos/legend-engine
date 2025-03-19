@@ -28,5 +28,8 @@
 
     <modules>
         <module>legend-engine-pure-functions-standard-pure</module>
+        <module>legend-engine-pure-runtime-java-extension-compiled-functions-standard</module>
+        <module>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</module>
+        <module>legend-engine-pure-runtime-java-extension-shared-functions-standard</module>
     </modules>
 </project>

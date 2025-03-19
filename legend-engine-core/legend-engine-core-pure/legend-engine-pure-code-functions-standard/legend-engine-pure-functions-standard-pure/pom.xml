@@ -32,10 +32,46 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
-                    <sourceDirectory>src/main/resources</sourceDirectory>
+                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_functions_standard.definition.json</extraRepository>
@@ -59,81 +95,23 @@
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-java</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>build-pure-compiled-jar</goal>
-                        </goals>
-                        <configuration>
-                            <generateSources>true</generateSources>
-                            <preventJavaCompilation>true</preventJavaCompilation>
-                            <generationType>modular</generationType>
-                            <useSingleDir>true</useSingleDir>
-                            <repositories>
-                                <repository>core_functions_standard</repository>
-                            </repositories>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-pct</artifactId>
                 <executions>
                     <execution>
-                        <id>functions</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>generate-pct-functions</goal>
                         </goals>
-                        <configuration>
-                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                            <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>generate-pct-report</goal>
-                        </goals>
-                        <configuration>
-                            <mode>Compiled</mode>
-                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                            <PCTTestSuites>
-                                <PCTTestSuite>org.finos.legend.engine.pure.code.core.functions.standard.Test_Compiled_StandardFunctions_PCT</PCTTestSuite>
-                            </PCTTestSuites>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                    <scopeProviderMethod>org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider.standardFunctions</scopeProviderMethod>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -144,36 +122,8 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
@@ -193,6 +143,11 @@
             <artifactId>legend-pure-m3-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- TEST -->
     </dependencies>
