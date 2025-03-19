@@ -25,5 +25,8 @@ public interface RelationalStoreExecutorExtension extends LegendModuleSpecificEx
 {
     Function5<RelationalExecutionConfiguration, Connection, StreamingResult, String, String, RelationalDatabaseCommandsVisitor<Boolean>> getStreamResultToTempTableVisitor();
 
-    Function5<RelationalExecutionConfiguration, Connection, StreamingResult, String, String, RelationalDatabaseCommandsVisitor<Boolean>> getStreamResultToTableVisitor();
+    default Function5<RelationalExecutionConfiguration, Connection, StreamingResult, String, String, RelationalDatabaseCommandsVisitor<Boolean>> getStreamResultToTableVisitor()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }
