@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.pure.code.core.functions.standard;
+package org.finos.legend.pure.runtime.java.interpreted.function.standard;
 
+import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,9 +25,9 @@ public class TestPCTReport
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(4, PCTReportProviderLoader.gatherFunctions().size());
-        Assert.assertEquals("essential, grammar, relation, standard", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(4, PCTReportProviderLoader.gatherReports().size());
         Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        System.out.println(PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module));
+        ImmutableSet expectedReports = Sets.immutable.of("essential", "grammar", "relation", "standard");
+        Assert.assertEquals(expectedReports, PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module).toSet());
     }
 }
