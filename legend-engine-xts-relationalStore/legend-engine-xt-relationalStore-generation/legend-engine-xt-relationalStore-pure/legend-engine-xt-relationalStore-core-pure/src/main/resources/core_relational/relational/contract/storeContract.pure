@@ -79,7 +79,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                 p: meta::relational::metamodel::Column[*] | true,
                                                 p: meta::relational::metamodel::Schema[*] | true,
                                                 p: meta::relational::metamodel::relation::Table[*] | true,
-                                                f: SimpleFunctionExpression[1] | $f.func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_]),
+                                                f: SimpleFunctionExpression[1] | $f.func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_ ,meta::pure::functions::string::parseDate_String_1__Date_1_ ]),
                                                 a: Any[*] | false
                                      ])},
      routeFunctionExpressions = pair(

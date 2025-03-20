@@ -570,6 +570,8 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::lineage::tests::re
 
 
 ###Pure
+import meta::pure::router::preeval::*;
+import meta::relational::extension::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::tests::model::simple::*;
 function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::testForSimpleRelationalGraphFetchChecked():Boolean[1]
@@ -591,5 +593,17 @@ function <<test.Test>> meta::analytics::lineage::tests::relational::graphFetch::
                                           ['Lambda', 'meta::relational::tests::model::simple::Person', 'pack_meta::relational::tests::model::simple'],
                                           '[Person.firstName: [personTable.FIRSTNAME <TableAliasColumn>], Person.lastName: [personTable.LASTNAME <TableAliasColumn>]]',
                                            $lineage);
+
+}
+
+
+
+function <<test.Test>> meta::analytics::lineage::tests::testParseDate():Boolean[1]
+{
+  let input = {| parseDate('9999-01-01 01:01:01')};
+
+
+  let preEval =  $input->preval(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)), $input->openVariableValues(),  relationalExtensions(), noDebug()).value->toOne(); 
+  assert($preEval->evaluateAndDeactivate()->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@SimpleFunctionExpression).functionName=='parseDate');
 
 }
