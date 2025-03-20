@@ -220,11 +220,6 @@ function meta::pure::functions::collection::toNumbered<T>(values:T[*]): Pair<Int
    zip(range(1, $values->size() + 1), $values);
 }
 
-function meta::pure::functions::collection::count(s:Any[*]):Integer[1]
-{
-   $s->size();
-}
-
 function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
 {
     sort($col, $key, [])
