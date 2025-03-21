@@ -25,6 +25,8 @@ import org.finos.legend.engine.protocol.sql.metamodel.BetweenPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Cast;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
+import org.finos.legend.engine.protocol.sql.metamodel.WithQuery;
+import org.finos.legend.engine.protocol.sql.metamodel.With;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
@@ -167,6 +169,18 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(ColumnType val)
     {
         return defaultValue();
+    }
+
+    @Override
+    public T visit(WithQuery val)
+    {
+        return collect(val.query);
+    }
+
+    @Override
+    public T visit(With val)
+    {
+        return collect(val.withQueries);
     }
 
     @Override
