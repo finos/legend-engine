@@ -2753,3 +2753,29 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGraphFetchH2TempTab
   assertEquals('INSERT INTO "temp_table_node_0" SELECT * FROM CSVREAD(\'${csv_file_location}\');', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
+
+function <<test.Test>> meta::pure::executionPlan::tests::testTdsLastExpressionAssingesToVariable_withFrom():Boolean[1]
+{
+   let result = meta::pure::executionPlan::executionPlan(|let a = Person.all()->project(p|$p.firstName, 'firstName')->from(simpleRelationalMapping, meta::external::store::relational::tests::testRuntime()), meta::relational::extension::relationalExtensions())->planToString( meta::relational::extension::relationalExtensions());
+   // no allocation node
+   assertEquals('Relational\n' +
+  '(\n' +
+  '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+  '  resultColumns = [("firstName", VARCHAR(200))]\n' +
+  '  sql = select "root".FIRSTNAME as "firstName" from personTable as "root"\n' +
+  '  connection = TestDatabaseConnection(type = "H2")\n' +
+  ')\n', $result);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testTdsLastExpressionAssingesToVariable_DeprecatedFlow():Boolean[1]
+{
+   let result = meta::pure::executionPlan::executionPlan(|let a = Person.all()->project(p|$p.firstName, 'firstName'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions())->planToString( meta::relational::extension::relationalExtensions());
+   // no allocation node
+   assertEquals('Relational\n' +
+  '(\n' +
+  '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+  '  resultColumns = [("firstName", VARCHAR(200))]\n' +
+  '  sql = select "root".FIRSTNAME as "firstName" from personTable as "root"\n' +
+  '  connection = TestDatabaseConnection(type = "H2")\n' +
+  ')\n', $result);
+}
