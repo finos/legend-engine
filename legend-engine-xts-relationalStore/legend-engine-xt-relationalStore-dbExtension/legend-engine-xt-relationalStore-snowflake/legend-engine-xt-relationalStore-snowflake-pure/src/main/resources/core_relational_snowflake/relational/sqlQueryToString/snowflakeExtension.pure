@@ -244,6 +244,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='TIME_SLICE(%s)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),
@@ -252,9 +253,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',            $allStates,           ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
-
-
-
   ];
 }
 
@@ -480,6 +478,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
   let format = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
   format('TO_CHAR(CONVERT_TIMEZONE(%s,%s),%s)',[$params->at(1),$params->at(0),$format]);
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::constructInterval(unit:String[1], i:String[1]):String[1]
+{
+   let unitWithoutQuotes = $unit->removeQuotesIfExist();
+
+   let interval= [
+      pair(DurationUnit.YEARS->toString(), '\'YEAR\''),
+      pair(DurationUnit.MONTHS->toString(), '\'MONTH\''),
+      pair(DurationUnit.WEEKS->toString(), '\'WEEK\''),
+      pair(DurationUnit.DAYS->toString(), '\'DAY\''),
+      pair(DurationUnit.HOURS->toString(), '\'HOUR\''),
+      pair(DurationUnit.MINUTES->toString(), '\'MINUTE\''),
+      pair(DurationUnit.SECONDS->toString(), '\'SECOND\'')
+   ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not supported: ' + $unitWithoutQuotes);
+
+   $i + ', ' + $interval;
 }
 
 

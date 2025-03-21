@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.standard.pure;
+package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;

@@ -14,13 +14,24 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled;
 
-import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.StandardSharedFunctionsPlaceholder;
+import org.eclipse.collections.api.factory.Stacks;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation.TimeBucketShared;
 
 public class StandardFunctionsHelper
 {
-    // placeholder to preserve pom structure for new module structure that enables native functions in core_functions_standard
-    public static void StandardFunctionsHelperPlaceholder()
+    // DATE-TIME --------------------------------------------------------------
+    public static DateTime timeBucket(DateTime date, long quantity, Enum unit)
     {
-        System.out.println(StandardSharedFunctionsPlaceholder.StandardSharedFunctionPlaceholder());
+        try
+        {
+            return TimeBucketShared.time_bucket(date, quantity, unit._name());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new PureExecutionException(e.getMessage(), e.getCause(), Stacks.mutable.empty());
+        }
     }
 }

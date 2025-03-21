@@ -59,8 +59,11 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
-            one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\"")
-        );
+            one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+
+            // Date
+            pack("meta::pure::functions::date::tests::timeBucket", "\"meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_ is not supported yet!\"")
+    );
 
     public static Test suite()
     {

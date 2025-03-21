@@ -12,25 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.functions.interpreted;
+package org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted;
 
-import org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.StandardSharedFunctionsPlaceholder;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.natives.date.operation.TimeBucket;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 
 public class StandardFunctionExtensionInterpreted extends BaseInterpretedExtension
 {
     public StandardFunctionExtensionInterpreted()
     {
+        super(//Date
+                Tuples.pair("timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", TimeBucket::new)
+        );
     }
 
     public static StandardFunctionExtensionInterpreted extension()
     {
         return new StandardFunctionExtensionInterpreted();
-    }
-
-    // placeholder to preserve pom structure for new module structure that enables native functions in core_functions_standard
-    public static void StandardFunctionExtensionInterpretedPlaceholder()
-    {
-        System.out.println(StandardSharedFunctionsPlaceholder.StandardSharedFunctionPlaceholder());
     }
 }

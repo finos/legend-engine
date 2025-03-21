@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives;
+package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation;
 
-public class StandardSharedFunctionsPlaceholder
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNativeFunctionGeneric;
+
+public class TimeBucket extends AbstractNativeFunctionGeneric
 {
-    public static String StandardSharedFunctionPlaceholder()
+    public TimeBucket()
     {
-        return "Placeholder for util functions of core_functions_standard shared between compiled and interpreted paths";
+        super("StandardFunctionGen.timeBucket", new Class[]{DateTime.class, Long.class, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum.class}, "timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_");
     }
 }

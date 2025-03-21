@@ -18,9 +18,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         <version>4.75.1-SNAPSHOT</version>
-        <relativePath>../../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
@@ -53,7 +52,7 @@
                     <mode>Interpreted</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.pure.runtime.java.interpreted.function.standard.pure.Test_Interpreted_StandardFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.pure.runtime.java.extension.functions.standard.interpreted.pure.Test_Interpreted_StandardFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -95,6 +94,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
         </dependency>
 
         <dependency>

@@ -1147,6 +1147,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   substring,
   sum,
   tan,
+  timeBucket,
   times,
   toDecimal,
   toFloat,

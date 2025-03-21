@@ -219,6 +219,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='cast(time_bucket(%s) as timestamp_s)', transform={p:String[3] | constructIntervalFunction($p->at(2), $p->at(1)) + ', ' + $p->at(0) + ', ' + constructTimeBucketOffset($p->at(2))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(today() as timestamp_s)')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
@@ -275,6 +276,26 @@ function meta::relational::functions::sqlQueryToString::duckDB::constructInterva
    ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 
    $interval_func +'(' + $i +')';
+}
+
+// DuckDb uses a different origin for calculation of timebuckets; this offset helps to standardize toward unix epoch as origin and
+// the offset for intervals < WEEK are set to align with Snowflake's methodology, as opposed to that which is outlined in DuckDb
+// ref: https://github.com/duckdb/duckdb/blob/68bd4a5277430245e3d9edf1abbb9813520a3dff/extension/core_functions/scalar/date/time_bucket.cpp#L18
+function meta::relational::functions::sqlQueryToString::duckDB::constructTimeBucketOffset(unit:String[1]):String[1]
+{
+  let unitWithoutQuotes = $unit->removeQuotesIfExist();
+  let ISOMondayEpochOffset = 'timestamp \'1969-12-29 00:00:00\'';
+  let EpochOffset = 'timestamp \'1970-01-01 00:00:00\'';
+
+  let offset = [
+      pair(DurationUnit.YEARS->toString(), $EpochOffset),
+      pair(DurationUnit.MONTHS->toString(), $EpochOffset),
+      pair(DurationUnit.WEEKS->toString(), $ISOMondayEpochOffset),
+      pair(DurationUnit.DAYS->toString(), $EpochOffset),
+      pair(DurationUnit.HOURS->toString(), $EpochOffset),
+      pair(DurationUnit.MINUTES->toString(), $EpochOffset),
+      pair(DurationUnit.SECONDS->toString(), $EpochOffset)
+   ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSelectSQLQueryForDuckDB(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
