@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.interpreted.function.standard.pure;
+package org.finos.legend.pure.runtime.java.extension.functions.standard.compiled;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.list.MutableList;
@@ -23,18 +23,18 @@ import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
-import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilderInterpreted;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class Test_Interpreted_StandardFunctions_PCT extends PCTReportConfiguration
+public class Test_Compiled_StandardFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
-    private static final String platform = "interpreted";
+    private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
 
     public static Test suite()
     {
-        return PureTestBuilderInterpreted.buildPCTTestSuite(reportScope, expectedFailures, adapter);
+        return PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter);
     }
 
     @Override

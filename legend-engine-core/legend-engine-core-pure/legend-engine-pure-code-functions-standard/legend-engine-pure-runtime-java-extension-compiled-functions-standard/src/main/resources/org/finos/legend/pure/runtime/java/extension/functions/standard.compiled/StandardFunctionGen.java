@@ -14,7 +14,9 @@
 
 package org.finos.legend.pure.generated;
 
-public class StandardFunctionGen extends org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.StandardFunctionsHelper
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.StandardFunctionsHelper;
+
+public class StandardFunctionGen extends StandardFunctionsHelper
 {
     // placeholder to keep platform conventions and for new natives to use
 
