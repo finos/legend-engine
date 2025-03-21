@@ -1,0 +1,30 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::deephaven::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::external::store::deephaven::metamodel::executionPlan::*;
+import meta::external::store::deephaven::metamodel::store::*;
+
+Class meta::external::store::deephaven::metamodel::pure::DeephavenExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+  query :  DeephavenQuery[1];
+  connection : meta::external::store::deephaven::metamodel::runtime::DeephavenConnection[1];
+}
+
+Class meta::external::store::deephaven::metamodel::executionPlan::context::DeephavenExecutionContext extends meta::pure::runtime::ExecutionContext
+{
+
+}

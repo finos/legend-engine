@@ -1,0 +1,81 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/*
+* The below represents the Types available users via the user interface; it's a subset of available types used by deephaven itself, inferred from:
+* https://deephaven.io/core/javadoc/io/deephaven/engine/table/ColumnDefinition.html
+*/
+
+import meta::external::store::deephaven::metamodel::type::*;
+
+Class meta::external::store::deephaven::metamodel::type::Type
+{
+}
+
+Class meta::external::store::deephaven::metamodel::type::BooleanType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'booleanType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::ByteType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'byteType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::CharType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'charType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::ShortType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'shortType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::IntType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'intType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::LongType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'longType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::FloatType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'floatType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::DoubleType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'doubleType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::StringType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'stringType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::DateTimeType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'dateTimeType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::CustomType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  // TODO - double check if this is right; componentType was taken from ArrayType but what is property of Custom type column that tracks the type?
+  componentType : meta::external::store::deephaven::metamodel::type::Type[1];
+}
+
