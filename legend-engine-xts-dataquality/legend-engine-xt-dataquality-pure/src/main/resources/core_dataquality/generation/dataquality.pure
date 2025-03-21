@@ -613,6 +613,28 @@ function meta::external::dataquality::buildFromRuntimeExpression(f: FunctionExpr
 
 function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
 {
-  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::pure::mapping::from_T_m__Runtime_1__T_m_, meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_]);
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition(
+    meta::external::dataquality::fromFunctions()
+    );
   !$getExprList->isEmpty();
+}
+
+function <<access.protected>> meta::external::dataquality::fromFunctions():Function<Any>[*]
+{
+  [
+    meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_,
+    meta::pure::mapping::from_T_m__DataSpaceExecutionContext_1__T_m_,
+    meta::pure::mapping::from_T_m__DataSpace_1__T_m_,
+    meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+    meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_,
+    meta::pure::mapping::from_T_m__Runtime_1__T_m_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+    meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_
+    ] 
 }
