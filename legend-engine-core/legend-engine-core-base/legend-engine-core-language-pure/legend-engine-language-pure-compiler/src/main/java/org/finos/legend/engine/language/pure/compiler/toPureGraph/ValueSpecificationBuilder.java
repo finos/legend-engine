@@ -893,14 +893,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))
-                        ._classifierGenericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue")._typeArguments(FastList.newListWith(
-                                ((FunctionType) l._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType(),
-                                ((FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()
-                        )))
-                        ._name(tdsAggregateValue.name)
-                        ._mapFn(l)
-                        ._aggregateFn(o)));
+                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))._name(tdsAggregateValue.name)._mapFn(l)._aggregateFn(o)));
+
     }
 
     public ValueSpecification processClassInstance(TDSSortInformation tdsSortInformation)

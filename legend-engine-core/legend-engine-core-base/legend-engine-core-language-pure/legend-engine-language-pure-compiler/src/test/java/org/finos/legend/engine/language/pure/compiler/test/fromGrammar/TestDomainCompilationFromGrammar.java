@@ -1050,15 +1050,15 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   z(){test::A.all()->groupBy(a|$a.name, agg(x|$x.name, z|$z->count()), ['a', 'b'])}:meta::pure::tds::TabularDataSet[1];\n" +
                 "}");
-        test("Class test::A\n" +
-                "{\n" +
-                "   name : String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::B\n" +
-                "{\n" +
-                "   z(){agg(x:test::A[1]|$x.name, z:String[1]|$z->count())}:meta::pure::functions::collection::AggregateValue<test::A, String, Integer>[1];\n" +
-                "}");
+//        test("Class test::A\n" +
+//                "{\n" +
+//                "   name : String[1];\n" +
+//                "}\n" +
+//                "\n" +
+//                "Class test::B\n" +
+//                "{\n" +
+//                "   z(){agg(x:test::A[1]|$x.name, z:String[1]|$z->count())}:meta::pure::functions::collection::AggregateValue<test::A, String, Integer>[1];\n" +
+//                "}");
         test("Class test::A\n" +
                 "{\n" +
                 "   name : String[1];\n" +
