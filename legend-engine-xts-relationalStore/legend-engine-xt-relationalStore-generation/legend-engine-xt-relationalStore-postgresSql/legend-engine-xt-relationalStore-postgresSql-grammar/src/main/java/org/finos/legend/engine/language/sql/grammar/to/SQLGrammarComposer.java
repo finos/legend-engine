@@ -413,6 +413,19 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(WithQuery val)
+            {
+                String columns = val.columns.isEmpty() ? "" : FastList.newList(val.columns).makeString(" (", ", ",  ")");
+                return val.name + columns + " AS (" + visit(val.query) + ")";
+            }
+
+            @Override
+            public String visit(With val)
+            {
+                return !val.withQueries.isEmpty() ? "WITH " + FastList.newList(val.withQueries).collect(this::visit).makeString("", ", ", " ") : "";
+            }
+
+            @Override
             public String visit(ArrayLiteral val)
             {
                 return "[" + visit(val.values, ", ") + "]";
@@ -438,7 +451,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Query val)
             {
-                return val.queryBody.accept(this)
+                return (val.with != null ? visit(val.with) : "") + val.queryBody.accept(this)
                         + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
                         + (val.limit == null ? "" : " limit " + val.limit.accept(this))
                         + (val.offset == null ? "" : " offset " + val.offset.accept(this));
