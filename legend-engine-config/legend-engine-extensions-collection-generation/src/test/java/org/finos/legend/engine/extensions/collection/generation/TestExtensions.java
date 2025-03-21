@@ -562,7 +562,6 @@ public class TestExtensions
                 .with("core_persistence")
                 .with("core_persistence_cloud")
                 .with("core_persistence_relational")
-                .with("core_precise_primitives")
                 .with("core_relational")
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")

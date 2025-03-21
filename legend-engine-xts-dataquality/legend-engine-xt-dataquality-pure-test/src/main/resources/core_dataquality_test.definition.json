@@ -12,6 +12,7 @@
     "platform_dsl_graph",
     "platform_dsl_mapping",
     "platform_store_relational",
+    "platform_precise_primitives",
     "core_dataquality",
     "core_external_compiler"
   ]

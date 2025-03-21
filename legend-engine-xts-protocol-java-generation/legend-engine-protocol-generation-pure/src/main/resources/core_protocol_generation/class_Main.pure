@@ -370,7 +370,7 @@ function <<access.private>> meta::protocols::generation::java::translation::coll
 
 function meta::protocols::generation::java::translation::isTypeInScope(c:meta::pure::metamodel::type::Type[1], configuration:Configuration[1]):Boolean[1]
 {
-  $c == Any || ($configuration.elementsToBeExcluded->fold({p,a|$a && !$c->elementToPath()->startsWith($p)}, true) && !$c->hasStereotype('excluded', ProtocolInfo) && ($configuration.pureFiles->isEmpty() || $c->sourceInformation().source->in($configuration.pureFiles)));
+  $c == Any || ($c != SourceInformation && $configuration.elementsToBeExcluded->fold({p,a|$a && !$c->elementToPath()->startsWith($p)}, true) && !$c->hasStereotype('excluded', ProtocolInfo) && ($configuration.pureFiles->isEmpty() || $c->sourceInformation().source->in($configuration.pureFiles)));
 }
 
 function meta::protocols::generation::java::translation::isPropertyInScope(p:Property<Nil,Any|ZeroMany>[1], context:Context[1]):Boolean[1]
@@ -396,7 +396,7 @@ function meta::protocols::generation::java::findChildren(p:meta::pure::metamodel
   $children->concatenate($children->map(c|$c->findChildren($config)));
 }
 
-function <<access.private>> meta::protocols::generation::java::translation::shouldTranslateReturn(property : AbstractProperty<Any>[1]) : Boolean[1]
+function <<access.private>> meta::protocols::generation::java::translation::shouldTranslateReturn(property : AbstractProperty<Any>[1], configuration:Configuration[1]) : Boolean[1]
 {
    $property.genericType.rawType->match([
       pt:meta::pure::metamodel::type::PrimitiveType[1]    | false,

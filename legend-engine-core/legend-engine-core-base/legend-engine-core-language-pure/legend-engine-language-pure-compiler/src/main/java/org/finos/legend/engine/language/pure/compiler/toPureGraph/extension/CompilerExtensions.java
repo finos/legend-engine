@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.extension;
 
+import com.hazelcast.partition.Partition;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
@@ -24,10 +25,14 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.multimap.list.MutableListMultimap;
+import org.eclipse.collections.api.partition.PartitionIterable;
 import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -121,6 +126,7 @@ public class CompilerExtensions
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+    private final MutableMap<String, MutableSet<String>> extraSubTypesForFunctionMatching;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -155,6 +161,8 @@ public class CompilerExtensions
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
+        this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraSubTypesForFunctionMatching.putAll(e.getExtraSubtypesForFunctionMatching()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -334,6 +342,11 @@ public class CompilerExtensions
         return this.extraValueSpecificationBuilderForFuncExpr;
     }
 
+    public MutableMap<String, MutableSet<String>> getExtraSubTypesForFunctionMatching()
+    {
+        return extraSubTypesForFunctionMatching;
+    }
+
     public List<Processor<?>> sortExtraProcessors()
     {
         return sortExtraProcessors(getExtraProcessors(), false);
@@ -348,7 +361,10 @@ public class CompilerExtensions
     {
         // Collect processor pre-requisites. Those without pre-requisites can go straight into the results list.
         MutableList<Processor<?>> results = Lists.mutable.empty();
-        MutableMap<Processor<?>, Collection<? extends java.lang.Class<? extends PackageableElement>>> withPrerequisites = Maps.mutable.empty();
+        MutableMap<Processor<?>, Collection<java.lang.Class<? extends PackageableElement>>> withPrerequisites = Maps.mutable.empty();
+        MutableMap<Class<? extends PackageableElement>, Processor<?>> processorsByClass = Maps.mutable.empty();
+        processorsByClass.forEach(p -> processorsByClass.put(p.getElementClass(), p));
+
         processors.forEach(p ->
         {
             // Validate that the processor is part of this set of extensions
@@ -356,16 +372,13 @@ public class CompilerExtensions
             {
                 throw new IllegalArgumentException("Unknown processor: " + p);
             }
-            Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
-            if (prerequisites.isEmpty())
-            {
-                results.add(p);
-            }
-            else
-            {
-                withPrerequisites.put(p, prerequisites);
-            }
+            withPrerequisites.getIfAbsentPut(p, Lists.mutable::empty).addAll(p.getPrerequisiteClasses());
+            p.getReversePrerequisiteClasses().forEach(x -> withPrerequisites.getIfAbsentPut(processorsByClass.get(x), Lists.mutable::empty).add(x));
         });
+
+        RichIterable<Pair<Processor<?>, Collection<Class<? extends PackageableElement>>>> emptyOnes = withPrerequisites.keyValuesView().select(x -> x.getTwo().isEmpty());
+        results.addAll(emptyOnes.collect(Pair::getOne).toList());
+        results.forEach(withPrerequisites::remove);
 
         // If there are processors with pre-requisites, we need to add them to the results list in an appropriate order.
         if (withPrerequisites.notEmpty())
@@ -483,7 +496,7 @@ public class CompilerExtensions
         return this.extraIncludedMappingHandlers.get(classType);
     }
 
-    public ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>>  getExtraRelationStoreAccessorProcessors()
+    public ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>> getExtraRelationStoreAccessorProcessors()
     {
         return this.extraRelationStoreAccessorProcessors;
     }

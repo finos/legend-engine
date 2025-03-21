@@ -21,57 +21,17 @@
 
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-core-pure</artifactId>
+        <artifactId>legend-engine-pure-platform-modular-generation</artifactId>
         <version>4.74.1-SNAPSHOT</version>
     </parent>
 
-    <name>Legend Engine - Pure - Code - Core - PrecisePrimitives - Pure</name>
-    <artifactId>legend-engine-pure-code-precisePrimitives-pure</artifactId>
+    <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
     <packaging>jar</packaging>
+    <name>Legend Engine - Pure - Platform - PrecisePrimitives - JAVA</name>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-par</artifactId>
-                <configuration>
-                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
-                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
-                    <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_precise_primitives.definition.json</extraRepository>
-                    </extraRepositories>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>build-pure-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
+             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-java</artifactId>
                 <executions>
@@ -86,28 +46,39 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_precise_primitives</repository>
+                                <repository>platform_precise_primitives</repository>
                             </repositories>
                         </configuration>
                     </execution>
                 </executions>
+                 <dependencies>
+                     <dependency>
+                         <groupId>org.finos.legend.pure</groupId>
+                         <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+                         <version>${legend.pure.version}</version>
+                     </dependency>
+                 </dependencies>
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -117,23 +88,11 @@
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
+            <artifactId>eclipse-collections-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -105,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.36.1</legend.pure.version>
+        <legend.pure.version>5.39.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -2523,7 +2523,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-code-precisePrimitives-pure</artifactId>
+                <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2843,6 +2843,11 @@
                         <artifactId>simpleclient_httpserver</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

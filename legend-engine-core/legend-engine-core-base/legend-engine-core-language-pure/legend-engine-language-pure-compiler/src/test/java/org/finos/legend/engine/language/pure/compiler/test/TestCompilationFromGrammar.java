@@ -1073,7 +1073,7 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "Class test::Report" +
                         "{" +
-                        "   country : meta::external::catalog::precisePrimitives::Varchar(200)[1];" +
+                        "   country : meta::pure::precisePrimitives::Varchar(200)[1];" +
                         "}"
         );
     }
@@ -1085,9 +1085,9 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "Class test::Report" +
                         "{" +
-                        "   country : meta::external::catalog::precisePrimitives::Varchar(200,1)[1];" +
+                        "   country : meta::pure::precisePrimitives::Varchar(200,1)[1];" +
                         "}",
-                "COMPILATION error at [2:33-90]: Wrong type variables count (2) for type: Varchar(x:Integer)"
+                "COMPILATION error at [2:33-77]: Wrong type variables count (2) for type: Varchar(x:Integer)"
         );
     }
 
@@ -1098,9 +1098,9 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "Class test::Report" +
                         "{" +
-                        "   country : meta::external::catalog::precisePrimitives::Varchar('200')[1];" +
+                        "   country : meta::pure::precisePrimitives::Varchar('200')[1];" +
                         "}",
-                "COMPILATION error at [2:33-90]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION error at [2:33-77]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1109,11 +1109,11 @@ public class TestCompilationFromGrammar
     {
         TestCompilationFromGrammarTestSuite.test(
                 "###Pure\n" +
-                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar('200')[1]):String[1]" +
+                        "function x::a(x:meta::pure::precisePrimitives::Varchar('200')[1]):String[1]" +
                         "{" +
                         "   'x';" +
                         "}",
-                "COMPILATION error at [2:17-74]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION error at [2:17-61]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1122,11 +1122,11 @@ public class TestCompilationFromGrammar
     {
         TestCompilationFromGrammarTestSuite.test(
                 "###Pure\n" +
-                        "function x::a():meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar(200))>[1]" +
+                        "function x::a():meta::pure::metamodel::relation::Relation<(x:meta::pure::precisePrimitives::Varchar(200))>[1]" +
                         "{" +
-                        "   []->cast(@meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar('200'))>);" +
+                        "   []->cast(@meta::pure::metamodel::relation::Relation<(x:meta::pure::precisePrimitives::Varchar('200'))>);" +
                         "}",
-                "COMPILATION error at [2:182-239]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
+                "COMPILATION error at [2:169-213]: Error for type: Varchar(x:Integer), '200' is not an instance of Integer"
         );
     }
 
@@ -1135,13 +1135,13 @@ public class TestCompilationFromGrammar
     {
         TestCompilationFromGrammarTestSuite.test(
                 "###Pure\n" +
-                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
+                        "function x::a(x:meta::pure::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
                         "{" +
                         "   true;" +
                         "}" +
                         "function x::call():Boolean[1]" +
                         "{" +
-                        "   x::a('www'->cast(@meta::external::catalog::precisePrimitives::Varchar(200)));" +
+                        "   x::a('www'->cast(@meta::pure::precisePrimitives::Varchar(200)));" +
                         "}"
         );
     }
@@ -1151,15 +1151,15 @@ public class TestCompilationFromGrammar
     {
         TestCompilationFromGrammarTestSuite.test(
                 "###Pure\n" +
-                        "function x::a(x:meta::external::catalog::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
+                        "function x::a(x:meta::pure::precisePrimitives::Varchar(200)[1]):Boolean[1]" +
                         "{" +
                         "   true;" +
                         "}" +
                         "function x::call():Boolean[1]" +
                         "{" +
-                        "   x::a('www'->cast(@meta::external::catalog::precisePrimitives::Varchar(250)));" +
+                        "   x::a('www'->cast(@meta::pure::precisePrimitives::Varchar(250)));" +
                         "}",
-                "COMPILATION error at [2:131-134]: Can't find a match for function 'x::a(Varchar(250)[1])"
+                "COMPILATION error at [2:118-121]: Can't find a match for function 'x::a(Varchar(250)[1])"
         );
     }
 
@@ -1170,7 +1170,7 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "function x::call():Integer[1]" +
                         "{" +
-                        "   1->cast(@meta::external::catalog::precisePrimitives::TinyInt) + 1;" +
+                        "   1->cast(@meta::pure::precisePrimitives::TinyInt) + 1;" +
                         "}"
         );
     }
@@ -1182,8 +1182,8 @@ public class TestCompilationFromGrammar
                 "###Pure\n" +
                         "function x::call():Integer[1]" +
                         "{" +
-                        "   1->cast(@meta::external::catalog::precisePrimitives::TinyInt) + '1';" +
-                        "}", "COMPILATION error at [2:96-100]: Can't find a match for function 'plus(Any[2])'"
+                        "   1->cast(@meta::pure::precisePrimitives::TinyInt) + '1';" +
+                        "}", "COMPILATION error at [2:83-87]: Can't find a match for function 'plus(Any[2])'"
         );
     }
 }

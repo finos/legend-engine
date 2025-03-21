@@ -37,7 +37,7 @@ function meta::protocols::generation::java::translation::generateMetamodelToProt
 
   let translatorClass = javaClass(['public'], $package, 'MetamodelToProtocolTranslator');
   newProject()->addClass(
-    $translatorClass->addMethods(generateMetamodelToProtocolTranslationMethods($pack, $translatorClass, $taxonomies, $conventions, $config.elementsToBeExcluded)->sortBy({a|$a.returnType->cast(@meta::external::language::java::metamodel::Class).simpleName}))
+    $translatorClass->addMethods(generateMetamodelToProtocolTranslationMethods($pack, $translatorClass, $taxonomies, $conventions, $config)->sortBy({a|$a.returnType->cast(@meta::external::language::java::metamodel::Class).simpleName}))
   );
 }
 
@@ -46,13 +46,13 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                       translatorClass:meta::external::language::java::metamodel::Class[1],
                                       taxonomies: Taxonomy[*],
                                       conventions: Conventions[1],
-                                      elementsToBeExcluded:String[*]
+                                      configuration:Configuration[1]
                             ):Method[*]
 {
   $elem->match(
     [
-      p: Package[1] | $p.children->filter(c | !$c->elementToPath()->in($elementsToBeExcluded))->map(c|generateMetamodelToProtocolTranslationMethods($c, $translatorClass, $taxonomies,$conventions, $elementsToBeExcluded)),
-      c: meta::pure::metamodel::type::Class<Any>[1] | meta::protocols::generation::java::translation::generateMetamodelToProtocolTranslationForClass($c, $translatorClass, $taxonomies, $conventions),
+      p: Package[1] | $p.children->filter(c | !$c->elementToPath()->in($configuration.elementsToBeExcluded))->map(c|generateMetamodelToProtocolTranslationMethods($c, $translatorClass, $taxonomies,$conventions, $configuration)),
+      c: meta::pure::metamodel::type::Class<Any>[1] | meta::protocols::generation::java::translation::generateMetamodelToProtocolTranslationForClass($c, $translatorClass, $taxonomies, $conventions, $configuration),
       s: Any[1] | []
     ]
   )
@@ -62,7 +62,8 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                       c:meta::pure::metamodel::type::Class<Any>[1],
                                       translatorClass:meta::external::language::java::metamodel::Class[1],
                                       taxonomies: Taxonomy[*],
-                                      conventions: Conventions[1]
+                                      conventions: Conventions[1],
+                                      configuration:Configuration[1]
                             ):Method[1]
 {
   let returnType          = pureTypeToJavaType($conventions, $c, PureOne);
@@ -80,7 +81,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
 
                                         let expression          = if($p.multiplicity->isToMany(),
                                                                     |
-                                                                      if($p->shouldTranslateReturn(),
+                                                                      if($p->shouldTranslateReturn($configuration),
                                                                         | if($p.genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                                             | let metamodelEnum   = javaClass('public', javaPackage('org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type'), 'Enum');
                                                                               let xParam          = j_parameter($metamodelEnum, 'x');
@@ -93,7 +94,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                                                                         | j_invoke($metamodelPropAccess, 'toList', [], javaObject())->j_cast($propReturnType)
                                                                       ),
                                                                     |
-                                                                      if($p->shouldTranslateReturn(),
+                                                                      if($p->shouldTranslateReturn($configuration),
                                                                         | if($p.genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Enumeration),
                                                                             | j_invoke($propReturnType, 'valueOf', $metamodelPropAccess->j_invoke('_name', [], javaString()), $propReturnType),
                                                                             | j_invoke(j_this($translatorClass), 'translate', $metamodelPropAccess, $propReturnType)
