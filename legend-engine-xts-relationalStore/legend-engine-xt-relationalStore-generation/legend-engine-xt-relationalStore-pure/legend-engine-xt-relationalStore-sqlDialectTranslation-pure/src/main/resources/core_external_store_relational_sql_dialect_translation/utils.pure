@@ -12,10 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::tests::utils::TestSetupData
+{
+  tableName: String[1];
+  columns: Pair<String, String>[1..*];
+  data: List<meta::external::query::sql::metamodel::Literal>[1..*];
+  useTempTable: Boolean[1] = false;
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::tests::utils::TestExpectedResult
+{
+  columns:String[1..*];
+  data: List<Any>[*];
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::dataRow(values:Any[*]):List<meta::external::query::sql::metamodel::Literal>[1]
+{
+  list($values->map(v| $v->match([l: meta::external::query::sql::metamodel::Literal[1]| $l, a: Any[1]| literal($a)])));
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::null():Any[1]
+{
+  ^SQLNull();
+}
 
 function meta::external::store::relational::sqlDialectTranslation::utils::keyword(sqlDialect: SqlDialect[1], keyword: String[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
@@ -71,6 +97,53 @@ function meta::external::store::relational::sqlDialectTranslation::utils::simple
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::utils::simpleAggFunctionCall(aggFunctionCall:FunctionCall[1], table:String[1], groupByCols:String[*]): Query[1]
+{
+  ^Query(
+    queryBody = ^QuerySpecification(
+      select = ^Select(
+        selectItems = ^SingleColumn(
+          expression = $aggFunctionCall, 
+          alias = 'result'
+        )
+      ), 
+      from = ^Table(name = ^QualifiedName(parts = $table)),
+      groupBy = $groupByCols->map(c| ^QualifiedNameReference(name = ^QualifiedName(parts = $c))),
+      orderBy = ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'result')),
+        ordering = SortItemOrdering.ASCENDING, 
+        nullOrdering = SortItemNullOrdering.LAST
+      )
+    )
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::postTraversalClassTransform(instance: Any[1], transformFunction: Function<{Any[1], KeyValue[*]->Any[*]}>[1]): Any[*]
+{
+  let instanceClass = $instance->type()->cast(@Class<Any>);
+  let allProperties = $instanceClass->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
+  let transformedKeyValues = $allProperties->map({p |
+    let propValues = $p->eval($instance);
+    let transformedValues = if (!$p->isPrimitiveValueProperty(),
+      | $propValues->map(v | $v->postTraversalClassTransform($transformFunction)),
+      | $propValues
+    );
+    ^KeyValue(key = $p.name->toOne(), value = $transformedValues);
+  });
+  $transformFunction->eval($instance, $transformedKeyValues);
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::nodeCollector(node: Node[1]): Node[*]
+{
+  postTraversalClassTransform(
+    $node,
+    {node:Any[1], keyValues:KeyValue[*]|
+      let nodes = $keyValues.value->filter(v | $v->forAll(v | $v->instanceOf(Node)))->cast(@Node);
+      if($node->instanceOf(Node), |$node, |[])->concatenate($nodes);
+    }
+  )->cast(@Node);
+}
+
 function meta::external::store::relational::sqlDialectTranslation::utils::cast(expression: meta::external::query::sql::metamodel::Expression[1], typeName: String[1]): Cast[1]
 {
   ^Cast
@@ -80,12 +153,14 @@ function meta::external::store::relational::sqlDialectTranslation::utils::cast(e
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::utils::literal(a: Any[1]): Literal[1]
+function meta::external::store::relational::sqlDialectTranslation::utils::literal(a: Any[1]): meta::external::query::sql::metamodel::Literal[1]
 {
   $a->match([
-    i: Integer[1] | ^IntegerLiteral(value = $i),
-    i: Float[1] | ^DoubleLiteral(value = $i),
-    s: String[1] | ^StringLiteral(value = $s),
-    b: Boolean[1] | ^BooleanLiteral(value = $b)
-  ])
+    i: Integer[1]|    ^IntegerLiteral(value = $i),
+    i: Float[1]|      ^DoubleLiteral(value = $i),
+    s: String[1]|     ^StringLiteral(value = $s),
+    b: Boolean[1]|    ^BooleanLiteral(value = $b),
+    s: StrictDate[1]| ^DateLiteral(value = $s),
+    d: DateTime[1]|   ^TimestampLiteral(value = $d)
+  ]);
 }
