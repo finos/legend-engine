@@ -48,7 +48,7 @@ public class Test_Relational_Snowflake_EssentialFunctions_PCT extends PCTReportC
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::contains(CO_Firm[*],CO_Firm[*])'"),
             one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"),
-            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Unexpected token ','. Valid alternatives: ['|']"),
+            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all(),comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1]"),
 
             // Drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"Cast exception: SelectSQLQuery cannot be cast to TdsSelectSqlQuery\""),
