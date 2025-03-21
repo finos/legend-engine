@@ -304,5 +304,23 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "}", "PARSER error at [2:1-10:1]: Field 'assertion' is required");
     }
 
+    @Test
+    public void testParserForValidRelationValidationGrammar_separateRuntime()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "    runtime: test::TestRuntime;\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'testValidation';\n" +
+                "         description: 'test validation';\n" +
+                "         assertion: row|$row.name != 'error';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+
+    }
 
 }
