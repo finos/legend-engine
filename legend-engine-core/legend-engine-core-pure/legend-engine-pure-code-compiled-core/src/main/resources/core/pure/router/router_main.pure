@@ -95,11 +95,10 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
     pair($l->cast(@FunctionDefinition<Any>), $f->openVariableValues())
   );
 
-  let vs      = $expressions->last()->toOne();
-  let varName = $vs->extractLetVariableName();
-  let vars    = if($varName->isNotEmpty(),
-                   | $initStatements.second->put($varName->toOne(), createPlanVarPlaceHolderInScopeVar($varName->toOne(), $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1))), // Since its a let function, use ->at(1) parameter
-                   | $initStatements.second);
+  let lastExpression      = $expressions->last()->toOne();
+  // preeval should do this, but until we enable preeval, remove last statement lets
+  let vs = if($lastExpression->isLetFunction(), |$lastExpression->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1), |$lastExpression);
+  let vars    = $initStatements.second;
   let newF    = ^$l(expressionSequence    = $vs,
                     openVariables         = $vars->keys(),
                     classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType())));
@@ -135,9 +134,15 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
 
    let valueSpecifications = $f.expressionSequence->evaluateAndDeactivate();
 
+   let valueSpecificationsInit = $valueSpecifications->init();
+   let valueSpecificationsLast = $valueSpecifications->last()->toOne();
+
+   // preeval should do this, but until we enable preeval, remove last statement lets
+   let valueSpecificationsLastWithoutLet = if($valueSpecificationsLast->isLetFunction(), |$valueSpecificationsLast->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1), |$valueSpecificationsLast);
+
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
-   let enrichedExpressions = enrichFunctionExpressions($valueSpecifications, $routingStrategy, $exeCtx, $openVariables, $graphFetchFlow, $extensions, $debug);   
+   let enrichedExpressions = enrichFunctionExpressions($valueSpecificationsInit->concatenate($valueSpecificationsLastWithoutLet), $routingStrategy, $exeCtx, $openVariables, $graphFetchFlow, $extensions, $debug);   
 
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
