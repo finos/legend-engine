@@ -46,3 +46,26 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleGr
                   '   2,1.0\n'+
                   '#', $res->sort(~id->ascending())->toString());
 }
+
+function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, val
+                  1, 1
+                  1, 2
+                  2, 2
+                  2, 4
+                #->extend(over(~id), ~newCol:{p,w,r|$r.val}:y|$y->meta::pure::functions::math::variancePopulation())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,val,newCol\n'+
+                  '   1,1,0.25\n'+
+                  '   1,2,0.25\n'+
+                  '   2,2,1.0\n'+
+                  '   2,4,1.0\n'+
+                  '#', $res->sort(~id->ascending())->toString());
+}
