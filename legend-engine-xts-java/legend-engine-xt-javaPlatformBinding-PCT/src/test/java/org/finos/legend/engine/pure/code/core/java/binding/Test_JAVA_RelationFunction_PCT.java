@@ -149,6 +149,9 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_", "\"Error during dynamic reactivation: Not Implemented for function: groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::size::testWindowSize_Function_1__Boolean_1_", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::size::testSize_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::size_Relation_1__Integer_1_ is not supported yet!\""),
 
             // Slice
             pack("meta::pure::functions::relation::tests::slice", "\"meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_ is not supported yet!\""),

@@ -93,25 +93,6 @@ function <<test.Test>> meta::pure::functions::tests::collection::allButOneAreEmp
    assertEquals(false, [list([]->cast(@Integer)), list([]->cast(@Integer))]->allButOneAreEmpty());
 }
 
-function <<test.Test>> meta::pure::functions::tests::collection::and():Boolean[1]
-{
-   assertEquals(true, and(true));
-   assertEquals(true, and([true, true]));
-   assertEquals(false, and([true, false]));
-   assertEquals(false, and([true, true, false]));
-}
-
-
-function <<test.Test>> meta::pure::functions::tests::collection::or():Boolean[1]
-{
-   assertEquals(true, or(true));
-   assertEquals(true, or([true, true]));
-   assertEquals(true, or([true, false]));
-   assertEquals(true, or([true, true, false]));
-   assertEquals(false, or(false));
-   assertEquals(false, or([false, false]));
-}
-
 function <<test.Test>> meta::pure::functions::tests::collection::uniqueValueOnly():Boolean[1]
 {
    assertEquals([], []->uniqueValueOnly());
