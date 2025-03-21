@@ -15,6 +15,7 @@
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
@@ -59,7 +60,7 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-
+    
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -92,6 +93,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ->concatenate(
       postgresDialectOtherNodeProcessors()
     )
+    ->concatenate(
+      postgresDialectDDLProcessors()
+    )
     ->map(n | pair($n.nodeType, $n))
   )
 }
@@ -112,7 +116,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     joinProcessor_default(),
     querySpecificationProcessor_default(),
     unionProcessor_default(),
-    tableSubqueryProcessor_default()
+    tableSubqueryProcessor_default(),
+    tablePlaceholderProcessor_default()
   ]
 }
 
@@ -149,7 +154,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     booleanLiteralNodeProcessor_default(),
     longLiteralNodeProcessor_default(),
     doubleLiteralNodeProcessor_default(),
-    nullLiteralNodeProcessor_default()
+    nullLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default()
   ]
 }
 
@@ -165,7 +172,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     sortItemProcessor_default(),
-    selectProcessor_default()
+    selectProcessor_default(),
+    withQueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTableProcessor_default(),
+    dropTableProcessor_default(),
+    insertIntoTableProcessor_default()
   ]
 }
 
@@ -320,6 +337,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Ltrim, simpleFunctionProcessor('ltrim')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+    pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -329,7 +348,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, simpleFunctionProcessor('to_date')),
-    pair(ToTimestamp, simpleFunctionProcessor('to_timestamp'))
+    pair(ToTimestamp, simpleFunctionProcessor('to_timestamp')),
+
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
 }
 

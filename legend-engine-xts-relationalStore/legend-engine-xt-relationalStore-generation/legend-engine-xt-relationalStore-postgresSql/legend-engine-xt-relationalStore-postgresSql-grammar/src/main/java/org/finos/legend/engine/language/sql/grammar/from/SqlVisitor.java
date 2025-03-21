@@ -528,13 +528,22 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitNamedQuery(SqlBaseParser.NamedQueryContext ctx)
     {
-        return unsupported();
+        WithQuery cte = new WithQuery();
+        cte.name = ctx.name.getText();
+        cte.query = (Query) visit(ctx.query());
+        if (ctx.aliasedColumns() != null)
+        {
+            cte.columns = ListIterate.collect(ctx.aliasedColumns().ident(), this::getIdentText);
+        }
+        return cte;
     }
 
     @Override
     public Node visitWith(SqlBaseParser.WithContext ctx)
     {
-        return unsupported();
+        With with = new With();
+        with.withQueries = ListIterate.collect(ctx.namedQuery(), q -> (WithQuery) visitNamedQuery(q));
+        return with;
     }
 
     // Column / Table definition
@@ -745,12 +754,12 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitQuery(SqlBaseParser.QueryContext context)
     {
-        if (context.with() == null)
+        Query query = (Query) visit(context.queryNoWith());
+        if (context.with() != null)
         {
-            return visit(context.queryNoWith());
+            query.with = (With) visit(context.with());
         }
-
-        return unsupported();
+        return query;
     }
 
     @Override

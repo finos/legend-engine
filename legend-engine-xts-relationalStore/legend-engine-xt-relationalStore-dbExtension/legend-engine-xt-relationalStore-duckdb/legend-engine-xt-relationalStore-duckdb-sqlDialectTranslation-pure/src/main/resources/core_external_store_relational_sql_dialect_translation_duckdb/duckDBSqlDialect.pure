@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
@@ -60,7 +61,7 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
 function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-   
+    
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -93,6 +94,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ->concatenate(
       duckDBDialectOtherNodeProcessors()
     )
+    ->concatenate(
+      duckDBDialectDDLProcessors()
+    )
     ->map(n | pair($n.nodeType, $n))
   )
 }
@@ -112,13 +116,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
-    unionProcessor_default()
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
   ]
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBDialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
 {
   [
+    qualifiedNameReferenceNodeProcessor_default(),
     comparisonExpressionNodeProcessor_default(),
     logicalBinaryExpressionNodeProcessor_default(),
     notExpressionNodeProcessor_default(),
@@ -128,7 +134,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     negativeNodeProcessor_default(),
     functionCallProcessor_default(),
     whenClauseNodeProcessor_default(),
-    searchedCaseExpressionNodeProcessor_default()
+    searchedCaseExpressionNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    inPredicateProcessor_default(),
+    inListExpressionProcessor_default()
   ]
 }
 
@@ -140,6 +150,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     booleanLiteralNodeProcessor_default(),
     longLiteralNodeProcessor_default(),
     doubleLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default(),
     nullLiteralNodeProcessor_default()
   ]
 }
@@ -156,7 +168,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     sortItemProcessor_default(),
-    selectProcessor_default()
+    selectProcessor_default(),
+    withQueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTableProcessor_default(),
+    dropTableProcessor_default(),
+    insertIntoTableProcessor_default()
   ]
 }
 
@@ -307,6 +329,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Ltrim, simpleFunctionProcessor('ltrim')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+    pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -316,7 +340,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
 }
 
