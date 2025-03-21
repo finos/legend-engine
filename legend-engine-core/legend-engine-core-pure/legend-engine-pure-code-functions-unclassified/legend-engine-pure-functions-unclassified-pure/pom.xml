@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-unclassified</artifactId>
-        <version>4.75.0</version>
+        <version>4.75.1-SNAPSHOT</version>
     </parent>
 
     <name>Legend Pure - Base - M2 Functions - Base - Pure</name>
