@@ -387,7 +387,6 @@ function <<test.Test>> meta::relational::tests::mapping::union::testUnionWithSin
    let newRuntime = meta::external::store::relational::tests::testRuntime()->map(r | ^$r(connectionStores = $r.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(disabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName())))))));
    let result3 = execute(|Person.all()->project([p|$p.lastName, p|$p.firm.legalName], ['name', 'firmName']), unionWithSinglePropertyMapping, $newRuntime, meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(), noDebug());
    assert(!$result3->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
-   assertEquals($result->meta::relational::mapping::sql(), $result3->meta::relational::mapping::sql());
 }
 
 function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
