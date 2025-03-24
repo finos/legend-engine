@@ -29,24 +29,25 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Replace
   (
     name = 'replace',
+    documentation = 'Replace all occurrences in string (1st arg) of substring (2nd arg) with substring (3rd arg).',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType,AbstractStringSqlType],
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType, AbstractStringSqlType],
         returnType = AbstractStringSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('a'),literal('b')]),
+        simpleFunctionCall('replace', [literal('abcd'), literal('a'), literal('b')]),
         'bbcd'
       ),
        sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('ab'),literal('A')]),
+        simpleFunctionCall('replace', [literal('abcd'), literal('ab'), literal('A')]),
         'Acd'
       ),
        sqlFunctionTest(
-        simpleFunctionCall('replace', [literal('abcd'), literal('mno'),literal('A')]),
+        simpleFunctionCall('replace', [literal('abcd'), literal('mno'), literal('A')]),
         'abcd'
       )
     ]

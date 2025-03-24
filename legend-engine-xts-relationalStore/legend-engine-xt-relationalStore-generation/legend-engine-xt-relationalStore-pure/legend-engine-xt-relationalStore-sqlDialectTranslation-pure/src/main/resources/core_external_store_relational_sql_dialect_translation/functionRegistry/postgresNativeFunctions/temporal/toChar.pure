@@ -29,29 +29,32 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::ToChar
   (
     name = 'to_char',
+    documentation = 'Converts time stamp or date (1st arg) to string according to the given format (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [DateSqlType,AbstractStringSqlType],
-        returnType = AbstractStringSqlType
+        parameterTypes = [DateSqlType, AbstractStringSqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Converts date (1st arg) to string according to the given format (2nd arg).'
       ),
       ^SqlFunctionVariation
       (
-        parameterTypes = [TimestampSqlType,AbstractStringSqlType],
-        returnType = AbstractStringSqlType
+        parameterTypes = [TimestampSqlType, AbstractStringSqlType],
+        returnType = AbstractStringSqlType,
+        documentation = 'Converts time stamp (1st arg) to string according to the given format (2nd arg).'
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'),literal('Day')]),
+        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'), literal('Day')]),
         'Wednesday'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_char', [cast(literal('2002-04-20 17:31:12.66'), 'TIMESTAMP'),literal('HH12:MI:SS')]),
+        simpleFunctionCall('to_char', [cast(literal('2002-04-20 17:31:12.66'), 'TIMESTAMP'), literal('HH12:MI:SS')]),
         '05:31:12'
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'),literal('Month')]),
+        simpleFunctionCall('to_char', [cast(literal('2025-02-12'), 'DATE'), literal('Month')]),
         'February'
       )
     ]

@@ -29,15 +29,18 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Substring
   (
     name = 'substring',
+    documentation = 'Extract substring of n (3rd arg) (till the end by default) characters from String (1st arg) from Index (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractIntegerSqlType, AbstractIntegerSqlType],
+        documentation = 'Extract substring of n (3rd arg) characters from String (1st arg) from Index (2nd arg).',
         returnType = AbstractStringSqlType
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractIntegerSqlType],
+        documentation = 'Extract substring of String (1st arg) from Index (2nd arg) till the end.',
         returnType = AbstractStringSqlType
       )
     ],

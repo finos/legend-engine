@@ -29,11 +29,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::DatePart
   (
     name = 'date_part',
+    documentation = 'Get timestamp subfield (1st arg) from (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractTemporalSqlType],
-        returnType = IntegerSqlType
+        returnType = AbstractIntegerSqlType
       )
     ],
     tests = [

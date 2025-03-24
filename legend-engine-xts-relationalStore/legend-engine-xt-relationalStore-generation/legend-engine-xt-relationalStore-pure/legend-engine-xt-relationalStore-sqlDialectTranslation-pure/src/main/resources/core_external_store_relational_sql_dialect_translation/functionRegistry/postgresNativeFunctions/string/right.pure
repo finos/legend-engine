@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Right
   (
     name = 'right',
+    documentation = 'Returns last n characters in the string (1st arg). When n (2nd arg) is negative, return all but first |n| characters.',
     variations = [
       ^SqlFunctionVariation
       (

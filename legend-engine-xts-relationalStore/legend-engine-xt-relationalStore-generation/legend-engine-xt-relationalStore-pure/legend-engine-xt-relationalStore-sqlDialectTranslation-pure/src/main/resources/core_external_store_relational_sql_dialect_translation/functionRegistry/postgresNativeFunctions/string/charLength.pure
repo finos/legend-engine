@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::CharLength
   (
     name = 'char_length',
-    documentation = 'Returns the length of a String .',
+    documentation = 'Returns the number of characters in the argument.',
     variations = [
       ^SqlFunctionVariation
       (

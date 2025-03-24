@@ -181,6 +181,13 @@ function meta::external::store::relational::sqlDialectTranslation::customFunctio
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::nativeFunctionProcessor(functionClass: Class<SqlFunction>[1]): FunctionProcessor[1]
+{
+  let sqlFunctionRegistry = sqlFunctionRegistry();
+  let functionName = $sqlFunctionRegistry->get($functionClass).name->toOne();
+  simpleFunctionProcessor($functionName);
+}
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
 {
   assert($f.distinct == false, | 'Distinct function call processing not implemented yet');

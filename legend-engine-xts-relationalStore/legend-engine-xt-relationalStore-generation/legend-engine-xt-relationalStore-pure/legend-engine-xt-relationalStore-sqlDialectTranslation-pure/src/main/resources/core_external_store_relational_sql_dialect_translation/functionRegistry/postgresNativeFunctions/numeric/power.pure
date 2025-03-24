@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Power
   (
     name = 'power',
+    documentation = '1st arg raised to the power of 2nd arg.',
     variations = [
       ^SqlFunctionVariation
       (

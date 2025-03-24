@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Md5
   (
     name = 'md5',
+    documentation = 'Calculates the MD5 hash of argument, returning the result in hexadecimal',
     variations = [
       ^SqlFunctionVariation
       (

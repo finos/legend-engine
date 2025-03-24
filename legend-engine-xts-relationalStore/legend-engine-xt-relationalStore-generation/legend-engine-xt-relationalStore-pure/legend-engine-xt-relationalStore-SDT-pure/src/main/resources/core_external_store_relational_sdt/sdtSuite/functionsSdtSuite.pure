@@ -21,6 +21,6 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::functions::
     let funcName = $kv.first;
     let tests = $kv.second.tests;
     let testCount = $tests->size();
-    $testCount->range()->map(i | $tests->at($i).functionCall->testConfigForSimpleExpression($tests->at($i).result->toOne(), 'FuncTests - ' + $kv.first + '(' + toString($i) + '/' + toString($testCount-1) + ')'));
+    $testCount->range()->map(i | $tests->at($i).functionCall->testConfigForSimpleExpression($tests->at($i).result->toOne(), 'FuncTests - ' + $kv.first.name->toOne() + '(' + toString($i) + '/' + toString($testCount-1) + ')'));
   })
 }

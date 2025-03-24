@@ -29,33 +29,32 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::DateAdd
   (
     name = 'dateadd',
-    variations = [
-      
+    documentation = 'Add n (2nd arg) units of time unit (3rd arg) to date/timestamp (1st arg).',
+    variations = [      
       ^SqlFunctionVariation
       (
-        parameterTypes = [DateSqlType, IntegerSqlType, AbstractStringSqlType],
-        returnType = DateSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [TimestampSqlType, IntegerSqlType, AbstractStringSqlType],
-        returnType = TimestampSqlType
-      )
-      
+        parameterTypes = [AbstractTemporalSqlType, AbstractIntegerSqlType, AbstractStringSqlType],
+        returnType = AbstractTemporalSqlType
+      )      
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('dateadd', [cast(literal('2014-11-30'), 'DATE'), literal(1), literal('DAY')]),
+        simpleFunctionCall('dateadd', [cast(literal('2014-11-30'), 'DATE'), literal(1), literal('day')]),
          %2014-12-01
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateadd', [cast(literal('2014-12-04 15:22:23'), 'TIMESTAMP'), literal(123456), literal('MICROSECOND')]),
+        simpleFunctionCall('dateadd', [cast(literal('2014-12-04'), 'DATE'), literal(2), literal('hour')]),
+        %2014-12-04T02:00:00.000000000+0000
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('dateadd', [cast(literal('2014-12-04 15:22:23'), 'TIMESTAMP'), literal(123456), literal('microsecond')]),
         %2014-12-04T15:22:23.123456000
       ),
       sqlFunctionTest(
-      simpleFunctionCall('dateadd', [cast(literal('2022-08-17'), 'DATE'), literal(3), literal('WEEK')]),
+      simpleFunctionCall('dateadd', [cast(literal('2022-08-17'), 'DATE'), literal(3), literal('week')]),
          %2022-09-07
       )
+      
     ]
-  )
+  );
 }

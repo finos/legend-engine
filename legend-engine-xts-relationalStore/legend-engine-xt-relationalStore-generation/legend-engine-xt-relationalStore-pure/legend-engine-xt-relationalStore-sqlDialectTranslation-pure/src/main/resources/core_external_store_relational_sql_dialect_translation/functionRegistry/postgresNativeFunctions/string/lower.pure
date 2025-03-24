@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Lower
   (
     name = 'lower',
-    documentation = 'Returns the given string in Lower case.',
+    documentation = 'Converts the argument to lower case',
     variations = [
       ^SqlFunctionVariation
       (
