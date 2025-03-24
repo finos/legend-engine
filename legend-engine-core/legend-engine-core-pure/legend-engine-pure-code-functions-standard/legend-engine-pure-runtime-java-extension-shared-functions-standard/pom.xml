@@ -18,13 +18,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-pure-code-functions-standard</artifactId>
         <version>4.75.1-SNAPSHOT</version>
-        <relativePath>../../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-standard</artifactId>
     <packaging>jar</packaging>
     <name>Legend Pure - Runtime - Java Extension - Shared - Functions - Base</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+    </dependencies>
 </project>

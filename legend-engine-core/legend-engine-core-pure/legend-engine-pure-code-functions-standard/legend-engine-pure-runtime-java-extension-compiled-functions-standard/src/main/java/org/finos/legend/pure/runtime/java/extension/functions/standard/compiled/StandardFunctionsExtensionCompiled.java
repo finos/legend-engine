@@ -19,6 +19,7 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.StringJavaSource;
 import org.finos.legend.pure.runtime.java.compiled.extension.AbstractCompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
+import org.finos.legend.pure.runtime.java.extension.functions.standard.compiled.natives.date.operation.TimeBucket;
 
 import java.util.List;
 
@@ -34,6 +35,8 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
     public List<Native> getExtraNatives()
     {
         return Lists.fixedSize.with(
+            //Date
+            new TimeBucket()
         );
     }
 

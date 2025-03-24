@@ -127,6 +127,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   let resultFinal = 
                     if ([
                           pair(|$preResultFinal == TDSNull, |[]),
+                          pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toString())),
                           pair(|$resultType->toOne()->subTypeOf(Date), |buildDate($preResultFinal->toString())),
                           pair(|$resultType->toOne()->subTypeOf(Decimal), |$preResultFinal->cast(@Number)->toDecimal()),
                           pair(|$resultType->toOne()->subTypeOf(Integer), |$preResultFinal->cast(@Number)->round()),
