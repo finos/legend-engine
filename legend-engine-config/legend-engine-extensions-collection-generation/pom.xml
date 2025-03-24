@@ -408,6 +408,29 @@
         </dependency>
         <!-- Elastic Store -->
 
+        <!-- Deephaven Store -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-grammar</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-javaPlatformBinding-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Deephaven Store -->
+
         <!-- Peristence -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -39,6 +39,7 @@ function meta::external::language::java::factory::javaStringBuilder():          
 function meta::external::language::java::factory::javaAppendable():                    meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.Appendable'); }
 function meta::external::language::java::factory::javaClassType():                     meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.Class'); }
 function meta::external::language::java::factory::javaNullPointerException():          meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.NullPointerException'); }
+function meta::external::language::java::factory::javaInterruptedException():          meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.InterruptedException'); }
 
 function meta::external::language::java::factory::javaReflectType():           meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.reflect.Type'); }
 function meta::external::language::java::factory::javaReflectMethod():         meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.reflect.Method'); }

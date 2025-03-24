@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.PSKAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSDefaultCredentials;
@@ -66,6 +67,7 @@ public class AuthenticationProtocolExtension implements PureProtocolExtension
                         .withSubtype(EncryptedPrivateKeyPairAuthenticationSpecification.class, "encryptedPrivateKey")
                         .withSubtype(GCPWIFWithAWSIdPAuthenticationSpecification.class, "gcpWithAWSIdP")
                         .withSubtype(KerberosAuthenticationSpecification.class,"kerberos")
+                        .withSubtype(PSKAuthenticationSpecification.class, "PSK")
                         .build(),
                 // vault secret
                 ProtocolSubTypeInfo.newBuilder(CredentialVaultSecret.class)
