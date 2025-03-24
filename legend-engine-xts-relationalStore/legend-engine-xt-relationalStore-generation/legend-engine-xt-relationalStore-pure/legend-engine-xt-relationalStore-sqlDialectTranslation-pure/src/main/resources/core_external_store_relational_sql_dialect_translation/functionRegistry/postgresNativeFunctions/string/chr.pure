@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Chr
   (
     name = 'chr',
-    documentation = 'Returns the corresponding  Character  for a given Integer in ASCII',
+    documentation = 'Returns the Character with the given code. For UTF8 the argument is treated as a Unicode code point. For other multibyte encodings the argument must designate an ASCII character. The NULL (0) character is not allowed because text data types cannot store such bytes.',
     variations = [
       ^SqlFunctionVariation
       (
@@ -37,7 +37,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         returnType = AbstractStringSqlType
       )
     ],
-    tests = [
+    tests = [ 
       sqlFunctionTest(
         simpleFunctionCall('chr', literal(65)),
         'A'

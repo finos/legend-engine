@@ -766,7 +766,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tri
   nodeProcessor(
     Trim,
     {sqlDialect, t, state, config |
-     'TRIM(' + $t.mode.name +  if($t.characters->isEmpty(),|'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('FROM', $state, $config) + ' ' 
+      $sqlDialect->keyword('trim', $state, $config) + '(' + $sqlDialect->keyword($t.mode.name, $state, $config) +  if($t.characters->isEmpty(), |'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('from', $state, $config) + ' '
       + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +')'
     }
   )

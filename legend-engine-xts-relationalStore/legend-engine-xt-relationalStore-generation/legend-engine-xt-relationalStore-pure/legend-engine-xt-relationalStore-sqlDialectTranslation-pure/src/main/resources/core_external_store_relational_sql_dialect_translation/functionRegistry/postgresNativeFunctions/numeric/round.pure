@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Round
   (
     name = 'round',
+    documentation = 'Rounds 1st arg to 2nd arg decimal places. Ties are broken by rounding away from zero.',
     variations = [
       ^SqlFunctionVariation
       (
@@ -38,6 +39,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ^SqlFunctionVariation
       (
         parameterTypes = DoubleSqlType,
+        documentation = 'Rounds to nearest integer. For double precision, the tie-breaking behavior is platform dependent, but “round to nearest even” is the most common rule.',
         returnType = DoubleSqlType
       ),
       ^SqlFunctionVariation
@@ -48,11 +50,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ^SqlFunctionVariation
       (
         parameterTypes = AbstractNumericSqlType,
+        documentation = 'Rounds to nearest integer. For numeric, ties are broken by rounding away from zero.',
         returnType = AbstractNumericSqlType
       )
     ],
     tests = [
-      
       sqlFunctionTest(
         simpleFunctionCall('round', [literal(2.1289), literal(3)]),
         2.129

@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::Sha1
   (
     name = 'sha1',
+    documentation = 'Returns  SHA-1 hash of the argument',
     variations = [
       ^SqlFunctionVariation
       (

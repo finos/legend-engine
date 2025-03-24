@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Repeat
   (
     name = 'repeat',
+    documentation = 'Repeat string (1st arg) the specified number of times (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (

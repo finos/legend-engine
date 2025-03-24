@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::ToDate
   (
     name = 'to_date',
+    documentation = 'Converts string (1st arg) to date according to the given format (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (

@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Reverse
   (
     name = 'reverse',
-    documentation = 'Returns the String in Reverse .',
+    documentation = 'Returns the given Input String in Reverse.',
     variations = [
       ^SqlFunctionVariation
       (

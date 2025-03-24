@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Sign
   (
     name = 'sign',
+    documentation = 'Sign of the argument (-1, 0, or +1).',
     variations = [
        ^SqlFunctionVariation
       (

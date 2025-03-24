@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Floor
   (
     name = 'floor',
+    documentation = 'Nearest integer less than or equal to argument.',
     variations = [
       ^SqlFunctionVariation
       (

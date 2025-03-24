@@ -46,7 +46,7 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
   )
 }
 
-function  meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension(): Extension[1]
+function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension(): Extension[1]
 {
   ^Extension
   (
@@ -65,19 +65,19 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2Functio
 {
   [
      pair(
-      'FuncTests - reverse(0/1)',
+      'FuncTests - Reverse(0/1)',
       'Reverse not supported in H2 version we use'
     ),
      pair(
-      'FuncTests - reverse(1/1)',
+      'FuncTests - Reverse(1/1)',
       'Reverse not supported in H2 version we use'
     ),
     pair(
-      'FuncTests - split_part(0/1)',
+      'FuncTests - SplitPart(0/1)',
       'SplitPart is not available in H2'
     ),
      pair(
-      'FuncTests - split_part(1/1)',
+      'FuncTests - SplitPart(1/1)',
       'SplitPart is not available in H2'
     )
   ]->newMap()->cast(@Map<String, String>)
@@ -362,20 +362,18 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Sign, simpleFunctionProcessor('sign')),
     pair(Mod, simpleFunctionProcessor('mod')),
     pair(Round, simpleFunctionProcessor('round')),
-    pair(Greatest, simpleFunctionProcessor('greatest')),
-    pair(Least, simpleFunctionProcessor('least')),
-   pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
 
     // String
     // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the 
     //  entire string is repeated.
-    pair(Lpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('lpad',$f,$sqlDialect,$state,$config )})),
-    pair(Rpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('rpad',$f,$sqlDialect,$state,$config )})),
+    pair(Lpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('lpad', $f, $sqlDialect, $state, $config )})),
+    pair(Rpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('rpad', $f, $sqlDialect, $state, $config )})),
     // Custom handling required because in H2 will only consider the first character in the trim string and trim only it whereas in all other DBs the 
     //  entire string is trimmed.
-    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim',$f,$sqlDialect,$state,$config )})),
-    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim',$f,$sqlDialect,$state,$config )})),
+    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim', $f, $sqlDialect, $state, $config )})),
+    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim', $f, $sqlDialect, $state, $config )})),
     pair(Ascii, simpleFunctionProcessor('ascii')),
     pair(Lower, simpleFunctionProcessor('lower')),
     pair(Upper, simpleFunctionProcessor('upper')),
@@ -383,24 +381,16 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Replace, simpleFunctionProcessor('replace')),
     // We need custom handling here because negtive index is not supported like how it is supported in Postgres and Other DBs ,
     // where it returns string from the opposite side. 
-    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left',$f,$sqlDialect,$state,$config )})),
-    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right',$f,$sqlDialect,$state,$config )})),
-
-   
+    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config )})),
+    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config )})),
     pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
     pair(CharLength, simpleFunctionProcessor('char_length')),
     pair(Chr, simpleFunctionProcessor('char')),
     pair(Reverse, simpleFunctionProcessor('reverse')),
     pair(Substring, simpleFunctionProcessor('substring')),
-
-
-    pair(StrPos,argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
-    pair(Concat, simpleFunctionProcessor('concat')),
-    pair(Coalesce, simpleFunctionProcessor('coalesce')),
+    pair(StrPos, argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
     pair(Sha1, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-1')->concatenate($n)})),
     pair(Sha256, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-256')->concatenate($n)})),
-
-  
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -415,7 +405,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DateDiff, simpleFunctionProcessor('datediff')),
     pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
 
-
   ])
 }
 
@@ -423,7 +412,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCbrt(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if(!$processedArgs->at(0)->startsWith('-'), | generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0), '1.0/3'], [], $state, $config), | '-1*' + generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0)->replace('-',''), '1.0/3'], [], $state, $config));
+  if(!$processedArgs->at(0)->startsWith('-'), | generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0), '1.0/3'], [], $state, $config), | '-1*' + generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0)->replace('-', ''), '1.0/3'], [], $state, $config));
   
 }
 
@@ -436,10 +425,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let inputText = $processedArgs->at(0)->toString() + ' from ' + $processedArgs->at(1)->toString() ; 
-  let inputTextForSeconds = 'second  from ' + $processedArgs->at(1)->toString() ;
+  let inputText = $processedArgs->at(0)->toString() + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString() ; 
+  let inputTextForSeconds = 'second' + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString();
   let secondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForSeconds], [], $state, $config);
-  let inputTextForMilliSeconds = 'millisecond  from ' + $processedArgs->at(1)->toString() ;
+  let inputTextForMilliSeconds = 'millisecond' + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString() ;
   let extractmilliSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForMilliSeconds], [], $state, $config);
   let milliSecondsCall = $secondsCall+'* 1000 + '+ $extractmilliSecondsCall;
   if($processedArgs->at(0)->toString()->removeQuotes()=='millisecond', | $milliSecondsCall, | generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputText], [], $state, $config));
@@ -465,10 +454,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   //explicit casting needed as milliseconds are not shown if zero
-  let secondsCasted =   $sqlDialect->generateCast($processedArgs->at(0), 'bigint', $state, $config)+' * 1000';
-  let epochcast =   $sqlDialect->generateCast('\'1970-01-01 00:00:00\'', 'TIMESTAMP', $state, $config);
-  let milliSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'dateadd', ['\'MILLISECOND\'', $secondsCasted, $epochcast], [], $state, $config);
-  let singleArgCall =  $sqlDialect->generateCast($milliSecondsCall, 'TIMESTAMP(3)', $state, $config);
+  let secondsCasted = $sqlDialect->generateCast($processedArgs->at(0), 'bigint', $state, $config)+' * 1000';
+  let epochcast = $sqlDialect->generateCast('\'1970-01-01 00:00:00\'', 'timestamp', $state, $config);
+  let milliSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'dateadd', ['\'millisecond\'', $secondsCasted, $epochcast], [], $state, $config);
+  let singleArgCall = $sqlDialect->generateCast($milliSecondsCall, 'timestamp(3)', $state, $config);
 
   let formattedUnit = if($processedArgs->size()==2, | $processedArgs->at(1)->dateFormatSpecifierForH2(), |'');
 
@@ -542,11 +531,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForTrim(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let transformedArgs = if($processedArgs->size()==1, |[$processedArgs->at(0),' '], |$processedArgs->transformRegexpParams());
+  let transformedArgs = if($processedArgs->size()==1, |[$processedArgs->at(0), ' '], |$processedArgs->transformRegexpParams());
   let regexString = if($directionFunc == 'rtrim',
   | '\'['+$transformedArgs->at(1)+']+$\'',
   | '\'^['+$transformedArgs->at(1)+']+\'');
-  let regexArgs = [$transformedArgs->at(0),$regexString,'\'\''];
+  let regexArgs = [$transformedArgs->at(0), $regexString, '\'\''];
   generateFunctionCallWithArgs($sqlDialect, 'regexp_replace', $regexArgs, [], $state, $config);
 }
 
@@ -572,7 +561,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::dateFormatSpecifierForH2(f:String[1]): String[1]
 {
   let formatSubs = [
-    pair('Month','MMMM'),
+    pair('Month', 'MMMM'),
     pair('YYYY', 'yyyy'),
     pair('MM', 'MM'),
     pair('DD', 'dd'),
@@ -580,15 +569,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('HH24', 'HH'),
     pair('HH12', 'hh'),
     pair('HH', 'HH'),
-    pair('MI','mm'),
+    pair('MI', 'mm'),
     pair('SS', 'ss'),
     pair('MS', 'SSS'),
     pair('US', 'SSSSSS'),
-    pair('Day','EEEE')
+    pair('Day', 'EEEE')
     // TODO: Handle more format specifiers
   ];
 
-  $formatSubs->fold({i,a|$a->replace($i.first, $i.second)}, $f);
+  $formatSubs->fold({i, a|$a->replace($i.first, $i.second)}, $f);
 }
 
 // --------------------------------------------------------------------------

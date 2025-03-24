@@ -20,7 +20,7 @@ import meta::external::store::relational::sqlDialectTranslation::utils::*;
 
 Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::DateDiff extends ExtensionSqlFunction
 [
-  $this.name == 'dateDiff'
+  $this.name == 'datediff'
 ]
 {}
 
@@ -28,118 +28,116 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 {
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::DateDiff
   (
-    name = 'dateDiff',
+    name = 'datediff',
+    documentation = 'The number of partition boundaries (1st arg) between the dates/timestamps (2nd arg), (3rd arg).',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, TimestampSqlType, TimestampSqlType],
-        returnType = AbstractIntegerSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [AbstractStringSqlType, DateSqlType, DateSqlType],
+        parameterTypes = [AbstractStringSqlType, AbstractTemporalSqlType, AbstractTemporalSqlType],
         returnType = AbstractIntegerSqlType
       )
     ],
     tests = [
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2024-01-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2024-01-01'), 'DATE')]),
         1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2023-01-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('month'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2024-01-01 12:30:01'), 'TIMESTAMP')]),
+        1
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('datediff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2023-01-01'), 'DATE')]),
         0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2022-01-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('year'), cast(literal('2023-12-31'), 'DATE'), cast(literal('2022-01-01'), 'DATE')]),
         -1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('month'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2024-12-31'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('month'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2024-12-31'), 'DATE')]),
         13
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('month'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2024-02-26'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('month'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2024-02-26'), 'DATE')]),
         14
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('month'), cast(literal('2023-11-30'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('month'), cast(literal('2023-11-30'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
         1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('month'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2023-09-30'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('month'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2023-09-30'), 'DATE')]),
         -2
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2023-12-15'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2023-12-15'), 'DATE')]),
         44
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2023-11-01'), 'TIMESTAMP'), cast(literal('2023-12-15'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2023-11-01'), 'TIMESTAMP'), cast(literal('2023-12-15'), 'TIMESTAMP')]),
         44
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2023-11-03'), 'DATE'), cast(literal('2023-11-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2023-11-03'), 'DATE'), cast(literal('2023-11-01'), 'DATE')]),
         -2
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
         365
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2022-12-10'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2022-12-10'), 'DATE'), cast(literal('2023-12-01'), 'DATE')]),
         356
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('day'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2023-12-31'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('day'), cast(literal('2022-12-01'), 'DATE'), cast(literal('2023-12-31'), 'DATE')]),
         395
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('week'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2024-11-15'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('week'), cast(literal('2023-11-01'), 'DATE'), cast(literal('2024-11-15'), 'DATE')]),
         54
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('week'), cast(literal('2025-02-16'), 'DATE'), cast(literal('2025-02-20'), 'DATE')]),
+        simpleFunctionCall('datediff', [literal('week'), cast(literal('2025-02-16'), 'DATE'), cast(literal('2025-02-20'), 'DATE')]),
         0
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:30:20'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:30:20'), 'TIMESTAMP')]),
         25
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:10:20'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:10:20'), 'TIMESTAMP')]),
         25
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 01:10:20'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('hour'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 01:10:20'), 'TIMESTAMP')]),
         13
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('hour'), cast(literal('2023-11-03 23:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 00:10:20'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('hour'), cast(literal('2023-11-03 23:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 00:10:20'), 'TIMESTAMP')]),
         1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:31:20'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:31:20'), 'TIMESTAMP')]),
         1501
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:31:10'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:31:10'), 'TIMESTAMP')]),
         1501
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:10:10'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('minute'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-04 13:10:10'), 'TIMESTAMP')]),
         1480
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('second'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-03 14:30:21'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('second'), cast(literal('2023-11-03 12:30:20'), 'TIMESTAMP'), cast(literal('2023-11-03 14:30:21'), 'TIMESTAMP')]),
         7201
       ),
       sqlFunctionTest(
-        simpleFunctionCall('dateDiff', [literal('millisecond'), cast(literal('2023-11-03 12:30:20.20'), 'TIMESTAMP'), cast(literal('2023-11-03 12:30:20.24'), 'TIMESTAMP')]),
+        simpleFunctionCall('datediff', [literal('millisecond'), cast(literal('2023-11-03 12:30:20.20'), 'TIMESTAMP'), cast(literal('2023-11-03 12:30:20.24'), 'TIMESTAMP')]),
         40
       )
-
-
     ]
   )
 }

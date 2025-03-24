@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Rpad
   (
     name = 'rpad',
-    documentation = 'Right-pads a string with another string, to a certain length.',
+    documentation = 'Fill up the string (1st arg) to length (2nd arg) by appending the characters (3rd arg) (a space by default). If the string is already longer than length then it is truncated.',
     variations = [
       ^SqlFunctionVariation
       (

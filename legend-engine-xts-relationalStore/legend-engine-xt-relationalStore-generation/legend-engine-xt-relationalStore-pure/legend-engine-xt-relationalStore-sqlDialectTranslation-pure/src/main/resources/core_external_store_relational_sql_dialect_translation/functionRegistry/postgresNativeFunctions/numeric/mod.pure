@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Mod
   (
     name = 'mod',
+    documentation =  'Remainder of (2nd arg)/(1st arg).',
     variations = [
           ^SqlFunctionVariation
           (
@@ -45,9 +46,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             parameterTypes = [AbstractNumericSqlType, AbstractNumericSqlType],
             returnType = AbstractNumericSqlType
           )
-
-
-
         ],
     tests = [
       

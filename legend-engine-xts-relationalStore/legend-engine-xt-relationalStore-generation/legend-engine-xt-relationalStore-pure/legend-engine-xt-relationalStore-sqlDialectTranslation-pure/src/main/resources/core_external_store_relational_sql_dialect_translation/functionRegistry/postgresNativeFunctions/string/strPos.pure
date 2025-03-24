@@ -29,10 +29,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::StrPos
   (
     name = 'strpos',
+    documentation = 'Location of specified substring (2nd arg) in string (1st arg).',
     variations = [
       ^SqlFunctionVariation
       (
-        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType  ],
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType],
         returnType = AbstractIntegerSqlType
       )
     ],
