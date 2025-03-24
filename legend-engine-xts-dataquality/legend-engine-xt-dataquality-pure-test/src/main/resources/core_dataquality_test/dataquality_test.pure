@@ -249,3 +249,25 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           {|{rel|$rel->meta::external::dataquality::relationNotEmpty();}->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));}
     )
 }
+
+function <<test.Test>> meta::external::dataquality::tests::testFromFunctionListIsComplete():Boolean[1]
+{
+  let funcs = meta::external::dataquality::fromFunctions();
+
+  let actualFromFuncs = meta::pure::mapping.children->map(pe|$pe->match([
+    f:Function<Any>[1]|if($f.functionName == 'from', | $f, | []), 
+    a:Any[*]|[]
+    ]));
+     
+  let missingFuncs = $actualFromFuncs
+    ->removeAll($funcs)
+    //TODO: Need to review for if these should be ignored, or if this module 
+    //needs a depdenecy to the core_service module to be able to reference them 
+
+    ->filter(pe|[
+      'meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_', 
+      'meta::pure::mapping::from_T_m__ExecutionEnvironmentInstance_1__T_m_'
+      ]->contains($pe->elementToPath()) == false);
+
+  assertEmpty($missingFuncs->map(pe|$pe->elementToPath()));
+}
