@@ -9,6 +9,7 @@
     "platform_dsl_path",
     "platform_dsl_tds",
     "platform_store_relational",
+    "platform_precise_primitives",
     "core_functions_json",
     "core_functions_standard",
     "core_functions_relation",

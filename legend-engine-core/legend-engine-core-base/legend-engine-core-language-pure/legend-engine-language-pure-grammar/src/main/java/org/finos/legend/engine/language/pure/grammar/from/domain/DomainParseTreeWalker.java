@@ -1382,7 +1382,7 @@ public class DomainParseTreeWalker
         colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
         colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
-        colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
+        colSpec.genericType = oneColSpec.type() == null ? null : processGenericType(oneColSpec.type());
         if (oneColSpec.anyLambda() != null)
         {
             colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());

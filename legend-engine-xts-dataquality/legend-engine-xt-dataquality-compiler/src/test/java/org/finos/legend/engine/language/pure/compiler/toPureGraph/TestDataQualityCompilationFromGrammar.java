@@ -26,7 +26,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::Person\n" + // duplicated the validation name, same name as the class
                 "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
@@ -49,7 +49,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
@@ -83,7 +83,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person{\n" +
@@ -100,7 +100,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person<mustBeOfLegalAge>{\n" +
@@ -116,7 +116,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityValidation meta::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromMappingAndRuntime(meta::dataquality::dataqualitymappings, meta::dataquality::DataQualityRuntime);\n" +
+                "    context: fromMappingAndRuntime(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
                 "    filter: p:meta::dataquality::Person[1] | $p.name=='John';\n" +
                 "    validationTree: $[\n" +
                 "      meta::dataquality::Person{\n" +
@@ -139,6 +139,25 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "         name: 'validFirstName';\n" +
                 "         description: 'First name cannot be empty';\n" +
                 "         assertion: row|$row.FIRSTNAME->isNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
+    }
+
+    @Test
+    public void testRelationValidation_forClass_fromMappingRuntime()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: meta::dataquality::Person.all()->project(~[theName: x|$x.name])" +
+                "       ->from(meta::dataquality::dataquality::Mapping, meta::dataquality::DataQualityRuntime);\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'validTheName';\n" +
+                "         description: 'theName cannot be empty';\n" +
+                "         assertion: row|$row.theName->isNotEmpty();\n" +
                 "      }\n" +
                 "    ];\n" +
                 "}");
@@ -226,7 +245,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "\n" +
             "\n" +
             "###Mapping\n" +
-            "Mapping meta::dataquality::dataqualitymappings\n" +
+            "Mapping meta::dataquality::dataquality::Mapping\n" +
             "(\n" +
             "\n" +
             "   meta::dataquality::Person : Relational\n" +
@@ -254,7 +273,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "{\n" +
             "  mappings:\n" +
             "  [\n" +
-            "    meta::dataquality::dataqualitymappings\n" +
+            "    meta::dataquality::dataquality::Mapping\n" +
             "  ];\n" +
             "  connections:\n" +
             "  [\n" +
@@ -297,7 +316,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "  [\n" +
             "    {\n" +
             "      name: 'default';\n" +
-            "      mapping: meta::dataquality::dataqualitymappings;\n" +
+            "      mapping: meta::dataquality::dataquality::Mapping;\n" +
             "      defaultRuntime: meta::dataquality::DataQualityRuntime;\n" +
             "    }\n" +
             "  ];\n" +

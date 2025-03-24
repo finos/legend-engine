@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-generation</artifactId>
-        <version>4.73.1-SNAPSHOT</version>
+        <version>4.75.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -94,6 +94,11 @@
                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -119,12 +124,12 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -160,7 +165,8 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

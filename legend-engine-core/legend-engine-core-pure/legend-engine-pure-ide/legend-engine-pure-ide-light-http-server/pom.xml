@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-ide</artifactId>
-        <version>4.73.1-SNAPSHOT</version>
+        <version>4.75.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -123,10 +123,16 @@
             <artifactId>legend-engine-pure-ide-light-interpreted-functions</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-server-http-server</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
             <scope>runtime</scope>
         </dependency>
 

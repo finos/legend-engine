@@ -15,6 +15,7 @@
 package org.finos.legend.pure.code.core;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.pct.functions.model.Functions;
 import org.finos.legend.pure.m3.pct.reports.model.AdapterReport;
 import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProvider;
@@ -33,8 +34,6 @@ public class Standard_Functions_PCTReportProvider implements PCTReportProvider
     @Override
     public MutableList<AdapterReport> getAdapterReports()
     {
-        return PCTReportProviderTool.load(Standard_Functions_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
-                "pct-reports/ADAPTER_standard_compiled_Native.json"
-        );
+        return Lists.mutable.empty();
     }
 }

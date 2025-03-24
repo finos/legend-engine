@@ -95,7 +95,7 @@ public class TestDataCubeHelpers
     public void testExecuteSort()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->sort([~FIRSTNAME->ascending()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"John\",\"Doe\"]},{\"values\":[\"Nicole\",\"Doe\"]},{\"values\":[\"Tim\",\"Smith\"]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"meta::pure::precisePrimitives::Varchar\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"meta::pure::precisePrimitives::Varchar\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"John\",\"Doe\"]},{\"values\":[\"Nicole\",\"Doe\"]},{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -104,7 +104,7 @@ public class TestDataCubeHelpers
     public void testExecuteFilter()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | ($c.FIRSTNAME != 'Doe' && $c.LASTNAME != 'Doe'))->sort([~FIRSTNAME->ascending()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null)) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"meta::pure::precisePrimitives::Varchar\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"LASTNAME\",\"type\":\"meta::pure::precisePrimitives::Varchar\",\"relationalType\":\"VARCHAR(1024)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", \\\"test0_0\\\".LASTNAME as \\\"LASTNAME\\\" from TEST0 as \\\"test0_0\\\" where ((\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) and (\\\"test0_0\\\".LASTNAME <> 'Doe' OR \\\"test0_0\\\".LASTNAME is null)) order by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"LASTNAME\"],\"rows\":[{\"values\":[\"Tim\",\"Smith\"]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -112,7 +112,7 @@ public class TestDataCubeHelpers
     public void testExecuteGroupBy()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"String\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"count\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", count(\\\"test0_0\\\".FIRSTNAME) as \\\"count\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) group by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"count\"],\"rows\":[{\"values\":[\"John\",1]},{\"values\":[\"Nicole\",1]},{\"values\":[\"Tim\",1]}]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"FIRSTNAME\",\"type\":\"meta::pure::precisePrimitives::Varchar\",\"relationalType\":\"VARCHAR(1024)\"},{\"name\":\"count\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"test0_0\\\".FIRSTNAME as \\\"FIRSTNAME\\\", count(\\\"test0_0\\\".FIRSTNAME) as \\\"count\\\" from TEST0 as \\\"test0_0\\\" where (\\\"test0_0\\\".FIRSTNAME <> 'Doe' OR \\\"test0_0\\\".FIRSTNAME is null) group by \\\"FIRSTNAME\\\"\"}],\"result\":{\"columns\":[\"FIRSTNAME\",\"count\"],\"rows\":[{\"values\":[\"John\",1]},{\"values\":[\"Nicole\",1]},{\"values\":[\"Tim\",1]}]}}";
         testExecuteQuery(expectedResult, lambda);
     }
 
@@ -255,7 +255,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeGroupBy()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->filter(c | $c.FIRSTNAME != 'Doe')->groupBy(~[FIRSTNAME], ~[count: x | $x.FIRSTNAME : y | $y->count()])->from(test::test)";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"count\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Integer\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"count\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -271,7 +271,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeSimpleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~newCol:c|'ok')";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -279,7 +279,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeMultipleExtend()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME])";
-        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
+        String expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pureModelContextData);
     }
 
@@ -305,7 +305,7 @@ public class TestDataCubeHelpers
                         "     )\n" +
                         ")"
         );
-        expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
+        expectedResult = "{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"FIRSTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"LASTNAME\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"newCol\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::precisePrimitives::Varchar\"},\"typeArguments\":[],\"typeVariableValues\":[{\"_type\":\"integer\",\"value\":200}]},\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"colX\"}]}";
         testExtractRelationReturnType(expectedResult, lambda, pmcd);
     }
 
@@ -333,7 +333,7 @@ public class TestDataCubeHelpers
     public void testExtractRelationReturnTypeWithCompilationError()
     {
         String lambda = "|#>{test::TestDatabase.TEST0}#->extend(~[newCol:c|'ok', colX: c|$c.FIRSTNAME2])";
-        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda, pureModelContextData);
+        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pureModelContextData);
 
         // with dummy source
         PureModelContextData pmcd = legendInterface.parse(
@@ -347,7 +347,7 @@ public class TestDataCubeHelpers
                         "     )\n" +
                         ")"
         );
-        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:String, LASTNAME:String)", lambda, pmcd);
+        testExtractRelationReturnTypeFailure("COMPILATION error at [1:68-77]: The column 'FIRSTNAME2' can't be found in the relation (FIRSTNAME:Varchar(200), LASTNAME:Varchar(200))", lambda, pmcd);
     }
 
     private void testExtractRelationReturnTypeFailure(String errorMessage, String code, PureModelContextData data)

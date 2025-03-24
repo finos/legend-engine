@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.73.1-SNAPSHOT</version>
+    <version>4.75.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -105,7 +105,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.36.1</legend.pure.version>
+        <legend.pure.version>5.39.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -176,7 +176,6 @@
         <io.netty.version>4.1.96.Final</io.netty.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <jackson.version>2.10.5</jackson.version>
-        <janino.version>3.1.0</janino.version>
         <janino.version>3.1.0</janino.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
@@ -1028,6 +1027,21 @@
                 <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -1346,11 +1360,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -2424,12 +2433,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-test-fct</artifactId>
-                <type>test-jar</type>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2520,7 +2523,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-code-precisePrimitives-pure</artifactId>
+                <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2840,6 +2843,11 @@
                         <artifactId>simpleclient_httpserver</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

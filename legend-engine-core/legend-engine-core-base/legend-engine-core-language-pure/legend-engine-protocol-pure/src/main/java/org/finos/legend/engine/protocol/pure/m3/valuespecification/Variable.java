@@ -28,6 +28,8 @@ import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
+
 @JsonDeserialize(using = Variable.VariableDeserializer.class)
 public class Variable extends ValueSpecification
 {
@@ -77,24 +79,16 @@ public class Variable extends ValueSpecification
                 String _class = node.get("class").asText();
                 variable.genericType = new GenericType(new PackageableType(_class));
             }
+            else
+            {
+                variable.genericType = processOne(node, "genericType", GenericType.class, codec);
+            }
             // Backward compatibility - old protocol -------------------------------------------------------------------
 
-            else if (node.get("genericType") != null)
-            {
-                variable.genericType = codec.treeToValue(node.get("genericType"), GenericType.class);
-            }
-            if (node.get("multiplicity") != null)
-            {
-                variable.multiplicity = codec.treeToValue(node.get("multiplicity"), Multiplicity.class);
-            }
-            if (node.get("sourceInformation") != null)
-            {
-                variable.sourceInformation = codec.treeToValue(node.get("sourceInformation"), SourceInformation.class);
-            }
-            if (node.get("supportsStream") != null)
-            {
-                variable.supportsStream = codec.treeToValue(node.get("supportsStream"), Boolean.class);
-            }
+            variable.multiplicity = processOne(node, "multiplicity", Multiplicity.class, codec);
+            variable.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+            variable.supportsStream = processOne(node, "supportsStream", Boolean.class, codec);
+
             return variable;
         }
     }

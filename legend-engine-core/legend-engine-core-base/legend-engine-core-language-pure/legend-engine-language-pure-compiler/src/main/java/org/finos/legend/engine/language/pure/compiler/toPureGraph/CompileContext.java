@@ -136,6 +136,12 @@ public class CompileContext
             this.pureModel = pureModel;
         }
 
+        public Builder(CompileContext source)
+        {
+            this.pureModel = source.pureModel;
+            this.imports = source.imports;
+        }
+
         public Builder withElement(String elementPath)
         {
             if (elementPath == null)
@@ -160,14 +166,14 @@ public class CompileContext
             // so system elements will always be resolved no matter what.
             if (section instanceof ImportAwareCodeSection)
             {
-                this.imports = META_IMPORTS.newWithAll(((ImportAwareCodeSection) section).imports);
+                this.imports = this.imports.newWithAll(((ImportAwareCodeSection) section).imports);
             }
             return this;
         }
 
         public Builder withImports(ImmutableSet<String> extraImports)
         {
-            this.imports = META_IMPORTS.newWithAll(extraImports);
+            this.imports = this.imports.newWithAll(extraImports);
             return this;
         }
 
@@ -587,7 +593,17 @@ public class CompileContext
         {
             rType = new PackageableType(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(genericType._rawType()));
         }
-        return new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(rType, genericType._typeArguments().collect(CompileContext::convertGenericType).toList());
+        return new org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType(
+                rType,
+                genericType._typeVariableValues().collect(GraphValueSpecificationToProtocol::transform).toList(),
+                genericType._typeArguments().collect(CompileContext::convertGenericType).toList(),
+                genericType._multiplicityArguments().collect(CompileContext::convertMultiplicity).toList()
+        );
+    }
+
+    public static org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity convertMultiplicity(Multiplicity m)
+    {
+        return new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(m._lowerBound()._value().intValue(), m._upperBound()._value() == null ? null : m._upperBound()._value().intValue());
     }
 
     public GenericType newGenericType(org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType genericType)

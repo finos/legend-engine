@@ -23,7 +23,7 @@ Class <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support:
   defaultValueArray: String[1..*] = ['a', 'b'];
   defaultType: LightP[1] = ^LightP(value=1);
   graph: String[1] = Class.name;
-  extendedPrimitive: meta::external::catalog::precisePrimitives::Varchar(200)[1];
+  extendedPrimitive: meta::pure::precisePrimitives::Varchar(200)[1];
   <<AProfile.flag, protocol::support::AProfile.newFlag>> {protocol::support::AProfile.tag1 = 'yeah', AProfile.tag2 = 'ok'} qualifiedProperty(param: String[1],param2: String[1]) {
     let x = 'ok' + $param + $param2;
     $x;
