@@ -151,4 +151,23 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "}\n");
     }
 
+    @Test
+    public void testRelationalValidation_separateRuntime()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok');\n" +
+                "   runtime: test::test;\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     description: 'test validation';\n" +
+                "     assertion: row|$row.name != 'error';\n" +
+                "     type: ROW_LEVEL;\n" +
+                "    }\n" +
+                "   ];\n" +
+                "}\n");
+    }
+
 }
