@@ -7,6 +7,7 @@
     "core_functions_relation",
     "core_data_space_metamodel",
     "core_functions_unclassified",
+    "core_functions_standard",
     "platform",
     "platform_dsl_store",
     "platform_dsl_graph",

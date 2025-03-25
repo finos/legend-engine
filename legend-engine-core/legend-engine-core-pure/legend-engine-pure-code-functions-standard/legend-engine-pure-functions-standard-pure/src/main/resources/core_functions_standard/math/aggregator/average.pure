@@ -28,3 +28,222 @@ function <<PCT.function>> meta::pure::functions::math::average(numbers:Float[*])
 {
     if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
 }
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    assertEquals(1.0, $f->eval(|average([1])));
+    assertEquals(3.8, $f->eval(|average([5,1,2,8,3])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Floats<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    assertEquals(1.0, $f->eval(|average([1.0])));
+    assertEquals(3.8, $f->eval(|average([5.0,1.0,2.0,8.0,3.0])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Numbers<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    assertEquals(1.0, $f->eval(|average([1d])));
+    assertEquals(3.8, $f->eval(|average([5d,1.0,2,8,3])));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21
+                  2, 1, B, 41
+                  3, 3, C, 71
+                  4, 4, D, 31
+                  5, 2, E, 11
+                  6, 1, F, 1
+                  7, 3, G, 91
+                  8, 1, H, 81
+                  9, 5, I, 51
+                  10, 0, J, 101
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber : y | $y->average())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101.0\n'+
+                  '   1,41.0\n'+
+                  '   2,16.0\n'+
+                  '   3,81.0\n'+
+                  '   4,31.0\n'+
+                  '   5,51.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21.0
+                  2, 1, B, 41.0
+                  3, 3, C, 71.0
+                  4, 4, D, 31.0
+                  5, 2, E, 11.0
+                  6, 1, F, 1.0
+                  7, 3, G, 91.0
+                  8, 1, H, 81.0
+                  9, 5, I, 51.0
+                  10, 0, J, 101.0
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber : y | $y->average())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101.0\n'+
+                  '   1,41.0\n'+
+                  '   2,16.0\n'+
+                  '   3,81.0\n'+
+                  '   4,31.0\n'+
+                  '   5,51.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21d
+                  2, 1, B, 41.0d
+                  3, 3, C, 71d
+                  4, 4, D, 31d
+                  5, 2, E, 11d
+                  6, 1, F, 1d
+                  7, 3, G, 91d
+                  8, 1, H, 81d
+                  9, 5, I, 51d
+                  10, 0, J, 101.0d
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber->cast(@Number) : y | $y->average())
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,newCol\n'+
+                  '   0,101.0\n'+
+                  '   1,41.0\n'+
+                  '   2,16.0\n'+
+                  '   3,81.0\n'+
+                  '   4,31.0\n'+
+                  '   5,51.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  7, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->average())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,10.0\n'+
+                  '   2,1,B,5.0\n'+
+                  '   6,1,F,5.0\n'+
+                  '   7,1,H,5.0\n'+
+                  '   1,2,A,3.0\n'+
+                  '   5,2,E,3.0\n'+
+                  '   3,3,C,5.0\n'+
+                  '   7,3,G,5.0\n'+
+                  '   4,4,D,4.0\n'+
+                  '   9,5,I,9.0\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1.0, 2, A
+                  2.0, 1, B
+                  3.0, 3, C
+                  4.0, 4, D
+                  5.0, 2, E
+                  6.0, 1, F
+                  7.0, 3, G
+                  7.0, 1, H
+                  9.0, 5, I
+                  10.0, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->average())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10.0,0,J,10.0\n'+
+                  '   2.0,1,B,5.0\n'+
+                  '   6.0,1,F,5.0\n'+
+                  '   7.0,1,H,5.0\n'+
+                  '   1.0,2,A,3.0\n'+
+                  '   5.0,2,E,3.0\n'+
+                  '   3.0,3,C,5.0\n'+
+                  '   7.0,3,G,5.0\n'+
+                  '   4.0,4,D,4.0\n'+
+                  '   9.0,5,I,9.0\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1.0, 2, A
+                  2.0, 1, B
+                  3.0, 3, C
+                  4.0, 4, D
+                  5.0, 2, E
+                  6.0, 1, F
+                  7.0, 3, G
+                  7.0, 1, H
+                  9.0, 5, I
+                  10.0, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->cast(@Number)}:y|$y->average())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10.0,0,J,10.0\n'+
+                  '   2.0,1,B,5.0\n'+
+                  '   6.0,1,F,5.0\n'+
+                  '   7.0,1,H,5.0\n'+
+                  '   1.0,2,A,3.0\n'+
+                  '   5.0,2,E,3.0\n'+
+                  '   3.0,3,C,5.0\n'+
+                  '   7.0,3,G,5.0\n'+
+                  '   4.0,4,D,4.0\n'+
+                  '   9.0,5,I,9.0\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
+}

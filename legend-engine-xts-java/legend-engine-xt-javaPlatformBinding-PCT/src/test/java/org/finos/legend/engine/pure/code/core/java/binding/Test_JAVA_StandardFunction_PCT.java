@@ -62,8 +62,40 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
 
             // Date
-            pack("meta::pure::functions::date::tests::timeBucket", "\"meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_ is not supported yet!\"")
-    );
+            pack("meta::pure::functions::date::tests::timeBucket", "\"meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_ is not supported yet!\""),
+
+            // Average
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "error: incompatible types: double cannot be converted to java.util.List<java.lang.Number>"),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "error: incompatible types: long cannot be converted to java.util.List<java.lang.Number>"),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "error: incompatible types: java.math.BigDecimal cannot be converted to java.util.List<java.lang.Number>"),
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+
+            // Percentile
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+
+            // StdDev
+            one("meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationSample_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+
+            // Variance
+            one("meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+
+            // Sum
+            one("meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\"")
+        );
 
     public static Test suite()
     {
