@@ -43,6 +43,7 @@
         <module>legend-engine-xts-relationalStore</module>
         <module>legend-engine-xts-mongodb</module>
         <module>legend-engine-xts-elasticsearch</module>
+        <module>legend-engine-xts-deephaven</module>
 
         <!-- RelationalAI -->
         <module>legend-engine-xts-relationalai</module>
@@ -159,6 +160,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <commons-text.version>1.10.0</commons-text.version>
+        <deephaven.version>0.36.1</deephaven.version>
         <deephaven-csv.version>0.12.0</deephaven-csv.version>
         <dropwizard-swagger.version>1.3.17-1</dropwizard-swagger.version>
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
@@ -166,6 +168,8 @@
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <freemarker.version>2.3.30</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
+        <google.api.grpc.version>2.21.0</google.api.grpc.version>
+        <grpc.version>1.56.0</grpc.version>
         <guava.version>30.0-jre</guava.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
@@ -201,6 +205,7 @@
         <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
         <pac4j.version>3.7.0</pac4j.version>
         <prometheus.version>0.8.1</prometheus.version>
+        <protobuf.java.version>3.25.3</protobuf.java.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>1.33</snakeyaml.version>
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
@@ -3853,6 +3858,55 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.java.version}</version>
+            </dependency>
+
+            <!-- GRPC -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-core</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-context</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf-lite</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>${google.api.grpc.version}</version>
             </dependency>
 
             <!-- Amazon AWS SDK Versioning -->

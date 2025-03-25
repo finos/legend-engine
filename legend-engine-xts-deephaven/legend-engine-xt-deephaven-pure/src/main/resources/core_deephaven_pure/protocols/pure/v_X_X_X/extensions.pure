@@ -1,0 +1,172 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::io::http::*;
+import meta::protocols::pure::vX_X_X::extension::*;
+import meta::external::store::deephaven::metamodel::*;
+import meta::external::store::deephaven::metamodel::executionPlan::*;
+import meta::external::store::deephaven::metamodel::executionPlan::context::*;
+import meta::external::store::deephaven::metamodel::runtime::*;
+import meta::external::store::deephaven::metamodel::store::*;
+import meta::external::store::deephaven::pureToDeephaven::*;
+import meta::pure::extension::*;
+import meta::pure::metamodel::type::*;
+import meta::protocols::pure::vX_X_X::externalFormat::serde::serialization::*;
+
+
+function meta::protocols::pure::vX_X_X::extension::store::deephaven::deephavenStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
+{
+   let res = [
+                pair('deephaven', | meta::protocols::pure::vX_X_X::extension::store::deephaven::deephavenStoreExtension())
+             ]->filter(f|$f.first == $type);
+   assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
+   $res->at(0).second->eval();
+}
+
+function meta::protocols::pure::vX_X_X::extension::store::deephaven::deephavenStoreExtension(): meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X[1]
+{
+    ^SerializerExtension_vX_X_X(
+        transfers_valueSpecification_transformAny = {inScope: String[*], open: Map<String, List<Any>>[1], m: Multiplicity[1], fe: FunctionExpression[0..1], useAppliedFunction: Boolean[1], extensions: meta::pure::extension::Extension[*] |
+            [
+                s: meta::external::store::deephaven::metamodel::store::DeephavenStore[1] |
+                    ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr(
+                        _type = 'packageableElementPtr',
+                        fullPath = $s->elementToPath()
+                    )
+            ]
+        },
+
+        transfers_store_transformStore2 = {extensions: meta::pure::extension::Extension[*] |
+            [
+                s: meta::external::store::deephaven::metamodel::store::DeephavenStore[1] |
+                    ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenStore(
+                        name = $s.name->toOne(),
+                        package = $s.package->map(p | $p->elementToPath()),
+                        tables = $s.tables->map(i |
+                            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table(
+                                name = $i.name,
+                                columns = $i.columns->map(c |
+                                    ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Column(
+                                        name = $c.name,
+                                        type = $c.type
+                                    );
+                                )
+                            )
+                        )
+                    )
+            ]
+        },
+
+        invocation_execution_transformContext = [
+            e: meta::external::store::deephaven::metamodel::executionPlan::context::DeephavenExecutionContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenExecutionContext()
+        ],
+
+        transfers_store_transformConnection2 = {extensions: Extension[*] | [
+            conn: DeephavenConnection[1] |
+                $conn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::deephaven::transformConnection($extensions)
+        ]},
+
+        transfers_executionPlan_transformNode = {extensions: Extension[*] |
+            [
+                dhNode: meta::external::store::deephaven::metamodel::pure::DeephavenExecutionNode[1] |
+                    ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenExecutionNode(
+                        _type = 'DeephavenExecutionNode',
+                        query = ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenQuery(
+                            source = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::deephaven::transformSource($dhNode.query.source)
+                        ),
+                        resultType = $dhNode.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($extensions),
+                        connection = $dhNode.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::deephaven::transformConnection($extensions)
+                    )
+            ]
+        }
+    );
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::deephaven::transformSource(table: Table[0..1]): meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table[0..1]
+{
+    if ($table->isEmpty(),
+        | [],
+        | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table(
+            name = $table->toOne().name,
+            columns = $table->toOne().columns->map(c |
+                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Column(
+                    name = $c.name,
+                    type = $c.type
+                );
+            )
+        )
+    );
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::deephaven::transformConnection(conn: DeephavenConnection[1], extensions: Extension[*]): meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenConnection[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenConnection(
+        _type = 'deephavenConnection',
+        element = '',
+        sourceSpec = ^meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenSourceSpecification(
+            url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), 
+                                          $conn.sourceSpec.url.host, 
+                                          $conn.sourceSpec.url.port, 
+                                          $conn.sourceSpec.url.path])
+        ),
+        authSpec = $conn.authSpec->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)
+    );
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenStore extends meta::protocols::pure::vX_X_X::metamodel::store::Store
+{
+    _type: String[1] = 'deephavenStore';
+    tables: meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table[1..*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table
+{
+    name: String[1];
+    columns: meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Column[1..*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Column
+{
+    _type: String[1] = 'column';
+    name: String[1];
+    type : meta::external::store::deephaven::metamodel::type::Type[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+    query: meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenQuery[1];
+    connection: meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenConnection[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenQuery
+{
+    _type: String[1] = 'deephavenQuery';
+    source: meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::Table[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+{
+    sourceSpec: meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenSourceSpecification[1];
+    authSpec: meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::deephaven::connection::DeephavenSourceSpecification
+{
+    url: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::deephaven::DeephavenExecutionContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+    _type: String[1] = 'deephavenExecutionContext';
+}
