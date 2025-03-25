@@ -3831,6 +3831,10 @@
                 <version>${wiremock.version}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.conscrypt</groupId>
                         <artifactId>conscrypt-openjdk-uber</artifactId>
                     </exclusion>
