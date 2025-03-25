@@ -65,7 +65,22 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
 
             // Date
-            pack("meta::pure::functions::date::tests::timeBucket", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
+            pack("meta::pure::functions::date::tests::timeBucket", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
+
+            // Average
+            one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+
+            // Percentile
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::collection::range(?)'"),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: OVER is not supported for ordered-set aggregate percentile_cont"),
+
+            // And
+            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
+
+            // Or
+            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'")
     );
 
     public static Test suite()
