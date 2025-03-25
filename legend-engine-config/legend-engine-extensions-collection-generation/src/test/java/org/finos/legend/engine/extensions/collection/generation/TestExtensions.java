@@ -35,7 +35,6 @@ import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtens
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
-import org.finos.legend.engine.language.deephaven.to.DeephavenGrammarComposerExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph.MemSqlFunctionCompilerExtension;
@@ -91,7 +90,6 @@ import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGram
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
-import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
@@ -329,7 +327,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.sql.grammar.integration.SQLPureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenProtocolExtension.class)
                 ;
     }
 
@@ -370,7 +367,6 @@ public class TestExtensions
                 .with(TextParserExtension.class)
                 .with(ElasticsearchGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarParserExtension.class)
-                .with(DeephavenGrammarParserExtension.class)
                 ;
     }
 
@@ -405,7 +401,6 @@ public class TestExtensions
                 .with(AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class)
                 .with(ElasticsearchGrammarComposerExtension.class)
-                .with(DeephavenGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarComposerExtension.class)
                 ;
     }
@@ -453,7 +448,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBCompilerExtension.class)
                 .with(org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler.class)
-                .with(org.finos.legend.engine.language.deephaven.compiler.DeephavenCompilerExtension.class)
                 ;
     }
 
@@ -464,8 +458,6 @@ public class TestExtensions
                 .with(JSONJavaBindingLegendPureCoreExtension.class)
                 .with(MongoDBLegendPureCoreExtension.class)
                 .with(FlatDataLegendPureCoreExtension.class)
-                .with(DeephavenLegendPureCoreExtension.class)
-                .with(DeephavenJavaBindingLegendPureCoreExtension.class)
                 .with(ElasticsearchLegendPureCoreExtension.class)
                 .with(CoreLegendPureCoreExtension.class)
                 .with(JSONLegendPureCoreExtension.class)
@@ -609,8 +601,6 @@ public class TestExtensions
                 .with("core_external_store_relational_sql_dialect_translation")
                 .with("core_external_store_relational_sql_dialect_translation_duckdb")
                 .with("core_external_store_relational_postgres_sql_parser")
-                .with("core_deephaven_pure")
-                .with("core_deephaven_java_platform_binding")
                 ;
     }
 }

@@ -54,8 +54,6 @@ public class AuthenticationGrammarParserExtension implements IAuthenticationGram
                     return parse(code, p -> walker.visitEncryptedKeyPairAuthentication(p.encryptedPrivateKeyAuthentication()));
                 case "GCPWIFWithAWSIdP":
                     return parse(code, p -> walker.visitGcpWIFWithAWSIdPAuthenticationContext(p.gcpWIFWithAWSIdPAuthentication()));
-                case "PSK":
-                    return parse(code, p -> walker.visitPskAuthentication(p.pskAuthentication()));
                 default:
                     return null;
             }

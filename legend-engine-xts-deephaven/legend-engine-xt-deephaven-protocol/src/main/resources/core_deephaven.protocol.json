@@ -1,7 +1,0 @@
-{
-  "purePackage": "meta::external::store::deephaven::metamodel",
-  "javaPackage": "org.finos.legend.engine.protocol.deephaven.metamodel",
-  "elementsToBeExcluded": [
-    "meta::external::store::deephaven::metamodel::pure"
-  ]
-}
