@@ -132,3 +132,27 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparis
 
     assertEquals(true, $res);
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testSizeAsWindowFunction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {| 
+                let t = #TDS
+                   val, str
+                   1, a
+                   3, ewe
+                   4, qw
+                   1, b
+                 #;
+                 let s = $t->extend(over(~val), ~count:{p,w,r|$r.val}:y|$y->size());
+              };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals( '#TDS\n'+
+                  '   val,str,count\n'+
+                  '   1,a,2\n'+
+                  '   1,b,2\n'+
+                  '   3,ewe,1\n'+
+                  '   4,qw,1\n'+
+                  '#', $res->sort([~val->ascending(), ~str->ascending()])->toString());
+}
