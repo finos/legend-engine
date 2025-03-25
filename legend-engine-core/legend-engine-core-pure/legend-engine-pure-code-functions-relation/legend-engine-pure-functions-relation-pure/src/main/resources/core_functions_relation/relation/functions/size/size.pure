@@ -99,6 +99,30 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testGroupByS
     assertEquals(6, $res);
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testWindowSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->plus())
+                ->size();
+               };
+
+    let res =  $f->eval($expr)->toOne();
+
+    assertEquals(10, $res);
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -133,26 +157,69 @@ function <<PCT.test>> meta::pure::functions::relation::tests::size::testComparis
     assertEquals(true, $res);
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::size::testSizeAsWindowFunction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
-    let expr = {| 
-                let t = #TDS
-                   val, str
-                   1, a
-                   3, ewe
-                   4, qw
-                   1, b
-                 #;
-                 let s = $t->extend(over(~val), ~count:{p,w,r|$r.val}:y|$y->size());
-              };
+    let expr = {
+                |#TDS
+                  id, grp, name, employeeNumber
+                  1, 2, A, 21
+                  2, 1, B, 41
+                  3, 3, C, 71
+                  4, 4, D, 31
+                  5, 2, E, 11
+                  6, 1, F, 1
+                  7, 3, G, 91
+                  8, 1, H, 81
+                  9, 5, I, 51
+                  10, 0, J, 101
+                #->groupBy(~grp, ~newCol : x | $x.employeeNumber : y | $y->size())
+               };
 
-    let res =  $f->eval($expr)->toOne();
+    let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   val,str,count\n'+
-                  '   1,a,2\n'+
-                  '   1,b,2\n'+
-                  '   3,ewe,1\n'+
-                  '   4,qw,1\n'+
-                  '#', $res->sort([~val->ascending(), ~str->ascending()])->toString());
+                  '   grp,newCol\n'+
+                  '   0,1\n'+
+                  '   1,3\n'+
+                  '   2,2\n'+
+                  '   3,2\n'+
+                  '   4,1\n'+
+                  '   5,1\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::size::testSize_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  1, 2, A
+                  2, 1, B
+                  3, 3, C
+                  4, 4, D
+                  5, 2, E
+                  6, 1, F
+                  7, 3, G
+                  8, 1, H
+                  9, 5, I
+                  10, 0, J
+                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->size())
+               };
+
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,grp,name,newCol\n'+
+                  '   10,0,J,1\n'+
+                  '   2,1,B,3\n'+
+                  '   6,1,F,3\n'+
+                  '   8,1,H,3\n'+
+                  '   1,2,A,2\n'+
+                  '   5,2,E,2\n'+
+                  '   3,3,C,2\n'+
+                  '   7,3,G,2\n'+
+                  '   4,4,D,1\n'+
+                  '   9,5,I,1\n'+
+                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
