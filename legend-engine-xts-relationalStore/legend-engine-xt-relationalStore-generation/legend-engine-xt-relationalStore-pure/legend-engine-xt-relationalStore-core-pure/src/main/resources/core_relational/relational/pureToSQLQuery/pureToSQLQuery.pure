@@ -8273,7 +8273,8 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),
-                              s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns()
+                              s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns(),
+                              a:Any[*]|[]
                           ]
                       )
                );
