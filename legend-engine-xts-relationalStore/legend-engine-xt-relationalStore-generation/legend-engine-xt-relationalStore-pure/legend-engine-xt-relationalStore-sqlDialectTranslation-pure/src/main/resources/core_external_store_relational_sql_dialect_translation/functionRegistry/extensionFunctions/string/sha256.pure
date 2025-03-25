@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::Sha256
   (
     name = 'sha256',
-    documentation = 'Returns  SHA-256 hash of the argument',
+    documentation = 'Returns SHA-256 hash of the argument',
     variations = [
       ^SqlFunctionVariation
       (

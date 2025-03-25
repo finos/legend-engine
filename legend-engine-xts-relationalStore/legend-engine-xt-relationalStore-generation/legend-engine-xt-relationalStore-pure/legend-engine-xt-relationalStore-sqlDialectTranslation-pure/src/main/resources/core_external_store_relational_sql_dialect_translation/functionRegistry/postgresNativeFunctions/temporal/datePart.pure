@@ -43,7 +43,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         1
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_part', [literal('day'), cast(literal('2025-01-31 12:00:00'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_part', [literal('DAY'), cast(literal('2025-01-31 12:00:00'), 'TIMESTAMP')]),
         31
       ),
       sqlFunctionTest(
@@ -55,7 +55,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         12
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_part', [literal('minute'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_part', [literal('MINUTE'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
         34
       ),
       sqlFunctionTest(
@@ -63,7 +63,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
         56
       ),
       sqlFunctionTest(
-        simpleFunctionCall('date_part', [literal('millisecond'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
+        simpleFunctionCall('date_part', [literal('MILLISECOND'), cast(literal('2025-01-01 12:34:56.789'), 'TIMESTAMP')]),
         56789
       )
     ]
