@@ -85,6 +85,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::percentRank::testOLAPWithPartitionAndOrderPercentRank_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
             one("meta::pure::functions::relation::tests::rowNumber::testOLAPWithPartitionAndRowNumber_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_ is not supported yet!\""),
+            one("meta::pure::functions::relation::tests::size::testSizeAsWindowFunction_Function_1__Boolean_1_", "\"meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_ is not supported yet!\""),
 
             // Distinct
             one("meta::pure::functions::relation::tests::distinct::testDistinctAll_Function_1__Boolean_1_", "\"meta::pure::functions::relation::distinct_Relation_1__Relation_1_ is not supported yet!\""),
