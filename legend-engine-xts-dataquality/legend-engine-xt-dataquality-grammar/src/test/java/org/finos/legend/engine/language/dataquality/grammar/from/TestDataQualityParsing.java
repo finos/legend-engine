@@ -36,7 +36,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         return "###DataQualityValidation\n" +
                 "DataQualityValidation " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person{\n" +
                 "        lastName,\n" +
@@ -73,7 +73,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   filter: p: Person[1]|$p.age >= 18;\n" +
                 "}", "PARSER error at [2:1-6:1]: Field 'validationTree' is required");
     }
@@ -84,7 +84,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person{\n" +
                 "        lastName,\n" +
@@ -106,7 +106,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person<ageMustBePositive, 'nameMust NotBeBlank'>{\n" +
                 "       lastName,\n" +
@@ -122,7 +122,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person<ageMustBePositive, 'nameMust \\r\\nNotBeBlank'>{\n" +
                 "       lastName,\n" +
@@ -144,7 +144,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person<ageMustBePositive>{\n" +
                 "     }\n" +
@@ -153,7 +153,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person{\n" +
                 "       addresses<idMustBeValid>{\n" +
@@ -165,7 +165,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person{\n" +
                 "        age\n" +
@@ -175,7 +175,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person{\n" +
                 "       addresses{\n" +
@@ -189,7 +189,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "    context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "    context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "    validationTree: $[\n" +
                 "     Person{\n" +
                 "     }\n" +

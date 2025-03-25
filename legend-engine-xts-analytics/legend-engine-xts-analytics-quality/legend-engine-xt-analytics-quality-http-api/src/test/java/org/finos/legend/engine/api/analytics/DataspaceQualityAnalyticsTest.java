@@ -31,10 +31,10 @@ public class DataspaceQualityAnalyticsTest
     private static final String minimumPureClientVersion = "v1_20_0";
 
     @Test
-    public void testValidCheckDataSpaceConstraints()
+    public void testValidCheckDataProductConstraints()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(validDataspace);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
@@ -42,7 +42,7 @@ public class DataspaceQualityAnalyticsTest
     public void testDataspaceWithBadClasses()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataSpaceWithBadClasses);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         ValidationRuleResult targetCompany = new ValidationRuleResult(
@@ -71,7 +71,7 @@ public class DataspaceQualityAnalyticsTest
     public void testDataspaceWithBadAssociations()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadAssociation);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         List<ValidationRuleResult> message = new ArrayList<>();
@@ -93,7 +93,7 @@ public class DataspaceQualityAnalyticsTest
     public void testDataspaceWithBadEnumerations()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadEnum);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         List<ValidationRuleResult> message = new ArrayList<>();
@@ -115,7 +115,7 @@ public class DataspaceQualityAnalyticsTest
     public void testDataspaceWithBadFunctions()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadFunction);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         List<ValidationRuleResult> message = new ArrayList<>();
@@ -145,7 +145,7 @@ public class DataspaceQualityAnalyticsTest
     public void testDataspaceWithBadClassProperties()
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadClassProperties);
-        Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
+        Response response = api.checkDataProductConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataProduct", modelData), null);
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         List<ValidationRuleResult> message = new ArrayList<>();
@@ -172,8 +172,8 @@ public class DataspaceQualityAnalyticsTest
         Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
-    private final String validDataspace = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String validDataspace = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -268,8 +268,8 @@ public class DataspaceQualityAnalyticsTest
             "  ];\n" +
             "}\n";
 
-    private final String dataSpaceWithBadClasses = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String dataSpaceWithBadClasses = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -364,8 +364,8 @@ public class DataspaceQualityAnalyticsTest
             "  ];\n" +
             "}\n";
 
-    private final String dataspaceWithBadAssociation = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String dataspaceWithBadAssociation = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -460,8 +460,8 @@ public class DataspaceQualityAnalyticsTest
             "  ];\n" +
             "}\n";
 
-    private final String dataspaceWithBadEnum = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String dataspaceWithBadEnum = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -556,8 +556,8 @@ public class DataspaceQualityAnalyticsTest
             "  ];\n" +
             "}\n";
 
-    private final String dataspaceWithBadFunction = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String dataspaceWithBadFunction = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +
@@ -645,8 +645,8 @@ public class DataspaceQualityAnalyticsTest
             "  ];\n" +
             "}\n";
 
-    private final String dataspaceWithBadClassProperties = "###DataSpace\n" +
-            "DataSpace model::NewDataSpace\n" +
+    private final String dataspaceWithBadClassProperties = "###DataProduct\n" +
+            "DataProduct model::NewDataProduct\n" +
             "{\n" +
             "  executionContexts:\n" +
             "  [\n" +

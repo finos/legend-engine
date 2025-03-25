@@ -16,7 +16,7 @@ package org.finos.legend.engine.application.query.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.application.query.model.Query;
-import org.finos.legend.engine.application.query.model.QueryDataSpaceExecutionContext;
+import org.finos.legend.engine.application.query.model.QueryDataProductExecutionContext;
 import org.finos.legend.engine.application.query.model.QueryExplicitExecutionContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -130,11 +130,11 @@ public class TestQuerySerialization
         Assert.assertNull(explicitExecutionQuery.mapping);
         Assert.assertTrue(explicitExecutionQuery.executionContext instanceof QueryExplicitExecutionContext);
         Query dataSpaceQuery = objectMapper.readValue(DATA_SPACE_QUERY, Query.class);
-        Assert.assertTrue(dataSpaceQuery.executionContext instanceof QueryDataSpaceExecutionContext);
-        QueryDataSpaceExecutionContext dataSpaceExecutionContext = (QueryDataSpaceExecutionContext) dataSpaceQuery.executionContext;
+        Assert.assertTrue(dataSpaceQuery.executionContext instanceof QueryDataProductExecutionContext);
+        QueryDataProductExecutionContext dataSpaceExecutionContext = (QueryDataProductExecutionContext) dataSpaceQuery.executionContext;
         Assert.assertEquals(dataSpaceExecutionContext.dataSpacePath, "my::dataSpace");
         Assert.assertEquals(dataSpaceExecutionContext.executionKey, "myKey");
         Query dataSpaceQuery2 = objectMapper.readValue(DATA_SPACE_QUERY_NO_KEY, Query.class);
-        Assert.assertNull(((QueryDataSpaceExecutionContext)dataSpaceQuery2.executionContext).executionKey);
+        Assert.assertNull(((QueryDataProductExecutionContext)dataSpaceQuery2.executionContext).executionKey);
     }
 }

@@ -26,7 +26,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person<ageMustBePositive, 'nameMust NotBeBlank'>{\n" +
                 "        lastName,\n" +
@@ -45,7 +45,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person<ageMustBePositive, 'nameMust NotBeBlank'>{\n" +
                 "        lastName,\n" +
@@ -66,7 +66,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person<ageMustBePositive, 'nameMust NotBeBlank'>{\n" +
                 "        lastName,\n" +
@@ -86,7 +86,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person{\n" +
                 "        lastName,\n" +
@@ -106,7 +106,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         test("###DataQualityValidation\n" +
                 "DataQualityValidation meta::external::dataquality::PersonDataQualityValidation\n" +
                 "{\n" +
-                "   context: fromDataSpace(meta::external::dataquality::PersonDataSpace, 'Local_Context');\n" +
+                "   context: fromDataProduct(meta::external::dataquality::PersonDataProduct, 'Local_Context');\n" +
                 "   validationTree: $[\n" +
                 "      Person<ageMustBePositive, 'nameMust  \\r\\nNotBeBlank'>{\n" +
                 "        lastName,\n" +

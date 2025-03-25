@@ -18,16 +18,16 @@ public class QueryStoreStats
 {
 
     Long queryCount;
-    Long queryCreatedFromDataSpaceCount;
+    Long queryCreatedFromDataProductCount;
 
     public Long getQueryCount()
     {
         return queryCount;
     }
 
-    public Long getQueryCreatedFromDataSpaceCount()
+    public Long getQueryCreatedFromDataProductCount()
     {
-        return queryCreatedFromDataSpaceCount;
+        return queryCreatedFromDataProductCount;
     }
 
     public void setQueryCount(Long queryCount)
@@ -35,8 +35,8 @@ public class QueryStoreStats
         this.queryCount = queryCount;
     }
 
-    public void setQueryCreatedFromDataSpaceCount(Long queryCount)
+    public void setQueryCreatedFromDataProductCount(Long queryCount)
     {
-        this.queryCreatedFromDataSpaceCount = queryCount;
+        this.queryCreatedFromDataProductCount = queryCount;
     }
 }

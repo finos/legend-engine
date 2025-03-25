@@ -43,7 +43,7 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.engine.api.analytics.BindingAnalytics;
 import org.finos.legend.engine.api.analytics.ClassAnalytics;
-import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
+import org.finos.legend.engine.api.analytics.DataProductAnalytics;
 import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.api.analytics.FunctionAnalytics;
 import org.finos.legend.engine.api.analytics.LineageAnalytics;
@@ -420,7 +420,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new FunctionAnalytics(modelManager));
         environment.jersey().register(new BindingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
-        environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
+        environment.jersey().register(new DataProductAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
 

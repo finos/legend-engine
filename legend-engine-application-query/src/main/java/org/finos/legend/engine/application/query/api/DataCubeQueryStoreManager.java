@@ -399,7 +399,7 @@ public class DataCubeQueryStoreManager
         Long count = this.getQueryCollection().countDocuments();
         QueryStoreStats storeStats = new QueryStoreStats();
         storeStats.setQueryCount(count);
-        storeStats.setQueryCreatedFromDataSpaceCount(0L);
+        storeStats.setQueryCreatedFromDataProductCount(0L);
         return storeStats;
     }
 }

@@ -224,17 +224,17 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+            <artifactId>legend-engine-xt-data-product-grammar</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+            <artifactId>legend-engine-xt-data-product-pure-metamodel</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+            <artifactId>legend-engine-xt-data-product-compiler</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
