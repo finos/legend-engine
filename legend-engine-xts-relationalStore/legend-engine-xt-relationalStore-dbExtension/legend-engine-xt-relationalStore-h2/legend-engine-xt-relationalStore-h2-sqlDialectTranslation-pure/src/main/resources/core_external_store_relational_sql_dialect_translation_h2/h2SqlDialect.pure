@@ -462,9 +462,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     |if($processedArgs->at(2)->length()==1,
       | generateFunctionCallWithArgs($sqlDialect, $directionFunc, $processedArgs, [], $state, $config),
       | //We are making the padding string by repeating it till the length needed and concatenating it to the input.
-	      let repeatTimes =  generateFunctionCallWithArgs($sqlDialect, 'ceiling', [((($processedArgs->at(1) +' - '+ generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0') + '/' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(2)], [], $state, $config))], [], $state, $config);
+	    let repeatTimes =  generateFunctionCallWithArgs($sqlDialect, 'ceiling', [((($processedArgs->at(1) +' - '+ generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0') + '/' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(2)], [], $state, $config))], [], $state, $config);
         let repeatCall = generateFunctionCallWithArgs($sqlDialect, 'repeat', [$processedArgs->at(2), $repeatTimes], [], $state, $config);
-	      let resultantPaddingString = generateFunctionCallWithArgs($sqlDialect, 'substring', [$repeatCall, '1', (($processedArgs->at(1) + ' - ' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0')], [], $state, $config);
+	    let resultantPaddingString = generateFunctionCallWithArgs($sqlDialect, 'substring', [$repeatCall, '1', (($processedArgs->at(1) + ' - ' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0')], [], $state, $config);
         if($directionFunc == 'lpad',
           | generateFunctionCallWithArgs($sqlDialect, 'concat', [$resultantPaddingString, $processedArgs->at(0)], [], $state, $config),
           | generateFunctionCallWithArgs($sqlDialect, 'concat', [$processedArgs->at(0), $resultantPaddingString], [], $state, $config)
