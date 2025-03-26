@@ -27,4 +27,6 @@ public interface AuthenticationSpecificationVisitor<T>
     T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification);
 
     T visit(KerberosAuthenticationSpecification authenticationSpecification);
+
+    T visit(PSKAuthenticationSpecification pskAuthenticationSpecification);
 }

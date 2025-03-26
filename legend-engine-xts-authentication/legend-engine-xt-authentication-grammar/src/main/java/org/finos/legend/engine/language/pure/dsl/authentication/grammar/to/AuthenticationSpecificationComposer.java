@@ -76,6 +76,14 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     }
 
     @Override
+    public String visit(PSKAuthenticationSpecification authenticationSpecification)
+    {
+        return "# PSK {\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "psk: '" + authenticationSpecification.psk + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
+    }
+
+    @Override
     public String visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification)
     {
         return "# GCPWIFWithAWSIdP {\n" +
