@@ -3831,10 +3831,6 @@
                 <version>${wiremock.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.conscrypt</groupId>
                         <artifactId>conscrypt-openjdk-uber</artifactId>
                     </exclusion>
@@ -3843,6 +3839,17 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Override transitive dependencies to force same version everywhere -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>2.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>1.2.2</version>
             </dependency>
 
             <!-- Amazon AWS SDK Versioning -->
