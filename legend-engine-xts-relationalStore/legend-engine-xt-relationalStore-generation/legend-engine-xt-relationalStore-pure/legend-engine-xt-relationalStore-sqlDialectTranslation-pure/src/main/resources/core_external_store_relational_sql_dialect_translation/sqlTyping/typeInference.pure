@@ -18,7 +18,6 @@ import meta::external::store::relational::sqlDialectTranslation::functionRegistr
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedSqlExpression extends meta::external::query::sql::metamodel::Expression
@@ -48,14 +47,16 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeI
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(query: Query[1], functionRegistry: Map<String, SqlFunction>[1]): Query[1]
+function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(query: Query[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Query[1]
 {
-  $query->postTraversalTransform(typeInferenceTransformFunction($functionRegistry))->cast(@Query)
+  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
+  $query->postTraversalTransform(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@Query);
 }
 
-function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(expr: meta::external::query::sql::metamodel::Expression[1], functionRegistry: Map<String, SqlFunction>[1]): TypedSqlExpression[1]
+function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(expr: meta::external::query::sql::metamodel::Expression[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): TypedSqlExpression[1]
 {
-  $expr->postTraversalTransform(typeInferenceTransformFunction($functionRegistry))->cast(@TypedSqlExpression)
+  let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
+  $expr->postTraversalTransform(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@TypedSqlExpression);
 }
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typeInferenceTransformFunction(functionRegistry: Map<String, SqlFunction>[1]): Function<{Node[1]->Node[1]}>[1]

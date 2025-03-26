@@ -1,0 +1,48 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Md5 extends PostgresNativeSqlFunction
+[
+  $this.name == 'md5'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::md5(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Md5
+  (
+    name = 'md5',
+    documentation = 'Calculates the MD5 hash of argument, returning the result in hexadecimal',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = AbstractStringSqlType,
+        returnType = AbstractStringSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('md5', literal('abc')),
+        '900150983cd24fb0d6963f7d28e17f72'
+      )
+      
+    ]
+  )
+}

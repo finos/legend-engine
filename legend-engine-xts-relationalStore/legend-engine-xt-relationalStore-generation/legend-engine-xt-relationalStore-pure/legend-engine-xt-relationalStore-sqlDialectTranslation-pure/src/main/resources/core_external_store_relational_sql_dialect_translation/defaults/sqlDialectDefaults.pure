@@ -760,3 +760,15 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   regexpPattern('~')->format($processedArgs->transformRegexpParams());
 }
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::trimProcessor_default(): NodeProcessor<Trim>[1]
+{
+  nodeProcessor(
+    Trim,
+    {sqlDialect, t, state, config |
+      $sqlDialect->keyword('trim', $state, $config) + '(' + $sqlDialect->keyword($t.mode.name, $state, $config) +  if($t.characters->isEmpty(), |'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('from', $state, $config) + ' '
+      + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +')'
+    }
+  )
+}
+

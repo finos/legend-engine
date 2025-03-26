@@ -1,0 +1,548 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::defaults::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::*;
+import meta::external::store::relational::sqlDialectTranslation::h2::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::pure::extension::*;
+
+
+function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialect(): SqlDialect[1]
+{
+  ^SqlDialect
+  (
+    dbType = 'H2',
+    quoteConfig = h2QuoteConfiguration(),
+    nodeProcessors = h2DialectNodeProcessors(),
+    identifierProcessor = h2IdentifierProcessor(),
+    expressionPrecedenceComparator = h2ExpressionPrecedenceComparator(),
+    keywords = h2Keywords(),
+    functionProcessorMap = meta::external::store::relational::sqlDialectTranslation::h2::functionProcessorMap()
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDialectExtension(): Extension[1]
+{
+  ^Extension
+  (
+    type = 'H2SqlDialectExtension',
+    moduleExtensions = [
+      ^SqlDialectTranslationModuleExtension
+      (
+        module = sqlDialectTranslationModuleExtensionName(),
+        extraSqlDialects = h2SqlDialect()
+      )
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::h2::h2FunctionTestsExpectedErrors(): Map<String, String>[1]
+{
+  [
+     pair(
+      'FuncTests - Reverse(0/1)',
+      'Reverse not supported in H2 version we use'
+    ),
+     pair(
+      'FuncTests - Reverse(1/1)',
+      'Reverse not supported in H2 version we use'
+    ),
+    pair(
+      'FuncTests - SplitPart(0/1)',
+      'SplitPart is not available in H2'
+    ),
+     pair(
+      'FuncTests - SplitPart(1/1)',
+      'SplitPart is not available in H2'
+    )
+  ]->newMap()->cast(@Map<String, String>)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2QuoteConfiguration(): QuoteConfiguration[1]
+{
+  ^QuoteConfiguration
+  (
+    start = '"',
+    end = '"',
+    escape = '""'
+  )
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectNodeProcessors(): Map<Class<Node>, NodeProcessor<Node>>[1]
+{
+  newMap(
+    h2DialectStatementProcessors()
+    ->concatenate(
+      h2DialectRelationProcessors()
+    )
+    ->concatenate(
+      h2DialectExpressionProcessors()
+    )
+    ->concatenate(
+      h2DialectLiteralProcessors()
+    )
+    ->concatenate(
+      h2DialectSelectItemProcessors()
+    )
+    ->concatenate(
+      h2DialectOtherNodeProcessors()
+    )
+    ->map(n | pair($n.nodeType, $n))
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectStatementProcessors(): NodeProcessor<Statement>[*]
+{
+  [
+    queryProcessor_default(),
+    windowProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectRelationProcessors(): NodeProcessor<Relation>[*]
+{
+  [
+    tableProcessor_default(),
+    aliasedRelationProcessor_default(),
+    joinProcessor_default(),
+    querySpecificationProcessor_default(),
+    unionProcessor_default()
+  ]
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectLiteralProcessors(): NodeProcessor<Literal>[*]
+{
+  [
+    integerLiteralNodeProcessor_default(),
+    stringLiteralNodeProcessor_default(),
+    booleanLiteralNodeProcessor_default(),
+    longLiteralNodeProcessor_default(),
+    doubleLiteralNodeProcessor_default(),
+    nullLiteralNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectSelectItemProcessors(): NodeProcessor<SelectItem>[*]
+{
+  [
+    allColumnsNodeProcessor_default(),
+    singleColumnNodeProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectOtherNodeProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    sortItemProcessor_default(),
+    selectProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2IdentifierProcessor(): IdentifierProcessor[1]
+{
+  identifierProcessor_default()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2ExpressionPrecedenceComparator(): ExpressionPrecedenceComparator[1]
+{
+  ^ExpressionPrecedenceComparator(
+    findOperatorType = findOperatorType_default_Expression_1__String_1_,
+    operatorPrecedence = operatorPrecedence_default()
+  )
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2DialectExpressionProcessors(): NodeProcessor<meta::external::query::sql::metamodel::Expression>[*]
+{
+  [
+    comparisonExpressionNodeProcessor_default(),
+    logicalBinaryExpressionNodeProcessor_default(),
+    notExpressionNodeProcessor_default(),
+    arithmeticExpressionNodeProcessor_h2(),
+    qualifiedNameReferenceNodeProcessor_default(),
+    isNullPredicateNodeProcessor_default(),
+    isNotNullPredicateNodeProcessor_default(),
+    negativeNodeProcessor_default(),
+    currentTimeNodeProcessor_default(),
+    whenClauseNodeProcessor_default(),
+    searchedCaseExpressionNodeProcessor_default(),
+    columnTypeProcessor_default(),
+    castProcessor_default(),
+    inListExpressionProcessor_default(),
+    inPredicateProcessor_default(),
+    extractProcessor_default(),
+    betweenPredicateProcessor_default(),
+    functionCallProcessor_default(),
+    subQueryExpressionProcessor_default(),
+    trimProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::h2Keywords(): String[*]
+{
+  [ 
+    'all',
+    'and',
+    'any',
+    'array',
+    'as',
+    'asymmetric',
+    'authorization',
+    'between',
+    'both',
+    'case',
+    'cast',
+    'check',
+    'constraint',
+    'cross',
+    'current_catalog',
+    'current_date',
+    'current_path',
+    'current_role',
+    'current_schema',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'day',
+    'default',
+    'distinct',
+    'else',
+    'end',
+    'except',
+    'exists',
+    'false',
+    'fetch',
+    'for',
+    'foreign',
+    'from',
+    'full',
+    'group',
+    'groups',
+    'having',
+    'hour',
+    'if',
+    'ilike',
+    'in',
+    'inner',
+    'intersect',
+    'interval',
+    'is',
+    'join',
+    'key',
+    'leading',
+    //'left',
+    'like',
+    'limit',
+    'localtime',
+    'localtimestamp',
+    'minus',
+    'minute',
+    'month',
+    'natural',
+    'not',
+    'null',
+    'offset',
+    'on',
+    'or',
+    'order',
+    'over',
+    'partition',
+    'primary',
+    'qualify',
+    'range',
+    'regexp',
+    //'right',
+    'row',
+    'rownum',
+    'rows',
+    'second',
+    'select',
+    'session_user',
+    'set',
+    'some',
+    'symmetric',
+    'system_user',
+    'table',
+    'to',
+    'top',
+    'trailing',
+    'true',
+    'uescape',
+    'union',
+    'unique',
+    'unknown',
+    'user',
+    'using',
+    'value',
+    'values',
+    'when',
+    'where',
+    'window',
+    'with',
+    'year'
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::arithmeticExpressionNodeProcessor_h2(): NodeProcessor<ArithmeticExpression>[1]
+{
+  nodeProcessor(
+    ArithmeticExpression,
+    {sqlDialect, a, state, config |
+      let leftExpr = $sqlDialect->executeNodeProcessor($a.left, $a, $state, $config);
+      let rightExpr = $sqlDialect->executeNodeProcessor($a.right, $a, $state, $config);
+      let operator = if(
+        [
+          pair(|$a.type == ArithmeticType.ADD, | '+'),
+          pair(|$a.type == ArithmeticType.SUBTRACT, | '-'),
+          pair(|$a.type == ArithmeticType.MULTIPLY, | '*'),
+          pair(|$a.type == ArithmeticType.DIVIDE, | '/'),
+          pair(|$a.type == ArithmeticType.MODULUS, | '%'),
+          pair(|$a.type == ArithmeticType.POWER, | '^')
+        ],
+        | failWithMessage('Unhandled arithmetic operator type: ' + $a.type->toString())
+      );
+
+      $leftExpr + ' ' + $operator + ' ' + $rightExpr;
+    }
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::functionProcessorMap(): Map<Class<SqlFunction>, FunctionProcessor>[1]
+{
+  newMap([
+    // Numeric
+    pair(Abs, simpleFunctionProcessor('abs')),
+    // No Native function CBRT - Implemented it using POWER
+    pair(Cbrt, customFunctionProcessor(processorForCbrt_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceil, customFunctionProcessor(processorForCeil_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Ceiling, customFunctionProcessor(processorForCeiling_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Degrees, simpleFunctionProcessor('degrees')),
+    pair(Exp, simpleFunctionProcessor('exp')),
+    pair(Ln, simpleFunctionProcessor('ln')),
+    // Default base is 'e' not 10 as we expect
+    pair(Log, customFunctionProcessor(processorForLog_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Log10, simpleFunctionProcessor('log10')),
+    pair(Sqrt, simpleFunctionProcessor('sqrt')),
+    pair(Acos, simpleFunctionProcessor('acos')),
+    pair(Asin, simpleFunctionProcessor('asin')),
+    pair(Atan, simpleFunctionProcessor('atan')),
+    pair(Atan2, simpleFunctionProcessor('atan2')),
+    pair(Cos, simpleFunctionProcessor('cos')),
+    pair(Cot, simpleFunctionProcessor('cot')),
+    pair(Sin, simpleFunctionProcessor('sin')),
+    pair(Tan, simpleFunctionProcessor('tan')),
+    pair(Power, simpleFunctionProcessor('power')),
+    pair(Sign, simpleFunctionProcessor('sign')),
+    pair(Mod, simpleFunctionProcessor('mod')),
+    pair(Round, simpleFunctionProcessor('round')),
+    pair(Floor, customFunctionProcessor(processorForFloor_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+
+    // String
+    // Custom handling required because in H2 will only consider the first character in the padding string and repeat only it whereas in all other DBs the 
+    //  entire string is repeated.
+    pair(Lpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('lpad', $f, $sqlDialect, $state, $config )})),
+    pair(Rpad, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForPad('rpad', $f, $sqlDialect, $state, $config )})),
+    // Custom handling required because in H2 will only consider the first character in the trim string and trim only it whereas in all other DBs the 
+    //  entire string is trimmed.
+    pair(Ltrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('ltrim', $f, $sqlDialect, $state, $config )})),
+    pair(Rtrim, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForTrim('rtrim', $f, $sqlDialect, $state, $config )})),
+    pair(Ascii, simpleFunctionProcessor('ascii')),
+    pair(Lower, simpleFunctionProcessor('lower')),
+    pair(Upper, simpleFunctionProcessor('upper')),
+    pair(Repeat, simpleFunctionProcessor('repeat')),
+    pair(Replace, simpleFunctionProcessor('replace')),
+    // We need custom handling here because negtive index is not supported like how it is supported in Postgres and Other DBs ,
+    // where it returns string from the opposite side. 
+    pair(Left, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('left', $f, $sqlDialect, $state, $config )})),
+    pair(Right, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForDirectionalIndex('right', $f, $sqlDialect, $state, $config )})),
+    pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
+    pair(CharLength, simpleFunctionProcessor('char_length')),
+    pair(Chr, simpleFunctionProcessor('char')),
+    pair(Reverse, simpleFunctionProcessor('reverse')),
+    pair(Substring, simpleFunctionProcessor('substring')),
+    pair(StrPos, argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
+    pair(Sha1, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-1')->concatenate($n)})),
+    pair(Sha256, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-256')->concatenate($n)})),
+
+    // Boolean
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+
+    // Temporal
+    pair(DateTrunc, customFunctionProcessor(processorForDateTrunc_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(Now, simpleFunctionProcessor('now')),
+    pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+
+  ])
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCbrt(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if(!$processedArgs->at(0)->startsWith('-'), | generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0), '1.0/3'], [], $state, $config), | '-1*' + generateFunctionCallWithArgs($sqlDialect, 'power', [$processedArgs->at(0)->replace('-', ''), '1.0/3'], [], $state, $config));
+  
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDateTrunc(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let truncatedDate = simpleFunctionProcessor('date_trunc').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($truncatedDate, 'timestamp', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDatePart(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let inputText = $processedArgs->at(0)->toString() + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString() ; 
+  let inputTextForSeconds = 'second' + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString();
+  let secondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForSeconds], [], $state, $config);
+  let inputTextForMilliSeconds = 'millisecond' + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + $processedArgs->at(1)->toString() ;
+  let extractmilliSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputTextForMilliSeconds], [], $state, $config);
+  let milliSecondsCall = $secondsCall+'* 1000 + '+ $extractmilliSecondsCall;
+  if($processedArgs->at(0)->toString()->toLower()->removeQuotes()=='millisecond', | $milliSecondsCall, | generateFunctionCallWithArgs($sqlDialect, 'extract', [$inputText], [], $state, $config));
+
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForToDate(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+
+  $sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'parsedatetime', $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->at(0)->concatenate($sqlDialect->processFunctionArgs($f.arguments, $state, $config)->at(1)->dateFormatSpecifierForH2()), [], $state, $config), 'date', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForToTimestamp(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  //explicit casting needed as milliseconds are not shown if zero
+  let secondsCasted = $sqlDialect->generateCast($processedArgs->at(0), 'bigint', $state, $config)+' * 1000';
+  let epochcast = $sqlDialect->generateCast('\'1970-01-01 00:00:00\'', 'timestamp', $state, $config);
+  let milliSecondsCall = generateFunctionCallWithArgs($sqlDialect, 'dateadd', ['\'millisecond\'', $secondsCasted, $epochcast], [], $state, $config);
+  let singleArgCall = $sqlDialect->generateCast($milliSecondsCall, 'timestamp(3)', $state, $config);
+
+  let formattedUnit = if($processedArgs->size()==2, | $processedArgs->at(1)->dateFormatSpecifierForH2(), |'');
+
+  let multiArgCall = generateFunctionCallWithArgs($sqlDialect, 'parsedatetime', $processedArgs->at(0)->concatenate($formattedUnit), [], $state, $config);
+  if($processedArgs->size()==1, | $singleArgCall, |$multiArgCall);
+}
+
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForPad(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->size() == 2, | generateFunctionCallWithArgs($sqlDialect, $directionFunc, $processedArgs->concatenate('\' \''), [], $state, $config),  
+    |if($processedArgs->at(2)->length()==1,
+      | generateFunctionCallWithArgs($sqlDialect, $directionFunc, $processedArgs, [], $state, $config),
+      | //We are making the padding string by repeating it till the length needed and concatenating it to the input.
+	    let repeatTimes =  generateFunctionCallWithArgs($sqlDialect, 'ceiling', [((($processedArgs->at(1) +' - '+ generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0') + '/' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(2)], [], $state, $config))], [], $state, $config);
+        let repeatCall = generateFunctionCallWithArgs($sqlDialect, 'repeat', [$processedArgs->at(2), $repeatTimes], [], $state, $config);
+	    let resultantPaddingString = generateFunctionCallWithArgs($sqlDialect, 'substring', [$repeatCall, '1', (($processedArgs->at(1) + ' - ' + generateFunctionCallWithArgs($sqlDialect, 'length', [$processedArgs->at(0)], [], $state, $config)) + '*1.0')], [], $state, $config);
+        if($directionFunc == 'lpad',
+          | generateFunctionCallWithArgs($sqlDialect, 'concat', [$resultantPaddingString, $processedArgs->at(0)], [], $state, $config),
+          | generateFunctionCallWithArgs($sqlDialect, 'concat', [$processedArgs->at(0), $resultantPaddingString], [], $state, $config)
+      );
+    );
+  );
+}
+
+
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForLog(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  if($processedArgs->size()==2, | generateFunctionCallWithArgs($sqlDialect, 'log', [$processedArgs->at(0), $processedArgs->at(1)], [], $state, $config), | generateFunctionCallWithArgs($sqlDialect, 'log', ['10', $processedArgs->at(0)], [], $state, $config));
+  
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCeil(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilDecimal = simpleFunctionProcessor('ceil').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForFloor(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilDecimal = simpleFunctionProcessor('floor').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilDecimal, 'float', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForCeiling(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let ceilingDecimal = simpleFunctionProcessor('ceiling').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
+  $sqlDialect->generateCast($ceilingDecimal, 'float', $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForTrim(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let transformedArgs = if($processedArgs->size()==1, |[$processedArgs->at(0), ' '], |$processedArgs->transformRegexpParams());
+  let regexString = if($directionFunc == 'rtrim',
+  | '\'['+$transformedArgs->at(1)+']+$\'',
+  | '\'^['+$transformedArgs->at(1)+']+\'');
+  let regexArgs = [$transformedArgs->at(0), $regexString, '\'\''];
+  generateFunctionCallWithArgs($sqlDialect, 'regexp_replace', $regexArgs, [], $state, $config);
+}
+
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForDirectionalIndex(directionFunc:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config)->transformRegexpParams();
+  let index = $processedArgs->at(1);
+  let inputString = $processedArgs->at(0);
+
+  let modifiedIndex = if($index->parseInteger()<0, |generateFunctionCallWithArgs($sqlDialect, 'length', [$inputString], [], $state, $config ) + $index, |$index);
+  generateFunctionCallWithArgs($sqlDialect, $directionFunc, [$inputString, $modifiedIndex], [], $state, $config);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::dateFormatSpecifierForH2(f:String[1]): String[1]
+{
+  let formatSubs = [
+    pair('Month', 'MMMM'),
+    pair('YYYY', 'yyyy'),
+    pair('MM', 'MM'),
+    pair('DD', 'dd'),
+    pair('Mon', 'MMM'),
+    pair('HH24', 'HH'),
+    pair('HH12', 'hh'),
+    pair('HH', 'HH'),
+    pair('MI', 'mm'),
+    pair('SS', 'ss'),
+    pair('MS', 'SSS'),
+    pair('US', 'SSSSSS'),
+    pair('Day', 'EEEE')
+    // TODO: Handle more format specifiers
+  ];
+
+  $formatSubs->fold({i, a|$a->replace($i.first, $i.second)}, $f);
+}
+
+// --------------------------------------------------------------------------

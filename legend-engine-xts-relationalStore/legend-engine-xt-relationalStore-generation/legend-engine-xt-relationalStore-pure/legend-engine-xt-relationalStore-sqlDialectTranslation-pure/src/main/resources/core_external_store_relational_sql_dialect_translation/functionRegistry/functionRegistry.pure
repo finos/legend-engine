@@ -32,7 +32,7 @@ Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTr
   name: String[*];
   variations: SqlFunctionVariation[1..*];
   tests: SqlFunctionTest[1..*];
-  documentation: String[0..1];
+  documentation: String[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::SqlFunctionVariation
@@ -78,9 +78,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(): Map<String, SqlFunction>[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(): Map<Class<SqlFunction>, SqlFunction>[1]
 {
   [
+
+
     // Postgres Native Functions
     // Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::abs(),
@@ -100,6 +102,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cot(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sin(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::tan(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::power(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::mod(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sign(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::round(), 
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::floor(),
 
     // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lpad(),
@@ -107,24 +114,43 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ltrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rtrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lower(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::upper(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::repeat(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::replace(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::left(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::right(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::md5(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::charLength(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::chr(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::reverse(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::splitPart(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::substring(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
 
-    // Temporal function
+    //  Temporal function
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::dateTrunc(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
+
     
-    // Extension Functions
-    // Numeric
+    //  Extension Functions
+    //  Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::log10(),
 
     // Boolean functions
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike()
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike(),
+
+    // String functions
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256()
+
   ]
-  ->groupBy(x | $x.name->joinStrings('.')->toLower())->keyValues()
+  ->groupBy(x | $x->type()->cast(@Class<SqlFunction>))->keyValues()
   ->map({kv |
-    assert($kv.second.values->size() == 1, | 'Multiple SQL functions in function registry with same name - ' + $kv.first);
+    assert($kv.second.values->size() == 1, | 'Multiple SQL functions in function registry with same name - ' + $kv.first.name->toOne());
     pair($kv.first, $kv.second.values->toOne());
   })
   ->newMap()
