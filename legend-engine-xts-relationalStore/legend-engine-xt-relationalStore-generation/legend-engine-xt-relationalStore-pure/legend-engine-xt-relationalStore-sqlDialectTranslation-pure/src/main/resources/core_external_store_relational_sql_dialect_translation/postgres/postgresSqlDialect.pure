@@ -354,10 +354,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     Now->nativeFunctionMapEntry(),
     ToDate->nativeFunctionMapEntry(),
-    ToTimestamp->nativeFunctionMapEntry(),
-    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+    ToTimestamp->nativeFunctionMapEntry()
     
   ])
 }
@@ -382,88 +379,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   // Postgres returns sign in decimal, which is non standard.
   let floatedSign = simpleFunctionProcessor('sign').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
   $sqlDialect->generateCast($floatedSign, 'integer', $state, $config);
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  // trim was needed to handle the extra spaces that are appended to result to match September's length.
-  let unTrimmed = simpleFunctionProcessor('to_char').processFunction->toOne()->eval($sqlDialect, $f, $state, $config);
-  $sqlDialect->generateFunctionCallWithArgs('trim', $unTrimmed, [], $state, $config);
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  dateDiffHandlerForPostgres($processedArgs, $sqlDialect, $state, $config);
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let dateAddCall = $processedArgs->at(0) + ' + interval \''+$processedArgs->at(1) +' '+$processedArgs->at(2)->removeQuotes()+'\'';
-  let dateUnit = $processedArgs->at(2)->removeQuotes();
-  if($dateUnit->in(['day', 'month', 'year', 'week']) ,
-    |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config), 
-    |$dateAddCall
-   );
-}
-
-//This function returns a string as : 'cast((extract(\'timeUnit\' from %s) - extract(\'timeUnit\' from %s)) as int)'
-function meta::external::store::relational::sqlDialectTranslation::postgres::extractHandler(timeUnit: String[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let extractArg = $timeUnit + ' ' + $sqlDialect->keyword('from', $state, $config) + ' ' + ' %s';
-  let extractCall = $sqlDialect->generateFunctionCallWithArgs('extract', $extractArg, [], $state, $config);
-  let castArgs = $extractCall + ' - ' + $extractCall;
-  $sqlDialect->generateCast($castArgs, 'integer', $state, $config);
-}
-
-function meta::external::store::relational::sqlDialectTranslation::postgres::dateDiffHandlerForPostgres(p: String[*], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{ 
-
-  let timeUnits = ['year', 'month', 'day', 'week', 'hour', 'minute', 'second', 'millisecond'];
-  let indexOfUnit = $timeUnits->indexOf($p->at(0)->removeQuotes());
-  let unitFunctionsList = [
-
-    { | format('(%s)', [
-        extractHandler('\'year\'', $sqlDialect, $state, $config)
-     ])},
-    
-    { | format('(%s * 12 + (%s))', [
-        ['year', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres($sqlDialect, $state, $config),
-        extractHandler('\'month\'', $sqlDialect, $state, $config)
-     ])},
-
-    { | format('(%s)', [
-        '(cast(%s as date) - cast(%s as date))'
-     ])},
-
-    { | format('(cast(%s/7 as int))', [
-        ['day', '%s', '%s']->dateDiffHandlerForPostgres($sqlDialect, $state, $config)
-     ])},
-    
-    { | format('cast((%s * 24 + (%s)) as int)', [
-        ['day', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres($sqlDialect, $state, $config),
-        extractHandler('\'hour\'', $sqlDialect, $state, $config)
-     ])},
-
-    { | format('cast((%s * 60 + (%s)) as int)', [
-        ['hour', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres($sqlDialect, $state, $config),
-        extractHandler('\'minute\'', $sqlDialect, $state, $config)
-     ])},
-
-    { | format('cast((%s * 60 + (%s)) as int)', [
-        ['minute', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres($sqlDialect, $state, $config),
-        extractHandler('\'second\'', $sqlDialect, $state, $config)
-     ])},
-
-    { | format('cast((%s * 1000 + (%s)) as int)', [
-        ['second', $p->at(1), $p->at(2)]->dateDiffHandlerForPostgres($sqlDialect, $state, $config),
-        extractHandler('\'millisecond\'', $sqlDialect, $state, $config)
-     ])}
-
-  ];
-
-  format($unitFunctionsList->at($indexOfUnit)->eval(), [$p->at(2), $p->at(1)]);
 }
 
 function meta::external::store::relational::sqlDialectTranslation::postgres::nativeFunctionMapEntry(functionClass: Class<SqlFunction>[1]):  Pair<Class<SqlFunction>, FunctionProcessor>[1]

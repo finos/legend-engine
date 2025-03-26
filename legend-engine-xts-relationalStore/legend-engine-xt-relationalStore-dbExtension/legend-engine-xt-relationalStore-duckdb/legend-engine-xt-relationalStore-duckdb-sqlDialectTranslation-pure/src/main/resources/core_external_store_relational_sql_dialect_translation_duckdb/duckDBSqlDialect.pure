@@ -336,12 +336,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Replace, simpleFunctionProcessor('replace')),
     pair(Md5, simpleFunctionProcessor('md5')),
     pair(CharLength, simpleFunctionProcessor('length')),
-
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Reverse, simpleFunctionProcessor('reverse')),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
     pair(Substring, simpleFunctionProcessor('substring')),
-
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
@@ -354,10 +352,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(ToChar, customFunctionProcessor(processorForToChar_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(DateDiff, customFunctionProcessor(processorForDateDiff_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(DateAdd, customFunctionProcessor(processorForDateAdd_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
 
   ])
 }
@@ -392,39 +387,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   generateFunctionCallWithArgs($sqlDialect, 'strptime', [$args->at(0), $dateFormat], [], $state, $config);
 }
 
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForToChar(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let toCharCall = $sqlDialect->strftimeCall($processedArgs, $state, $config);
-}
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::strftimeCall(sqlDialect:SqlDialect[1], args:String[*], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let dateFormat = $args->at(1)->dateFormatSpecifierForDuckDB();
   generateFunctionCallWithArgs($sqlDialect, 'strftime', [$args->at(0), $dateFormat], [], $state, $config);
 }
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateDiff(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  if($processedArgs->at(0)->removeQuotes()=='week',
-   |$sqlDialect->generateCast(generateFunctionCallWithArgs($sqlDialect, 'datediff', ['\'day\'', $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config)+'//7', 'integer', $state, $config), 
-   |generateFunctionCallWithArgs($sqlDialect, 'datediff', [$processedArgs->at(0), $processedArgs->at(1), $processedArgs->at(2)], [], $state, $config));
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForDateAdd(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
-{
-  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let intervalString='interval '+$processedArgs->at(1) +' '+$processedArgs->at(2)->removeQuotes();
-  let dateAddCall = generateFunctionCallWithArgs($sqlDialect, 'date_add', [$processedArgs->at(0), $intervalString->removeQuotes()], [], $state, $config) ;
-  let dateUnit = $processedArgs->at(2)->removeQuotes();
-  if($dateUnit->in(['day', 'month', 'year', 'week']),
-    |$sqlDialect->generateCast($dateAddCall, 'date', $state, $config), 
-    |$dateAddCall
-   );
-}
-
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::dateFormatSpecifierForDuckDB(f:String[1]): String[1]
 {

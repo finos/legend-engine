@@ -134,7 +134,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toChar(),
 
     
     //  Extension Functions
@@ -146,12 +145,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 
     // String functions
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
-
-    // Temporal functions
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::temporal::dateDiff(),
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensiveFunctions::temporal::dateAdd()
-
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256()
 
   ]
   ->groupBy(x | $x->type()->cast(@Class<SqlFunction>))->keyValues()
