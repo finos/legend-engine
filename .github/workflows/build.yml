@@ -125,6 +125,13 @@ jobs:
           module:  legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure
           test-class: Test_DuckDB_SDT
 
+      - name: Test SDT H2
+        uses: ./.github/workflows/actions/sdt-test
+        with:
+          check-name: H2
+          module: legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure
+          test-class: Test_H2_SDT
+
       - name: Generate PCT Report
         run: |
           mvn exec:java -pl org.finos.legend.engine:legend-engine-server-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
