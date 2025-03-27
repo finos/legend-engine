@@ -1,0 +1,26 @@
+Class meta::pure::milestoning::BiTemporalMilestoning
+{
+}
+
+Profile meta::pure::profiles::temporal
+{
+  stereotypes: [bitemporal, businesstemporal, processingtemporal];
+}
+
+Enum {meta::pure::profiles::doc.doc = 'Types of company'} model::target::IncType
+{
+  LLC,
+  CORP
+}
+
+Class model::target::_Firm
+{
+  type: model::target::IncType[1];
+  name: String[1];
+  employees: model::target::_Person[1..*];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> model::target::_Person
+{
+  fullName: String[1];
+}

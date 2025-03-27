@@ -1,0 +1,44 @@
+Profile meta::pure::profiles::doc
+{
+  stereotypes: [deprecated];
+  tags: [doc, todo];
+}
+
+Class model::animal::Animal
+{
+  family: model::animal::Family[1];
+  noOfLegs: Number[1];
+  children: model::animal::GenericAnimal2[*];
+  something() {$this.noOfLegs > 4}: Boolean[1];
+  something2() {[]}: model::animal::GenericAnimal[0..1];
+}
+
+Class model::animal::Animal2
+{
+  name: String[1];
+  <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'my doc for hasFin'} name2() {''}: String[1];
+}
+
+Enum <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'my doc for enum'} model::animal::Family
+{
+  UO,
+  OP
+}
+
+Class model::animal::GenericAnimal
+{
+}
+
+Class model::animal::GenericAnimal2
+{
+}
+
+Class model::animal::mammal::Mammal
+{
+  noOfLegs: String[1];
+}
+
+Class <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = ''} model::animal::reptile::Reptile extends model::animal::Animal2, model::animal::Animal
+{
+  <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'my doc for hasFin'} hasFin: Boolean[1];
+}

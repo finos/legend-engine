@@ -135,15 +135,21 @@ DataSpace {meta::pure::profiles::enterprise.taxonomyNodes = 'abcdxyz006', doc.do
 
 
 ###Pure
-Enum model::animal::Family
+Profile model::ProfileNotIncluded
+{
+  stereotypes: [stereotype1];
+  tags: [tag1];
+}
+
+Enum <<doc.deprecated>> {doc.doc = 'my doc for enum'}   model::animal::Family
 {
   UO,
   OP
 }
 
-Class {doc.doc = ''} model::animal::reptile::Reptile extends model::animal::Animal2, model::animal::Animal
+Class <<doc.deprecated>> {doc.doc = ''} model::animal::reptile::Reptile extends model::animal::Animal2, model::animal::Animal
 {
-  hasFin: Boolean[1];
+   <<doc.deprecated, model::ProfileNotIncluded.stereotype1>> {doc.doc = 'my doc for hasFin', model::ProfileNotIncluded.tag1 = ' class property not included'} hasFin: Boolean[1];
 }
 
 Class model::animal::Animal
@@ -171,7 +177,7 @@ Class model::animal::mammal::Mammal
 Class model::animal::Animal2
 {
   name: String[1];
-  name2() {''}: String[1];
+  <<doc.deprecated, model::ProfileNotIncluded.stereotype1>> {doc.doc = 'my doc for hasFin', model::ProfileNotIncluded.tag1 = 'class qualified property not included'} name2() {''}: String[1];
 }
 
 
