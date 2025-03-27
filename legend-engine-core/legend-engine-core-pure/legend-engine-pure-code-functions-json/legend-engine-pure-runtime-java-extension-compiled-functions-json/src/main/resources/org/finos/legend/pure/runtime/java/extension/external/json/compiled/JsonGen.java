@@ -103,7 +103,7 @@ public class JsonGen
         Map<String, Class> typeLookup = Maps.mutable.empty();
         for (Pair<? extends String, ? extends String> pair : _typeLookup)
         {
-            typeLookup.put(pair._first(), es.getMetadataAccessor().getClass("Root::" + pair._second()));
+            typeLookup.put(pair._first(), es.getMetadataAccessor().getClass(pair._second()));
         }
 
         return (T) JsonDeserializer.fromJson(json, (Class<? extends Any>) clazz, new JsonDeserializationContext(new JsonDeserializationCache(), si, es.getProcessorSupport(), _typeKeyName, typeLookup, _failOnUnknownProperties, new ObjectFactory()
