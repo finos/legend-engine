@@ -21,6 +21,7 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -151,6 +152,11 @@ public interface CompilerExtension extends LegendLanguageExtension
     default List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>>  getExtraRelationStoreAccessorProcessors()
     {
         return Collections.emptyList();
+    }
+
+    default MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
+    {
+        return Maps.mutable.empty();
     }
 
     /**

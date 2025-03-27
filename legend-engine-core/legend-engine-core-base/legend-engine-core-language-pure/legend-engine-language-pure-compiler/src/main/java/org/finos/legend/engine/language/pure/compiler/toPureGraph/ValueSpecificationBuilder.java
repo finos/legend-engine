@@ -501,7 +501,13 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
         if (colSpec.function1 == null)
         {
-            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, colSpec.type == null ? null : this.context.pureModel.getGenericType(colSpec.type, colSpec.sourceInformation), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
+            GenericType gt = null;
+            if (colSpec.genericType != null)
+            {
+                gt = this.context.newGenericType(colSpec.genericType);
+                gt.setSourceInformation(SourceInformationHelper.toM3SourceInformation(colSpec.sourceInformation));
+            }
+            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, gt, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
         }
         else if (colSpec.function2 == null)
         {
@@ -893,14 +899,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))
-                        ._classifierGenericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue")._typeArguments(FastList.newListWith(
-                                ((FunctionType) l._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType(),
-                                ((FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()
-                        )))
-                        ._name(tdsAggregateValue.name)
-                        ._mapFn(l)
-                        ._aggregateFn(o)));
+                ._values(Lists.immutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", SourceInformationHelper.toM3SourceInformation(tdsAggregateValue.sourceInformation), this.context.pureModel.getClass("meta::pure::tds::AggregateValue"))._name(tdsAggregateValue.name)._mapFn(l)._aggregateFn(o)));
+
     }
 
     public ValueSpecification processClassInstance(TDSSortInformation tdsSortInformation)

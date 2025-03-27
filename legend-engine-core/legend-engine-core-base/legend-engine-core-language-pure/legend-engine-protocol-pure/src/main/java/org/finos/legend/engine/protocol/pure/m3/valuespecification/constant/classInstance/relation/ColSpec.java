@@ -14,14 +14,56 @@
 
 package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
+import java.io.IOException;
+
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
+
+@JsonDeserialize(using = ColSpec.ColSpecDeserializer.class)
 public class ColSpec
 {
     public SourceInformation sourceInformation;
     public String name;
-    public String type;
+    public GenericType genericType;
     public LambdaFunction function1;
     public LambdaFunction function2;
+
+    public static class ColSpecDeserializer extends JsonDeserializer<ColSpec>
+    {
+        @Override
+        public ColSpec deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            ObjectCodec codec = jsonParser.getCodec();
+            JsonNode node = codec.readTree(jsonParser);
+            ColSpec colSpec = new ColSpec();
+            colSpec.name = node.get("name").asText();
+
+            // Backward compatibility - old protocol -------------------------------------------------------------------
+            if (node.get("type") != null)
+            {
+                String _class = node.get("type").asText();
+                colSpec.genericType = new GenericType(new PackageableType(_class));
+            }
+            else
+            {
+                colSpec.genericType = processOne(node, "genericType", GenericType.class, codec);
+            }
+            // Backward compatibility - old protocol -------------------------------------------------------------------
+
+            colSpec.function1 = processOne(node, "function1", LambdaFunction.class, codec);
+            colSpec.function2 = processOne(node, "function2", LambdaFunction.class, codec);
+            colSpec.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+            return colSpec;
+        }
+    }
 }

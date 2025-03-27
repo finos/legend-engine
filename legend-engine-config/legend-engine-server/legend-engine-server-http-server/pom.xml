@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.73.1-SNAPSHOT</version>
+        <version>4.75.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -131,6 +131,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-fct</artifactId>
             <type>test-jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -845,6 +846,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-executionPlan</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-V7-executionPlan</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -1144,6 +1150,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-spanner-PCT</artifactId>
             <scope>runtime</scope>
+            <version>${project.version}</version>
         </dependency>
         <!-- PCT -->
 

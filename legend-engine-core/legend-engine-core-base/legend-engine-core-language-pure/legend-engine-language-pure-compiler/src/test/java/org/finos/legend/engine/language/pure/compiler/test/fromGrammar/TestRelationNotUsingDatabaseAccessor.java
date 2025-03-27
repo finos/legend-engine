@@ -135,7 +135,7 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
     {
         test(
                 "###Pure\n" +
-                        "function test::f(x:meta::pure::metamodel::relation::Relation<(x:meta::external::catalog::precisePrimitives::Varchar(2))>[1]):Any[*]\n" +
+                        "function test::f(x:meta::pure::metamodel::relation::Relation<(x:meta::pure::precisePrimitives::Varchar(2))>[1]):Any[*]\n" +
                         "{\n" +
                         "   []" +
                         "}"

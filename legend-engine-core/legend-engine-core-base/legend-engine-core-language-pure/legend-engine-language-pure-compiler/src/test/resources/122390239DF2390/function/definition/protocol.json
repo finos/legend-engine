@@ -401,7 +401,7 @@
             "multiplicityArguments": [],
             "rawType": {
               "_type": "packageableType",
-              "fullPath": "meta::external::catalog::precisePrimitives::Varchar",
+              "fullPath": "meta::pure::precisePrimitives::Varchar",
               "sourceInformation": {
                 "endColumn": 255,
                 "endLine": 12,

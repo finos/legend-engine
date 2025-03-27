@@ -128,6 +128,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.PrimitiveType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -143,6 +144,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
@@ -186,7 +188,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name, SourceInformationHelper.toM3SourceInformation(srcDatabase.sourceInformation), null)._name(srcDatabase.name);
 
                             database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                                    ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
+                                            ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
                                     ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
 
                             return database;
@@ -833,13 +835,127 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         });
     }
 
+    private GenericType convertTypes(String type, CompileContext compileContext)
+    {
+        return convertTypes(type, Lists.mutable.empty(), compileContext);
+    }
+
+    private GenericType convertTypes(String type, RichIterable<? extends ValueSpecification> typeVariableValues, CompileContext compileContext)
+    {
+        return compileContext.newGenericType((PrimitiveType) compileContext.resolvePackageableElement("meta::pure::precisePrimitives::" + type, null))
+                ._typeVariableValues(typeVariableValues);
+    }
+
     private GenericType convertTypes(DataType c, CompileContext compileContext)
     {
-        return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(
-                platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToCompatiblePureType_DataType_1__Type_1_(
-                        c, compileContext.pureModel.getExecutionSupport()
-                )
-        );
+        if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer)
+        {
+            return convertTypes("Int", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Float)
+        {
+            return convertTypes("Float4", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar)
+        {
+            return convertTypes("Varchar",
+                    Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                            ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                            ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                            ._values(Lists.immutable.with(((Varchar) c)._size()))),
+                    compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Char)
+        {
+            return convertTypes("Varchar",
+                    Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                            ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                            ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                            ._values(Lists.immutable.with(1))),
+                    compileContext
+            );
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Decimal)
+        {
+            return convertTypes("Decimal",
+                    Lists.mutable.with(
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Decimal) c)._precision())),
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Decimal) c)._scale()))),
+                    compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Timestamp)
+        {
+            return convertTypes("Timestamp", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Date)
+        {
+            return convertTypes("Date", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.BigInt)
+        {
+            return convertTypes("BigInt", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SmallInt)
+        {
+            return convertTypes("SmallInt", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.TinyInt)
+        {
+            return convertTypes("TinyInt", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Double)
+        {
+            return convertTypes("Double", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric)
+        {
+            return convertTypes("Decimal",
+                    Lists.mutable.with(
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric) c)._precision())),
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric) c)._scale()))),
+                    compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Distinct)
+        {
+            throw new RuntimeException(c + " is not a supported type");
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Other)
+        {
+            throw new RuntimeException(c + " is not a supported type");
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Bit)
+        {
+            return convertTypes("TinyInt", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Real)
+        {
+            return convertTypes("Double", compileContext);
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured)
+        {
+            throw new RuntimeException(c + " is not a supported type");
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Json)
+        {
+            throw new RuntimeException(c + " is not a supported type");
+        }
+        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DbSpecificDataType)
+        {
+            throw new RuntimeException(c + " is not a supported type");
+        }
+        throw new RuntimeException(c + " is not a supported type");
     }
 
     @Override

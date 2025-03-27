@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-ingest</artifactId>
-        <version>4.73.1-SNAPSHOT</version>
+        <version>4.75.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-ingest-protocol</artifactId>
@@ -50,6 +50,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-ingest-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

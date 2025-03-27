@@ -268,7 +268,7 @@ public class Completer
             // May want to assert the mul to 1
             return Lists.mutable.with("cast", "distinct", "drop", "select", "extend", "filter", "from", "groupBy", "pivot", "join", "asOfJoin", "limit", "rename", "size", "slice", "sort");
         }
-        else if (leftType._rawType().getName().equals("String"))
+        else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.String), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {

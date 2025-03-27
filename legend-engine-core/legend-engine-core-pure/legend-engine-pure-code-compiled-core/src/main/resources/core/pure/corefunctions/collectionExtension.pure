@@ -118,23 +118,6 @@ function meta::pure::functions::collection::partition<I>(c:I[*], f:Function<{I[1
    );   
 }
 
-function meta::pure::functions::collection::and(vals:Boolean[*]):Boolean[1]
-{
-   $vals->fold({i,a|$i && $a}, true)
-}
-
-function meta::pure::functions::collection::or(vals:Boolean[*]):Boolean[1]
-{
-   $vals->fold({i,a|$i || $a}, false)
-}
-
-function meta::pure::functions::collection::or(vals:Boolean[1..*]):Boolean[1]
-{
-   $vals->fold({i,a|$i || $a}, false)
-}
-
-
-
 function meta::pure::functions::collection::newMultiValueMap<S,K>(values : Pair<K,S>[*]):Map<K,List<S>>[1]
 {
    $values->fold({pair,map|
@@ -235,11 +218,6 @@ function meta::pure::functions::collection::toIndexed<T>(values:T[*]): Pair<Inte
 function meta::pure::functions::collection::toNumbered<T>(values:T[*]): Pair<Integer,T>[*]
 {
    zip(range(1, $values->size() + 1), $values);
-}
-
-function meta::pure::functions::collection::count(s:Any[*]):Integer[1]
-{
-   $s->size();
 }
 
 function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]

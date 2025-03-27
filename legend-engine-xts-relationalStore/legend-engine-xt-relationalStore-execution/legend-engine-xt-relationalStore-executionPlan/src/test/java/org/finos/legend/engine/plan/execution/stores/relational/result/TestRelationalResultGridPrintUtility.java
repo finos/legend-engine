@@ -99,10 +99,10 @@ public class TestRelationalResultGridPrintUtility extends AlloyTestServer
                 "Database local::db" +
                 "(" +
                 "  Table person" +
-                "(" +
-                "name varchar(100)," +
-                "initials varchar(100)" +
-                ")" +
+                "  (" +
+                "     name varchar(100)," +
+                "     initials varchar(100)" +
+                "  )" +
                 ")";
 
         String mapping = "###Mapping\n" +
