@@ -96,17 +96,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/Test_H2_SDT*.java</exclude>
-                        <exclude>**/SdtTestSuiteBuilder*.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
