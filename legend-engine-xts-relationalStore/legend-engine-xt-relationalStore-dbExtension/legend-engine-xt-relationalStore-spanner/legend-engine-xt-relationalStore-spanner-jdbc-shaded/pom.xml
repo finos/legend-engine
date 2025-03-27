@@ -44,6 +44,7 @@
                             </excludes>
                         </filter>
                     </filters>
+                    <createSourcesJar>true</createSourcesJar>
                     <shadeSourcesContent>true</shadeSourcesContent>
                     <shadedArtifactAttached>false</shadedArtifactAttached>
                     <relocations>
@@ -120,6 +121,36 @@
                         <goals>
                             <goal>analyze-only</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>unpack-shaded-to-make-ide-happy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                                    <includes>**/**</includes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <classifier>sources</classifier>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                                    <includes>**/*.java</includes>
+                                    <excludes>**/module-info.java</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
