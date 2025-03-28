@@ -93,7 +93,7 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                    if ($f.parametersValues->size() > 2 ,
                                                        | ^$f(parametersValues = [$f.parametersValues->evaluateAndDeactivate()->at(0)->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $f.parametersValues->evaluateAndDeactivate()->at(1), $f.parametersValues->evaluateAndDeactivate()->at(2)]),
                                                        | ^$f(parametersValues = [$f.parametersValues->evaluateAndDeactivate()->at(0)->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $f.parametersValues->evaluateAndDeactivate()->at(1)])),
-                                                 | let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+                                                 |let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
 
                                         $f.func->match([q:QualifiedProperty<Any>[1] | let sequence = $q.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
                                                                                       let nq = ^$q(expressionSequence = $sequence);
@@ -101,6 +101,7 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                         z:Any[1]                    | ^$f(parametersValues=$params)->propagateVoid($params);
                                                                   ]);
                                           ),
+               s: StoreRoutedValueSpecification[1]|$s;,
                r:StoreMappingRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->first();
                                                           let value = $r.value;
                                                           let final = if($value->instanceOf(FunctionExpression) && ( ($value->cast(@FunctionExpression).func->instanceOf(Property) && !($value->cast(@FunctionExpression)->meta::pure::milestoning::isMilestonedGeneratedDateProperty())) || $value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty)),

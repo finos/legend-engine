@@ -1,0 +1,384 @@
+{
+  "_type": "simple",
+  "authDependent": false,
+  "globalImplementationSupport": {
+    "_type": "java",
+    "classes": [
+      {
+        "name": "Firm",
+        "package": "_pure.app.mutation.test",
+        "source": "package _pure.app.mutation.test;\n\nimport java.math.*;\nimport java.util.*;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n\npublic interface Firm extends org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject\n{\n    default String typeName$()\n    {\n        return \"Firm\";\n    }\n\n    default String typePath$()\n    {\n        return \"mutation::test::Firm\";\n    }\n\n    String getName();\n    long getNumberOfEmployees();\n    String getAlloyStoreObjectReference$();\n}"
+      },
+      {
+        "name": "Person",
+        "package": "_pure.app.mutation.test",
+        "source": "package _pure.app.mutation.test;\n\nimport java.math.*;\nimport java.util.*;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n\npublic interface Person extends org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject\n{\n    default String typeName$()\n    {\n        return \"Person\";\n    }\n\n    default String typePath$()\n    {\n        return \"mutation::test::Person\";\n    }\n\n    String getKerberos();\n    String getFirstName();\n    String getLastName();\n    Firm getFirm();\n    String getAlloyStoreObjectReference$();\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM;\n\nimport _pure.app.mutation.test.Firm;\nimport org.finos.legend.engine.external.format.json.write.IJsonExternalizeExecutionNodeSpecifics;\nimport org.finos.legend.engine.external.format.json.write.IJsonSerializer;\nimport org.finos.legend.engine.external.format.json.write.IJsonWriter;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Execute implements IJsonExternalizeExecutionNodeSpecifics\n{\n    public IJsonSerializer<Firm> createSerializer(IJsonWriter writer, IExecutionNodeContext context)\n    {\n        return new Serializer(writer, context);\n    }\n}"
+      },
+      {
+        "name": "Serializer",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM;\n\nimport _pure.app.mutation.test.Firm;\nimport org.finos.legend.engine.external.format.json.write.IJsonSerializer;\nimport org.finos.legend.engine.external.format.json.write.IJsonWriter;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Serializer implements IJsonSerializer<Firm>\n{\n    private IJsonWriter writer;\n    private IExecutionNodeContext context;\n\n    Serializer(IJsonWriter writer, IExecutionNodeContext context)\n    {\n        writer.setTypeWriter(false, \"@type\", true);\n        writer.setIncludeEnumType(false);\n        writer.setRemovePropertiesWithEmptySets(false);\n        writer.setRemovePropertiesWithNullValues(false);\n        this.writer = writer;\n        this.context = context;\n    }\n\n    public void serialize(Firm value)\n    {\n        this.writer.startObject(value.typePath$());\n        this.writer.writeStringProperty(\"name\", value.getName());\n        this.writer\n            .writeIntegerProperty(\"numberOfEmployees\",\n                                  value.getNumberOfEmployees());\n        this.writer.endObject();\n    }\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM.n1",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM.n1;\n\nimport _pure.app.mutation.test.Firm;\nimport _pure.app.mutation.test.Person;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Execute\n{\n    public static Firm execute(IExecutionNodeContext context)\n    {\n        try\n        {\n            Person generatedVariableSingleRecordFromStream = context.getResult(\"generatedVariableSingleRecordFromStream\",\n                                                                               Person.class);\n            return generatedVariableSingleRecordFromStream.getFirm();\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(\"Failed in node: root.n2.columnValueGeneratorgeneratedColumnName_FIRM.n1\",\n                                       e);\n        }\n    }\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRST_NAME",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRST_NAME;\n\nimport _pure.app.mutation.test.Person;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Execute\n{\n    public static String execute(IExecutionNodeContext context)\n    {\n        try\n        {\n            Person generatedVariableSingleRecordFromStream = context.getResult(\"generatedVariableSingleRecordFromStream\",\n                                                                               Person.class);\n            return generatedVariableSingleRecordFromStream.getFirstName();\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(\"Failed in node: root.n2.columnValueGeneratorgeneratedColumnName_FIRST_NAME\",\n                                       e);\n        }\n    }\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_KERBEROS",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_KERBEROS;\n\nimport _pure.app.mutation.test.Person;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Execute\n{\n    public static String execute(IExecutionNodeContext context)\n    {\n        try\n        {\n            Person generatedVariableSingleRecordFromStream = context.getResult(\"generatedVariableSingleRecordFromStream\",\n                                                                               Person.class);\n            return generatedVariableSingleRecordFromStream.getKerberos();\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(\"Failed in node: root.n2.columnValueGeneratorgeneratedColumnName_KERBEROS\",\n                                       e);\n        }\n    }\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_LAST_NAME",
+        "source": "package _pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_LAST_NAME;\n\nimport _pure.app.mutation.test.Person;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n\npublic class Execute\n{\n    public static String execute(IExecutionNodeContext context)\n    {\n        try\n        {\n            Person generatedVariableSingleRecordFromStream = context.getResult(\"generatedVariableSingleRecordFromStream\",\n                                                                               Person.class);\n            return generatedVariableSingleRecordFromStream.getLastName();\n        }\n        catch (Exception e)\n        {\n            throw new RuntimeException(\"Failed in node: root.n2.columnValueGeneratorgeneratedColumnName_LAST_NAME\",\n                                       e);\n        }\n    }\n}"
+      },
+      {
+        "name": "Execute",
+        "package": "_pure.plan.root.n2.n1",
+        "source": "package _pure.plan.root.n2.n1;\n\nimport _pure.app.mutation.test.Person;\nimport java.io.InputStream;\nimport java.math.*;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;\nimport org.finos.legend.engine.external.format.json.read.JsonDataReader;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\n\npublic class Execute implements IJsonInternalizeExecutionNodeSpecifics\n{\n    public JsonDataReader<Person> createReader(InputStream sourceStream)\n    {\n        return new _pure.plan.root.n2.n1.JsonDataReader_mutation_test_Person(sourceStream);\n    }\n}"
+      },
+      {
+        "name": "JsonDataReader_mutation_test_Person",
+        "package": "_pure.plan.root.n2.n1",
+        "source": "package _pure.plan.root.n2.n1;\n\nimport _pure.app.mutation.test.Firm;\nimport _pure.app.mutation.test.Person;\nimport com.fasterxml.jackson.core.JsonToken;\nimport com.fasterxml.jackson.databind.JsonNode;\nimport com.fasterxml.jackson.databind.node.JsonNodeType;\nimport java.lang.reflect.InvocationTargetException;\nimport java.math.*;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.GraphContext;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.RelativePathNode;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\n\npublic class JsonDataReader_mutation_test_Person extends org.finos.legend.engine.external.format.json.read.JsonDataReader<Person>\n{\n    private final Stack<Object> stack = new Stack<Object>();\n\n    public JsonDataReader_mutation_test_Person(java.io.InputStream in)\n    {\n        super(in, false, null);\n    }\n\n    public IChecked<Person> read_mutation_test_Person(JsonNode node)\n    {\n        List<IDefect> defects = new ArrayList<IDefect>();\n        if (!node.path(\"@type\").getNodeType().equals(JsonNodeType.MISSING))\n        {\n            String nodeValue = node.path(\"@type\").textValue();\n            if (!nodeValue.equals(\"mutation::test::Person\"))\n            {\n                String methodName = \"read_\" + nodeValue.replace(\"::\", \"_\");\n                if (this.readMethodExists(methodName))\n                {\n                    return (IChecked<Person>) this.readMethodInvoke(methodName, node);\n                }\n            }\n        }\n        List<String> _kerberos = new ArrayList<String>();\n        List<String> _firstName = new ArrayList<String>();\n        List<String> _lastName = new ArrayList<String>();\n        List<Firm> _firm = new ArrayList<Firm>();\n        this.stack.push(new _pure.plan.root.n2.n1.mutation_test_Person_Impl());\n        if (node.path(\"kerberos\").getNodeType() != JsonNodeType.MISSING)\n        {\n            _kerberos = this.acceptMany(node.path(\"kerberos\"),\n                                        this::acceptString,\n                                        (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"kerberos\" + \": \" + m,\n                                                                                                                                                                      \"mutation::test::Person\")));\n        }\n        if (node.path(\"firstName\").getNodeType() != JsonNodeType.MISSING)\n        {\n            _firstName = this.acceptMany(node.path(\"firstName\"),\n                                         this::acceptString,\n                                         (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"firstName\" + \": \" + m,\n                                                                                                                                                                       \"mutation::test::Person\")));\n        }\n        if (node.path(\"lastName\").getNodeType() != JsonNodeType.MISSING)\n        {\n            _lastName = this.acceptMany(node.path(\"lastName\"),\n                                        this::acceptString,\n                                        (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"lastName\" + \": \" + m,\n                                                                                                                                                                      \"mutation::test::Person\")));\n        }\n        if (node.path(\"firm\").getNodeType() != JsonNodeType.MISSING)\n        {\n            List<IChecked<Firm>> checked = this.acceptMany(node.path(\"firm\"),\n                                                           this::read_mutation_test_Firm,\n                                                           (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"firm\" + \": \" + m,\n                                                                                                                                                                                         \"mutation::test::Person\")));\n            for (int i = 0; i < checked.size(); i++)\n            {\n                List<IDefect> propertyDefects = checked.get(i).getDefects();\n                RelativePathNode pathNode = i == 0 ? org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicRelativePathNode.newRelativePathNode(\"firm\")\n                                                   : org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicRelativePathNode.newRelativePathNode(\"firm\", i);\n                defects.addAll(propertyDefects.stream()\n                                              .map((IDefect d) -> org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.prefixPath(d, pathNode))\n                                              .filter((IDefect $x) -> $x != null)\n                                              .collect(Collectors.toList()));\n            }\n            _firm = checked.stream()\n                           .map((IChecked<Firm> c) -> c.getValue())\n                           .filter((Firm $x) -> $x != null)\n                           .filter((Firm d) -> d != null)\n                           .collect(Collectors.toList());\n        }\n        if (_kerberos.size() < 1L || _kerberos.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for kerberos: expected [1] found [\" + _kerberos.size() + \"]\",\n                                                                                                                         \"mutation::test::Person\"));\n        }\n        if (_firstName.size() < 1L || _firstName.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for firstName: expected [1] found [\" + _firstName.size() + \"]\",\n                                                                                                                         \"mutation::test::Person\"));\n        }\n        if (_lastName.size() < 1L || _lastName.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for lastName: expected [1] found [\" + _lastName.size() + \"]\",\n                                                                                                                         \"mutation::test::Person\"));\n        }\n        if (_firm.size() < 1L || _firm.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for firm: expected [1] found [\" + _firm.size() + \"]\",\n                                                                                                                         \"mutation::test::Person\"));\n        }\n        if (defects.stream()\n                   .anyMatch((IDefect d) -> d.getEnforcementLevel() == EnforcementLevel\n                                             .Critical))\n        {\n            return new IChecked<Person>()\n            {\n                public List<IDefect> getDefects()\n                {\n                    return defects;\n                }\n                public Object getSource()\n                {\n                    return null;\n                }\n                public Person getValue()\n                {\n                    return (Person) null;\n                }\n            };\n        }\n        else\n        {\n            _pure.plan.root.n2.n1.mutation_test_Person_Impl value = (_pure.plan.root.n2.n1.mutation_test_Person_Impl) this.stack\n                                                                                                                          .pop();\n            value.setKerberos(_kerberos.get(0));\n            value.setFirstName(_firstName.get(0));\n            value.setLastName(_lastName.get(0));\n            value.setFirm(_firm.get(0));\n            return new IChecked<Person>()\n            {\n                public List<IDefect> getDefects()\n                {\n                    return defects;\n                }\n                public Object getSource()\n                {\n                    return null;\n                }\n                public Person getValue()\n                {\n                    return (Person) value;\n                }\n            };\n        }\n    }\n\n    public IChecked<Firm> read_mutation_test_Firm(JsonNode node)\n    {\n        List<IDefect> defects = new ArrayList<IDefect>();\n        if (!node.path(\"@type\").getNodeType().equals(JsonNodeType.MISSING))\n        {\n            String nodeValue = node.path(\"@type\").textValue();\n            if (!nodeValue.equals(\"mutation::test::Firm\"))\n            {\n                String methodName = \"read_\" + nodeValue.replace(\"::\", \"_\");\n                if (this.readMethodExists(methodName))\n                {\n                    return (IChecked<Firm>) this.readMethodInvoke(methodName, node);\n                }\n            }\n        }\n        List<String> _name = new ArrayList<String>();\n        List<Long> _numberOfEmployees = new ArrayList<Long>();\n        this.stack.push(new _pure.plan.root.n2.n1.mutation_test_Firm_Impl());\n        if (node.path(\"name\").getNodeType() != JsonNodeType.MISSING)\n        {\n            _name = this.acceptMany(node.path(\"name\"),\n                                    this::acceptString,\n                                    (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"name\" + \": \" + m,\n                                                                                                                                                                  \"mutation::test::Firm\")));\n        }\n        if (node.path(\"numberOfEmployees\").getNodeType() != JsonNodeType.MISSING)\n        {\n            _numberOfEmployees = this.acceptMany(node.path(\"numberOfEmployees\"),\n                                                 this::acceptInteger,\n                                                 (String m) -> defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newInvalidInputErrorDefect(\"numberOfEmployees\" + \": \" + m,\n                                                                                                                                                                               \"mutation::test::Firm\")));\n        }\n        if (_name.size() < 1L || _name.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for name: expected [1] found [\" + _name.size() + \"]\",\n                                                                                                                         \"mutation::test::Firm\"));\n        }\n        if (_numberOfEmployees.size() < 1L || _numberOfEmployees.size() > 1L)\n        {\n            defects.add(org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect.newClassStructureDefect(\"Invalid multiplicity for numberOfEmployees: expected [1] found [\" + _numberOfEmployees.size() + \"]\",\n                                                                                                                         \"mutation::test::Firm\"));\n        }\n        if (defects.stream()\n                   .anyMatch((IDefect d) -> d.getEnforcementLevel() == EnforcementLevel\n                                             .Critical))\n        {\n            return new IChecked<Firm>()\n            {\n                public List<IDefect> getDefects()\n                {\n                    return defects;\n                }\n                public Object getSource()\n                {\n                    return null;\n                }\n                public Firm getValue()\n                {\n                    return (Firm) null;\n                }\n            };\n        }\n        else\n        {\n            _pure.plan.root.n2.n1.mutation_test_Firm_Impl value = (_pure.plan.root.n2.n1.mutation_test_Firm_Impl) this.stack\n                                                                                                                      .pop();\n            value.setName(_name.get(0));\n            value.setNumberOfEmployees(_numberOfEmployees.get(0));\n            return new IChecked<Firm>()\n            {\n                public List<IDefect> getDefects()\n                {\n                    return defects;\n                }\n                public Object getSource()\n                {\n                    return null;\n                }\n                public Firm getValue()\n                {\n                    return (Firm) value;\n                }\n            };\n        }\n    }\n\n    public IChecked<Person> readCheckedObject(JsonNode node,\n                                              org.finos.legend.engine.external.format.json.read.JsonDataRecord source)\n    {\n        IChecked<Person> object = this.read_mutation_test_Person(node);\n        return new IChecked<Person>()\n        {\n            public List<IDefect> getDefects()\n            {\n                return object.getDefects();\n            }\n            public Object getSource()\n            {\n                return source;\n            }\n            public Person getValue()\n            {\n                return object.getValue();\n            }\n        };\n    }\n}"
+      },
+      {
+        "name": "mutation_test_Firm_Impl",
+        "package": "_pure.plan.root.n2.n1",
+        "source": "package _pure.plan.root.n2.n1;\n\nimport java.math.*;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;\n\nclass mutation_test_Firm_Impl implements _pure.app.mutation.test.Firm, IReferencedObject\n{\n    private String name;\n    private long numberOfEmployees;\n\n    public mutation_test_Firm_Impl()\n    {\n    }\n\n    public String getName()\n    {\n        return this.name;\n    }\n\n    public void setName(String name)\n    {\n        this.name = name;\n    }\n\n    public long getNumberOfEmployees()\n    {\n        return this.numberOfEmployees;\n    }\n\n    public void setNumberOfEmployees(long numberOfEmployees)\n    {\n        this.numberOfEmployees = numberOfEmployees;\n    }\n\n    public String getAlloyStoreObjectReference$()\n    {\n        return null;\n    }\n}"
+      },
+      {
+        "name": "mutation_test_Person_Impl",
+        "package": "_pure.plan.root.n2.n1",
+        "source": "package _pure.plan.root.n2.n1;\n\nimport java.math.*;\nimport java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.GraphContext;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.RelativePathNode;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;\nimport org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\nimport org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\nimport org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;\nimport org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;\n\nclass mutation_test_Person_Impl implements _pure.app.mutation.test.Person, IReferencedObject, Constrained<_pure.app.mutation.test.Person>\n{\n    private String kerberos;\n    private String firstName;\n    private String lastName;\n    private _pure.app.mutation.test.Firm firm;\n\n    public mutation_test_Person_Impl()\n    {\n    }\n\n    public String getKerberos()\n    {\n        return this.kerberos;\n    }\n\n    public void setKerberos(String kerberos)\n    {\n        this.kerberos = kerberos;\n    }\n\n    public String getFirstName()\n    {\n        return this.firstName;\n    }\n\n    public void setFirstName(String firstName)\n    {\n        this.firstName = firstName;\n    }\n\n    public String getLastName()\n    {\n        return this.lastName;\n    }\n\n    public void setLastName(String lastName)\n    {\n        this.lastName = lastName;\n    }\n\n    public _pure.app.mutation.test.Firm getFirm()\n    {\n        return this.firm;\n    }\n\n    public void setFirm(_pure.app.mutation.test.Firm firm)\n    {\n        this.firm = firm;\n    }\n\n    public String getAlloyStoreObjectReference$()\n    {\n        return null;\n    }\n\n    public List<IDefect> allConstraints()\n    {\n        return this.allConstraints(new GraphContext());\n    }\n\n    public _pure.app.mutation.test.Person withConstraintsApplied()\n    {\n        java.util.List<org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect> defects = allConstraints();\n        if (!defects.isEmpty())\n        {\n            throw new IllegalStateException(defects.stream().map(org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect::getMessage).collect(java.util.stream.Collectors.joining(\"\\n\")));\n        }\n        return this;\n    }\n\n    public IChecked<_pure.app.mutation.test.Person> toChecked()\n    {\n        return this.toChecked(null, true);\n    }\n\n    public IChecked<_pure.app.mutation.test.Person> toChecked(boolean applyConstraints)\n    {\n        return this.toChecked(null, applyConstraints);\n    }\n\n    public IChecked<_pure.app.mutation.test.Person> toChecked(Object source)\n    {\n        return this.toChecked(source, true);\n    }\n\n    public IChecked<_pure.app.mutation.test.Person> toChecked(Object source,\n                                                              boolean applyConstraints)\n    {\n        java.util.List<org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect> defects = applyConstraints ? allConstraints() : java.util.Collections.emptyList();\n        return new org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked<_pure.app.mutation.test.Person>() {\n            public java.util.List<org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect> getDefects() { return defects; }\n            public Object getSource() { return source; }\n            public _pure.app.mutation.test.Person getValue() { return mutation_test_Person_Impl.this; }\n        };\n    }\n\n    public List<IDefect> allConstraints(GraphContext context)\n    {\n        List<IDefect> result = new ArrayList<IDefect>();\n        return result;\n    }\n}"
+      }
+    ]
+  },
+  "rootExecutionNode": {
+    "_type": "sequence",
+    "authDependent": false,
+    "executionNodes": [
+      {
+        "_type": "function-parameters-validation",
+        "authDependent": false,
+        "functionParameters": [
+          {
+            "_type": "var",
+            "genericType": {
+              "rawType": {
+                "_type": "packageableType",
+                "fullPath": "String"
+              }
+            },
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "jsonString"
+          }
+        ],
+        "parameterValidationContext": [],
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "Boolean"
+        }
+      },
+      {
+        "_type": "relationalSave",
+        "authDependent": false,
+        "columnValueGenerators": {
+          "generatedColumnName_FIRM": {
+            "_type": "externalFormatExternalize",
+            "authDependent": false,
+            "binding": "mutation::test::Firm_Binding",
+            "checked": false,
+            "contentType": "application/json",
+            "executionNodes": [
+              {
+                "_type": "platform",
+                "authDependent": false,
+                "executionNodes": [],
+                "implementation": {
+                  "_type": "java",
+                  "executionClassFullName": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM.n1.Execute",
+                  "executionMethodName": "execute"
+                },
+                "pure": {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "generatedVariableSingleRecordFromStream"
+                    }
+                  ],
+                  "property": "firm"
+                },
+                "requiredVariableInputs": [
+                  {
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "name": "generatedVariableSingleRecordFromStream",
+                    "type": "mutation::test::Person"
+                  }
+                ],
+                "resultType": {
+                  "_type": "class",
+                  "class": "mutation::test::Firm"
+                }
+              }
+            ],
+            "implementation": {
+              "_type": "java",
+              "executionClassFullName": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRM.Execute"
+            },
+            "resultSizeRange": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "String"
+            }
+          },
+          "generatedColumnName_FIRST_NAME": {
+            "_type": "platform",
+            "authDependent": false,
+            "executionNodes": [],
+            "implementation": {
+              "_type": "java",
+              "executionClassFullName": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_FIRST_NAME.Execute",
+              "executionMethodName": "execute"
+            },
+            "pure": {
+              "_type": "property",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "generatedVariableSingleRecordFromStream"
+                }
+              ],
+              "property": "firstName"
+            },
+            "requiredVariableInputs": [
+              {
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "name": "generatedVariableSingleRecordFromStream",
+                "type": "mutation::test::Person"
+              }
+            ],
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "String"
+            }
+          },
+          "generatedColumnName_KERBEROS": {
+            "_type": "platform",
+            "authDependent": false,
+            "executionNodes": [],
+            "implementation": {
+              "_type": "java",
+              "executionClassFullName": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_KERBEROS.Execute",
+              "executionMethodName": "execute"
+            },
+            "pure": {
+              "_type": "property",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "generatedVariableSingleRecordFromStream"
+                }
+              ],
+              "property": "kerberos"
+            },
+            "requiredVariableInputs": [
+              {
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "name": "generatedVariableSingleRecordFromStream",
+                "type": "mutation::test::Person"
+              }
+            ],
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "String"
+            }
+          },
+          "generatedColumnName_LAST_NAME": {
+            "_type": "platform",
+            "authDependent": false,
+            "executionNodes": [],
+            "implementation": {
+              "_type": "java",
+              "executionClassFullName": "_pure.plan.root.n2.columnValueGeneratorgeneratedColumnName_LAST_NAME.Execute",
+              "executionMethodName": "execute"
+            },
+            "pure": {
+              "_type": "property",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "generatedVariableSingleRecordFromStream"
+                }
+              ],
+              "property": "lastName"
+            },
+            "requiredVariableInputs": [
+              {
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "name": "generatedVariableSingleRecordFromStream",
+                "type": "mutation::test::Person"
+              }
+            ],
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "String"
+            }
+          }
+        },
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "element": "",
+          "postProcessorWithParameter": [],
+          "postProcessors": [],
+          "type": "H2"
+        },
+        "executionNodes": [
+          {
+            "_type": "externalFormatInternalize",
+            "authDependent": false,
+            "binding": "mutation::test::Person_Binding",
+            "checked": false,
+            "contentType": "application/json",
+            "enableConstraints": true,
+            "executionNodes": [
+              {
+                "_type": "varResolution",
+                "authDependent": false,
+                "executionNodes": [],
+                "resultType": {
+                  "_type": "dataType",
+                  "dataType": "String"
+                },
+                "varName": "jsonString"
+              }
+            ],
+            "implementation": {
+              "_type": "java",
+              "executionClassFullName": "_pure.plan.root.n2.n1.Execute"
+            },
+            "resultSizeRange": {
+              "lowerBound": 0
+            },
+            "resultType": {
+              "_type": "class",
+              "class": "mutation::test::Person"
+            },
+            "tree": {
+              "_type": "rootGraphFetchTree",
+              "class": "mutation::test::Person",
+              "subTrees": [
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "parameters": [],
+                  "property": "firstName",
+                  "subTrees": [],
+                  "subTypeTrees": []
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "parameters": [],
+                  "property": "lastName",
+                  "subTrees": [],
+                  "subTypeTrees": []
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "parameters": [],
+                  "property": "kerberos",
+                  "subTrees": [],
+                  "subTypeTrees": []
+                },
+                {
+                  "_type": "propertyGraphFetchTree",
+                  "parameters": [],
+                  "property": "firm",
+                  "subTrees": [
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "parameters": [],
+                      "property": "name",
+                      "subTrees": [],
+                      "subTypeTrees": []
+                    },
+                    {
+                      "_type": "propertyGraphFetchTree",
+                      "parameters": [],
+                      "property": "numberOfEmployees",
+                      "subTrees": [],
+                      "subTypeTrees": []
+                    }
+                  ],
+                  "subTypeTrees": []
+                }
+              ],
+              "subTypeTrees": []
+            }
+          }
+        ],
+        "generatedVariableName": "generatedVariableSingleRecordFromStream",
+        "requiredVariableInputs": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "jsonString",
+            "type": "String"
+          }
+        ],
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "String"
+        },
+        "sqlQuery": "insert into Person_Table (FIRM, FIRST_NAME, KERBEROS, LAST_NAME) values ('${generatedColumnName_FIRM?replace(\"'\", \"''\")}', '${generatedColumnName_FIRST_NAME?replace(\"'\", \"''\")}', '${generatedColumnName_KERBEROS?replace(\"'\", \"''\")}', '${generatedColumnName_LAST_NAME?replace(\"'\", \"''\")}')"
+      }
+    ],
+    "resultType": {
+      "_type": "dataType",
+      "dataType": "String"
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": []
+}
