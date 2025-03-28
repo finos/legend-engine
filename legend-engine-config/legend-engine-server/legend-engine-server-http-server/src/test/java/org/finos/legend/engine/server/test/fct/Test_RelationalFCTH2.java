@@ -27,7 +27,7 @@ import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuit
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCT extends RelationalFCTReportH2
+public class Test_RelationalFCTH2 extends RelationalFCTReportH2
 {
     public static Test suite()
     {

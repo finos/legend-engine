@@ -11,14 +11,20 @@ import meta::relational::metamodel::*;
 
 function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1] 
 {
-    meta::relational::fct::relationalRunTime($mappingTest,DatabaseType.H2)
+    meta::relational::fct::testRelationalRunTime($mappingTest,DatabaseType.H2)
   
  }
 
-function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1],databaseType:DatabaseType[1]):Runtime[1]
+function   meta::relational::fct::testRelationalRunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1],databaseType:DatabaseType[1]):Runtime[1]
 {
-   $mappingTest.setupData->match([c:CSVSetupData[1]| meta::relational::fct::testfctRuntime($c.database,$databaseType);
-          ] );
+       let connection =  meta::pure::testConnection::getTestConnection($databaseType);
+       let chainConnections =  if($mappingTest.mapping->size()>1,  //chain runtime
+                                    |  $mappingTest.mapping->tail()->map(m| ^ConnectionStore( element=^meta::external::store::model::ModelStore(),
+                                                                                             connection=^meta::external::store::model::ModelChainConnection(mappings = $m))),
+                                    |[]);  
+
+       ^Runtime(connectionStores= $mappingTest.setupData->map(d|$d->match([c:CSVSetupData[1]| testfctConnectionStore($c.database,$connection),
+                                                                           a:Any[1]|[]  ]))->concatenate($chainConnections));
 
  }
 
@@ -46,9 +52,13 @@ function   meta::relational::fct::relationalTestSetUpH2(mappingTestFN:Function<{
 function   meta::relational::fct::testfctRuntime(database:Database[1],databaseType:DatabaseType[1]):Runtime[1]
 {
    ^Runtime(connectionStores=  ^ConnectionStore( connection= meta::pure::testConnection::getTestConnection($databaseType),
-            element = $database))
+                                                 element = $database))
 }
-
+function   meta::relational::fct::testfctConnectionStore(database:Database[1],connection:RelationalDatabaseConnection[1]):ConnectionStore[1]
+{
+  ^ConnectionStore( connection= $connection,
+                     element = $database);
+}
 
 function   meta::relational::fct::setupData(mappingTestFN:Function<{->FCTMappingTest[1]}>[1],databaseType:DatabaseType[1]):Any[1]
 {
@@ -63,10 +73,11 @@ function   meta::relational::fct::setupDataRunnerH2(mappingTestFN:Function<{->FC
 
     meta::relational::fct::setupDataRunner($mappingTest.setupData,DatabaseType.H2);
 }
-function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseType:DatabaseType[1]):Any[1]
+function   meta::relational::fct::setupDataRunner(setUp:SetupData[*], databaseType:DatabaseType[1]):Any[1]
 {
 
-   $setUp->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+
+   let nodes =$setUp->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
                                                                  let rt = meta::relational::fct::testfctRuntime($c.database,$databaseType);
 
                                                                  let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
@@ -74,6 +85,7 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseTy
                                                                                         ->concatenate(list(''));
 
                                                                   let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database,createDbConfig($databaseType));
+                                                                  let nodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $rt.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)));
                                                                     let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
                                                                     (
                                                                         func = |'dummy',
@@ -81,7 +93,7 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseTy
                                                                         runtime = $rt,
                                                                         rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
                                                                                               resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType = Any)),
-                                                                                              executionNodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $rt.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)))
+                                                                                              executionNodes = $nodes
                                                                                             ),
                                                                         authDependent = false
                                                                     );
@@ -91,12 +103,12 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[1], databaseTy
 
                                                                   let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
 
-                                                                  meta::legend::executePlanAsJSON($planAsJson, []);
+                                                                  meta::legend::executePlanAsJSON($planAsJson, []);,
 
+                                            a:Any[1]|[]
 
-
-          ] );
-
+          ] ));
+      true;
 
 
 
@@ -134,7 +146,7 @@ function  meta::relational::fct::testGeneration::buildExpectedInstance(result:St
 function   meta::relational::fct::testGeneration::testReference(function:ConcreteFunctionDefinition<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
 { 
 
-    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='test'),expression=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr(_type ='packageableElementPtr',fullPath=$function->elementToPath()));
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='tests'),expression=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr(_type ='packageableElementPtr',fullPath=$function->elementToPath()));
 
 }
 

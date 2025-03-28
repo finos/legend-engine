@@ -34,9 +34,17 @@ import meta::relational::fct::*;
 
 
 
-function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalEvaluator():FCTEvaluator[1] //Maybe on store contract?
+function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalEvaluator():FCTEvaluator[1] 
 {
     ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperLegendQueryResult_TestParameters_1__StringResult_1_,
+                  assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_
+             );
+
+}
+
+function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalPureExecuteEvaluator():FCTEvaluator[1] 
+{
+    ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperQueryResult_TestParameters_1__StringResult_1_,
                   assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_
              );
 
@@ -103,11 +111,17 @@ function   meta::relational::fct::relationalExecuteWrapperLegendQueryResult(para
 
 }
 
+function   meta::relational::fct::relationalExecuteWrapperQueryResult(parameters:meta::pure::test::fct::TestParameters[1]):StringResult[1]
+{ 
+  
+              $parameters->meta::pure::test::fct::executeFctQuery(relationalExtensions());
+
+}
 
 
 function meta::relational::fct::relationalRunTimeMock(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1]
 {
-      $mappingTest.setupData->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
+      $mappingTest.setupData->at(0)->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
                                                                                                                       datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
                                                                                                                       authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
                                                                                                                     ),
@@ -123,9 +137,12 @@ function meta::relational::fct::assertExecute(result:meta::pure::test::fct::Test
 {
   let expected = $parameter.expectedExecutionResult->toOne();
 $expected->match([t:TDSResult[1] |let res = $result->cast(@StringResult).result->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
-                                  let actualCSV = $res->resultToCSV();  
-                                   assertEquals( $t.value,$actualCSV);,
-                
+                                   let actualCSV = $res->resultToCSV();  
+                                   let expectedRows = $t.value->split('\n');
+                                   let expectedHeader =  $expectedRows->at(0);
+                                   let expectedContent = $expectedRows->tail(); 
+                                   assertEquals($expectedHeader->split(','),$res.result.columns->map(e|$e->meta::relational::tests::csv::toCSVString()) );
+                                   assertSameElements($expectedContent, $res.result.rows->map(r | $r.values->map(v | $v->meta::relational::tests::csv::toCSVString())->joinStrings(',')));,
                  j:JSONResult[1]| assertEquals(  $j.value,$result->cast(@StringResult).result)
 
 

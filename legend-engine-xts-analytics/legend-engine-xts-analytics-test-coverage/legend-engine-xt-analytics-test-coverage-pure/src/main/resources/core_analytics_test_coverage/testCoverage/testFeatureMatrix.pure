@@ -25,18 +25,27 @@ function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::t
      {|'test'};
 }
 
+function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3():FunctionDefinition<{->Any[1]}>[1]
+{ 
+     {|'test'};
+}
+
+
 function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest():FCTMappingTest[1]
 { 
     ^FCTMappingTest(setupData = ^meta::pure::test::fct::SetupData(),
                     mapping=meta::analytics::testCoverage::featureMatrix::tests::testMapping,
-                    assertions = ^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_))
+                    assertions = [^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_),
+                                 ^IgnoreTest(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_,reason='ignored due to error')]
+                    )
 } 
 
 
  function <<test.Test>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrix():Boolean[1]
  {
   let featureTests =[pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_ ),
-                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_ )
+                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_ ),
+                    pair('meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_', meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_ )
             ]->newMap();
  
 
@@ -55,6 +64,14 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
                                 store = 'testStore',
                                 testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
                                 testType= 'test'),
+         ^FeatureResult(featureTests=^FeatureTest(message= 'ignored due to error', functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_', assertionType='error'),
+                                mappingFeature='filter',
+                                queryFeature='filter',
+                                sourceTypeFeature = 'tds',
+                                store = 'testStore',
+                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
+                                testType= 'test'),
+
         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', assertionType='UnTested'),
         mappingFeature='filter',
         queryFeature='sort',

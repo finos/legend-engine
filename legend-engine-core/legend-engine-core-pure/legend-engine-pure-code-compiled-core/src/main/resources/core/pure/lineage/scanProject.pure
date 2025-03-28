@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::lineage::scanProject::*;
 import meta::pure::mapping::*;
@@ -71,12 +72,12 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
                                                       pair('meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_',
                                                         | 
                                                           let tree = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
-                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->cast(@RootGraphFetchTree<Any>)->toOne()));
+                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->toOne()->getRootTree()));
                                                       ),
                                                       pair('meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_',
                                                         |
                                                           let tree = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
-                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->cast(@RootGraphFetchTree<Any>)->toOne()));
+                                                          ^Project(projectfuncEntryPoint = $fe, columns = scanRootGraphFetchTree($tree->toOne()->getRootTree()));
                                                       )
                                                     ];
                                      let funcFullPath = $fe.func->toOne()->elementToPath();
@@ -105,7 +106,12 @@ function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursi
    ]
   );
 }
+function <<access.private>> meta::pure::lineage::scanProject::getRootTree(a:Any[1]):RootGraphFetchTree<Any>[1]
+{
+  $a->match([ a:StoreMappingClusteredGraphFetchTree[1] | $a.tree,
+              r:RootGraphFetchTree<Any>[1]| $r ])->cast(@RootGraphFetchTree<Any>);
 
+}
 function <<access.private>> meta::pure::lineage::scanProject::extractCol(vs:ValueSpecification[1],vars:Map<String, List<Any>>[1]):BasicColumnSpecification<Any>[*]
 { 
  $vs->match(
