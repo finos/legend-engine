@@ -48,9 +48,6 @@ public class FunctionJarProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(FunctionJar.class, packageJSONType)
                         .build(),
-                ProtocolSubTypeInfo.newBuilder(Ownership.class)
-                        .withSubtype(DeploymentOwner.class, "deployment")
-                        .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
                         .withSubtype(FunctionJarArtifact.class, "functionJarArtifact")
                         .build(),

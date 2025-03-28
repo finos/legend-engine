@@ -531,7 +531,7 @@
         </dependency>
         <!-- Hosted Service -->
 
-        <!-- Service Jar -->
+        <!-- Function Jar -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
@@ -544,11 +544,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-functionJar-generation</artifactId>
-        </dependency>
-        <!-- Service Jar -->
+        <!-- Function Jar -->
 
         <!-- BigQuery Function -->
         <dependency>

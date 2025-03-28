@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.validation.FunctionActivatorResult;
 import org.finos.legend.engine.functionActivator.validation.FunctionActivatorValidator;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionJar.deployment.FunctionJarArtifact;
@@ -75,9 +76,10 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_functionJar_FunctionJar activator, PureModelContext inputModel, List<FunctionJarDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         MutableList<FunctionJarError> errors =  Lists.mutable.empty();
+        FunctionActivatorResult result = new FunctionActivatorResult();
         try
         {
             core_functionjar_generation_generation.Root_meta_external_function_activator_functionJar_validator_validateFunctionJar_FunctionJar_1__Boolean_1_(activator, pureModel.getExecutionSupport()); //returns true or errors out
@@ -85,15 +87,15 @@ public class FunctionJarService implements FunctionActivatorService<Root_meta_ex
         }
         catch (Exception e)
         {
-            errors.add(new FunctionJarError("Cannot create Jar", e));
+            errors.add(new FunctionJarError("FunctionJar can't be registered.", e));
         }
         this.extraValidators.select(v -> v.supports(activator)).forEach(v ->
         {
             errors.addAll(v.validate(identity, activator));
-            errors.addAll(v.validate(activator, pureModel));
         });
-        return errors;
-
+//        result.addAll(validateArtifactActions(identity, pureModel, activator, inputModel, runtimeConfigurations, "vX_X_X", routerExtensions));
+        result.getErrors().addAll(errors);
+        return result;
     }
 
     @Override
