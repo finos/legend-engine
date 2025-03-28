@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::ToTimestamp
   (
     name = 'to_timestamp',
+    documentation = 'Converts string (1st arg) to time stamp according to the given format (2nd arg).',
     variations = [
       ^SqlFunctionVariation
       (
@@ -52,11 +53,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_timestamp',literal(1284352323.0)),
+        simpleFunctionCall('to_timestamp', literal(1284352323.0)),
         %2010-09-13T04:32:03.000000000+0000
       ),
       sqlFunctionTest(
-        simpleFunctionCall('to_timestamp',literal(1284352323)),
+        simpleFunctionCall('to_timestamp', literal(1284352323)),
         %2010-09-13T04:32:03.000000000+0000
       )
     ]

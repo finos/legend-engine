@@ -29,6 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::DateTrunc
   (
     name = 'date_trunc',
+    documentation = 'Truncate (2nd arg) to specified precision (1st arg).',
     variations = [
       ^SqlFunctionVariation
       (

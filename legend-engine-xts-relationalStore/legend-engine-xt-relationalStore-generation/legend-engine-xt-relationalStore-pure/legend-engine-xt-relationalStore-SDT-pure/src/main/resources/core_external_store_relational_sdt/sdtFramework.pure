@@ -99,14 +99,14 @@ function <<access.private>> meta::external::store::relational::sdt::framework::t
 
 function <<access.private>> meta::external::store::relational::sdt::framework::assertSdtTestPasses(sdt: SqlDialectTest[1], actualResult: TestResult[1]): Boolean[1]
 {
-  let expected = $sdt.expectedResult->roundFloats();
-  let actual = $actualResult->roundFloats();
+  let expected = $sdt.expectedResult->transformResult();
+  let actual = $actualResult->transformResult();
   assertEquals($expected, $actual, | 'Expected - ' + $expected->toJSON(100) + '\n' + 'Actual - ' + $actual->toJSON(100));
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::roundFloats(res: TestResult[1]): TestResult[1]
+function <<access.private>> meta::external::store::relational::sdt::framework::transformResult(res: TestResult[1]): TestResult[1]
 {
-  ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([f: Float[1] | round($f, 8), a:Any[*] | $a])))))
+  ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([f: Float[1] | round($f, 8), a:Any[*] | $a])))),columnNames=$res.columnNames->map(c|$c->toLower()))
 }
 
 function meta::external::store::relational::sdt::framework::testConfigForSimpleExpression(expression: String[1], expected: Any[1], identifier: String[1]): SqlDialectTest[1]

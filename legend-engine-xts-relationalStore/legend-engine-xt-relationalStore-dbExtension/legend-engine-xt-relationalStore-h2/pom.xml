@@ -28,5 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-h2-PCT</module>
+        <module>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</module>
     </modules>
 </project>

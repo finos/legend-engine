@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::Ceil
   (
     name = 'ceil',
-    documentation = 'Returns the rounded up value of the given number to the next integer.',
+    documentation = 'Nearest integer greater than or equal to argument.',
     variations = [
       ^SqlFunctionVariation
       (

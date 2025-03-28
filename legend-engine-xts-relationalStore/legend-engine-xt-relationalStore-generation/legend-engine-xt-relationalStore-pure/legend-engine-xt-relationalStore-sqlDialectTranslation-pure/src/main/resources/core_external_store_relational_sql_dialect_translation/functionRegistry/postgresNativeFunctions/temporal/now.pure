@@ -29,7 +29,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::Now
   (
     name = 'now',
-    documentation = 'Returns the current timestamp.',
+    documentation = 'Returns the Current date and time',
     variations = [
       ^SqlFunctionVariation
       (
