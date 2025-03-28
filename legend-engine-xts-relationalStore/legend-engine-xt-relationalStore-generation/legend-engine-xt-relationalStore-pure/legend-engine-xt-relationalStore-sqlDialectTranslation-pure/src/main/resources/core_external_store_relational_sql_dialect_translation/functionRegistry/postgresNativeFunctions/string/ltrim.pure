@@ -29,19 +29,19 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Ltrim
   (
     name = 'ltrim',
-    documentation = 'Removes a specified set of characters from the left side of a string',
+    documentation = 'Remove the longest string containing only characters from (2nd arg) (a space by default) from the start of string (1st arg).',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType],
         returnType = AbstractStringSqlType,
-        documentation = 'Removes whitepsaces from the left side of a string (1st arg)'
+        documentation = 'Removes whitepsaces from the left side of the string (1st arg)'
       ),
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractStringSqlType],
         returnType = AbstractStringSqlType,
-        documentation = 'Removes a set of characters (2nd arg) from the left side of a string (1st arg)'
+        documentation = 'Removes a set of characters (2nd arg) from the left side of the string (1st arg)'
       )
     ],
     tests = [

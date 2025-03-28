@@ -127,16 +127,6 @@
                 </dependencies>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/Test_Postgres_SDT*.java</exclude>
-                        <exclude>**/SdtTestSuiteBuilder*.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
