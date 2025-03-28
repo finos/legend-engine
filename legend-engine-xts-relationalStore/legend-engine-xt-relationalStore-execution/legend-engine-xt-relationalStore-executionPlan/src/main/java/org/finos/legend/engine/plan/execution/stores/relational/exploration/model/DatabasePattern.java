@@ -28,40 +28,48 @@ public class DatabasePattern
 
     private final String tablePattern;
 
+    private final String functionPattern;
+
     private final boolean escapeSchemaPattern;
 
     private final boolean escapeTablePattern;
+
+    private final boolean escapeFunctionPattern;
 
     @JsonCreator
     public DatabasePattern(
             @JsonProperty("catalog") String catalog,
             @JsonProperty("schemaPattern") String schemaPattern,
             @JsonProperty("tablePattern") String tablePattern,
+            @JsonProperty("functionPattern") String functionPattern,
             @JsonProperty("escapeSchemaPattern") boolean escapeSchemaPattern,
-            @JsonProperty("escapeTablePattern") @JsonAlias("escapteTablePattern") boolean escapeTablePattern
+            @JsonProperty("escapeTablePattern") @JsonAlias("escapteTablePattern") boolean escapeTablePattern,
+            @JsonProperty("escapeFunctionPattern") boolean escapeFunctionPattern
     )
     {
         this.catalog = catalog;
         this.schemaPattern = schemaPattern;
         this.tablePattern = tablePattern;
+        this.functionPattern = functionPattern;
         this.escapeSchemaPattern = escapeSchemaPattern;
         this.escapeTablePattern = escapeTablePattern;
+        this.escapeFunctionPattern = escapeFunctionPattern;
     }
 
     public DatabasePattern(String schemaPattern, String tablePattern, boolean escapeSchemaPattern, boolean escapeTablePattern)
     {
-        this(null, schemaPattern, tablePattern, escapeSchemaPattern, escapeTablePattern);
+        this(null, schemaPattern, tablePattern, null, escapeSchemaPattern, escapeTablePattern, false);
     }
 
 
     public DatabasePattern(String schemaPattern, String tablePattern)
     {
-        this(null, schemaPattern, tablePattern, false, false);
+        this(null, schemaPattern, tablePattern, null, false, false, false);
     }
 
     public DatabasePattern(String catalog)
     {
-        this(catalog, null, null, false, false);
+        this(catalog, null, null, null, false, false, false);
     }
 
     public String getSchemaPattern()
@@ -79,6 +87,11 @@ public class DatabasePattern
         return tablePattern;
     }
 
+    public String getFunctionPattern()
+    {
+        return tablePattern;
+    }
+
     public boolean isEscapeSchemaPattern()
     {
         return escapeSchemaPattern;
@@ -89,9 +102,14 @@ public class DatabasePattern
         return escapeTablePattern;
     }
 
+    public boolean isEscapeFunctionPattern()
+    {
+        return escapeFunctionPattern;
+    }
+
     public DatabasePattern withNewCatalog(String catalog)
     {
-        return new DatabasePattern(catalog, this.schemaPattern, this.tablePattern, this.escapeSchemaPattern, this.escapeTablePattern);
+        return new DatabasePattern(catalog, this.schemaPattern, this.tablePattern, this.functionPattern, this.escapeSchemaPattern, this.escapeTablePattern, this.escapeFunctionPattern);
     }
 
 }

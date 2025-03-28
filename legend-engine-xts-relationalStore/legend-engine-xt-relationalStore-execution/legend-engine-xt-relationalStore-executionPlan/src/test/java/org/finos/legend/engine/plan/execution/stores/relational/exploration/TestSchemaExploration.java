@@ -50,8 +50,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TestSchemaExploration
 {
@@ -197,6 +200,32 @@ public class TestSchemaExploration
 
         Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1"), FastList.newListWith("TABLE_1"), false, false);
         test(databaseBuilderInput, expected);
+    }
+
+    @Test
+    public void testRegexPatternForTabularFunctionColumns()
+    {
+        String tableColumns = "TABLE (APP NAME VARCHAR, QUERY VARCHAR, OWNER VARCHAR, VERSION VARCHAR, DOC VARCHAR)";
+        
+        final Pattern getColumnInfo = Pattern.compile("\\((.*?)\\)");
+        final Pattern columnInfo = Pattern.compile("^(.*)\\s(\\w+)$");
+
+        Matcher matchColumnsInfo = getColumnInfo.matcher(tableColumns);
+        Assert.assertTrue(matchColumnsInfo.find());
+        
+        String columnNameAndType = matchColumnsInfo.group(1);
+        String[] allColumns = columnNameAndType.split(", ");
+        Assert.assertTrue(allColumns.length == 5);
+
+        Matcher matchColumnNameAndType = columnInfo.matcher(allColumns[0]);
+        Assert.assertTrue(matchColumnNameAndType.find());
+        Assert.assertEquals("APP NAME", matchColumnNameAndType.group(1));
+        Assert.assertEquals("VARCHAR", matchColumnNameAndType.group(2));
+
+        matchColumnNameAndType = columnInfo.matcher(allColumns[1]);
+        Assert.assertTrue(matchColumnNameAndType.find());
+        Assert.assertEquals("QUERY", matchColumnNameAndType.group(1));
+        Assert.assertEquals("VARCHAR", matchColumnNameAndType.group(2));
     }
 
     private void test(DatabaseBuilderInput input, Database expected) throws Exception

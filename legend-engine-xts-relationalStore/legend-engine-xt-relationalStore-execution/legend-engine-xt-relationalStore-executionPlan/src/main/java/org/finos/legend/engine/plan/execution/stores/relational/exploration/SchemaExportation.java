@@ -25,10 +25,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -45,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.TabularFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -93,6 +97,44 @@ public class SchemaExportation
             Tuples.pair(Types.CHAR, size -> createDataType("Char", size,
                     org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char.class))
     );
+
+    private static final Map<String, DataType> STRING_TYPE_MAP = UnifiedMap.newMapWith(
+            Tuples.pair("VARCHAR", createDataType("Varchar", 16777216L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar.class)),
+            Tuples.pair("LONGNVARCHAR", createDataType("Varchar", 16777216L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar.class)),
+            Tuples.pair("DATE", createDataType("Date", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date.class)),
+            Tuples.pair("FLOAT", createDataType("Float", 38L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Float.class)),
+            Tuples.pair("DOUBLE", createDataType("Double", 38L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Double.class)),
+            Tuples.pair("NUMERIC", createDataType("Numeric", 38L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric.class)),
+            Tuples.pair("DECIMAL", createDataType("Decimal", 38L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal.class)),
+            Tuples.pair("BIT", createDataType("Bit", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Bit.class)),
+            Tuples.pair("BOOLEAN", createDataType("Bit", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Bit.class)),
+            Tuples.pair("INTEGER", createDataType("Integer", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Integer.class)),
+            Tuples.pair("BIGINT", createDataType("BigInt", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.BigInt.class)),
+            Tuples.pair("SMALLINT", createDataType("SmallInt", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.SmallInt.class)),
+            Tuples.pair("TINYINT", createDataType("TinyInt", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt.class)),
+            Tuples.pair("TIMESTAMP", createDataType("Timestamp", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp.class)),
+            Tuples.pair("TIME_WITH_TIMEZONE", createDataType("Timestamp", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp.class)),
+            Tuples.pair("TIMESTAMP_WITH_TIMEZONE", createDataType("Timestamp", 0L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp.class)),
+            Tuples.pair("CHAR", createDataType("Char", 1L,
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char.class))
+    );
+
     private static final String[] TABLES_TYPES = new String[] {"TABLE", "VIEW", "BASE TABLE"};
     private static final String DEFAULT_SCHEMA = "default";
 
@@ -114,6 +156,7 @@ public class SchemaExportation
         List<Function<String, String>> tableNameMappers = FastList.newList();
         List<Function<String, String>> schemaNameMappers = FastList.newList();
         List<Function<String, String>> columnNameMappers = FastList.newList();
+        List<Function<String, String>> functionNameMappers = FastList.newList();
 
         try (Connection connection = connectionManager.getDatabaseConnection(identity, databaseBuilderInput.connection))
         {
@@ -137,6 +180,7 @@ public class SchemaExportation
             schemaNameMappers.add(SchemaExportation::escapeString);
             tableNameMappers.add(SchemaExportation::escapeString);
             columnNameMappers.add(SchemaExportation::escapeString);
+            functionNameMappers.add(SchemaExportation::escapeString);
 
             //post process the names.
             database.schemas.forEach(schema ->
@@ -148,6 +192,15 @@ public class SchemaExportation
                     table.columns.forEach(column ->
                     {
                         column.name = applyNameMapper(columnNameMappers, column.name);
+                    });
+                });
+                schema.tabularFunctions.forEach(function -> function.name = applyNameMapper(tableNameMappers, function.name));
+                schema.tabularFunctions.forEach(function ->
+                {
+                    function.name = applyNameMapper(functionNameMappers, function.name);
+                    function.columns.forEach(funcColumn ->
+                    {
+                        funcColumn.name = applyNameMapper(columnNameMappers, funcColumn.name);
                     });
                 });
             });
@@ -167,6 +220,8 @@ public class SchemaExportation
         // build schemas
 
         Map<String, List<CatalogTable>> tablesBySchema = this.buildSchemasAndCollectTables(db, metadata, pattern, tableNameFilters);
+        Map<String, List<CatalogFunction>> functionsBySchema = this.buildSchemasAndCollectFunctions(db, metadata, pattern, tableNameFilters);
+        
         if (config.enrichTables && config.maxTables != null && tablesBySchema.values().stream().mapToLong(List::size).sum() > config.maxTables)
         {
             throw new IllegalStateException(String.format("Maximum number of tables %d has been reached, " +
@@ -174,6 +229,8 @@ public class SchemaExportation
                     "The current input has requested %d tables", config.maxTables, tablesBySchema.values().stream().mapToLong(List::size).sum()));
         }
         tablesBySchema.keySet().forEach(schema -> getOrCreateAndAddSchema(db, schema));
+        functionsBySchema.keySet().forEach(schema -> getOrCreateAndAddSchema(db, schema));
+      
         // build tables
         if (config.enrichTables)
         {
@@ -186,6 +243,21 @@ public class SchemaExportation
                 for (CatalogTable t : catalogTables)
                 {
                     buildSchemaTable(databaseBuilderInput, t.getCatalog(), schema, t.getTable(), metadata);
+                }
+            }
+        }   
+
+        // build functions
+        if (config.enrichTableFunctions)
+        {
+            for (Map.Entry<String, List<CatalogFunction>> entry : functionsBySchema.entrySet())
+            {
+                String catalogFunctionSchema = entry.getKey();
+                List<CatalogFunction> catalogFunctions = entry.getValue();
+                Schema schema = getOrCreateAndAddSchema(db, catalogFunctionSchema);
+                for (CatalogFunction f : catalogFunctions)
+                {
+                    buildSchemaFunction(databaseBuilderInput, f.getCatalog(), schema, f.getFunction(), metadata);
                 }
             }
         }
@@ -223,6 +295,49 @@ public class SchemaExportation
                 tablesBySchema.getIfAbsentPut(schema, Lists.mutable.empty()).add(catalogTable);
             }
             return tablesBySchema;
+        }
+    }
+
+    private Map<String, List<CatalogFunction>> buildSchemasAndCollectFunctions(Database db, DatabaseMetaData metadata, DatabasePattern pattern, List<Predicate<String>> functionNameFilters) throws SQLException
+    {
+        String escapeStringCharacter = metadata.getSearchStringEscape();
+
+        String escapedCatalog = correctCasePattern(pattern.getCatalog(), metadata);
+
+        String escapedSchema = correctCasePattern(
+                escapePattern(pattern.getSchemaPattern(), pattern.isEscapeSchemaPattern(), escapeStringCharacter),
+                metadata);
+        
+        String escapedTableFunction = correctCasePattern(
+                escapePattern(pattern.getFunctionPattern(), pattern.isEscapeFunctionPattern(), escapeStringCharacter),
+                metadata);
+
+        try (ResultSet functionRs = metadata.getFunctions(escapedCatalog, escapedSchema, escapedTableFunction))
+        {
+            MutableMap<String, List<CatalogFunction>> functionsBySchema = Maps.mutable.empty();
+            while (functionRs.next())
+            {
+                String CATALOG_LABEL = "FUNCTION_CAT";
+                String FUNCTION_LABEL = "FUNCTION_NAME";
+                String SCHEMA_LABEL = "FUNCTION_SCHEM";
+                String FUNCTION_TYPE = "FUNCTION_TYPE";
+                String catalog = functionRs.getString(CATALOG_LABEL);
+                String function = functionRs.getString(FUNCTION_LABEL);
+                String schema = functionRs.getString(SCHEMA_LABEL);
+                int functionType = functionRs.getInt(FUNCTION_TYPE);
+                schema = schema == null ? DEFAULT_SCHEMA : schema;
+                if (ListIterate.anySatisfy(functionNameFilters, f -> f.test(function)))
+                {
+                    continue;
+                }
+
+                if (functionType == metadata.functionReturnsTable)
+                {
+                    CatalogFunction catalogFunction = new CatalogFunction(catalog, schema, function);
+                    functionsBySchema.getIfAbsentPut(schema, Lists.mutable.empty()).add(catalogFunction);
+                }
+            }
+            return functionsBySchema;
         }
     }
 
@@ -267,6 +382,21 @@ public class SchemaExportation
         }
     }
 
+    private void buildSchemaFunction(DatabaseBuilderInput databaseBuilderInput, String catalog, Schema schema, String functionName, DatabaseMetaData metaData) throws SQLException
+    {
+        if (ListIterate.noneSatisfy(schema.tabularFunctions, t -> t.name.equals(functionName)))
+        {
+            TabularFunction function = new TabularFunction();
+            function.name = functionName;
+            DatabaseBuilderConfig config = databaseBuilderInput.config;
+            if (config.enrichColumns)
+            {
+                buildFunctionColumns(catalog, schema.name, function, metaData);
+            }
+            schema.tabularFunctions.add(function);
+        }
+    }
+
     private void buildTableColumns(DatabaseBuilderInput databaseBuilderInput, String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
     {
         if (databaseBuilderInput.config.enrichPrimaryKeys)
@@ -276,6 +406,57 @@ public class SchemaExportation
         table.columns = buildColumns(catalog, schema, table, metaData);
     }
 
+    private void buildFunctionColumns(String catalog, String schema, TabularFunction function, DatabaseMetaData metadata) throws SQLException
+    {
+        function.columns = functionColumns(catalog, schema, function, metadata);
+    }
+
+    private List<Column> functionColumns(String catalog, String schema, TabularFunction function, DatabaseMetaData metadata) throws SQLException
+    {
+        String searchStringEscape = metadata.getSearchStringEscape();
+        String escapedSchemaName = escapePattern(schema, true, searchStringEscape);
+        String escapedFunctionName = escapePattern(function.name, true, searchStringEscape);
+        final Pattern getColumnInfo = Pattern.compile("\\((.*?)\\)");
+        final Pattern columnInfo = Pattern.compile("^(.*)\\s(\\w+)$");
+        List<Column> columns = FastList.newList();
+
+        try (ResultSet functionRs = metadata.getFunctionColumns(catalog, escapedSchemaName, escapedFunctionName, "%"))
+        {
+            while (functionRs.next())
+            {
+                String functionType = functionRs.getString("TYPE_NAME");
+
+                Matcher matchColumnsInfo = getColumnInfo.matcher(functionType);
+                if (matchColumnsInfo.find())
+                {
+                    String columnNameAndType = matchColumnsInfo.group(1);
+                    String[] allColumns = columnNameAndType.split(", ");
+                    Arrays.stream(allColumns).forEach(c ->
+                    {
+                        try
+                        {
+                            Matcher matchColumnNameAndType = columnInfo.matcher(c);
+                            if (matchColumnNameAndType.find())
+                            {
+                                Column column = new Column();
+                                column.name = matchColumnNameAndType.group(1);
+                                column.nullable = "YES".equals(functionRs.getString("IS_NULLABLE"));
+                                column.type = buildFunctionDataTypeNode(matchColumnNameAndType.group(2));
+                                columns.add(column);
+                            } 
+                        }
+                        catch (Exception e)
+                        {
+                             new Exception(e);
+                        }
+                        
+                    });
+                }
+            }
+        }
+        return columns;
+    }
+    
     private List<Column> buildColumns(String catalog, Schema schema, Table table, DatabaseMetaData metaData) throws SQLException
     {
         String searchStringEscape = metaData.getSearchStringEscape();
@@ -323,6 +504,7 @@ public class SchemaExportation
             schema = new Schema();
             schema.name = name;
             schema.tables = FastList.newList();
+            schema.tabularFunctions = FastList.newList();
             db.schemas.add(schema);
         }
         return schema;
@@ -342,6 +524,16 @@ public class SchemaExportation
         }
 
         return func.apply(size);
+    }
+
+    private DataType buildFunctionDataTypeNode(String columnType)
+    {
+        DataType type = STRING_TYPE_MAP.get(columnType);
+        if (type == null)
+        {
+            return new Other(); 
+        }
+        return type;
     }
 
     private static DataType createDataType(String type, Long size, Class<? extends DataType> clazz)
@@ -404,6 +596,35 @@ public class SchemaExportation
         public String getTable()
         {
             return table;
+        }
+    }
+
+    private class CatalogFunction
+    {
+        private final String catalog;
+        private final String schema;
+        private final String function;
+
+        public CatalogFunction(String catalog, String schema, String function)
+        {
+            this.catalog = catalog;
+            this.schema = schema;
+            this.function = function;
+        }
+
+        public String getCatalog()
+        {
+            return catalog;
+        }
+
+        public String getSchema()
+        {
+            return schema;
+        }
+
+        public String getFunction()
+        {
+            return function;
         }
     }
 
