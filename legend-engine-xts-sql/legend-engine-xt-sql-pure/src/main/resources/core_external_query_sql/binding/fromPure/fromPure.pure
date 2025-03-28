@@ -251,6 +251,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug('processQuery', $context.debug);
 
+  assert($query.with->isEmpty(), 'WITH clause (common table expressions) not supported in Alloy SQL yet');
   $query.limit->processLimitOffset($query.offset,
     $query.orderBy->processOrderBy([],
       $query.queryBody->processQueryBody($context))

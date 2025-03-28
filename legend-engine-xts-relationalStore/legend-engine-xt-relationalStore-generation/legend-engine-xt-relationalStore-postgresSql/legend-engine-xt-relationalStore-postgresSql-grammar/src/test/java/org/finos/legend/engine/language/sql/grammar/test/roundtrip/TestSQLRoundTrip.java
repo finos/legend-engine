@@ -355,6 +355,18 @@ public class TestSQLRoundTrip
         check("SELECT * from (select col from myTable)");
     }
 
+    @Test
+    public void testCommonTableExpressionSingle()
+    {
+        check("WITH cte1 (col) AS (SELECT col from myTable) SELECT col from cte1");
+    }
+
+    @Test
+    public void testCommonTableExpressionMultiple()
+    {
+        check("WITH cte1 (col1, col2) AS (SELECT col1, col2 FROM myTable1 AS t1 INNER JOIN myTable2 AS t2 ON (t1.col1 = t2.col2)), cte2 AS (SELECT SUM(), col FROM cte1 GROUP BY col) SELECT col FROM cte1");
+    }
+
     private void fail(String sql, int start, int end, String message)
     {
         try
