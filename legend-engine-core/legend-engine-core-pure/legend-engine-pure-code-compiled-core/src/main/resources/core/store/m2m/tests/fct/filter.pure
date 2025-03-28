@@ -15,16 +15,17 @@ import meta::pure::mapping::modelToModel::test::fct::*;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function <<MappingFeature.simple, meta::pure::test::fct::model::FCT.testCollection>> meta::pure::mapping::modelToModel::test::fct::mapping::simple::testSimpleMapping():FCTMappingTest[1] 
+function <<MappingFeature.filter, meta::pure::test::fct::model::FCT.testCollection>> meta::pure::mapping::modelToModel::test::fct::mapping::filter::testFilterMapping():FCTMappingTest[1] 
 {
  ^FCTMappingTest(setupData=  ^InstanceSetupData(instance= pair(S_Person, list([^S_Person(firstName='John',lastName='Doe',birthDate=%2020-02-02, firm=^S_Firm(legalName='Firm D')), ^S_Person(firstName='Joe',lastName='Smith',birthDate=%2010-02-02,firm=^S_Firm(legalName='Co',optionalDescription='Company'))]))->newMap()),
-                 mapping =  meta::pure::mapping::modelToModel::test::fct::mapping::simple::simpleTestMapping,
+                 mapping =  meta::pure::mapping::modelToModel::test::fct::mapping::filter::filterMapping,
                  assertions= [
                               ^TestErrorAssertion(tests = [meta::pure::fct::tests::collection::filter::filterTDS__FunctionDefinition_1_,
                                                            meta::pure::fct::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,
                                                            meta::pure::fct::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,
                                                            meta::pure::fct::tests::collection::drop::dropTDS__FunctionDefinition_1_,
                                                            meta::pure::fct::tests::collection::exists::existsTDS__FunctionDefinition_1_,
+                                                           meta::pure::fct::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,
                                                             meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,
                                                             meta::pure::fct::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,
                                                             meta::pure::fct::tests::collection::first::firstTDS__FunctionDefinition_1_,
@@ -36,48 +37,29 @@ function <<MappingFeature.simple, meta::pure::test::fct::model::FCT.testCollecti
                                                   expectedErrorMessage='Found unexpected connection type for TabularDataSet Query: JsonModelConnection'),
                              ^TestAssertion(tests = meta::pure::fct::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,
                                              expectedLineageResult= expectedLineage( ['Lambda', 'db_myDB', 'tb_myDBdefaultTRADE'],['Lambda', 'meta::pure::fct::tests::collection::Position', 'pack_meta::pure::fct::tests::collection'],'[Position.productID: [TRADE.productID <TableAliasColumn>]]'),
-                                             expectedExecutionResult = ^JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"Joe"}}'))
+                                             expectedExecutionResult = ^JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"Joe"}}')),
+                            ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage([], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','meta::pure::mapping::modelToModel::test::fct::S_Firm','meta::pure::mapping::modelToModel::test::fct::S_Person','pack_meta::pure::fct::tests::collection','pack_meta::pure::mapping::modelToModel::test::fct'], '[Person.firstName: []]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"John"}}'),expectedLineageResult=meta::pure::test::fct::expectedLineage([], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','meta::pure::mapping::modelToModel::test::fct::S_Firm','meta::pure::mapping::modelToModel::test::fct::S_Person','pack_meta::pure::fct::tests::collection','pack_meta::pure::mapping::modelToModel::test::fct'], '[Person.firstName: []]'))
+
                            ]
             );
 
 }
    
 
-Class meta::pure::mapping::modelToModel::test::fct::S_Firm
-{
-   legalName : String[1];
-   optionalDescription : String[0..1];
-   employees:meta::pure::mapping::modelToModel::test::fct::S_Person[*];
-
-}
-
-Class meta::pure::mapping::modelToModel::test::fct::S_Person
-{
-   firstName : String[1];
-   lastName : String[1];
-   description : String[0..1];
-   birthDate: StrictDate[1];
-   firm:S_Firm[1];
-   address:meta::pure::mapping::modelToModel::test::fct::S_Address[0..1];
-}
-
-Class meta::pure::mapping::modelToModel::test::fct::S_Address
-{
-   street : String[1];
-
-}
 
 
 ###Mapping
 import meta::pure::fct::tests::collection::*;
 import meta::pure::mapping::modelToModel::test::fct::*;
-Mapping meta::pure::mapping::modelToModel::test::fct::mapping::simple::simpleTestMapping
+Mapping meta::pure::mapping::modelToModel::test::fct::mapping::filter::filterMapping
 (
 
 
    Person : Pure
             {
                ~src S_Person
+                 ~filter $src.firstName=='John'
                   firstName:$src.firstName,
                   lastName:$src.lastName,
                   description:$src.description,
@@ -85,12 +67,14 @@ Mapping meta::pure::mapping::modelToModel::test::fct::mapping::simple::simpleTes
                   firm:$src.firm,
                   address:$src.address
             }
+            
   Address : Pure
             {
                ~src S_Address
                 street:$src.street
 
             }   
+
    Firm : Pure
             {
                ~src S_Firm

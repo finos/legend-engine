@@ -22,20 +22,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
 import org.finos.legend.engine.test.fct.model.FCTTestResult;
 import org.finos.legend.engine.test.fct.model.FeatureTest;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import static org.finos.legend.pure.generated.core_analytics_test_coverage_modelCoverage_analytics.Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_;
 import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled.getClassLoaderExecutionSupport;
 
@@ -43,7 +41,7 @@ public class FCTReportBuilder
 {
 
 
-    public static List<FCTTestReport> generateReport(ImmutableList<FCTReport> reports)
+    public static List<FCTTestReport> generateReport(ModelManager modelManager, ImmutableList<FCTReport> reports)
     {
        ObjectMapper mapper = new ObjectMapper();
        FastList<FCTTestReport> results = FastList.newList();
@@ -69,16 +67,10 @@ public class FCTReportBuilder
                                    {
                                        fctTestReport.functionName = featureTest.functionName;
                                        String error = explodedExpectedFailures.get(featureTest.functionName);
-                                       fctTestReport.success = (error == null && featureTest.expectedError == null && Objects.equals(featureTest.assertionType, "assertion"));
-                                       fctTestReport.errorMessage = featureTest.expectedError != null ? featureTest.expectedError : error;
-                                       if (Objects.equals(featureTest.assertionType, "assertion"))
-                                       {
-                                           fctTestReport.assertionType = Objects.equals(testResult.testType, "LineageFCT") ? "Lineage" : "Execution";
-                                       }
-                                       else
-                                       {
-                                           fctTestReport.assertionType = featureTest.assertionType;
-                                       }
+                                       fctTestReport.success = (error == null && featureTest.message == null && Objects.equals(featureTest.assertionType, "assertion"));
+                                       fctTestReport.errorMessage = featureTest.message != null ? featureTest.message : error;
+                                       fctTestReport.assertionType = featureTest.assertionType;
+
                                    }
                                }
                                else

@@ -106,7 +106,7 @@ function meta::analytics::lineage::buildDefaultAnalyticsConfig(): FunctionAnalyt
   (
     databaseLineage = true,
     classLineage = true,
-    relationTree = true,
+    relationTree = false,
     reportLineage = true
   )
 }

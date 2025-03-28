@@ -22,7 +22,7 @@ public class FeatureTest
     public String assertionType;
     @JsonProperty("functionName")
     public String  functionName;
-    @JsonProperty("expectedError")
-    public String  expectedError;
+    @JsonProperty("message")
+    public String  message;
 
 }

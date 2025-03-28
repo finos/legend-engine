@@ -1,3 +1,6 @@
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::testCoverage::featureMatrix::*;
 import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
 import meta::protocols::pure::vX_X_X::metamodel::v3::valueSpecification::raw::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
@@ -29,11 +32,11 @@ function  <<meta::pure::test::fct::model::FCT.evaluator>> meta::analytics::linea
 
 }
 
-
 function   meta::analytics::lineage::computeTestLineageWrapper(parameters:meta::pure::test::fct::TestParameters[1]):TestResult[1]
 { 
- 
-          let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>);
+       // $parameters.runtime->println();
+
+          let fn =  $parameters.test.expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>);
 
           if($parameters.expectedErrorMessage->isNotEmpty(),
               |  true; @TestResult;, //error messages currently only for execute flow 
@@ -44,6 +47,7 @@ function   meta::analytics::lineage::computeTestLineageWrapper(parameters:meta::
           );
   
 }
+
 
 
 

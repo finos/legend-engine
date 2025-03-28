@@ -86,8 +86,8 @@ Class  meta::pure::test::fct::InstanceSetupData extends meta::pure::test::fct::S
 
 Class  meta::pure::test::fct::FCTMappingTest
 {
-   setupData:SetupData[1];
-   mapping:meta::pure::mapping::Mapping[1];
+   setupData:SetupData[*];
+   mapping:meta::pure::mapping::Mapping[1..*];
    assertions:meta::pure::test::fct::Test[*];
 
 }
@@ -101,13 +101,14 @@ function meta::pure::test::fct::adaptorSetupFunction(adaptor:Function<{->FCTAdap
  function meta::pure::test::fct::createTestParameters(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
  {
       $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t.tests->map(test| ^TestParameters(runtime=$runtime,
-                                                                                                          mapping=$mappingTest.mapping, 
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
                                                                                                           expectedExecutionResult=$t.expectedExecutionResult, 
                                                                                                           expectedLineageResult = $t.expectedLineageResult,
                                                                                                           test = $test)), 
                                                                                                                               
-                                              e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
-                                                                                                          mapping=$mappingTest.mapping, 
+                                                i:IgnoreTest[1] | [],
+                                               e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
                                                                                                           expectedErrorMessage = $e.expectedErrorMessage,
                                                                                                           test = $test))  
                                                            
@@ -151,8 +152,30 @@ Class  meta::pure::test::fct::TestAssertion extends meta::pure::test::fct::Test
 
 Class  meta::pure::test::fct::TestErrorAssertion extends meta::pure::test::fct::Test
 {
-  expectedErrorMessage:String[1];
+  expectedErrorMessage:String[0..1];
 }
+
+// Class  meta::pure::test::fct::TestExecutionErrorAssertion extends TestErrorAssertion
+// {
+// }
+
+// Class  meta::pure::test::fct::TestLineageErrorAssertion extends TestErrorAssertion
+// {
+// }
+
+Class  meta::pure::test::fct::IgnoreTest extends meta::pure::test::fct::Test
+{
+  reason:String[1];
+}
+
+Class  meta::pure::test::fct::IgnoreLineageTest extends meta::pure::test::fct::IgnoreTest
+{
+}
+Class  meta::pure::test::fct::IgnoreExecutionTest extends meta::pure::test::fct::IgnoreTest
+{
+}
+
+
 
 Class  meta::pure::test::fct::TestParameters
 {
@@ -179,12 +202,12 @@ Profile  meta::pure::fct::TestReturnType
 
 
 
-function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): Boolean[*]
 {
+          if($adapter.setup->isNotEmpty(),|$adapter.setup->toOne()->eval($mappingTestFn),|[]);  
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $adapter.runtime->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
-                                                     );
+          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator)->meta::pure::fct::tests::execute::AssertionRunExecute();  );
 }
 
 function   meta::pure::fct::tests::testRunnerAssertion(adapterFN:Function<{->FCTAdapter[1]}>[1], evaluatorFN:Function<{->FCTEvaluator[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
@@ -263,3 +286,34 @@ function   meta::pure::test::fct::executeFCTLegendQuery(parameters:meta::pure::t
                           |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
                ));
 }
+
+
+function   meta::pure::test::fct::executeFctQuery(parameters:meta::pure::test::fct::TestParameters[1],extensions:Extension[*]):StringResult[1]
+{ 
+  let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence->cast(@SimpleFunctionExpression)->toOne();
+ 
+    execute(|$fn, $parameters.mapping,$parameters.runtime,$extensions);
+
+    ^StringResult(result='a');
+  // if($parameters.test->hasStereotype('graphFetch',QueryType),
+  //           | let graph =  $fn->cast(@SimpleFunctionExpression)->toOne().parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>);
+  //             if($parameters.expectedErrorMessage->isNotEmpty(),
+  //                         | assertError(|    
+  //                                           execute(|$fn->serialize($graph), $parameters.mapping,$parameters.runtime,$extensions),
+  //                                           $parameters.expectedErrorMessage->toOne()
+                                            
+  //                                           ); @StringResult;,
+  //                         |  let execute = execute(|$fn->serialize($graph), $parameters.mapping,$parameters.runtime,$extensions);  
+  //                           let result = ^StringResult(result ='r');
+  //                 );,
+  //           |if($parameters.expectedErrorMessage->isNotEmpty(),
+  //                         | assertError(|    
+  //                                            execute(|$fn, $parameters.mapping,$parameters.runtime,$extensions),
+  //                                            $parameters.expectedErrorMessage->toOne()
+                                            
+  //                                           ); @StringResult;,
+  //                         |   let result = ^StringResult()  ^StringResult(result =execute(|$fn, $parameters.mapping,$parameters.runtime,$extensions));
+  //              ));
+}
+
+

@@ -1,0 +1,146 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::fct::tests::collection::*;
+import meta::pure::fct::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::mapping::groupBy::model::store::*;
+import meta::pure::fct::tests::collection::*;
+import meta::pure::test::fct::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::relational::fct::*;
+
+function <<MappingFeature.union, meta::pure::test::fct::model::FCT.testCollection>> meta::relational::tests::fct::mapping::union::testunionMapping():FCTMappingTest[1] 
+{
+ ^FCTMappingTest(setupData= ^CSVSetupData(database=meta::relational::tests::mapping::union::model::mapping::fct::store::FCTtestDB,path='/core_relational/relational/tests/fct/union/unionSetup.csv'),
+                 mapping =  meta::relational::tests::mapping::union::model::mapping::fct::unionTestMapping,
+                 assertions = [^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::drop::dropTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\nJoe\nJohn\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"Joe"},{"firstName":"Joe"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName,legalName\nJohn,Firm D\nJohn,Firm D\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>], legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>, PERSON2.FIRM_ID <JoinTreeNode>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"Joe"},{"firstName":"Joe"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Address','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::filterTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::first::firstTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\nJoe\nJohn\nJoe\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::groupBy::groupByTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='name,cnt\nJoe,2\nJohn,2\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[cnt: [PERSON.LASTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>], name: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::slice::sliceTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\nJohn\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::sort::sortTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\nJohn\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::take::takeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]'))
+                 ]
+                 
+           
+            );
+
+}
+
+
+
+###Mapping
+import meta::pure::fct::tests::collection::*;
+import meta::relational::tests::mapping::union::model::mapping::fct::store::*;
+Mapping meta::relational::tests::mapping::union::model::mapping::fct::unionTestMapping
+(
+   *Person : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
+            }
+
+      Person[set1]: Relational
+    {
+       scope([FCTtestDB]TEST.PERSON)
+       (
+          firstName: FIRSTNAME,
+          lastName : LASTNAME,
+          birthDate: BIRTHDATE,
+          address(
+            street:STREET
+          )  
+          
+       ),   
+       firm: [FCTtestDB]@personFirm
+    }
+
+      Person[set2]: Relational
+    {
+       scope([FCTtestDB]TEST.PERSON2)
+       (
+          firstName: FIRSTNAME,
+          lastName : LASTNAME,
+          birthDate: BIRTHDATE,
+          address(
+            street:STREET
+          )    
+       ),   
+       firm: [FCTtestDB]@personFirm2
+    }
+
+    Firm: Relational
+    {
+       legalName: [FCTtestDB]TEST.FIRM.LEGAL_NAME,
+       optionalDescription: [FCTtestDB]TEST.FIRM.OPTIONAL_DESCRIPTION,
+       employees[set1]: [FCTtestDB]@personFirm,
+       employees[set2]: [FCTtestDB]@personFirm2
+
+    }
+
+)
+
+
+###Relational
+
+Database meta::relational::tests::mapping::union::model::mapping::fct::store::FCTtestDB
+(
+    Schema TEST
+    (
+    Table PERSON
+    (
+        ID INT PRIMARY KEY,
+        FIRSTNAME VARCHAR(20),
+        LASTNAME VARCHAR(20),
+        FIRM_ID INT,
+        BIRTHDATE DATE,
+        STREET VARCHAR(20)
+
+    )
+
+    Table PERSON2
+    (
+        ID INT PRIMARY KEY,
+        FIRSTNAME VARCHAR(20),
+        LASTNAME VARCHAR(20),
+        FIRM_ID INT,
+        BIRTHDATE DATE,
+        STREET VARCHAR(20)
+
+    )
+
+    Table FIRM
+    (
+       ID INT PRIMARY KEY,
+       LEGAL_NAME VARCHAR(20),
+       OPTIONAL_DESCRIPTION VARCHAR(20)
+
+    )
+
+    )
+    Join personFirm(TEST.PERSON.FIRM_ID = TEST.FIRM.ID)
+    Join personFirm2(TEST.PERSON2.FIRM_ID = TEST.FIRM.ID)
+
+
+)

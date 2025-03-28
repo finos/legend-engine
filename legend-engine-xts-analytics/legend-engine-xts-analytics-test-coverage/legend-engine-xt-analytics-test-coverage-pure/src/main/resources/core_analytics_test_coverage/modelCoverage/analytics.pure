@@ -1,3 +1,4 @@
+import meta::relational::extension::*;
 import meta::analytics::testCoverage::featureMatrix::*;
 import meta::pure::test::fct::*;
 import meta::json::*;
@@ -73,7 +74,7 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
  }
 
 
- function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:String[1],testType:String[1], store:String[1],expectedError:String[0..1], testCollection:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[1]):FeatureResult[*]
+ function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:String[1],testType:String[1], store:String[1],message:String[0..1], testCollection:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[1]):FeatureResult[*]
 {
 
                              let p =    $fn.stereotypes->groupBy(v|$v.profile->elementToPath());
@@ -82,7 +83,7 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
                               let querySubFeature  = $p->get('meta::pure::testCoverage::featureMatrix::QuerySubFeature').values.value->sort() ;        
                                                ^FeatureResult(store= $store,
                                                               testType =  $testType,
-                                                              featureTests= ^FeatureTest(functionName=$fn->elementToPath(),assertionType=$assertionType, expectedError=$expectedError),
+                                                              featureTests= ^FeatureTest(functionName=$fn->elementToPath(),assertionType=$assertionType, message=$message),
                                                               sourceTypeFeature= $sourceFeature,
                                                               queryFeature =    $queryFeature,
                                                               mappingFeature =    $mappingFeatures->sort(),
@@ -117,7 +118,8 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
                                                                                                       
                                                                                                   
                                                                                                       $assert->match([ t:TestAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'assertion',$reportType,$store,[],$mappingTest),
-                                                                                                                      t:TestErrorAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'error',$reportType,$store,$t.expectedErrorMessage,$mappingTest)   
+                                                                                                                       t:TestErrorAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'notSupported',$reportType,$store,$t.expectedErrorMessage,$mappingTest),   
+                                                                                                                       i:IgnoreTest[1]    |$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,'error',$reportType,$store,$i.reason,$mappingTest)   
                                                                                                                     ]);,  
                                                                                                   |   $fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, 'UnTested',$reportType,$store,[],$mappingTest)
                                                                                                 );

@@ -1458,8 +1458,9 @@ function meta::relational::functions::pureToSqlQuery::doJoinToClass(relationalPr
        let className = $c.name->toOne();
        let classMappings = $state->getClassMappingById($relationalPropertyMapping.targetSetImplementationId);
        assertSize($classMappings, 1, 'Expected 1 class mapping for \'%s\' in \'%s\', found %d', [$className, $state.mapping.name->toOne(), $classMappings->size()]);
-       let setImplementation = $classMappings->toOne()->match([a : meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] | $a.mainSetImplementation, s: SetImplementation[1] | $s])->cast(@InstanceSetImplementation);
-
+       let set = $classMappings->toOne()->match([a : meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] | $a.mainSetImplementation, s: SetImplementation[1] | $s]);
+       assert($set->instanceOf(InstanceSetImplementation), 'Expected target for property ' +$relationalPropertyMapping.property.name->toOne() +' on class ' + $className  +  ' and mapping '+  $state.mapping.name->toOne()   +' to be a instance and not an operation. Check the targetSet Id is correct'  );
+       let setImplementation = $set->cast(@InstanceSetImplementation);
        doJoinToClass($joinTree, $c, $setImplementation, $base, $joinType, $nodeId, $state, $context, $extensions);
 }
 
@@ -2879,7 +2880,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
    if ($p->size() > 1,
     | let fe = $p->at($p->size()-2);
       let ft = $fe.func->functionType();
-      if($ft.parameters->head().genericType->concatenate($ft.returnType)->forAll(x|$x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation)),
+      if($ft.parameters->head().genericType->concatenate($ft.returnType)->forAll(x|
+      $fe->println();
+      $x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation);),
                   | isolateTdsSelect($select, $query, $extensions);,
                   | ^$query(select=$select)
       );,

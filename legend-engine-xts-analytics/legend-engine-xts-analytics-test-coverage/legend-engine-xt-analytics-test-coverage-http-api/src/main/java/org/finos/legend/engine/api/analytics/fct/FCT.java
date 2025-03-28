@@ -41,9 +41,11 @@ import java.util.Scanner;
 
 public class FCT
 {
+    private  ModelManager modelManager;
 
     public FCT(ModelManager modelManager)
     {
+        this.modelManager = modelManager;
     }
 
     public FCT()
@@ -58,7 +60,7 @@ public class FCT
     {
         try
         {
-            List<FCTTestReport> reports = FCTReportCollector.collectReports();
+            List<FCTTestReport> reports = FCTReportCollector.collectReports(modelManager);
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             return Response.status(200).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(reports)).build();

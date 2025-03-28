@@ -830,7 +830,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                   coreImportPackages = $imports,
                   funcs = $fControlToFunctionMapping,
                   removeFunctionPaths = false,
-                  keyExpressionsOnNewLine = false
+                  keyExpressionsOnNewLine = false,
+                  forceFullElementPaths = false
                 );
 }
 
@@ -844,6 +845,7 @@ Class <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPure
    removeFunctionPaths:Boolean[1];
    injectFirstParamFuncs: Function<Any>[*];
    keyExpressionsOnNewLine: Boolean[1];
+   forceFullElementPaths:Boolean[1];
 
 }
 
@@ -1063,7 +1065,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                                             '^Pair<%s,%s>(first = %s, second = %s)'->format([$firstType, $secondType, $state->toPure($pv.first),$state->toPure($pv.second)]);
                 ]
             ),
-         ev: PackageableElementPtr[1] | let enumName = if($ev.fullPath->isInMeta(),
+         ev: PackageableElementPtr[1] | let enumName = if($ev.fullPath->isInMeta() && !$state.forceFullElementPaths,
                                                     | $ev.fullPath->substring($ev.fullPath->lastIndexOf('::') + 2),
                                                     | $ev.fullPath
                                                      ),

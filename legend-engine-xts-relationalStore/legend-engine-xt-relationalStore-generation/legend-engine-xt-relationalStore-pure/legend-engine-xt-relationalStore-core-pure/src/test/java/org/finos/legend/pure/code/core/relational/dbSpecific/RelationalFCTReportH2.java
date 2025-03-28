@@ -16,17 +16,8 @@
 
 package org.finos.legend.pure.code.core.relational.dbSpecific;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.test.fct.FCTReport;
-import org.finos.legend.engine.test.fct.FCTTestCollection;
 import org.finos.legend.pure.code.core.relational.RelationalFCTReport;
-import org.finos.legend.pure.code.core.relational.Test_Pure_Relational_FCT_Collection;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
-import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 public class RelationalFCTReportH2 extends RelationalFCTReport
 {
@@ -36,6 +27,12 @@ public class RelationalFCTReportH2 extends RelationalFCTReport
     {
         super("H2");
 
+    }
+
+    @Override
+    public String getReportID()
+    {
+        return "H2 Execution";
     }
 
 }
