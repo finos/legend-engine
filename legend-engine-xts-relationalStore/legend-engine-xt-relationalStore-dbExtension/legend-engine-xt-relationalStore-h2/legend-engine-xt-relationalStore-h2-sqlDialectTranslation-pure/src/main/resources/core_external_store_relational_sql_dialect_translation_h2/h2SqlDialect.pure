@@ -66,19 +66,23 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2Functio
   [
      pair(
       'FuncTests - Reverse(0/1)',
-      'Reverse not supported in H2 version we use'
+      'H2 SQL Dialect does not support the function - reverse'
     ),
      pair(
       'FuncTests - Reverse(1/1)',
-      'Reverse not supported in H2 version we use'
+      'H2 SQL Dialect does not support the function - reverse'
     ),
     pair(
-      'FuncTests - SplitPart(0/1)',
-      'SplitPart is not available in H2'
+      'FuncTests - SplitPart(0/2)',
+      'H2 SQL Dialect does not support the function - split_part'
     ),
-     pair(
-      'FuncTests - SplitPart(1/1)',
-      'SplitPart is not available in H2'
+    pair(
+      'FuncTests - SplitPart(1/2)',
+      'H2 SQL Dialect does not support the function - split_part'
+    ),
+    pair(
+      'FuncTests - SplitPart(2/2)',
+      'H2 SQL Dialect does not support the function - split_part'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -386,7 +390,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Md5, argTransformFunctionProcessor('hash', {n:Node[*]| literal('md5')->concatenate($n)})),
     pair(CharLength, simpleFunctionProcessor('char_length')),
     pair(Chr, simpleFunctionProcessor('char')),
-    pair(Reverse, simpleFunctionProcessor('reverse')),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(StrPos, argTransformFunctionProcessor('locate', {n:Node[*]| $n->reverse()})),
     pair(Sha1, argTransformFunctionProcessor('hash', {n:Node[*]| literal('SHA-1')->concatenate($n)})),

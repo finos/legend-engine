@@ -63,10 +63,10 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
 function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    pair('FuncTests - Sha1(0/1)', 'Current Version of DuckDB does not support sha1'),
-    pair('FuncTests - Sha1(1/1)', 'Current Version of DuckDB does not support sha1'),
-    pair('FuncTests - Sha256(0/1)', 'Current Version of DuckDB does not support sha256'),
-    pair('FuncTests - Sha256(1/1)', 'Current Version of DuckDB does not support sha256')
+    pair('FuncTests - Sha1(0/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
+    pair('FuncTests - Sha1(1/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
+    pair('FuncTests - Sha256(0/1)', 'DuckDB SQL Dialect does not support the function - sha256'),
+    pair('FuncTests - Sha256(1/1)', 'DuckDB SQL Dialect does not support the function - sha256')
   ]->newMap()->cast(@Map<String, String>)
 }
 
