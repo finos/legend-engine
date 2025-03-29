@@ -36,7 +36,7 @@ function <<test.Test , test.ExcludeAlloy>> meta::relational::tests::milestoning:
    );
 
    // With removal of union or join turned on
-   let result2 = execute(|Order.all()->project([o|$o.id, o|$o.product(%2016-9-23).synonymsByType('CUSIP').createActivity.createdBy], ['orderId','productSynonymCreator']), inheritanceUnionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(), noDebug());
+   let result2 = execute(|Order.all()->project([o|$o.id, o|$o.product(%2016-9-23).synonymsByType('CUSIP').createActivity.createdBy], ['orderId','productSynonymCreator']), inheritanceUnionMapping, meta::external::store::relational::tests::testRuntime()->meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureEnabled(), meta::relational::extension::relationalExtensions(), noDebug());
    assert($result2->meta::relational::mapping::sql()->contains('union_gen_source_pk_0'));
    assertEquals($result.values->meta::relational::tests::csv::toCSV(), $result2.values->meta::relational::tests::csv::toCSV());
 }

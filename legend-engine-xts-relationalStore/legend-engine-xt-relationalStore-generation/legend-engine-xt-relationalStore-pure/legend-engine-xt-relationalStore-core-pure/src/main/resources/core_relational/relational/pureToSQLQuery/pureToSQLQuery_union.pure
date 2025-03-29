@@ -1194,21 +1194,3 @@ function meta::relational::functions::pureToSqlQuery::union::removeUnionOrJoins(
   };
   meta::relational::postProcessor::transformNonCached($s, $transformFunction)->cast(@SelectSQLQuery);
 }
-
-function meta::relational::functions::pureToSqlQuery::union::testRelationalExtensionsWithOrJoinRemovalTurnedOnForH2(): Extension[*]
-{
-  [
-    relationalExtension(),
-    ^Extension
-    (
-      type = 'testRelationalExtensionWithOrJoinRemovalTurnedOnForH2',
-      moduleExtensions = [
-        ^RelationalExtension
-        (
-          module = 'relational',
-          relational_removeUnionOrJoinsPostProcessor_databaseTypesRequiringUnionOrJoinRemoval = {|['H2']}
-        )
-      ]
-    )
-  ]
-}

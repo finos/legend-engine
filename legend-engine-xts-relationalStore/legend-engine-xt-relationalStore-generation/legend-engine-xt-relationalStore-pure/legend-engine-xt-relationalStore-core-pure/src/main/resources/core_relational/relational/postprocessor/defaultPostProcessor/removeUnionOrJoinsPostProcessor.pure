@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::core::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
 import meta::relational::extension::*;
@@ -35,14 +36,33 @@ function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins
         rCtx: RelationalExecutionContext[1] | $rCtx.insertDriverTablePkInTempTable->isEmpty(),
         a: Any[*] | true
       ])
-    ) &&
+    ) 
+    &&
     (
-      $dbConnection.type.name->isNotEmpty() &&
-      $dbConnection.type.name->toOne()->in($extensions->map(e | $e.moduleExtension('relational')->cast(@RelationalExtension).relational_removeUnionOrJoinsPostProcessor_databaseTypesRequiringUnionOrJoinRemoval)->map(f | $f->eval())) &&
-      (!$dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).disabled->contains(removeUnionOrJoinsGenerationFeatureName())))
+      (
+        // Database type is part of target database types and feature is not disabled in config
+        $dbConnection.type.name->isNotEmpty() &&
+        $dbConnection.type.name->toOne()->in([DatabaseType.Snowflake.name]) &&
+        (!$dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).disabled->contains(removeUnionOrJoinsGenerationFeatureName())))
+      ) 
+      ||
+      (
+        // Feature is enabled in config
+        $dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).enabled->contains(removeUnionOrJoinsGenerationFeatureName()))
+      )
     )
   );
 
   let transformedSelect = if ($shouldAttemptRemovingUnionOrJoins, | $selectSQLQuery->meta::relational::functions::pureToSqlQuery::union::removeUnionOrJoins($extensions), | $selectSQLQuery);
   ^Result<SelectSQLQuery|1>(values = $transformedSelect);
+}
+
+function meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureEnabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(enabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()))))))
+}
+
+function meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureDisabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(disabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()))))))
 }

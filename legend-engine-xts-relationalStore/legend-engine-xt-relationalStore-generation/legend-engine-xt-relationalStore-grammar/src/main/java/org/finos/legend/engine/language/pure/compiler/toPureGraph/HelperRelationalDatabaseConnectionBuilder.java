@@ -32,6 +32,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HelperRelationalDatabaseConnectionBuilder
 {
@@ -165,7 +166,7 @@ public class HelperRelationalDatabaseConnectionBuilder
                         {
                             if (!knownFeatures.contains(f))
                             {
-                                throw new EngineException("Unknown relational generation feature: " + f, config.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Unknown relational generation feature: " + f + ". Known features are: " + knownFeatures.stream().collect(Collectors.joining(", ", "[", "]")), config.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         });
                         pureGenerationFeaturesConfig._enabled(Lists.mutable.withAll(generationFeaturesConfig.enabled));

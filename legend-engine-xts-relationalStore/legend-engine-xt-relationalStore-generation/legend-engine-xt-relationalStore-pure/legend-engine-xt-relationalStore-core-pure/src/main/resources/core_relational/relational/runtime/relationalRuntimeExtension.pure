@@ -15,7 +15,10 @@
 Class meta::external::store::relational::runtime::GenerationFeaturesConfig extends meta::external::store::relational::runtime::RelationalQueryGenerationConfig
 [
   noDuplicatesBetweenEnabledAndDisabled: $this.enabled->forAll(e | !$e->in($this.disabled)),
-  knownFeatures: $this.enabled->concatenate($this.disabled)->forAll(f | $f->in(meta::external::store::relational::runtime::knownGenerationFeatures()))
+  knownFeatures: if($this.enabled->concatenate($this.disabled)->forAll(f | $f->in(meta::external::store::relational::runtime::knownGenerationFeatures())),
+                    | true,
+                    | fail('Features provided in GenerationFeaturesConfig should be in the list of known features - ' + meta::external::store::relational::runtime::knownGenerationFeatures()->joinStrings('[', ', ', ']'))
+                 )
 ]
 {
   enabled: String[*];

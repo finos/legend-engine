@@ -45,7 +45,6 @@ Class meta::relational::extension::RelationalExtension extends ModuleExtension
    relational_execution_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], meta::pure::runtime::ExecutionContext[1] -> PostProcessorResult[1]}>[*];
    relational_plan_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], meta::pure::runtime::ExecutionContext[1] -> PostProcessorResult[1]}>[*];
    relational_plan_updateConnection : Function<{Nil[1]->Connection[1]}>[*];
-   relational_removeUnionOrJoinsPostProcessor_databaseTypesRequiringUnionOrJoinRemoval: Function<{->String[*]}>[0..1];
 
    sqlQueryToString_processOperation : Function<{Nil[1], Format[1], GenerationState[1], Config[1], Extension[*] -> Function<{Nil[1]->String[1]}>[*]}>[0..1];
    sqlQueryToString_isBooleanOperation : Function<{Nil[1] -> Boolean[1]}>[*];
