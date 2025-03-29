@@ -32,6 +32,17 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
     private boolean ignoreFreeMarkerProcessing = false;
+    private boolean willExecuteMutation = false;
+
+    public boolean willExecuteMutation()
+    {
+        return willExecuteMutation;
+    }
+
+    public void setWillExecuteMutation(boolean willExecuteMutation)
+    {
+        this.willExecuteMutation = willExecuteMutation;
+    }
 
     private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
     {

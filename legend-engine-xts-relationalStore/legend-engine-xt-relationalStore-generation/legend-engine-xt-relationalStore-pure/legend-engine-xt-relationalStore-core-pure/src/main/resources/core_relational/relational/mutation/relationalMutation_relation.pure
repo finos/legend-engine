@@ -1,3 +1,4 @@
+import meta::pure::router::store::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::translation::*;
@@ -26,6 +27,7 @@ function meta::relational::mutation::executionPlan::planWriteExecution(sq: Store
   let dbConnection = $runtime.connectionByElement($store)->cast(@DatabaseConnection);
   $fe.parametersValues->at(0)
   ->match([
+    s: StoreMappingRoutedValueSpecification[1]| $s.value,
     sfe: SimpleFunctionExpression[1]| $sfe,
     iv:InstanceValue[1]| $iv.values->at(0)  
   ])
@@ -64,7 +66,7 @@ function meta::relational::mutation::executionPlan::generateNodeForPotentialCros
   let select = ^PostProcessorResult(
       query = $insertQuery
   )->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, false, $extensions);
-  ^RelationalBlockExecutionNode(isolationLevel = 4, executionNodes = [$createAndPopulateTempTableNode, $select], resultType = $select.resultType, finallyExecutionNodes = generateCommit(^CommitQuery(), $dbConnection, $extensions));
+  ^RelationalBlockExecutionNode(isolationLevel = 2, executionNodes = [$createAndPopulateTempTableNode, $select], resultType = $select.resultType, finallyExecutionNodes = generateCommit(^CommitQuery(), $dbConnection, $extensions));
 }
 
 
