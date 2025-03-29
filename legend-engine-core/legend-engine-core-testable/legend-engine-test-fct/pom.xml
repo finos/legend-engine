@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-testable</artifactId>
-        <version>4.75.3-SNAPSHOT</version>
+        <version>4.75.3</version>
     </parent>
     <name>Legend Engine - Testable - FCT</name>
     <artifactId>legend-engine-test-fct</artifactId>
