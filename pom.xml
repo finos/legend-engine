@@ -107,7 +107,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.39.0</legend.pure.version>
+        <legend.pure.version>5.40.0</legend.pure.version>
         <legend.shared.version>0.25.7</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
 
@@ -143,7 +143,7 @@
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>2.1.214</h2.version>
         <mariadb.version>3.0.6</mariadb.version>
-        <postgres.version>9.4.1208.jre7</postgres.version>
+        <postgres.version>42.7.4</postgres.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <snowflake.version>3.13.5</snowflake.version>
         <duckdb.version>1.0.0</duckdb.version>
@@ -4110,6 +4110,12 @@
                 <version>${jline.version}</version>
             </dependency>
 
+            <!-- Override transitive dependencies to force same version everywhere -->
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.49.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

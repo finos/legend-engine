@@ -1,0 +1,28 @@
+Class model::animal::Animal
+{
+  family: model::animal::Family[1];
+  noOfLegs: Number[1];
+  children: model::animal::GenericAnimal2[*];
+  something() {$this.noOfLegs > 4}: Boolean[1];
+  something2() {[]}: model::animal::GenericAnimal[0..1];
+}
+
+Class model::animal::Animal2
+{
+  name: String[1];
+  <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'my doc for hasFin'} name2() {''}: String[1];
+}
+
+Enum <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'my doc for enum'} model::animal::Family
+{
+  UO,
+  OP
+}
+
+Class model::animal::GenericAnimal
+{
+}
+
+Class model::animal::GenericAnimal2
+{
+}

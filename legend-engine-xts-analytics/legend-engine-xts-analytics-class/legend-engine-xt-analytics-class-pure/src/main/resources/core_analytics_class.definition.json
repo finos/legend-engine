@@ -3,6 +3,7 @@
   "pattern": "(meta::analytics::class)(::.*)?",
   "dependencies": [
     "platform",
-    "core_functions_unclassified"
+    "core_functions_unclassified",
+    "core_functions_standard"
   ]
 }

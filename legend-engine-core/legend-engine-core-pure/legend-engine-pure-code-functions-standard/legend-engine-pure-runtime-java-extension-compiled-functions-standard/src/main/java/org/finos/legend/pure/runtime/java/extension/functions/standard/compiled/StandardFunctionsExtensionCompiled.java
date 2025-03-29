@@ -28,7 +28,7 @@ public class StandardFunctionsExtensionCompiled extends AbstractCompiledExtensio
     @Override
     public List<StringJavaSource> getExtraJavaSources()
     {
-        return Lists.fixedSize.with(loadExtraJavaSource("org.finos.legend.pure.generated", "StandardFunctionGen", "org/finos/legend/pure/runtime/java/extension/functions/standard.compiled/StandardFunctionGen.java"));
+        return Lists.fixedSize.with(loadExtraJavaSource("org.finos.legend.pure.generated", "StandardFunctionGen", "org/finos/legend/pure/runtime/java/extension/functions/standard/compiled/StandardFunctionGen.java"));
     }
 
     @Override
