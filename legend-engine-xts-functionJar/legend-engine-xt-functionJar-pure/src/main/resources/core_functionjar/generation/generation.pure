@@ -1,0 +1,133 @@
+import meta::pure::model::unit::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::legend::service::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
+import meta::external::function::activator::functionJar::validator::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::external::function::activator::functionJar::generation::*;
+import meta::pure::extension::*;
+import meta::external::function::activator::functionJar::*;
+import meta::pure::metamodel::dataSpace::*;
+import meta::analytics::lineage::*;
+import meta::external::function::activator::hostedService::generation::*;
+
+function meta::external::function::activator::functionJar::generation::printPlan(j:FunctionJar[1]): Any[*]
+{
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+
+  meta::pure::executionPlan::executionPlan($j->recomposeFunction().function->cast(@FunctionDefinition<Any>), $extensions)->meta::pure::executionPlan::toString::planToString($extensions)->println();
+}
+
+function meta::external::function::activator::functionJar::validator::validateFunctionJar(j:FunctionJar[1]):Boolean[1]
+{
+  $j.function->validateFunction();
+  $j->validateReturnType();
+}
+
+function meta::external::function::activator::functionJar::validator::validateReturnType(j:FunctionJar[1]):Boolean[1]
+{
+  if($j.function->functionReturnType().rawType->in(meta::external::function::activator::hostedService::validator::allowedReturnTypes()),
+    | true;,
+    | false
+  );
+}
+
+function meta::external::function::activator::functionJar::validator::validateFunction(func:Function<Any>[1]): Boolean[1]
+{
+  $func->match([
+    lf: LambdaFunction<Any>[1]|
+                                $lf.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
+
+    cd: ConcreteFunctionDefinition<Any>[1]| $cd.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
+    a:Any[*]| println($a); fail('Unexpected case'); true;
+  ]);
+  true;
+}
+
+function meta::external::function::activator::functionJar::validator::validateExpression(expression:ValueSpecification[1]): Boolean[1]
+{
+  $expression->match([
+    sfe:SimpleFunctionExpression[1]|
+                                    if($sfe.func == letFunction_String_1__T_m__T_m_ && $sfe.parametersValues->at(1)->instanceOf(SimpleFunctionExpression),
+                                      |assert($sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->in(meta::external::function::activator::hostedService::validator::allowedPlatformFunctions()),
+                                              'Usage of platform function not allowed during jar generation, Function: '+$sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).functionName->toOne()); ,
+                                      | true;
+                                      );,
+    iv: InstanceValue[1]| true,
+    a:  Any[*]| println($a); fail('Unexpected Expression');true;
+  ]);
+  true;
+}
+
+
+function meta::external::function::activator::functionJar::generation::recomposeFunction(j:FunctionJar[1]):FunctionJar[1]
+{
+  let result = if($j.function->functionReturnType()->meta::external::function::activator::hostedService::generation::needsSerialization(),
+                  |let tree = meta::external::function::activator::hostedService::generation::getTree($j.function); //println($service.function->functionReturnType().rawType);
+
+                    let externalizeExpression = ^SimpleFunctionExpression(
+                                              importGroup = system::imports::coreImport,
+                                              func = externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_,
+                                              functionName = 'externalize',
+                                              genericType = ^GenericType(rawType = String),
+                                              multiplicity = PureOne,
+                                              parametersValues = $j.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence
+                                                                  ->concatenate(^InstanceValue(multiplicity = PureOne,genericType=^GenericType(rawType=RootGraphFetchTree), values=$tree->toOne()))
+                                            )->evaluateAndDeactivate();
+                    let jarFunc = $j.function->cast(@ConcreteFunctionDefinition<Any>);
+                    let newJarFunc = ^$jarFunc(expressionSequence =$externalizeExpression->evaluateAndDeactivate());
+                    let newJar = ^$j(function = $newJarFunc);,
+                |$j;
+                );
+  $j;
+}
+
+function meta::external::function::activator::functionJar::generation::isMultiEenvironmentFunctionJar(j:FunctionJar[1]):Boolean[1]
+{
+    $j.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
+}
+
+function meta::external::function::activator::functionJar::generation::getEnvironmentkey(j:FunctionJar[1] ):String[1]
+{
+    $j.function->meta::external::function::activator::hostedService::generation::getEnvironmentkeyUtil();
+}
+
+function meta::external::function::activator::functionJar::generation::rebuildFunctionJarUsingFlattenedParams(j:FunctionJar[1] ):Pair<String,FunctionJar>[*]
+{
+    let rebuildExpression = rebuildServiceUsingFlattenedParamsUtil($j.function);
+    $rebuildExpression->map(
+       exp | let newFunctionJar = ^$j(function=$exp.second);
+              pair($exp.first, $newFunctionJar);
+    );
+}
+
+function meta::external::function::activator::functionJar::generation::possiblyFlattenSingleExecutionParam(j:FunctionJar[1]):FunctionJar[1]
+{
+  let serviceFunction = $j.function->cast(@ConcreteFunctionDefinition<Any>);
+  let newExpressions = $j.function->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()
+                      ->map(es|
+                              $es->match([
+                                s:SimpleFunctionExpression[1]| if($s.func == from_T_m__SingleExecutionParameters_1__T_m_,
+                                                                |let param = $s.parametersValues->last()->toOne()->reactivate()->toOne();
+                                                                  assert($param->instanceOf(SingleExecutionParameters),'Unexpected param');
+                                                                  let singleExecutionParam = $param->cast(@SingleExecutionParameters);
+                                                                  ^SimpleFunctionExpression(
+                                                                          importGroup = system::imports::coreImport,
+                                                                          func = meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                          functionName = 'from',
+                                                                          genericType = $serviceFunction->functionReturnType(),
+                                                                          multiplicity = $s.multiplicity,
+                                                                          parametersValues = $s.parametersValues->at(0)
+                                                                                            ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $singleExecutionParam.mapping))
+                                                                                            ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $singleExecutionParam.runtime))
+                                                                  )->evaluateAndDeactivate();,
+                                                                |$s),
+                                a:Any[*]|$a
+                              ])->cast(@ValueSpecification)
+                            );
+  let newFunc = ^$serviceFunction(expressionSequence = $newExpressions->toOneMany()->evaluateAndDeactivate());
+  ^$j(function=$newFunc);
+}
