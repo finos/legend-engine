@@ -175,7 +175,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "      enabled: ['FEAT_1'];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1");
+                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS]");
 
         Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
