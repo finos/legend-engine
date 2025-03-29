@@ -529,8 +529,22 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-hostedService-generation</artifactId>
         </dependency>
-
         <!-- Hosted Service -->
+
+        <!-- Function Jar -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
+        </dependency>
+        <!-- Function Jar -->
 
         <!-- BigQuery Function -->
         <dependency>
