@@ -265,4 +265,100 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  queryTimeOutInSeconds: 5555;\n" +
                 "}\n");
     }
+
+    @Test
+    public void testRelationalDatabaseConnectionWithQueryGenerationConfigs()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: [];\n" +
+                "      disabled: [];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['FEAT_1', 'FEAT_2'];\n" +
+                "      disabled: ['FEAT_3'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['FEAT_1', 'FEAT_2'];\n" +
+                "      disabled: ['FEAT_3'];\n" +
+                "    },\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['FEAT_1', 'FEAT_2'];\n" +
+                "      disabled: ['FEAT_3'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###Runtime\n" +
+                "Runtime flatten::runtime::H2Runtime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    store:\n" +
+                "    [\n" +
+                "      connection_1:\n" +
+                "      #{\n" +
+                "        RelationalDatabaseConnection\n" +
+                "        {\n" +
+                "          store: store;\n" +
+                "          type: H2;\n" +
+                "          specification: LocalH2\n" +
+                "          {\n" +
+                "          };\n" +
+                "          auth: Test;\n" +
+                "          queryGenerationConfigs: [\n" +
+                "            GenerationFeaturesConfig\n" +
+                "            {\n" +
+                "              enabled: ['FEAT_1', 'FEAT_2'];\n" +
+                "              disabled: ['FEAT_3'];\n" +
+                "            }\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

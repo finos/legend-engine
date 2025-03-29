@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_GenerationFeaturesConfig;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -147,5 +148,63 @@ public class TestRelationalConnectionCompilationRoundtrip
 
         Assert.assertTrue(quoteIdentifiers);
         Assert.assertEquals(expectedQueryTimeOutInSeconds, connection._queryTimeOutInSeconds());
+    }
+
+    @Test
+    public void testConnectionWithQueryGenerationConfigs()
+    {
+        test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  quoteIdentifiers: true;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['FEAT_1'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS]");
+
+        Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  quoteIdentifiers: true;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      disabled: ['REMOVE_UNION_OR_JOINS'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
+        Assert.assertEquals(1, connection._queryGenerationConfigs().size());
+        Assert.assertTrue(connection._queryGenerationConfigs().toList().get(0) instanceof Root_meta_external_store_relational_runtime_GenerationFeaturesConfig);
+        Assert.assertTrue(((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._enabled().isEmpty());
+        Assert.assertEquals(1, ((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._disabled().size());
+        Assert.assertEquals("REMOVE_UNION_OR_JOINS", ((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._disabled().toList().get(0));
     }
 }

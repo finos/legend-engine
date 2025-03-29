@@ -15,17 +15,24 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.GenerationFeaturesConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.Mapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HelperRelationalDatabaseConnectionBuilder
 {
@@ -126,5 +133,63 @@ public class HelperRelationalDatabaseConnectionBuilder
             }
             throw new IllegalArgumentException("Unknown mapper " + m.getClass().getSimpleName());
         });
+    }
+
+    public static void addRelationalQueryGenerationConfigs(DatabaseConnection databaseConnection, Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, CompileContext context)
+    {
+        if ((databaseConnection.queryGenerationConfigs != null) && (!databaseConnection.queryGenerationConfigs.isEmpty()))
+        {
+            MutableList<Root_meta_external_store_relational_runtime_GenerationFeaturesConfig> pureConfigs = Lists.mutable.ofInitialCapacity(databaseConnection.queryGenerationConfigs.size());
+            for (RelationalQueryGenerationConfig config : databaseConnection.queryGenerationConfigs)
+            {
+                if (config instanceof GenerationFeaturesConfig)
+                {
+                    GenerationFeaturesConfig generationFeaturesConfig = (GenerationFeaturesConfig) config;
+                    if (generationFeaturesConfig.enabled != null)
+                    {
+                        if (generationFeaturesConfig.disabled != null)
+                        {
+                            generationFeaturesConfig.enabled.forEach(f ->
+                            {
+                                if (generationFeaturesConfig.disabled.contains(f))
+                                {
+                                    throw new EngineException("Feature duplicated in enabled and disabled features lists: " + f, config.sourceInformation, EngineErrorType.COMPILATION);
+                                }
+                            });
+                        }
+                    }
+                    MutableList<? extends String> knownFeatures = core_relational_relational_runtime_relationalRuntimeExtension.Root_meta_external_store_relational_runtime_knownGenerationFeatures__String_MANY_(context.getExecutionSupport()).toList();
+                    Root_meta_external_store_relational_runtime_GenerationFeaturesConfig pureGenerationFeaturesConfig = new Root_meta_external_store_relational_runtime_GenerationFeaturesConfig_Impl("", null, context.pureModel.getClass("meta::external::store::relational::runtime::GenerationFeaturesConfig"));
+                    if (generationFeaturesConfig.enabled != null)
+                    {
+                        generationFeaturesConfig.enabled.forEach(f ->
+                        {
+                            if (!knownFeatures.contains(f))
+                            {
+                                throw new EngineException("Unknown relational generation feature: " + f + ". Known features are: " + knownFeatures.stream().collect(Collectors.joining(", ", "[", "]")), config.sourceInformation, EngineErrorType.COMPILATION);
+                            }
+                        });
+                        pureGenerationFeaturesConfig._enabled(Lists.mutable.withAll(generationFeaturesConfig.enabled));
+                    }
+                    if (generationFeaturesConfig.disabled != null)
+                    {
+                        generationFeaturesConfig.disabled.forEach(f ->
+                        {
+                            if (!knownFeatures.contains(f))
+                            {
+                                throw new EngineException("Unknown relational generation feature: " + f, config.sourceInformation, EngineErrorType.COMPILATION);
+                            }
+                        });
+                        pureGenerationFeaturesConfig._disabled(Lists.mutable.withAll(generationFeaturesConfig.disabled));
+                    }
+                    pureConfigs.add(pureGenerationFeaturesConfig);
+                }
+                else
+                {
+                    throw new EngineException("Unhandled relational query config of type: " + config.getClass().getCanonicalName(), config.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
+            pureConnection._queryGenerationConfigs(pureConfigs);
+        }
     }
 }

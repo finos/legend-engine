@@ -497,6 +497,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         List<Root_meta_relational_runtime_PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
                         relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
+                        HelperRelationalDatabaseConnectionBuilder.addRelationalQueryGenerationConfigs(relationalDatabaseConnection, relational, context);
 
                         return relational;
                     }
