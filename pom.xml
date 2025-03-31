@@ -212,7 +212,7 @@
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
         <test.mongodb.version>1.38.0</test.mongodb.version>
         <testcontainers.version>1.18.3</testcontainers.version>
-        <wiremock.version>2.27.2</wiremock.version>
+        <wiremock.version>2.35.2</wiremock.version>
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
         <jline.version>3.26.3</jline.version>
 
@@ -3900,6 +3900,17 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
                 <version>${protobuf.java.version}</version>
+            </dependency>
+            <!-- Override transitive dependencies to force same version everywhere -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>2.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>1.2.2</version>
             </dependency>
 
             <!-- GRPC -->
