@@ -1,3 +1,4 @@
+import meta::analytics::lineage::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::testCoverage::featureMatrix::*;
@@ -34,13 +35,15 @@ function  <<meta::pure::test::fct::model::FCT.evaluator>> meta::analytics::linea
 
 function   meta::analytics::lineage::computeTestLineageWrapper(parameters:meta::pure::test::fct::TestParameters[1]):TestResult[1]
 { 
-       // $parameters.runtime->println();
 
           let fn =  $parameters.test.expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>);
-
+        let config = buildDefaultAnalyticsConfig();
+        let updatedConfig = ^$config(relationTree=false);
           if($parameters.expectedErrorMessage->isNotEmpty(),
               |  true; @TestResult;, //error messages currently only for execute flow 
-              |       let lineage = meta::analytics::lineage::computeLineage($fn,$parameters.mapping,$parameters.runtime,relationalExtensions()); //will need to be a larger extension list
+              |     
+
+                      let lineage = meta::analytics::lineage::computeLineage($fn,$parameters.mapping,$parameters.runtime,relationalExtensions(),$updatedConfig); //will need to be a larger extension list
                      let result = ^meta::pure::test::fct::LineageResult(result=  ^meta::pure::lineage::result::LineageResult(storeLineage=$lineage.databaseLineage,
                                                                                                 classLineage=$lineage.classLineage,
                                                                                                 reportLineage= $lineage.reportLineage->meta::analytics::lineage::reportLineageToPureReportLineage() ));
