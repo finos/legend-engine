@@ -22,6 +22,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import static org.finos.legend.engine.test.fct.FCTTestSuitBuilder.isFCTTestCollection;
@@ -30,6 +31,8 @@ public class FCTTestCollection
 {
 
     private final MutableList<CoreInstance> testFunctions = Lists.mutable.with();
+
+    private final String testCollectionName;
     private final CoreInstance pkg;
 
     public String getStoreType()
@@ -42,10 +45,26 @@ public class FCTTestCollection
     private final MutableList<FCTTestCollection> subCollections = Lists.mutable.with();
 
 
+    public String getTestCollectionName()
+    {
+        return testCollectionName;
+    }
+
+    public FCTTestCollection(String testCollectionName, CoreInstance pkg, String storeType, ProcessorSupport processorSupport)
+    {
+        this.pkg = pkg;
+        this.storeType = storeType;
+        this.testCollectionName = testCollectionName;
+        findPackageTests(processorSupport);
+
+    }
+
+
     public FCTTestCollection(CoreInstance pkg, String storeType, ProcessorSupport processorSupport)
     {
         this.pkg = pkg;
         this.storeType = storeType;
+        this.testCollectionName = PackageableElement.getUserPathForPackageableElement(pkg);
         findPackageTests(processorSupport);
     }
 
@@ -66,6 +85,8 @@ public class FCTTestCollection
         return this.pkg;
 
     }
+
+
 
     public boolean hasTestContent()
     {
@@ -99,7 +120,9 @@ public class FCTTestCollection
 
                    if (isFCTTestCollection(child, processorSupport))
                     {
-                        this.testFunctions.add(child);
+                        FCTTestCollection subCollection = new FCTTestCollection(child.getName(), child, storeType, processorSupport);
+                        subCollection.testFunctions.add(child);
+                        this.subCollections.add(subCollection);
                     }
 
             }
@@ -114,5 +137,6 @@ public class FCTTestCollection
             }
         }
     }
+
 
 }

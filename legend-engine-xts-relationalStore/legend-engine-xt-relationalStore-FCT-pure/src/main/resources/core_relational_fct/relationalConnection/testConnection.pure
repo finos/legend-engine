@@ -1,3 +1,5 @@
+import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
@@ -15,6 +17,21 @@ function   meta::relational::fct::relationalRunTime(mappingTest:meta::pure::test
   
  }
 
+function   meta::relational::fct::testRelationalPureH2RunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1]
+{
+       let chainConnections =  if($mappingTest.mapping->size()>1,  //chain runtime
+                                    |  $mappingTest.mapping->tail()->map(m| ^ConnectionStore( element=^meta::external::store::model::ModelStore(),
+                                                                                             connection=^meta::external::store::model::ModelChainConnection(mappings = $m))),
+                                    |[]);  
+
+
+       ^Runtime(connectionStores= $mappingTest.setupData->map(d|$d->match([c:CSVSetupData[1]|   testDatabaseConnection($c.database,[]),
+                                                                                                                 
+                                                                           a:Any[1]|[]  ]))->concatenate($chainConnections));
+
+ }
+
+
 function   meta::relational::fct::testRelationalRunTime(mappingTest:meta::pure::test::fct::FCTMappingTest[1],databaseType:DatabaseType[1]):Runtime[1]
 {
        let connection =  meta::pure::testConnection::getTestConnection($databaseType);
@@ -28,15 +45,24 @@ function   meta::relational::fct::testRelationalRunTime(mappingTest:meta::pure::
 
  }
 
-function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalAdaptorH2():FCTAdapter[1] //Maybe on store contract?
+function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalAdaptorH2():FCTAdapter[1]
 {
     ^FCTAdapter(
               runtime= meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_,
-               setup =  meta::relational::fct::setupDataRunnerH2_Function_1__Any_1_
+               setup =  meta::relational::fct::setupDataRunnerLegendH2_Function_1__Any_1_
              );
 
 }
 
+
+function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalExecuteAdaptorH2():FCTAdapter[1]
+{
+    ^FCTAdapter(
+              runtime= meta::relational::fct::testRelationalPureH2RunTime_FCTMappingTest_1__Runtime_1_,
+               setup =  meta::relational::fct::setupDataExecuteRunner_Function_1__Any_1_
+             );
+
+}
 
 
 
@@ -63,21 +89,21 @@ function   meta::relational::fct::testfctConnectionStore(database:Database[1],co
 function   meta::relational::fct::setupData(mappingTestFN:Function<{->FCTMappingTest[1]}>[1],databaseType:DatabaseType[1]):Any[1]
 {
     let mappingTest = $mappingTestFN->eval();
-    $mappingTest.setupData->meta::relational::fct::setupDataRunner($databaseType);
+    $mappingTest.setupData->meta::relational::fct::setupDataRunnerLegend($databaseType);
 
 }
 
-function   meta::relational::fct::setupDataRunnerH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
+function   meta::relational::fct::setupDataRunnerLegendH2(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
 {
      let mappingTest = $mappingTestFN->eval();
 
-    meta::relational::fct::setupDataRunner($mappingTest.setupData,DatabaseType.H2);
+    meta::relational::fct::setupDataRunnerLegend($mappingTest.setupData,DatabaseType.H2);
 }
-function   meta::relational::fct::setupDataRunner(setUp:SetupData[*], databaseType:DatabaseType[1]):Any[1]
+function   meta::relational::fct::setupDataRunnerLegend(setUp:SetupData[*], databaseType:DatabaseType[1]):Any[1]
 {
 
 
-   let nodes =$setUp->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+   $setUp->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
                                                                  let rt = meta::relational::fct::testfctRuntime($c.database,$databaseType);
 
                                                                  let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
@@ -108,12 +134,30 @@ function   meta::relational::fct::setupDataRunner(setUp:SetupData[*], databaseTy
                                             a:Any[1]|[]
 
           ] ));
-      true;
-
-
-
+true;
 }
 
+
+function   meta::relational::fct::setupDataExecuteRunner(mappingTestFN:Function<{->FCTMappingTest[1]}>[1]):Any[1]
+{
+     let mappingTest = $mappingTestFN->eval();
+
+
+     $mappingTest.setupData->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+                                                                 let rt =      testRuntime($c.database);
+                                                                 let connection = $rt->connectionByElement($c.database)->cast(@DatabaseConnection);
+                                                                 let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
+                                                                                        ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
+                                                                                        ->concatenate(list(''));
+
+                                                                  let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database,createDbConfig(DatabaseType.H2));
+                                                                  $setUpSQLs->map(s | $s->executeInDb(  $connection));,
+
+                                            a:Any[1]|[]
+
+          ] ));
+   true;
+}
 
 ###Pure
 import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;

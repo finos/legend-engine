@@ -28,7 +28,8 @@ function  <<meta::pure::test::fct::model::FCT.evaluator>> meta::analytics::linea
 {
    
     ^FCTEvaluator( eval =meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__TestResult_1_,
-                   assertion = meta::pure::test::fct::assertLineageResult_TestResult_1__TestParameters_1__Boolean_1_ 
+                   assertion = meta::pure::test::fct::assertLineageResult_TestResult_1__TestParameters_1__Boolean_1_,
+                   testParameters = meta::pure::test::fct::createTestParametersLineage_FCTMappingTest_1__Runtime_1__TestParameters_MANY_
               )
 
 }

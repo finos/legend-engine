@@ -41,6 +41,7 @@ Class meta::pure::fct::tests::collection::Person extends EntityWithAddress
 {
    firstName : String[1];
    lastName : String[1];
+   fullName(){$this.firstName+' '+$this.lastName}:String[1] ;
    description : String[0..1];
    birthDate: StrictDate[1];
 }
@@ -57,41 +58,46 @@ Association meta::pure::fct::tests::collection::PersonFirm
    firm : Firm[1];
    employees : Person[*];
 }
-
-
-
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::simpleTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->filter(i|$i.firstName  == 'Joe')->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.description,p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName', 'description', 'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterPropertyFromSuperTypeTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->filter(i|$i.address.street  == 'FIRST')->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->filter(i|$i.firstName  == 'Joe')->project([p|$p.firstName],['firstName'])};
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterPropertyFromSuperTypeTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->filter(i|$i.address.street  == 'FIRST')->project([p|$p.firstName],['firstName'])};
+
+}
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[*]}>[1]
 {
-   {|Person.all()->filter(i|$i.firm.legalName->in(['Co']))->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->filter(i|$i.firm.legalName->in(['Co']))->project([p|$p.firstName],['firstName'])};
 }
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociationIsEmpty,QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyTDS():FunctionDefinition<{->Any[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.association, QueryType.tds>>  meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyTDS():FunctionDefinition<{->Any[*]}>[1]
 {
    {|Person.all()->filter(i|$i.firm.optionalDescription->isEmpty())->project([p|$p.firstName,p|$p.firm.legalName],['firstName','legalName'])};
 }
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort,QueryType.tds>>  meta::pure::fct::tests::collection::sort::sortTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort, QuerySubFeature.primitive, QueryType.tds>>  meta::pure::fct::tests::collection::sort::sortTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->sortBy(i|$i.firstName)->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->sortBy(i|$i.firstName)->project([p|$p.firstName],['firstName'])};
 
 }
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort, QueryType.tds>>  meta::pure::fct::tests::collection::sort::sortAssociationTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort, QuerySubFeature.association, QueryType.tds>>  meta::pure::fct::tests::collection::sort::sortAssociationTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->sortBy(i|$i.firm.legalName)->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->sortBy(i|$i.firm.legalName)->project([p|$p.firstName],['firstName'])};
 
 }
 
@@ -119,13 +125,13 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.groupBy,Quer
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.tds>>  meta::pure::fct::tests::collection::take::takeTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project(p|[$p.firstName],['firstName'])->take(1)};
+   {|Person.all()->project([p|$p.firstName],['firstName'])->take(1)};
 
 }
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.first,QueryType.tds>>  meta::pure::fct::tests::collection::first::firstTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project(p|[$p.firstName],['firstName'])->first()};
+   {|Person.all()->project([p|$p.firstName],['firstName'])->first()};
 
 }
 
@@ -133,66 +139,110 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.first,QueryT
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.drop,QueryType.tds>>  meta::pure::fct::tests::collection::drop::dropTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project(p|[$p.firstName],['firstName'])->drop(0)};
+   {|Person.all()->project([p|$p.firstName],['firstName'])->drop(0)};
 
 }
 
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.slice,QueryType.tds>>  meta::pure::fct::tests::collection::slice::sliceTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project(p|[$p.firstName],['firstName'])->slice(0,1)};
+   {|Person.all()->project([p|$p.firstName],['firstName'])->slice(0,1)};
 
 }
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.exists,QueryType.tds>>  meta::pure::fct::tests::collection::exists::existsRecursiveTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterExists, QueryType.tds>>  meta::pure::fct::tests::collection::exists::existsRecursiveTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Joe'))->project(p|[$p.firstName],['firstName'])};
+   {|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Joe'))->project([p|$p.firstName],['firstName'])};
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.exists,QueryType.tds>>  meta::pure::fct::tests::collection::exists::existsTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter,QuerySubFeature.filterExists, QueryType.tds>>  meta::pure::fct::tests::collection::exists::existsTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Firm.all()->filter(p | $p.employees->exists(e | $e.firstName == 'Joe'))->project(p|[$p.legalName],['legalName'])};
+   {|Firm.all()->filter(p | $p.employees->exists(e | $e.firstName == 'Joe'))->project([p|$p.legalName],['legalName'])};
 
 }
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.distinct,QueryType.tds>>  meta::pure::fct::tests::collection::distinct::distinctTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project(p|[$p.firstName],['firstName'])->distinct()};
+   {|Person.all()->project([p|$p.firstName],['firstName'])->distinct()};
+
+}
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.tds>>  meta::pure::fct::tests::collection::last::lastTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->last()->project([p|$p.firstName],['firstName'])};
 
 }
 
 
+function  <<meta::pure::test::fct::model::FCT.feature,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::simpleGraph():FunctionDefinition<{->Any[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.description,p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName', 'description', 'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterPrimitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+}
+
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
    {|Person.all()->filter(i|$i.firstName  == 'Joe')->graphFetch(#{Person{firstName}}#)};
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociation,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort,QuerySubFeature.primitive,QueryType.graphFetch>>  meta::pure::fct::tests::collection::sort::sortGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->sortBy(i|$i.firstName )->graphFetch(#{Person{firstName}}#)};
+
+}
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.graphFetch>>  meta::pure::fct::tests::collection::last::lastGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->last()->graphFetch(#{Person{firstName}}#)};
+
+}
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.graphFetch>>  meta::pure::fct::tests::collection::first::firstGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->first()->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.graphFetch>>  meta::pure::fct::tests::collection::take::takeGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->take(1)->graphFetch(#{Person{firstName}}#)};
+
+}
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.drop,QueryType.graphFetch>>  meta::pure::fct::tests::collection::drop::dropGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->drop(1)->graphFetch(#{Person{firstName}}#)};
+
+ }
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.graphFetch>>  meta::pure::fct::tests::collection::slice::sliceGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->slice(0,1)->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
    {|Person.all()->filter(i|$i.firm.legalName ->in(['Co']))->graphFetch(#{Person{firstName}}#)};
 
 }
 
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.filterAssociationIsEmpty,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::filterAssociationIsEmptyGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
    {|Person.all()->filter(i|$i.firm.optionalDescription->isEmpty())->graphFetch(#{Person{firstName}}#)};
 
 }
 
 
-
-//TODO - these patterns fail in sql generation only with the ->from()
+//TODO - these patterns fail in sql generation only with the ->from()  pattern
 // function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.tds>>  meta::pure::fct::tests::collection::take::takeBeforeProjectTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
 //  {  
-//    {|Person.all()->take(1)->project(p|[$p.firstName],['firstName'])};
+//    {|Person.all()->take(1)->project([p|$p.firstName],['firstName'])};
 
 // }
 
-// function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.tds>>  meta::pure::fct::tests::collection::last::lastTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
-//  {  
-//    {|Person.all()->project(p|[$p.firstName],['firstName'])->last()};
-
-// }
