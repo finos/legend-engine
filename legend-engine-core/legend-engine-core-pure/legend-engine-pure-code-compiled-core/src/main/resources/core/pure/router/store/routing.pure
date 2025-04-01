@@ -597,10 +597,11 @@ function meta::pure::router::store::routing::processProperty(p:AbstractProperty<
 
 function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
 {
-  $srcSets->size() == 1 && $srcSets->toOne()->instanceOf(InstanceSetImplementation)                   // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
+  $srcSets->size() == 1 && (($srcSets->toOne()->instanceOf(InstanceSetImplementation)                   // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
   && !$srcSets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation)
   && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->isNotEmpty()
-  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation));
+  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation))) || 
+  ($srcSets->toOne()->instanceOf(OperationSetImplementation) && $srcSets->toOne()->cast(@OperationSetImplementation)->meta::pure::router::routing::resolveOperation($srcSets->toOne().parent)->forAll(s | $s->isPropertyAutoMapped($p,$extensions))));
 }
 
 function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:RoutingState[1]):SetImplementation[*]
