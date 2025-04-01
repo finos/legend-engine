@@ -27,7 +27,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::drop::testSimpleDr
                 4, qw
                 5, wwe
                 6, weq
-                #->drop(3)
+                #->sort(~val->ascending())->drop(3)
               };
 
     let res =  $f->eval($expr);

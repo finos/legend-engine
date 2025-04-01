@@ -27,7 +27,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   4, qw
                   5, wwe
                   6, weq
-                #->limit(3)
+                #->sort(~val->ascending())->limit(3)
                };
 
     let res =  $f->eval($expr);
@@ -37,7 +37,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   '   1,a\n'+
                   '   3,ewe\n'+
                   '   4,qw\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -51,7 +51,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   5, wwe
                   6, weq
                 #;
-                $t->limit(3);                
+                $t->sort(~val->ascending())->limit(3);                
                };
 
     let res =  $f->eval($expr);
@@ -61,5 +61,5 @@ function <<PCT.test>> meta::pure::functions::relation::tests::limit::testSimpleL
                   '   1,a\n'+
                   '   3,ewe\n'+
                   '   4,qw\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }

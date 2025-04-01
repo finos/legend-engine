@@ -84,11 +84,11 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testF
 
         assertEquals( '#TDS\n' +
                       '   legalName,firstName\n' +
-                      '   Firm X,Peter\n' +
-                      '   Firm X,John\n' +
-                      '   Firm X,John\n' +
                       '   Firm X,Anthony\n' +
-                      '#', $res->toString());
+                      '   Firm X,John\n' +
+                      '   Firm X,John\n' +
+                      '   Firm X,Peter\n' +
+                      '#', $res->sort(~firstName->ascending())->toString());
 }
 
 
