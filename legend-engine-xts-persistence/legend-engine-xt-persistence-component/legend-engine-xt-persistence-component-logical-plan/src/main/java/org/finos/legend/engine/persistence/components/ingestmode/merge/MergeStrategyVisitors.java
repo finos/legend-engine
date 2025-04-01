@@ -37,6 +37,13 @@ public class MergeStrategyVisitors
         {
             return Optional.of(deleteIndicatorMergeStrategy.deleteField());
         }
+
+        @Override
+        public Optional<String> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+        {
+            // TODO: ??
+            return Optional.of(terminateLatestActiveMergeStrategy.terminateField());
+        }
     };
 
     public static final MergeStrategyVisitor<List<Object>> EXTRACT_DELETE_VALUES = new MergeStrategyVisitor<List<Object>>()
@@ -51,6 +58,13 @@ public class MergeStrategyVisitors
         public List<Object> visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
         {
             return deleteIndicatorMergeStrategy.deleteValues();
+        }
+
+        @Override
+        public List<Object> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+        {
+            // TODO: ??
+            return terminateLatestActiveMergeStrategy.terminateValues();
         }
     };
 }
