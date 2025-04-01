@@ -3,7 +3,7 @@ import meta::relational::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
-function meta::analytics::mapping::modelCoverage::test::testAutoMappedSemiStructuredUnionMapping():Boolean[1]
+function <<test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedSemiStructuredUnionMapping():Boolean[1]
 {
 let semiGrammar = '###Relational\n'+
 'Database test::store::testDB\n'+
