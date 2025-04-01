@@ -544,7 +544,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
                                   v:PlanVarPlaceHolder[1] |
-                                     // do we have a reference already? 
+                                     // do we have a reference already?
                                      let resolvedPlanVar = $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
                                      if ($resolvedPlanVar->isNotEmpty(),
                                       |$resolvedPlanVar->toOne(),
@@ -1977,26 +1977,26 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
 {
    assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
-  //  let result = $propertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, true, $context, $extensions);
 
    let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)),
-                    | $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions),
+                    | pair($oldSrcOperation, $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions)),
                     | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
-                      let updatedSrc = updateMissingColumn($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-                      let srcOperation = $updatedSrc.first;
-                      $updatedSrc.second;
+                      updateMissingColumn($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                 );
 
-   $result->validate([], $extensions);
+   let srcOperation = $result.first;
+   let finalResult = $result.second;
+
+   $finalResult->validate([], $extensions);
 
    if ($property.multiplicity->hasToOneUpperBound(),
-       | $result,
+       | $finalResult,
        |
          // Property is 1->MANY. Need to flatten
-         let navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne();
+         let navigation = if($state.inFilter, | $finalResult->cast(@SelectWithCursor).select.filteringOperation, | $finalResult->cast(@SelectWithCursor).select.columns)->toOne();
          let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
-         let leftAlias = $result.currentTreeNode->toOne().alias;
+         let leftAlias = $finalResult.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
          let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
          let join = ^Join(
@@ -2015,7 +2015,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
             lateral = true
          );
 
-         let joinAppliedNode = applyJoinInTree($result.select.data->toOne(), $result.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+         let joinAppliedNode = applyJoinInTree($finalResult.select.data->toOne(), $finalResult.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
          let joinAppliedNodeSelect = $joinAppliedNode.select;
          let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
          let res = ^$joinAppliedNode(
@@ -5840,7 +5840,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                      r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
                      fx:FunctionExpression[1]|
                         let f = $fx->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression);
-                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),                        
+                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
                           | let foundColumn = findAliasOrFail($f.func.name->toOne(), $columns);
                             let res = $foundColumn.relationalElement;
                             // Column application -> Generalize all that...
@@ -5869,7 +5869,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                               | $res
                             );
                             ,
-                          | 
+                          |
                             let tdsGetterDispatch = {|findColumnInTdsFromGetter($f, $columns, $returnColumnName, $vars, $state)};
                             let dispatch = [
                                             pair('getNumber', $tdsGetterDispatch),
@@ -6487,7 +6487,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(swc:Select
 {
    let p = $swc.select;
    print(if(!$context.debug, |'',
-            | $context.space+'*>Isolation: \n'+
+            | $context.space+'*>Isolation1: \n'+
               $context.space+'  '+$p->printDebugQuery($context.space, $extensions)));
 
 
@@ -6529,7 +6529,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(swc:Select
 function meta::relational::functions::pureToSqlQuery::manageIsolation(p:SelectSQLQuery[1], extraColumns:TableAliasColumn[*], aliasForExtractedColumns:TableAlias[0..1], nodeId:String[1], inner:Boolean[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+'*>Isolation: \n'+
+            | $context.space+'*>Isolation2: \n'+
               $context.space+'  '+$p->printDebugQuery($context.space, $extensions)));
 
 
@@ -7662,7 +7662,7 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
 function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuerySet:SelectSQLQuery[*], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+'   Merge\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
+            | $context.space+'   Merge2\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
 
    let hasIsolations = $preQuerySet->map(p|$p.data->getAllNodeNames()->filter(n|$n->startsWith('__iso'))->makeString('|'))->removeDuplicates()->size() > 1;
    let querySet = $preQuerySet->map(q|let selfJoinAddedPreviously = if($q.data->isNotEmpty(),|$q.data->toOne()->addedSelfJoin(),|false);
