@@ -544,7 +544,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
                                   v:PlanVarPlaceHolder[1] |
-                                     // do we have a reference already?
+                                     // do we have a reference already? 
                                      let resolvedPlanVar = $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
                                      if ($resolvedPlanVar->isNotEmpty(),
                                       |$resolvedPlanVar->toOne(),
@@ -6487,7 +6487,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(swc:Select
 {
    let p = $swc.select;
    print(if(!$context.debug, |'',
-            | $context.space+'*>Isolation1: \n'+
+            | $context.space+'*>Isolation: \n'+
               $context.space+'  '+$p->printDebugQuery($context.space, $extensions)));
 
 
@@ -6529,7 +6529,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(swc:Select
 function meta::relational::functions::pureToSqlQuery::manageIsolation(p:SelectSQLQuery[1], extraColumns:TableAliasColumn[*], aliasForExtractedColumns:TableAlias[0..1], nodeId:String[1], inner:Boolean[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+'*>Isolation2: \n'+
+            | $context.space+'*>Isolation: \n'+
               $context.space+'  '+$p->printDebugQuery($context.space, $extensions)));
 
 
@@ -7662,7 +7662,7 @@ function meta::relational::functions::pureToSqlQuery::merge(parentTargetTreeNode
 function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuerySet:SelectSQLQuery[*], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    print(if(!$context.debug, |'',
-            | $context.space+'   Merge2\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
+            | $context.space+'   Merge\n'+$preQuerySet->map(q|$q.leftSideOfFilter->size()->toString()+' '+$q->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.DebugPrint, $extensions))->makeString($context.space+'     [\n'+$context.space+'       ','\n'+$context.space+'       ','\n'+$context.space+'     ]')+'\n'));
 
    let hasIsolations = $preQuerySet->map(p|$p.data->getAllNodeNames()->filter(n|$n->startsWith('__iso'))->makeString('|'))->removeDuplicates()->size() > 1;
    let querySet = $preQuerySet->map(q|let selfJoinAddedPreviously = if($q.data->isNotEmpty(),|$q.data->toOne()->addedSelfJoin(),|false);
