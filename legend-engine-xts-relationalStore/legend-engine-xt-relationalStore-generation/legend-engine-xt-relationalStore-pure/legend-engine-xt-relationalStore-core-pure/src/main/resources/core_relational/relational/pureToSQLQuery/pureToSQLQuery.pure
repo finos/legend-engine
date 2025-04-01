@@ -1627,7 +1627,7 @@ function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Bo
                                                          | ^$q(columns=$q.columns->concatenate(^Alias(name=$propName, relationalElement=^Literal(value=^SQLNull())))),
                                                          | let y = $union.currentTreeNodes->at($i);
                                                            let s = ^SelectWithCursor(select=$q, currentTreeNode=$y, milestoningContext=$oldSrcOperation.milestoningContext);
-                                                           let sel = processRelationalPropertyMapping($filteredRelationalPropertyMappings, $property, $propertyOwnerClass, $s, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select;
+                                                           let sel = processPropertyMapping($filteredRelationalPropertyMappings, $propertyOwnerClass, $s, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select;
                                                            let newAlias = ^Alias(
                                                                                name=$propName,
                                                                                relationalElement=if($state.inFilter,|$sel.filteringOperation->toOne(),|$sel.columns->toOne())
@@ -1646,6 +1646,66 @@ function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Bo
                                              $extensions
                                           );
 }
+
+function meta::relational::functions::pureToSqlQuery::updateMissingColumn(relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], oldSrcOperation:SelectWithCursor[1],propertyOwnerClass:Class<Any>[1],  state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):Pair<SelectWithCursor,SelectWithCursor>[1]
+{
+  let relationalElement = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne();
+
+  let result = if ($relationalElement->instanceOf(Union) && !$relationalElement->cast(@Union).currentTreeNodes->isEmpty(),
+        |let propName = $relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
+        pair($propName, addMissingColumn(false, $relationalElement->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
+        |if($relationalElement->instanceOf(SelectSQLQuery),
+          |let element = $relationalElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne();
+            if ($element->instanceOf(Union) && !$element->cast(@Union).currentTreeNodes->isEmpty(),
+                |let propName = $element->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
+                pair($propName, addMissingColumn(true, $element->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
+                |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+                pair($propName, $oldSrcOperation);
+            );,
+          |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+            pair($propName, $oldSrcOperation);
+        )
+    );
+
+  let srcOperation = $result.second;
+  let propName = $result.first;
+
+  let mappingImpl = $relationalPropertyMappings->at(0).relationalOperationElement;
+  let newCurrentTreeNode = $srcOperation.currentTreeNode->toOne();
+  let relElement = $newCurrentTreeNode.alias.relationalElement;
+  let res = if (
+                ($relElement->instanceOf(SelectSQLQuery) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal)) &&
+                  $relElement->cast(@SelectSQLQuery).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                ||
+                ($relElement->instanceOf(Union) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin)) &&
+                  $relElement->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                ||
+                ($relElement->instanceOf(SelectSQLQuery) &&
+                  $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(Union) &&
+                  $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
+                  ,
+                | // We should not process the property mapping as it should have been done in the embedded selectSQLQuery....
+                  let sel = $srcOperation.select;
+                  //let embeddedSelect = $currentTreeNode.alias.relationalElement->cast(@SelectSQLQuery);
+                  // Warning the type of the column is bogus here....
+                  let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=^meta::relational::metamodel::datatype::Integer()));
+                  if ($state.inFilter,
+                      |^$srcOperation(select = ^$sel(filteringOperation+=$newColumn)),
+                      |^$srcOperation(select = ^$sel(columns+=$newColumn))
+                  );,
+                | // Process the property mapping...
+                  let srcOperationWithMilestoneProcessingState=$srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.DATATYPE_PROPERTY);
+                  $mappingImpl->processColumnsInRelationalOperationElements($state, $srcOperationWithMilestoneProcessingState, $nodeId, $aggFromMap, true, $context, $extensions);
+              );
+  let sel = $res.select;
+  if ($state.inFilter,
+      |pair($srcOperation, ^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions))));,
+      |pair($srcOperation, ^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions))));
+      );
+
+ }
 
 Class meta::relational::functions::pureToSqlQuery::MissingColProcessigRes
 {
@@ -1667,62 +1727,15 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
   let firstStep = $propertyReturnType->match(
                                  [
                                     p:DataType[1] | let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
-                                                    // ---------------------------------------------------
-                                                    // Potentially add missing columns in the union!
-                                                    let relationalElement = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne();
-                                                    let result  = if ($relationalElement->instanceOf(Union) && !$relationalElement->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                               |let propName = $relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
-                                                                                pair($propName, addMissingColumn(false, $relationalElement->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
-                                                                               |if($relationalElement->instanceOf(SelectSQLQuery),
-                                                                                   |let element = $relationalElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne();
-                                                                                    if ($element->instanceOf(Union) && !$element->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                                        |let propName = $element->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
-                                                                                         pair($propName, addMissingColumn(true, $element->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
-                                                                                        |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
-                                                                                         pair($propName, $oldSrcOperation);
-                                                                                    );,
-                                                                                   |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
-                                                                                    pair($propName, $oldSrcOperation);
-                                                                                )
-                                                                       );
-                                                    let srcOperation = $result.second;
-                                                    let propName = $result.first;
-                                                    // ---------------------------------------------------
-
                                                     let mappingImpl = $relationalPropertyMappings->at(0).relationalOperationElement;
+
+                                                    let result = updateMissingColumn($relationalPropertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+                                                    let srcOperation = $result.first;
                                                     let newCurrentTreeNode = $srcOperation.currentTreeNode->toOne();
-                                                    let relElement = $newCurrentTreeNode.alias.relationalElement;
-                                                    let res = if (
-                                                                  ($relElement->instanceOf(SelectSQLQuery) &&
-                                                                  ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal)) &&
-                                                                   $relElement->cast(@SelectSQLQuery).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                  ||
-                                                                  ($relElement->instanceOf(Union) &&
-                                                                  ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin)) &&
-                                                                   $relElement->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                  ||
-                                                                  ($relElement->instanceOf(SelectSQLQuery) &&
-                                                                   $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(Union) &&
-                                                                   $relElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
-                                                                   ,
-                                                                  | // We should not process the property mapping as it should have been done in the embedded selectSQLQuery....
-                                                                    let sel = $srcOperation.select;
-                                                                    //let embeddedSelect = $currentTreeNode.alias.relationalElement->cast(@SelectSQLQuery);
-                                                                    // Warning the type of the column is bogus here....
-                                                                    let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=^meta::relational::metamodel::datatype::Integer()));
-                                                                    if ($state.inFilter,
-                                                                       |^$srcOperation(select = ^$sel(filteringOperation+=$newColumn)),
-                                                                       |^$srcOperation(select = ^$sel(columns+=$newColumn))
-                                                                    );,
-                                                                  | // Process the property mapping...
-                                                                    let srcOperationWithMilestoneProcessingState=$srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.DATATYPE_PROPERTY);
-                                                                    $mappingImpl->processColumnsInRelationalOperationElements($state, $srcOperationWithMilestoneProcessingState, $nodeId, $aggFromMap, true, $context, $extensions);
-                                                               );
-                                                    let sel = $res.select;
-                                                    let firstStep = if ($state.inFilter,
-                                                                        |^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
-                                                                        |^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));
-                                                                       );
+
+                                                    let firstStep = $result.second;
+                                                    let sel = $firstStep.select;
+
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
                                                                                          a : Any[*]                                | ^$firstStep(positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($srcOperation.select.data->toOne(), $sel.data->toOne())->first()),
@@ -1961,10 +1974,19 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(propertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], srcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
 {
-   assert($propertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
-   let result = $propertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, true, $context, $extensions);
+   assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
+  //  let result = $propertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, true, $context, $extensions);
+
+   let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)),
+                    | $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions),
+                    | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
+                      let updatedSrc = updateMissingColumn($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+                      let srcOperation = $updatedSrc.first;
+                      $updatedSrc.second;
+                );
+
    $result->validate([], $extensions);
 
    if ($property.multiplicity->hasToOneUpperBound(),
