@@ -77,6 +77,14 @@ function <<PCT.adapter>> {PCT.adapterName='Spanner'} meta::relational::tests::pc
   )
 }
 
+function <<PCT.adapter>> {PCT.adapterName='MemSQL'} meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::relational::tests::pct::testAdapterForRelationalExecution(
+      $f,
+      meta::pure::testConnection::getTestConnection(DatabaseType.MemSQL)
+  )
+}
+
 function meta::relational::tests::pct::extractDependentFunctions(f:Any[1]):Function<Any>[*]
 {
   $f->match([

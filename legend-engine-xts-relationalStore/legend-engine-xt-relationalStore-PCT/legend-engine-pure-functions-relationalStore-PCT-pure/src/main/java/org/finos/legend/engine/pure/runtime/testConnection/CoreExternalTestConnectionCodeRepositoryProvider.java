@@ -54,6 +54,12 @@ public class CoreExternalTestConnectionCodeRepositoryProvider implements CodeRep
             "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_"
     );
 
+    public static final Adapter memsqlAdapter = new Adapter(
+            "MemSQL",
+            "Store_Relational",
+            "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_"
+    );
+
     @Override
     public CodeRepository repository()
     {
