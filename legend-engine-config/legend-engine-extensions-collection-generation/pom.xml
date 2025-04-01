@@ -361,6 +361,11 @@
             <artifactId>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- Relational -->
 

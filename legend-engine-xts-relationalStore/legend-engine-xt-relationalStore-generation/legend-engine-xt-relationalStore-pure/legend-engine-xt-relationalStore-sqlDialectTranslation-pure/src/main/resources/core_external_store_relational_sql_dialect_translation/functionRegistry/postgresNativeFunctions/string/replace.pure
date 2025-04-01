@@ -1,0 +1,55 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Replace extends PostgresNativeSqlFunction
+[
+  $this.name == 'replace'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::replace(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::Replace
+  (
+    name = 'replace',
+    documentation = 'Replace all occurrences in string (1st arg) of substring (2nd arg) with substring (3rd arg).',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType, AbstractStringSqlType],
+        returnType = AbstractStringSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('replace', [literal('abcd'), literal('a'), literal('b')]),
+        'bbcd'
+      ),
+       sqlFunctionTest(
+        simpleFunctionCall('replace', [literal('abcd'), literal('ab'), literal('A')]),
+        'Acd'
+      ),
+       sqlFunctionTest(
+        simpleFunctionCall('replace', [literal('abcd'), literal('mno'), literal('A')]),
+        'abcd'
+      )
+    ]
+  )
+}
