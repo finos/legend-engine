@@ -927,14 +927,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                     ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric) c)._scale()))),
                     compileContext);
         }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Distinct)
-        {
-            throw new RuntimeException(c + " is not a supported type");
-        }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Other)
-        {
-            throw new RuntimeException(c + " is not a supported type");
-        }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Bit)
         {
             return convertTypes("TinyInt", compileContext);
@@ -943,19 +935,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         {
             return convertTypes("Double", compileContext);
         }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured)
-        {
-            throw new RuntimeException(c + " is not a supported type");
-        }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Json)
-        {
-            throw new RuntimeException(c + " is not a supported type");
-        }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DbSpecificDataType)
-        {
-            throw new RuntimeException(c + " is not a supported type");
-        }
-        throw new RuntimeException(c + " is not a supported type");
+        // Fallback to platform function if precise primitive not available
+        return (GenericType) compileContext.pureModel.getExecutionSupport().getProcessorSupport().type_wrapGenericType(
+                platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToCompatiblePureType_DataType_1__Type_1_(
+                        c, compileContext.pureModel.getExecutionSupport()
+                )
+        );
     }
 
     @Override
