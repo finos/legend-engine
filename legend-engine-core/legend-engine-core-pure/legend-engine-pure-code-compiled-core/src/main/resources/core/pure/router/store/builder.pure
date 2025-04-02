@@ -101,7 +101,6 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                         z:Any[1]                    | ^$f(parametersValues=$params)->propagateVoid($params);
                                                                   ]);
                                           ),
-               s: StoreRoutedValueSpecification[1]|$s;,
                r:StoreMappingRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->first();
                                                           let value = $r.value;
                                                           let final = if($value->instanceOf(FunctionExpression) && ( ($value->cast(@FunctionExpression).func->instanceOf(Property) && !($value->cast(@FunctionExpression)->meta::pure::milestoning::isMilestonedGeneratedDateProperty())) || $value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty)),
@@ -257,7 +256,8 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                                                                       );));
                                    $res->propagateVoid($res.values->filter(v|$v->instanceOf(ValueSpecification))->cast(@ValueSpecification));,
                v:VariableExpression[1]| $v,
-               a:TDSRoutedValueSpecification[1]| $a->propagateVoid($a.value);
+               a:TDSRoutedValueSpecification[1]| $a->propagateVoid($a.value);,
+               s: StoreRoutedValueSpecification[1]|$s;
              ]);
 }
 
