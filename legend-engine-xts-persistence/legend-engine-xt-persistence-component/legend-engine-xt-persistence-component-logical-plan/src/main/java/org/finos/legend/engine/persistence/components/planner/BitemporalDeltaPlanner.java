@@ -785,6 +785,41 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     }
 
     /*
+    join on PKS_MATCH
+    filter staging by delete indicator is set AND staging.start_date > max of main.start_date AND main is active
+    get max main.start_date as start_date
+    get staging.start_date as end_date
+    get data fields from main
+
+
+1. INSERT TO TEMP:
+
+INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT)
+SELECT PK_FIELDS, DATA_FIELDS, DIGEST, x.start_date, y.start_date, <batch_id> as BATCH_IN, INF as BATCH_OUT
+FROM
+    (SELECT *, ROW_NUMBER() OVER (PARTITION BY PK_FIELDS ORDER BY start_date DESC) as "legend_persistence_row_number" FROM (SELECT * FROM main WHERE BATCH_OUT = INF) WHERE "legend_persistence_row_number" = 1) x
+    INNER JOIN
+    (SELECT * FROM stage WHERE delete_indicator = 1) y
+    ON PKS_MATCH
+    WHERE y.start_date >= x.start_date
+
+
+2. MILESTONE MAIN: (the same as what we used in normal flow)
+
+UPDATE main x SET batch_id_out = <BATCH_ID>
+    WHERE EXISTS
+    (SELECT * FROM tempWithDeleteIndicator y WHERE
+    PKS_MATCH AND FROM_MATCH)
+    AND <Record is open>
+
+
+3. INSERT INTO MAIN: (the same as what we used in normal flow)
+
+INSERT INTO main (ALL_FIELDS_FROM_TEMP)
+    SELECT ALL_FIELDS_FROM_TEMP FROM tempWithDeleteIndicator
+
+
+
     -------------------
     Main to Temp (for Deletion) Logic:
     -------------------
