@@ -82,11 +82,16 @@ public class TestExecutionPlanWithWrite extends AlloyTestServer
         return result.getValue().toString();
     }
 
+    protected String executePlanWriteJson(SingleExecutionPlan plan, Map<String, ?> params)
+    {
+        ConstantResult result = (ConstantResult) planExecutor.execute(plan, params, null);
+        return result.getValue().toString();
+    }
+
     public String modelResourcePath()
     {
         return "/org/finos/legend/engine/plan/execution/stores/relational/test/write/writePersonExecutionPlan.json";
     }
-
 
     public String modelResourcePath2()
     {

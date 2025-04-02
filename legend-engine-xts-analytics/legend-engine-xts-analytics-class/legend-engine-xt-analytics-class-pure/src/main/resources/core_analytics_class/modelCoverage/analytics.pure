@@ -24,6 +24,21 @@ Class meta::analytics::class::modelCoverage::ClassModelCoverageAnalysisResult
   profiles: Profile[*];
 }
 
+function meta::analytics::class::modelCoverage::supportedProfiles(): Profile[*]
+{
+  [meta::pure::profiles::doc];
+}
+
+function meta::analytics::class::modelCoverage::acceptedStereotypes(val: Stereotype[1]): Boolean[1]
+{
+  $val.profile->in(supportedProfiles())
+}
+
+function meta::analytics::class::modelCoverage::acceptedTaggedValues(val: TaggedValue[1]): Boolean[1]
+{
+  $val.tag.profile->in(supportedProfiles())
+}
+
 function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: Class<Any>[*]):ClassModelCoverageAnalysisResult[1]
 {
   // superTypes
@@ -51,8 +66,8 @@ function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: 
   // so we don't have to return them, if in the future, we need to return these (as this analytics require to do so)
   // we should reconsider these optimization
     let prunedEnumerations = $enumerations->map(e|^$e(
-    stereotypes = [],
-    taggedValues = [],
+    stereotypes = $e->cast(@AnnotatedElement).stereotypes->filter(s | acceptedStereotypes($s)),
+    taggedValues = $e->cast(@AnnotatedElement).taggedValues->filter(tv| acceptedTaggedValues($tv)),
     values = if(meta::pure::functions::meta::enumValues($e)->isEmpty(),
               |$e.values,
               |meta::pure::functions::meta::enumValues($e)->map(v|^$v(
@@ -64,12 +79,12 @@ function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: 
 
   let prunedClasses = $classes->map(c|^$c(
     properties = $c.properties->reverseMilestoningTransforms()->map(p|^$p(
-      stereotypes = [],
-      taggedValues = []
+      stereotypes = $p.stereotypes->filter(s | acceptedStereotypes($s)),
+      taggedValues = $p.taggedValues->filter(tv| acceptedTaggedValues($tv))
     )),
     qualifiedProperties = $c.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>)->map(p|^$p(
-      stereotypes = [],
-      taggedValues = []
+      stereotypes = $p.stereotypes->filter(s | acceptedStereotypes($s)),
+      taggedValues = $p.taggedValues->filter(tv| acceptedTaggedValues($tv))
     ))
   ));
 
@@ -92,23 +107,24 @@ function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: 
   // NOTE: prune here so we don't have to do analytics to find the used profiles
   let prunedAssociations = $associations->map(a|
     let props = $a.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>)->map(p|^$p(
-      stereotypes = [],
-      taggedValues = []
+      stereotypes = $p.stereotypes->filter(s | acceptedStereotypes($s)),
+      taggedValues = $p.taggedValues->filter(tv| acceptedTaggedValues($tv))
     ));
     let newProps = [$props->at(0), $props->at(1)];
     ^$a(
-      stereotypes = [],
-      taggedValues = [],
+      stereotypes = $a.stereotypes->filter(s | acceptedStereotypes($s)),
+      taggedValues = $a.taggedValues->filter(tv| acceptedTaggedValues($tv)),
       properties = $newProps,
       qualifiedProperties = $a.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>)->map(p|^$p(
-        stereotypes = [],
-        taggedValues = []
+        stereotypes = $a.stereotypes->filter(s | acceptedStereotypes($s)),
+        taggedValues = $a.taggedValues->filter(tv| acceptedTaggedValues($tv))
       ))
     );
   );
 
   // profile
   // NOTE: we don't support showing tagged values and stereotypes for properties at the moment
+  // we only support specific profiles declared in `meta::analytics::class::modelCoverage::supportedProfiles()`
   let profiles = $classes->map(class|$class.taggedValues->map(tv|$tv.tag.profile)
     ->concatenate($class.stereotypes->map(st|$st.profile))
     ->cast(@Profile)->removeDuplicates());

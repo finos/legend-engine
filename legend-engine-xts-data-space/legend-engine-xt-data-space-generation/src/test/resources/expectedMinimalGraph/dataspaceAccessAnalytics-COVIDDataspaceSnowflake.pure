@@ -1,0 +1,22 @@
+Class {meta::pure::profiles::doc.doc = 'COVID-19 data report consisting of case statistics details and basic information on demographics'} domain::COVIDData
+{
+  id: Integer[1];
+  {meta::pure::profiles::doc.doc = 'The Federal Information Processing Standard (FIPS) code (FIPS 6-4) uniquely identifies counties and county equivalents in the United States'} fips: String[0..1];
+  date: StrictDate[0..1];
+  caseType: String[0..1];
+  cases: Float[0..1];
+  {meta::pure::profiles::doc.doc = 'A flag indicating if the similar case data has been reported previously'} lastReportedFlag: Boolean[0..1];
+  demographics: domain::Demographics[0..1];
+}
+
+Class {meta::pure::profiles::doc.doc = 'COVID-19 data demographics consisting of geolocation information'} domain::Demographics
+{
+  {meta::pure::profiles::doc.doc = 'The Federal Information Processing Standard (FIPS) code (FIPS 6-4) uniquely identifies counties and county equivalents in the United States'} fips: String[0..1];
+  {meta::pure::profiles::doc.doc = 'United States in 2-letter codes format'} state: String[0..1];
+}
+
+Profile meta::pure::profiles::doc
+{
+  stereotypes: [deprecated];
+  tags: [doc, todo];
+}

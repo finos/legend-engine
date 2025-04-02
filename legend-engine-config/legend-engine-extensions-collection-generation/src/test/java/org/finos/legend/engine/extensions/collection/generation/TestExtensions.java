@@ -32,20 +32,24 @@ import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArt
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
+import org.finos.legend.engine.language.functionJar.compiler.toPureGraph.FunctionJarCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
+import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
 import org.finos.legend.engine.language.deephaven.to.DeephavenGrammarComposerExtension;
+import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
-import org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph.MemSqlFunctionCompilerExtension;
 import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.HostedServiceCompilerExtension;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
 import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
+import org.finos.legend.engine.language.functionJar.grammar.from.FunctionJarGrammarParserExtension;
+import org.finos.legend.engine.language.functionJar.grammar.to.FunctionJarGrammarComposer;
+import org.finos.legend.engine.language.memsqlFunction.compiler.toPureGraph.MemSqlFunctionCompilerExtension;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.memsqlFunction.grammar.to.MemSqlFunctionGrammarComposer;
-import org.finos.legend.engine.language.functionActivator.grammar.postDeployment.to.PostDeploymentActionGrammarComposer;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -73,16 +77,16 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.SnowflakeGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.TextGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.TrinoGrammarComposerExtension;
-import org.finos.legend.engine.language.pure.grammar.to.SnowflakeGrammarComposerExtension;
-import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerExtension;
-import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
@@ -91,15 +95,13 @@ import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGram
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
-import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
+import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
+import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJarProtocolExtension;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
-import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -108,8 +110,26 @@ import org.finos.legend.engine.pure.code.core.CoreLegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.ServiceLegendPureCoreExtension;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.code.core.*;
+import org.finos.legend.pure.code.core.ArrowLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.DeephavenJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.DeephavenLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.ExternalFormatJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.FlatDataJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.FlatDataLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.JSONJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.JSONLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.M2MJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.MongoDBLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.RelationalJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.RelationalLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.ServiceStoreJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.ServiceStoreLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.XMLJavaBindingLegendPureCoreExtension;
+import org.finos.legend.pure.code.core.XMLLegendPureCoreExtension;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
@@ -117,6 +137,7 @@ import org.finos.legend.pure.runtime.java.compiled.serialization.binary.Distribu
 import org.finos.legend.pure.runtime.java.compiled.serialization.binary.DistributedMetadataSpecification;
 import org.junit.Assert;
 import org.junit.Test;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -204,14 +225,14 @@ public class TestExtensions
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         DistributedBinaryGraphDeserializer deserializer = DistributedBinaryGraphDeserializer.newBuilder(classLoader).withMetadataNames(getExpectedCodeRepositories()).build();
 
-        Assert.assertTrue(deserializer.hasClassifier("meta::pure::metamodel::type::Class"));
-        Assert.assertTrue(deserializer.hasInstance("meta::pure::metamodel::type::Class", "Root::meta::pure::metamodel::type::Class"));
+        Assert.assertTrue(deserializer.hasClassifier(M3Paths.Class));
+        Assert.assertTrue(deserializer.hasInstance(M3Paths.Class, M3Paths.Class));
 
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
 
         Assert.assertEquals(
                 Lists.fixedSize.empty(),
-                expectedClassifiers.reject(cl -> deserializer.hasInstance("meta::pure::metamodel::type::Class", "Root::" + cl), Lists.mutable.empty()));
+                expectedClassifiers.reject(cl -> deserializer.hasInstance(M3Paths.Class, cl), Lists.mutable.empty()));
     }
 
     @Test
@@ -245,7 +266,7 @@ public class TestExtensions
                 {
                     try
                     {
-                        return metadataLazy.getMetadata("meta::pure::metamodel::type::Class", "Root::" + cl) == null;
+                        return metadataLazy.getMetadata(M3Paths.Class, cl) == null;
                     }
                     catch (DistributedBinaryGraphDeserializer.UnknownInstanceException ignore)
                     {
@@ -307,6 +328,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(HostedServiceProtocolExtension.class)
+                .with(FunctionJarProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(MemSqlFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
@@ -353,6 +375,7 @@ public class TestExtensions
                 .with(DataSpaceParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(HostedServiceGrammarParserExtension.class)
+                .with(FunctionJarGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
                 .with(MemSqlFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
@@ -382,6 +405,7 @@ public class TestExtensions
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(HostedServiceGrammarComposer.class)
+                .with(FunctionJarGrammarComposer.class)
                 .with(PostDeploymentActionGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(MemSqlFunctionGrammarComposer.class)
@@ -417,6 +441,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
                 .with(SnowflakeAppCompilerExtension.class)
                 .with(HostedServiceCompilerExtension.class)
+                .with(FunctionJarCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(MemSqlFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
@@ -590,6 +615,7 @@ public class TestExtensions
                 .with("core_bigqueryfunction")
                 .with("core_memsqlfunction")
                 .with("core_hostedservice")
+                .with("core_functionjar")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_external_language_java_conventions_essential")

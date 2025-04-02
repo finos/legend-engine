@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xt-relationalStore-spanner</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.75.2-SNAPSHOT</version>
+        <version>4.75.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,6 +12,7 @@
 
     <properties>
         <maven-shade-plugin.shadedPattern>org.finos.legend.engine.spanner.jdbc.shaded</maven-shade-plugin.shadedPattern>
+        <skipIDEHackAttach>false</skipIDEHackAttach>
     </properties>
 
     <dependencies>
@@ -44,7 +45,6 @@
                             </excludes>
                         </filter>
                     </filters>
-                    <shadeSourcesContent>true</shadeSourcesContent>
                     <shadedArtifactAttached>false</shadedArtifactAttached>
                     <relocations>
                         <relocation>
@@ -123,6 +123,50 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>hack-for-shaded-jar-for-ide</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <skipAttach>${skipIDEHackAttach}</skipAttach>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                                    <type>jar</type>
+                                    <classifier>optional</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <skipIDEHackAttach>true</skipIDEHackAttach>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker-snapshot</id>
+            <properties>
+                <skipIDEHackAttach>true</skipIDEHackAttach>
+            </properties>
+        </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <skipIDEHackAttach>true</skipIDEHackAttach>
+            </properties>
+        </profile>
+    </profiles>
 </project>

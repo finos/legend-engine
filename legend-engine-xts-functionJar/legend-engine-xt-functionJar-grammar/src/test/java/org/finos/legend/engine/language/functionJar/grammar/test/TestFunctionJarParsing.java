@@ -1,0 +1,56 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+package org.finos.legend.engine.language.functionJar.grammar.test;
+
+import org.antlr.v4.runtime.Vocabulary;
+import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.FunctionJarParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.junit.Test;
+
+import java.util.List;
+
+public class TestFunctionJarParsing extends TestGrammarParser.TestGrammarParserTestSuite
+{
+    @Override
+    public Vocabulary getParserGrammarVocabulary()
+    {
+        return FunctionJarParserGrammar.VOCABULARY;
+    }
+
+    @Override
+    public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
+    {
+        return "###FunctionJar\n" +
+                "FunctionJar " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+                "{\n" +
+                "   function : a::f():String[1];\n" +
+                "   ownership : Deployment { identifier: '17' };\n" +
+                "   documentation : 'sass';\n" +
+                "}\n";
+    }
+
+    @Test
+    public void testMissingProperty()
+    {
+        test("###FunctionJar\n" +
+                "FunctionJar pack::A " + "\n" +
+                "{\n" +
+                "   function : a::f():String[1];\n" +
+                "   documentation : 'sass';\n" +
+                "}\n", "PARSER error at [2:1-6:1]: Field 'ownership' is required");
+    }
+}

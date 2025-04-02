@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.75.2-SNAPSHOT</version>
+        <version>4.75.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -529,8 +529,22 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-hostedService-generation</artifactId>
         </dependency>
-
         <!-- Hosted Service -->
+
+        <!-- Function Jar -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
+        </dependency>
+        <!-- Function Jar -->
 
         <!-- BigQuery Function -->
         <dependency>
