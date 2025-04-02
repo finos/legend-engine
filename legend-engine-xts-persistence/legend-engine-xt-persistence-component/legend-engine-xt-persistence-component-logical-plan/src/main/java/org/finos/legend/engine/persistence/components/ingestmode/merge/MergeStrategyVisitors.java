@@ -18,13 +18,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode.DELETE_MISTAKE;
+import static org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode.TERMINATE_LATEST_ACTIVE;
+
 public class MergeStrategyVisitors
 {
     private MergeStrategyVisitors()
     {
     }
 
-    public static final MergeStrategyVisitor<Optional<String>> EXTRACT_DELETE_FIELD = new MergeStrategyVisitor<Optional<String>>()
+    public static final MergeStrategyVisitor<Optional<String>> EXTRACT_INDICATOR_FIELD = new MergeStrategyVisitor<Optional<String>>()
     {
         @Override
         public Optional<String> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
@@ -41,12 +44,11 @@ public class MergeStrategyVisitors
         @Override
         public Optional<String> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
         {
-            // TODO: ??
             return Optional.of(terminateLatestActiveMergeStrategy.terminateField());
         }
     };
 
-    public static final MergeStrategyVisitor<List<Object>> EXTRACT_DELETE_VALUES = new MergeStrategyVisitor<List<Object>>()
+    public static final MergeStrategyVisitor<List<Object>> EXTRACT_INDICATOR_VALUES = new MergeStrategyVisitor<List<Object>>()
     {
         @Override
         public List<Object> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
@@ -63,8 +65,28 @@ public class MergeStrategyVisitors
         @Override
         public List<Object> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
         {
-            // TODO: ??
             return terminateLatestActiveMergeStrategy.terminateValues();
+        }
+    };
+
+    public static final MergeStrategyVisitor<Optional<MergeStrategyDeleteMode>> DETERMINE_DELETE_MODE = new MergeStrategyVisitor<Optional<MergeStrategyDeleteMode>>()
+    {
+        @Override
+        public Optional<MergeStrategyDeleteMode> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<MergeStrategyDeleteMode> visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
+        {
+            return Optional.of(DELETE_MISTAKE);
+        }
+
+        @Override
+        public Optional<MergeStrategyDeleteMode> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+        {
+            return Optional.of(TERMINATE_LATEST_ACTIVE);
         }
     };
 }
