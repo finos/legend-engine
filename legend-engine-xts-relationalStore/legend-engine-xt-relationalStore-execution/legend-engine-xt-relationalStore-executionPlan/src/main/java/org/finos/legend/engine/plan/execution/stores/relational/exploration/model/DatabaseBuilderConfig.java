@@ -28,6 +28,8 @@ public class DatabaseBuilderConfig
     public boolean enrichPrimaryKeys;
 
     public boolean enrichColumns;
+    
+    public boolean enrichTableFunctions = false;
 
     public List<DatabasePattern> patterns = Lists.mutable.empty();
 
