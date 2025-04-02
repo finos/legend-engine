@@ -41,8 +41,25 @@ function <<MappingFeature.union, meta::pure::test::fct::model::FCT.testCollectio
                               ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::slice::sliceTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
                               ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\nJohn\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
                               ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::sort::sortTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJoe\nJoe\nJohn\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
-                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::take::takeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]'))
-                 ]
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::take::takeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                               ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::drop::dropGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"Joe"},{"firstName":"Joe"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::exists::existsTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName\nJohn\nJohn\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::simpleGraph__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":{"street":"MAIN","type":"PRIMARY"},"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"Joe","lastName":"Smith","fullName()":"Joe Smith","birthDate":"2010-02-02","address":{"street":"FIRST","type":"SECONDARY"},"firm":{"legalName":"Co","optionalDescription":"Company"}},{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2000-02-02","address":{"street":"SECOND","type":"PRIMARY"},"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"Joe","lastName":"Smith","fullName()":"Joe Smith","birthDate":"2000-02-02","address":{"street":"THIRD","type":"SECONDARY"},"firm":{"legalName":"Co","optionalDescription":"Company"}}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(
+                              ['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'],
+                                  ['Lambda','meta::pure::fct::tests::collection::Address','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'],
+                                  '[Person.address.street: [PERSON.STREET <TableAliasColumn>, PERSON2.STREET <TableAliasColumn>], Person.address.type: [PERSON.ADDRESS_TYPE <TableAliasColumn>, PERSON2.ADDRESS_TYPE <TableAliasColumn>], Person.birthDate: [PERSON.BIRTHDATE <TableAliasColumn>, PERSON2.BIRTHDATE <TableAliasColumn>], Person.firm.legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>, PERSON2.FIRM_ID <JoinTreeNode>], Person.firm.optionalDescription: [FIRM.ID <JoinTreeNode>, FIRM.OPTIONAL_DESCRIPTION <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>, PERSON2.FIRM_ID <JoinTreeNode>], Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>], Person.fullName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON.LASTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>], Person.lastName: [PERSON.LASTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>]]'
+                                  )),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::filter::simpleTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='firstName,lastName,fullName,birthDate,street,type,legalName,optionalDescription\nJohn,Doe,John Doe,2020-02-02,MAIN,PRIMARY,Firm D,TDSNull\nJoe,Smith,Joe Smith,2010-02-02,FIRST,SECONDARY,Co,Company\nJohn,Doe,John Doe,2000-02-02,SECOND,PRIMARY,Firm D,TDSNull\nJoe,Smith,Joe Smith,2000-02-02,THIRD,SECONDARY,Co,Company\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(
+                              ['Lambda','db_FCTtestDB','tb_FCTtestDBTESTFIRM','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'],
+                                  ['Lambda','meta::pure::fct::tests::collection::Address','meta::pure::fct::tests::collection::Firm','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'],
+                                  '[birthDate: [PERSON.BIRTHDATE <TableAliasColumn>, PERSON2.BIRTHDATE <TableAliasColumn>], firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>], fullName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON.LASTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>], lastName: [PERSON.LASTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>], legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>, PERSON2.FIRM_ID <JoinTreeNode>], optionalDescription: [FIRM.ID <JoinTreeNode>, FIRM.OPTIONAL_DESCRIPTION <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>, PERSON2.FIRM_ID <JoinTreeNode>], street: [PERSON.STREET <TableAliasColumn>, PERSON2.STREET <TableAliasColumn>], type: [PERSON.ADDRESS_TYPE <TableAliasColumn>, PERSON2.ADDRESS_TYPE <TableAliasColumn>]]'
+                                  )),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::first::firstGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"Joe"},{"firstName":"John"},{"firstName":"Joe"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::TDSResult(value='name,cnt,cnt2\nJoe,2,2\nJohn,2,2\n'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[cnt2: [PERSON.BIRTHDATE <TableAliasColumn>, PERSON2.BIRTHDATE <TableAliasColumn>], cnt: [PERSON.LASTNAME <TableAliasColumn>, PERSON2.LASTNAME <TableAliasColumn>], name: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::slice::sliceGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::sort::sortGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"Joe"},{"firstName":"John"},{"firstName":"Joe"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::fct::TestAssertion(tests=meta::pure::fct::tests::collection::take::takeGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::fct::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::fct::expectedLineage(['Lambda','db_FCTtestDB','tb_FCTtestDBTESTPERSON','tb_FCTtestDBTESTPERSON2'], ['Lambda','meta::pure::fct::tests::collection::Person','pack_meta::pure::fct::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON2.FIRSTNAME <TableAliasColumn>]]'))
+                              ]
                  
            
             );
@@ -69,8 +86,9 @@ Mapping meta::relational::tests::mapping::union::model::mapping::fct::unionTestM
           lastName : LASTNAME,
           birthDate: BIRTHDATE,
           address(
-            street:STREET
-          )  
+            street:STREET,
+            type: EnumerationMapping AddressTypeMapping: ADDRESS_TYPE
+           )  
           
        ),   
        firm: [FCTtestDB]@personFirm
@@ -84,7 +102,8 @@ Mapping meta::relational::tests::mapping::union::model::mapping::fct::unionTestM
           lastName : LASTNAME,
           birthDate: BIRTHDATE,
           address(
-            street:STREET
+            street:STREET,
+            type: EnumerationMapping AddressTypeMapping: ADDRESS_TYPE  
           )    
        ),   
        firm: [FCTtestDB]@personFirm2
@@ -98,7 +117,11 @@ Mapping meta::relational::tests::mapping::union::model::mapping::fct::unionTestM
        employees[set2]: [FCTtestDB]@personFirm2
 
     }
-
+  AddressType: EnumerationMapping AddressTypeMapping
+  {
+    PRIMARY: ['PRIMARY'],
+    SECONDARY: ['SECONDARY']
+  }
 )
 
 
@@ -115,7 +138,8 @@ Database meta::relational::tests::mapping::union::model::mapping::fct::store::FC
         LASTNAME VARCHAR(20),
         FIRM_ID INT,
         BIRTHDATE DATE,
-        STREET VARCHAR(20)
+        STREET VARCHAR(20),
+        ADDRESS_TYPE VARCHAR(20)
 
     )
 
@@ -126,7 +150,9 @@ Database meta::relational::tests::mapping::union::model::mapping::fct::store::FC
         LASTNAME VARCHAR(20),
         FIRM_ID INT,
         BIRTHDATE DATE,
-        STREET VARCHAR(20)
+        STREET VARCHAR(20), 
+        ADDRESS_TYPE VARCHAR(20)
+ 
 
     )
 

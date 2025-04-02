@@ -49,7 +49,7 @@ function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct:
 {
     ^FCTAdapter(
               runtime= meta::relational::fct::relationalRunTime_FCTMappingTest_1__Runtime_1_,
-               setup =  meta::relational::fct::setupDataRunnerLegendH2_Function_1__Any_1_
+              setup =  meta::relational::fct::setupDataRunnerLegendH2_Function_1__Any_1_
              );
 
 }
@@ -58,7 +58,7 @@ function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct:
 function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalExecuteAdaptorH2():FCTAdapter[1]
 {
     ^FCTAdapter(
-              runtime= meta::relational::fct::testRelationalPureH2RunTime_FCTMappingTest_1__Runtime_1_,
+               runtime= meta::relational::fct::testRelationalPureH2RunTime_FCTMappingTest_1__Runtime_1_,
                setup =  meta::relational::fct::setupDataExecuteRunner_Function_1__Any_1_
              );
 

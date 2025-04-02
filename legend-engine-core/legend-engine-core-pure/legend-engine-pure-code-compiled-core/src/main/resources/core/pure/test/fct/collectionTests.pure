@@ -41,8 +41,8 @@ Class meta::pure::fct::tests::collection::Person extends EntityWithAddress
 {
    firstName : String[1];
    lastName : String[1];
+   description: String[0..1];
    fullName(){$this.firstName+' '+$this.lastName}:String[1] ;
-   description : String[0..1];
    birthDate: StrictDate[1];
 }
 
@@ -58,9 +58,9 @@ Association meta::pure::fct::tests::collection::PersonFirm
    firm : Firm[1];
    employees : Person[*];
 }
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::fct::tests::collection::filter::simpleTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.simple, QuerySubFeature.primitive, QuerySubFeature.enumeration, QuerySubFeature.association, QueryType.tds>>  meta::pure::fct::tests::collection::filter::simpleTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.description,p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName', 'description', 'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
+   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName',  'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
 
 }
 
@@ -157,7 +157,7 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter, Quer
 
 function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.filter,QuerySubFeature.filterExists, QueryType.tds>>  meta::pure::fct::tests::collection::exists::existsTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
  {  
-   {|Firm.all()->filter(p | $p.employees->exists(e | $e.firstName == 'Joe'))->project([p|$p.legalName],['legalName'])};
+   {|Person.all()->filter(p | $p.firm->exists(e | $e.legalName == 'Firm D'))->project([p|$p.firstName],['firstName'])};
 
 }
 
@@ -167,16 +167,11 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.distinct,Que
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.tds>>  meta::pure::fct::tests::collection::last::lastTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+
+function  <<meta::pure::test::fct::model::FCT.feature,QueryType.graphFetch, QueryFeature.simple>>  meta::pure::fct::tests::collection::filter::simpleGraph():FunctionDefinition<{->Any[*]}>[1]
  {  
-   {|Person.all()->last()->project([p|$p.firstName],['firstName'])};
-
-}
-
-
-function  <<meta::pure::test::fct::model::FCT.feature,QueryType.graphFetch>>  meta::pure::fct::tests::collection::filter::simpleGraph():FunctionDefinition<{->Any[*]}>[1]
- {  
-   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.description,p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName', 'description', 'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
+ 
+   {|Person.all()->graphFetch(#{Person{firstName,lastName,fullName,birthDate,address{street,type},firm{legalName,optionalDescription}}}#)};
 
 }
 
@@ -194,13 +189,9 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.sort,QuerySu
 
 }
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.graphFetch>>  meta::pure::fct::tests::collection::last::lastGraphFetch():FunctionDefinition<{->Any[*]}>[1]
- { 
-   {|Person.all()->last()->graphFetch(#{Person{firstName}}#)};
 
-}
 
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.last,QueryType.graphFetch>>  meta::pure::fct::tests::collection::first::firstGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.first,QueryType.graphFetch>>  meta::pure::fct::tests::collection::first::firstGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
    {|Person.all()->first()->graphFetch(#{Person{firstName}}#)};
 
@@ -218,7 +209,7 @@ function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.drop,QueryTy
    {|Person.all()->drop(1)->graphFetch(#{Person{firstName}}#)};
 
  }
-function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.take,QueryType.graphFetch>>  meta::pure::fct::tests::collection::slice::sliceGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+function  <<meta::pure::test::fct::model::FCT.feature, QueryFeature.slice,QueryType.graphFetch>>  meta::pure::fct::tests::collection::slice::sliceGraphFetch():FunctionDefinition<{->Any[*]}>[1]
  { 
    {|Person.all()->slice(0,1)->graphFetch(#{Person{firstName}}#)};
 

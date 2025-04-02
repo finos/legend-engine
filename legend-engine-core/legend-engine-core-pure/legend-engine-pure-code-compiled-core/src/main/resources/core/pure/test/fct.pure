@@ -30,17 +30,19 @@ Profile meta::pure::test::fct::model::FCT
     stereotypes : [feature,test, adapter, evaluator, testCollection];
 }
 
-Class  meta::pure::test::fct::FCTAdapter //store specific code
+Class  meta::pure::test::fct::FCTAdapter 
 {
   runtime:Function<{FCTMappingTest[1]->Runtime[1]}>[1];
   setup:Function<{Function<{->FCTMappingTest[1]}>[1]->Any[1]}>[0..1]; 
+    
 }
 
-Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute
+Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute for each store type
 {
   eval: Function<{TestParameters[1]->TestResult[1]}>[1];
   assertion: Function<{TestResult[1],TestParameters[1]->Boolean[1]}>[0..1];
   testParameters: Function<{FCTMappingTest[1],Runtime[1] ->TestParameters[*]}>[1];
+  unsupportedFeatureSets: Function<{->FeatureSet[*]}>[0..1];
 }
 
 

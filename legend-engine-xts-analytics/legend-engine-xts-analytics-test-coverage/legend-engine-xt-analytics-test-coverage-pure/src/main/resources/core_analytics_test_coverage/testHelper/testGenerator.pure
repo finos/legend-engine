@@ -1,6 +1,8 @@
 
 
 ###Pure
+import meta::analytics::lineage::*;
+import meta::analytics::testCoverage::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
 import meta::relational::fct::testGeneration::*;
@@ -15,7 +17,22 @@ import meta::pure::test::fct::*;
 import meta::pure::testCoverage::featureMatrix::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
    
-       
+
+function  {doc.doc ='Use this function to generate the assertions for a mapping test collection. The collection should be created with a mapping and setup data and this function will generate assertions for any missing features'}
+meta::analytics::testCoverage::testGeneratorBulkUpdate(package:Package[1], adapter:FCTAdapter[1], skipTDS:Boolean[1]):String[1]   //FCT mapping   with the mapping and the data setup 
+{
+  let testFunctions = $package->getAllPackageElements(true)->filter(e|$e->hasStereotype('testCollection',meta::pure::test::fct::model::FCT))->cast(@ConcreteFunctionDefinition<{->FCTMappingTest[1]}>);
+    $testFunctions->map(f| 'Mapping'->println(); 
+                            $f->elementToPath()->println();
+                            
+                            let result = $f->cast(@ConcreteFunctionDefinition<{->FCTMappingTest[1]}>)->testGenerator($adapter,$skipTDS);
+                            'Done\n'->println();
+                            $result->println(););
+
+  'a';
+}  
+
+
 function  {doc.doc ='Use this function to generate the assertions for a mapping test collection. The collection should be created with a mapping and setup data and this function will generate assertions for any missing features'}
 meta::analytics::testCoverage::testGenerator(fctTestfn:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[1], adapter:FCTAdapter[1], skipTDS:Boolean[1]):String[1]   //FCT mapping   with the mapping and the data setup 
 {
@@ -43,9 +60,8 @@ meta::analytics::testCoverage::testGenerator(fctTestfn:ConcreteFunctionDefinitio
                                                   let v = $m.second;
                                                    let fn =  $v.expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>);
                                                   let fnExpression =  $v.expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence->at(0);
-
+$v->elementToPath()->println();
                                                    let  testExp = $v->testReference();
- $v->elementToPath()->println();
                                                   if($skipTDS && $v->hasStereotype('tds',QueryType),
                                           |[],
 
@@ -54,7 +70,11 @@ meta::analytics::testCoverage::testGenerator(fctTestfn:ConcreteFunctionDefinitio
    
                                            | 
                                             let lineageAssertion =  if(!$m.first->in($lineageSkipLists),
-                                                                        |let lineage =   meta::analytics::lineage::computeLineage($fn,$mapping,$rt,relationalExtensions());
+                                                                        |        let config = buildDefaultAnalyticsConfig();
+                                                                                  let updatedConfig = ^$config(relationTree=false);
+
+                                                                        
+                                                                           let lineage =   meta::analytics::lineage::computeLineage($fn,$mapping,$rt,relationalExtensions(),$updatedConfig);
                                                                          meta::analytics::lineage::lineageAssertion($lineage);,
                                                                          |[]);   
                                              let expectedExecutionResultExp =   if(!$m.first->in($executionSkipLists),
@@ -67,13 +87,16 @@ meta::analytics::testCoverage::testGenerator(fctTestfn:ConcreteFunctionDefinitio
                                                                                                   );
                                                                                     $execute->meta::relational::fct::testGeneration::buildExpectedInstance($testType);,
                                                                                |[]);
-                                                    let assert =  ^TestAssertion( tests= [],  expectedExecutionResult = [] ,expectedLineageResult=[] )->deactivate();
-                                                    let assertVS = $assert->transformValueSpecification([], newMap([]->cast(@meta::pure::functions::collection::Pair<String, meta::pure::functions::collection::List<Any>>)), false, false, relationalExtensions())->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction);
-                                                    let assertKeys =  $assertVS.parameters->at(2)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection);
-                                                    let newCollection = ^$assertKeys(values =$testExp->concatenate($expectedExecutionResultExp)->concatenate($lineageAssertion));
-                                                    let updatedParams =  $assertVS.parameters->take(2) ->concatenate($newCollection);
-                                                    let updatedAssert =  toPure($updatedState , ^$assertVS( parameters =  $updatedParams)); 
-                                                    $updatedAssert;
+                                                          if($lineageAssertion->isEmpty() &&  $expectedExecutionResultExp ->isEmpty() ,
+                                                              |[],
+                                                               | let assert =  ^TestAssertion( tests= [],  expectedExecutionResult = [] ,expectedLineageResult=[] )->deactivate();
+                                                                let assertVS = $assert->transformValueSpecification([], newMap([]->cast(@meta::pure::functions::collection::Pair<String, meta::pure::functions::collection::List<Any>>)), false, false, relationalExtensions())->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction);
+                                                                let assertKeys =  $assertVS.parameters->at(2)->cast(@meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection);
+                                                                let newCollection = ^$assertKeys(values =$testExp->concatenate($expectedExecutionResultExp)->concatenate($lineageAssertion));
+                                                                let updatedParams =  $assertVS.parameters->take(2) ->concatenate($newCollection);
+                                                                let updatedAssert =  toPure($updatedState , ^$assertVS( parameters =  $updatedParams)); 
+                                                                $updatedAssert;
+                                                          );
                                                   );
                               )->joinStrings(',\n');
 

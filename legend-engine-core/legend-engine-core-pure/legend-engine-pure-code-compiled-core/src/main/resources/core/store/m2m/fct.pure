@@ -51,6 +51,18 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping:
 
 }
 
+function   meta::pure::mapping::modelToModel::unsupportedMappingFeatures():FeatureSet[*] 
+{
+
+   ^FeatureSet(features =[MappingFeature->stereotype('groupBy'),
+                          MappingFeature->stereotype('distinct'),
+                          MappingFeature->stereotype('extends')]
+   );
+
+
+}
+
+
 function   meta::pure::mapping::modelToModel::fct::runtimeBuilder(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1] 
 {
 

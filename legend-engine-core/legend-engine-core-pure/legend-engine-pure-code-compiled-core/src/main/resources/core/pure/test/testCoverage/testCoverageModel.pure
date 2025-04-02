@@ -24,7 +24,7 @@ Profile meta::pure::testCoverage::featureMatrix::QueryPatterns
 
 Profile meta::pure::testCoverage::featureMatrix::MappingFeature
 {
-  stereotypes: [union,filter, embedded, groupBy, crossStore,  distinct,  extend, simple, merge];
+  stereotypes: [union,filter, embedded, groupBy, crossStore,  distinct,  extend, simple, merge, rowExplosion];
 }
 
 Profile meta::pure::testCoverage::featureMatrix::QueryType
@@ -35,7 +35,7 @@ Profile meta::pure::testCoverage::featureMatrix::QueryType
 
 Profile meta::pure::testCoverage::featureMatrix::QueryFeature
 {
-  stereotypes: [sort,last,first,filter, take, drop, slice,  distinct, groupBy]; 
+  stereotypes: [sort,first,filter, take, drop, slice,  distinct, groupBy,simple]; 
 }
 
 
