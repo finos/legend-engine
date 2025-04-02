@@ -826,12 +826,11 @@ INSERT INTO main (ALL_FIELDS_FROM_TEMP)
     INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT, DELETE_INDICATOR)
     SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, x.end_date as THRU_FIELD, <batch_id> as BATCH_IN, INF as BATCH_OUT, CASE WHEN y.delete_indicator IS NULL THEN 0 ELSE 1 END
     FROM
-    (SELECT * FROM main WHERE BATCH_OUT = INF
-    AND EXISTS
+    (SELECT * FROM main WHERE BATCH_OUT = INF AND EXISTS
         (SELECT * FROM stage WHERE PKS_MATCH AND (main.start_date = start_date OR main.end_date = start_date) AND stage.delete_indicator = 1) x
-        LEFT JOIN
-        (SELECT * FROM stage) y
-        ON PKS_MATCH AND x.start_date = y.start_date
+    LEFT JOIN
+    (SELECT * FROM stage) y
+    ON PKS_MATCH AND x.start_date = y.start_date
     */
     private Insert getMainToTempForDeletion()
     {
