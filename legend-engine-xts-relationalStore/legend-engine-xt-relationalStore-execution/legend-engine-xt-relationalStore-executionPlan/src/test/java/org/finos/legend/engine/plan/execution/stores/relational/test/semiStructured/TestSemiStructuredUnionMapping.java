@@ -26,10 +26,7 @@ public class TestSemiStructuredUnionMapping extends AbstractTestSemiStructured
     public void testSemiStructuredUnionMappingWithBinding()
     {
         String queryFunction = "test::query::getFirmDetails__TabularDataSet_1_";
-
-//        String plan = this.buildExecutionPlanString(queryFunction, testMapping, testRuntime);
-
-
+        
         String result = this.executeFunction(queryFunction, testMapping, testRuntime);
         Assert.assertEquals("firm_A\n" +
                 "firm_B\n" +
