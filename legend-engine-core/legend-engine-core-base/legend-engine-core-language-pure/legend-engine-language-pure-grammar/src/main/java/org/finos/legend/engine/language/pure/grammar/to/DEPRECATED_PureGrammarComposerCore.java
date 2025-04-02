@@ -689,7 +689,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(EnumValue enumValue)
     {
-        return HelperValueSpecificationGrammarComposer.printFullPath(enumValue.fullPath, this) + "." + enumValue.value;
+        return HelperValueSpecificationGrammarComposer.printFullPath(enumValue.fullPath, this) + "." + PureGrammarComposerUtility.convertIdentifier(enumValue.value);
     }
 
     @Override
