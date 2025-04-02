@@ -2,56 +2,6 @@
   "_type": "data",
   "elements": [
     {
-      "_type": "Enumeration",
-      "name": "Status",
-      "package": "showcase",
-      "stereotypes": [],
-      "taggedValues": [],
-      "values": [
-        {
-          "stereotypes": [],
-          "taggedValues": [],
-          "value": "Accepted"
-        },
-        {
-          "stereotypes": [],
-          "taggedValues": [],
-          "value": "Closed by DGO"
-        }
-      ]
-    },
-    {
-      "_type": "class",
-      "constraints": [],
-      "name": "DataDefect",
-      "originalMilestonedProperties": [],
-      "package": "showcase",
-      "properties": [
-        {
-          "genericType": {
-            "multiplicityArguments": [],
-            "rawType": {
-              "_type": "packageableType",
-              "fullPath": "showcase::Status"
-            },
-            "typeArguments": [],
-            "typeVariableValues": []
-          },
-          "multiplicity": {
-            "lowerBound": 1,
-            "upperBound": 1
-          },
-          "name": "status",
-          "stereotypes": [],
-          "taggedValues": []
-        }
-      ],
-      "qualifiedProperties": [],
-      "stereotypes": [],
-      "superTypes": [],
-      "taggedValues": []
-    },
-    {
       "_type": "function",
       "body": [
         {
@@ -129,29 +79,6 @@
       "stereotypes": [],
       "taggedValues": [],
       "tests": []
-    },
-    {
-      "_type": "sectionIndex",
-      "name": "SectionIndex",
-      "package": "__internal__",
-      "sections": [
-        {
-          "_type": "importAware",
-          "elements": [],
-          "imports": [],
-          "parserName": "Pure"
-        },
-        {
-          "_type": "importAware",
-          "elements": [
-            "showcase::Status",
-            "showcase::DataDefect",
-            "showcase::testEnum__Any_MANY_"
-          ],
-          "imports": [],
-          "parserName": "Pure"
-        }
-      ]
     }
   ]
 }

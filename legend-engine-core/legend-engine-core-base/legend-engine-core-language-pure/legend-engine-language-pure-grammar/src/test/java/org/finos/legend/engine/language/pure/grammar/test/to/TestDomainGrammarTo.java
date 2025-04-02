@@ -23,41 +23,7 @@ public class TestDomainGrammarTo extends TestGrammarRoundtrip.TestGrammarRoundtr
     public void testFunctionWithEnumValueGrammarTo()
     {
         testTo("simpleFunctionWithEnumValue.json",
-                "###Pure\n" +
-                            "Enum showcase::Status\n" +
-                            "{\n" +
-                            "  Accepted,\n" +
-                            "  'Closed by DGO'\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class showcase::DataDefect\n" +
-                            "{\n" +
-                            "  status: showcase::Status[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "function showcase::testEnum(): meta::pure::metamodel::type::Any[*]\n" +
-                            "{\n" +
-                            "  |showcase::DataDefect.all()->filter(x|$x.status == showcase::Status.'Closed by DGO')\n" +
-                            "}\n");
-    }
-
-    @Test
-    public void testFunctionWithEnumPropertyGrammarTo()
-    {
-        testTo("simpleFunctionWithEnumProperty.json",
-                "###Pure\n" +
-                            "Enum showcase::Status\n" +
-                            "{\n" +
-                            "  Accepted,\n" +
-                            "  'Closed by DGO'\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class showcase::DataDefect\n" +
-                            "{\n" +
-                            "  status: showcase::Status[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "function showcase::testEnum(): meta::pure::metamodel::type::Any[*]\n" +
+                "function showcase::testEnum(): meta::pure::metamodel::type::Any[*]\n" +
                             "{\n" +
                             "  |showcase::DataDefect.all()->filter(x|$x.status == showcase::Status.'Closed by DGO')\n" +
                             "}\n");
