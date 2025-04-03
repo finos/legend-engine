@@ -63,13 +63,12 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
 function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    pair('FuncTests - Sha1(0/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
-    pair('FuncTests - Sha1(1/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
-    pair('FuncTests - Sha256(0/1)', 'DuckDB SQL Dialect does not support the function - sha256'),
-    pair('FuncTests - Sha256(1/1)', 'DuckDB SQL Dialect does not support the function - sha256')
+    pair('FuncTests - sha1(0/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
+    pair('FuncTests - sha1(1/1)', 'DuckDB SQL Dialect does not support the function - sha1'),
+    pair('FuncTests - sha256(0/1)', 'DuckDB SQL Dialect does not support the function - sha256'),
+    pair('FuncTests - sha256(1/1)', 'DuckDB SQL Dialect does not support the function - sha256')
   ]->newMap()->cast(@Map<String, String>)
 }
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBQuoteConfiguration(): QuoteConfiguration[1]
 {
@@ -100,6 +99,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ->concatenate(
       duckDBDialectOtherNodeProcessors()
     )
+    ->concatenate(
+      duckDBDialectDDLProcessors()
+    )
     ->map(n | pair($n.nodeType, $n))
   )
 }
@@ -119,7 +121,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     aliasedRelationProcessor_default(),
     joinProcessor_default(),
     querySpecificationProcessor_default(),
-    unionProcessor_default()
+    unionProcessor_default(),
+    tableSubqueryProcessor_default()
   ]
 }
 
@@ -157,6 +160,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     booleanLiteralNodeProcessor_default(),
     longLiteralNodeProcessor_default(),
     doubleLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default(),
     nullLiteralNodeProcessor_default()
   ]
 }
@@ -173,7 +178,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     sortItemProcessor_default(),
-    selectProcessor_default()
+    selectProcessor_default(),
+    withQueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTableProcessor_default(),
+    dropTableProcessor_default(),
+    insertIntoTableProcessor_default()
   ]
 }
 
@@ -189,7 +204,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     operatorPrecedence = operatorPrecedence_default()
   )
 }
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBKeywords(): String[*]
 {
@@ -343,6 +357,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
     pair(StrPos, simpleFunctionProcessor('strpos')),
+    pair(StringAgg, simpleFunctionProcessor('string_agg')),
+    pair(Concat, simpleFunctionProcessor('concat')),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -352,8 +368,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, simpleFunctionProcessor('date_part')),
     pair(Now, simpleFunctionProcessor('now')),
     pair(ToDate, customFunctionProcessor(processorForToDate_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_))
+    pair(ToTimestamp, customFunctionProcessor(processorForToTimestamp_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
+    // Miscellaneous
+    pair(Coalesce, simpleFunctionProcessor('coalesce'))
   ])
 }
 
@@ -386,7 +404,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let dateFormat = $args->at(1)->dateFormatSpecifierForDuckDB();
   generateFunctionCallWithArgs($sqlDialect, 'strptime', [$args->at(0), $dateFormat], [], $state, $config);
 }
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::strftimeCall(sqlDialect:SqlDialect[1], args:String[*], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {

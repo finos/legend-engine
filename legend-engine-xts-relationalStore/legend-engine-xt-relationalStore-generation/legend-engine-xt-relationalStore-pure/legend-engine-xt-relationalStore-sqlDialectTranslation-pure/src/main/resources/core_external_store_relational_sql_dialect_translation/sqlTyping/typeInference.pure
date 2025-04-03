@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::collection::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -38,6 +41,8 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeI
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedDoubleLiteral extends DoubleLiteral, TypedSqlExpression {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedBooleanLiteral extends BooleanLiteral, TypedSqlExpression {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedStringLiteral extends StringLiteral, TypedSqlExpression {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedDateLiteral extends DateLiteral, TypedSqlExpression {}
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedTimestampLiteral extends TimestampLiteral, TypedSqlExpression {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedNullLiteral extends NullLiteral, TypedSqlExpression {}
 
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::TypedFunctionCall extends FunctionCall, TypedSqlExpression
@@ -50,13 +55,25 @@ Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeI
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(query: Query[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): Query[1]
 {
   let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
-  $query->postTraversalTransform(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@Query);
+  $query->inferTypes(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@Query);
 }
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(expr: meta::external::query::sql::metamodel::Expression[1], functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1]): TypedSqlExpression[1]
 {
   let castedFunctionRegistry = $functionRegistry->values()->map(sqlFunc | pair($sqlFunc.name->toOne(), $sqlFunc))->newMap();
-  $expr->postTraversalTransform(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@TypedSqlExpression);
+  $expr->inferTypes(typeInferenceTransformFunction($castedFunctionRegistry))->cast(@TypedSqlExpression);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::inferTypes(node: Node[1], transformFunction: Function<{Node[1]->Node[1]}>[1]): Node[1]
+{
+  postTraversalClassTransform(
+    $node,
+    {node:Any[1], keyValues:KeyValue[*]|
+      let nodeType = $node->type()->cast(@Class<Any>);
+      let newNode = $nodeType->dynamicNew($keyValues);
+      $newNode->match([n: Node[1] | $transformFunction->eval($newNode), a: Any[1] | $a]);
+    }
+  )->cast(@Node)->toOne()
 }
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::typeInferenceTransformFunction(functionRegistry: Map<String, SqlFunction>[1]): Function<{Node[1]->Node[1]}>[1]
@@ -76,6 +93,8 @@ function meta::external::store::relational::sqlDialectTranslation::sqlTyping::ty
       l: BooleanLiteral[1] | $l->typedExpression(TypedBooleanLiteral, BooleanSqlType),
       l: StringLiteral[1] | $l->typedExpression(TypedStringLiteral, VarcharSqlType),
       l: NullLiteral[1] | $l->typedExpression(TypedNullLiteral, SqlType),
+      l: DateLiteral[1] | $l->typedExpression(TypedDateLiteral, DateSqlType),
+      l: TimestampLiteral[1] | $l->typedExpression(TypedTimestampLiteral, TimestampSqlType),
       f: FunctionCall[1] | $f->typedFunctionCall($functionRegistry),
       n: Node[1] | $n 
     ])
@@ -139,10 +158,15 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
         let funcArgsSqlTypes = $funcArgs->map(a | $a->cast(@TypedSqlExpression).sqlType);
         let firstMatchedVariation = $sqlFunction.variations->fold({v, res |
           if ($res->isEmpty(),
-              | if (($v.parameterTypes->size() == $funcArgsSqlTypes->size()) && $funcArgsSqlTypes->zip($v.parameterTypes)->forAll(x | $x.first->_subTypeOf($x.second)),
-                    | $v,
-                    | $res
-                ),
+              | let variationParameterTypes = if($v->instanceOf(VariadicSqlFunctionVariation),
+                  | let argCountDiff = $funcArgsSqlTypes->size() - $v.parameterTypes->size();
+                    if($argCountDiff >= 0, |$v.parameterTypes->init()->concatenate($v.parameterTypes->last()->toOne()->repeat($argCountDiff + 1)), |$v.parameterTypes);,
+                  | $v.parameterTypes
+                );
+                if (($variationParameterTypes->size() == $funcArgsSqlTypes->size()) && $funcArgsSqlTypes->zip($variationParameterTypes)->forAll(x | $x.first->_subTypeOf($x.second)),
+                  | $v,
+                  | $res
+                );,
               | $res
           )
         }, []);
@@ -153,8 +177,13 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
         );
         $f->typedExpression(TypedFunctionCall, $firstMatchedVariation->toOne().returnType, $sqlFunction);,
       
-      | // Not all args are typed. So, try to find out common return type
-        let allReturnTypes = $sqlFunction.variations.returnType;
+      | // Not all args are typed. So, try to find out common return type. Assumes last function variation is most generic.
+        let allReturnTypes = $sqlFunction.variations->filter(v|($v->instanceOf(VariadicSqlFunctionVariation) && ($v.parameterTypes->size() <= $funcArgs->size())) || $v.parameterTypes->size() == $funcArgs->size()).returnType;
+        assert(
+          $allReturnTypes->isNotEmpty(),
+          | 'No matched function in function registry for - ' + $funcName + '(' + '<UNKNOWN_TYPE>'->repeat($funcArgs->size())->joinStrings(', ') + ').\n' +
+            'Available variations for that function - ' + $sqlFunction.variations->map(v | '  ' + $funcName + $v.identifier)->joinStrings('[\n', ',\n', '\n]')
+        );
         let lastReturnType = $allReturnTypes->last()->toOne();
         assert($allReturnTypes->forAll(r | $r->_subTypeOf($lastReturnType)), | 'No common return type for variation of function - ' + $funcName);
         $f->typedExpression(TypedFunctionCall, $lastReturnType, $sqlFunction);
@@ -175,32 +204,4 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   let typeKeyValue = ^KeyValue(key = 'sqlType', value = $inferredType);
   let sqlFunctionKeyValue = if ($cls == TypedFunctionCall, | ^KeyValue(key = 'sqlFunction', value = $sqlFunction->toOne()), | []);
   $cls->dynamicNew($propKeyValues->concatenate($typeKeyValue)->concatenate($sqlFunctionKeyValue))->cast(@TypedSqlExpression)->toOne();
-}
-
-function <<access.private>> meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::postTraversalTransform(node: Node[1], transformFunction: Function<{Node[1]->Node[1]}>[1]): Node[1]
-{
-  let nodeType = $node->type()->cast(@Class<Any>);
-  let allProperties = $nodeType->hierarchicalAllProperties()->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>);
-
-  let transformedKeyValues = $allProperties->map({p |
-    let propValues = $p->eval($node);
-    let propReturnType = $p->functionReturnType().rawType->toOne();
-    let transformedValues = if ($propReturnType->_subTypeOf(Node),
-      | $propValues->cast(@Node)->map({v |
-          $v->postTraversalTransform($transformFunction)->map({x |
-            assert(
-              $x->type()->_subTypeOf($propReturnType),
-              | 'Transform function sets incompatible value of type "' + $x->type()->elementToPath() + '" to property "' + $p.name->toOne() + 
-                '" in the class "' + $nodeType->elementToPath() + '". Expected type is "' + $propReturnType->elementToPath() + '"'
-            );
-            $x;
-          })
-        }),
-      | $propValues
-    );
-    ^KeyValue(key = $p.name->toOne(), value = $transformedValues);
-  });
-
-  let newNode = $nodeType->dynamicNew($transformedKeyValues)->cast(@Node);
-  $transformFunction->eval($newNode);
 }
