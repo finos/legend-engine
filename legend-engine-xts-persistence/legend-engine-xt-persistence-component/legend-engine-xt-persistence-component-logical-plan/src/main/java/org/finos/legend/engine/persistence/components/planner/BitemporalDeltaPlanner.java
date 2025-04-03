@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
@@ -77,6 +78,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
     private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
 
+    private final Optional<MergeStrategyDeleteMode> deleteMode;
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
 
@@ -84,7 +86,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private final Optional<Condition> deleteIndicatorIsSetCondition;
     private final Optional<Condition> dataSplitInRangeCondition;
 
-    // TODO: optional? final?
     private Dataset stagingDataset;
     private Dataset tempDataset;
     private Dataset tempDatasetWithDeleteIndicator;
@@ -118,8 +119,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.stagingDataset = stagingDataset();
         }
 
-        this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
-        this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
+        this.deleteMode = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.DETERMINE_DELETE_MODE);
+        this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD);
+        this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_VALUES);
 
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset, field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset, field, deleteIndicatorValues));
@@ -226,15 +228,30 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             // Op 3: Milestone records in main table
             operations.add(getUpdateMain(tempDataset));
             // Op 4: Insert records from temp table to main table
-            operations.add(getTempToMain());
+            operations.add(getTempToMain(tempDataset));
             if (deleteIndicatorField.isPresent())
             {
-                // Op 5: Insert records from main table to temp table for deletion
-                operations.add(getMainToTempForDeletion());
-                // Op 6: Milestone records in main table for deletion
-                operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
-                // Op 7: Insert records from temp table to main table for deletion
-                operations.add(getTempToMainForDeletion());
+                switch (deleteMode.orElseThrow(IllegalStateException::new))
+                {
+                    case DELETE_MISTAKE:
+                        // Op 5: Insert records from main table to temp table for deletion
+                        operations.add(getMainToTempForDeletion());
+                        // Op 6: Milestone records in main table for deletion
+                        operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
+                        // Op 7: Insert records from temp table to main table for deletion
+                        operations.add(getTempToMainForDeletion());
+                        break;
+                    case TERMINATE_LATEST_ACTIVE:
+                        // Op 5: Insert records from main table to temp table for termination
+                        operations.add(getMainToTempForTermination());
+                        // Op 6: Milestone records in main table for termination
+                        operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
+                        // Op 7: Insert records from temp table to main table for termination
+                        operations.add(getTempToMain(tempDatasetWithDeleteIndicator));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unrecognized delete mode: " + deleteMode.get());
+                }
             }
             // Op 8: Cleanup temp tables
             operations.add(Delete.builder().dataset(tempDataset).build());
@@ -777,49 +794,16 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     INSERT INTO main (ALL_FIELDS_FROM_TEMP)
         SELECT ALL_FIELDS_FROM_TEMP FROM temp
     */
-    private Insert getTempToMain()
+    private Insert getTempToMain(Dataset tempDataset)
     {
-        List<Value> tempFields = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        List<FieldValue> tempFields = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        deleteIndicatorField.ifPresent(deleteIndicatorName -> tempFields.removeIf(fieldValue -> fieldValue.fieldName().equals(deleteIndicatorName)));
+
         Selection select = Selection.builder().source(tempDataset).addAllFields(tempFields).build();
         return Insert.builder().sourceDataset(select).targetDataset(mainDataset()).addAllFields(tempFields).build();
     }
 
     /*
-    join on PKS_MATCH
-    filter staging by delete indicator is set AND staging.start_date > max of main.start_date AND main is active
-    get max main.start_date as start_date
-    get staging.start_date as end_date
-    get data fields from main
-
-
-1. INSERT TO TEMP:
-
-INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT)
-SELECT PK_FIELDS, DATA_FIELDS, DIGEST, x.start_date, y.start_date, <batch_id> as BATCH_IN, INF as BATCH_OUT
-FROM
-    (SELECT *, ROW_NUMBER() OVER (PARTITION BY PK_FIELDS ORDER BY start_date DESC) as "legend_persistence_row_number" FROM (SELECT * FROM main WHERE BATCH_OUT = INF) WHERE "legend_persistence_row_number" = 1) x
-    INNER JOIN
-    (SELECT * FROM stage WHERE delete_indicator = 1) y
-    ON PKS_MATCH
-    WHERE y.start_date >= x.start_date
-
-
-2. MILESTONE MAIN: (the same as what we used in normal flow)
-
-UPDATE main x SET batch_id_out = <BATCH_ID>
-    WHERE EXISTS
-    (SELECT * FROM tempWithDeleteIndicator y WHERE
-    PKS_MATCH AND FROM_MATCH)
-    AND <Record is open>
-
-
-3. INSERT INTO MAIN: (the same as what we used in normal flow)
-
-INSERT INTO main (ALL_FIELDS_FROM_TEMP)
-    SELECT ALL_FIELDS_FROM_TEMP FROM tempWithDeleteIndicator
-
-
-
     -------------------
     Main to Temp (for Deletion) Logic:
     -------------------
@@ -989,5 +973,22 @@ INSERT INTO main (ALL_FIELDS_FROM_TEMP)
         insertFields.addAll(transactionMilestoningFields());
 
         return Insert.builder().targetDataset(mainDataset()).sourceDataset(selectXY2).addAllFields(insertFields).build();
+    }
+
+    /*
+    -------------------
+    Main to Temp (for termination) Logic:
+    -------------------
+    INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT)
+    SELECT PK_FIELDS, DATA_FIELDS, DIGEST, x.start_date, y.start_date, <batch_id> as BATCH_IN, INF as BATCH_OUT
+    FROM
+        (SELECT * FROM main WHERE BATCH_OUT = INF AND end_date = INF) x
+        INNER JOIN
+        (SELECT * FROM stage WHERE delete_indicator = 1) y
+        ON PKS_MATCH AND y.start_date >= x.start_date
+     */
+    private Insert getMainToTempForTermination()
+    {
+        return null;
     }
 }
