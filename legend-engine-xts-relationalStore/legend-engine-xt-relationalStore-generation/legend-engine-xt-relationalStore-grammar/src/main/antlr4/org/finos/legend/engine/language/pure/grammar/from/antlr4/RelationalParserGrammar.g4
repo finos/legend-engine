@@ -58,7 +58,7 @@ taggedValue:                                    qualifiedName DOT identifier EQU
 
 // -------------------------------------- SCHEMA & TABLE --------------------------------------
 
-schema:                                     SCHEMA stereotypes? taggedValues? identifier
+schema:                                     SCHEMA stereotypes? taggedValues? relationalIdentifier
                                                 PAREN_OPEN
                                                     (
                                                         table
