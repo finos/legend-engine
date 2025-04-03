@@ -218,7 +218,7 @@ function meta::relational::tests::pct::process::printDatabase(d:Database[1]):Str
                                  )->joinStrings(', ')+
               ')'
                   )->joinStrings('') + '\n  )'
-          )->joinStrings(';')+
+          )->joinStrings('')+
     $d.joins->map(
       j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
     )->joinStrings(' ')+
