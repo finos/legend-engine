@@ -20,8 +20,6 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 public class MemSQLPCTContainer extends JdbcDatabaseContainer<MemSQLPCTContainer>
 {
     public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "ghcr.io") + "/singlestore-labs/singlestoredb-dev:latest").asCompatibleSubstituteFor("ghcr.io/singlestore-labs/singlestoredb-dev:latest");
-//    Memsql docker image for local testing:
-//    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("dockerhub.site.gs.com:8413/singlestore-labs/singlestoredb-dev:latest").asCompatibleSubstituteFor("ghcr.io/singlestore-labs/singlestoredb-dev:latest");
     public static final Integer DEFAULT_PORT = 3306;
 
     private static final String DEFAULT_USER = "root";
@@ -48,6 +46,7 @@ public class MemSQLPCTContainer extends JdbcDatabaseContainer<MemSQLPCTContainer
     {
         this.addEnv("START_AFTER_INIT", "Y");
         this.addEnv("ROOT_PASSWORD", DEFAULT_PASSWORD);
+        this.addEnv("LICENSE_KEY", "");
     }
 
     public String getDriverClassName()

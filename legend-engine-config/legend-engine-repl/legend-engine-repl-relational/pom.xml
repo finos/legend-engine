@@ -106,7 +106,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-memsql-PCT</artifactId>
             <scope>runtime</scope>
-            <version>${project.version}</version>
         </dependency>
         <!-- PCT -->
 
