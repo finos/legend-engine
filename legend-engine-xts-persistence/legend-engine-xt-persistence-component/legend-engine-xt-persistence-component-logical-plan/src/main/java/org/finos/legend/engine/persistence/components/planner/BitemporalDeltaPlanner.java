@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Con
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.IsNull;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
@@ -60,6 +61,7 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -989,6 +991,43 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
      */
     private Insert getMainToTempForTermination()
     {
-        return null;
+        Condition selectXCondition = And.of(Arrays.asList(openRecordCondition, Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), LogicalPlanUtils.INFINITE_BATCH_TIME())));
+        Selection selectX = Selection.builder().source(mainDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(selectXCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+
+        Selection selectY;
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+        }
+        else
+        {
+            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+        }
+
+        Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));
+        Condition yFromGreaterThanEqualToXStart = GreaterThanEqualTo.of(sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()), targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
+        Condition joinXYCondition = And.builder().addConditions(xAndYPkMatchCondition, yFromGreaterThanEqualToXStart).build();
+
+        Join joinXY = Join.of(selectX, selectY, joinXYCondition, JoinOperation.INNER_JOIN);
+
+        List<Value> selectXYFields = new ArrayList<>();
+        selectXYFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
+        selectXYFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
+        selectXYFields.add(digest.withDatasetRef(selectX.datasetReference()));
+        selectXYFields.add(targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
+        selectXYFields.add(sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()).withAlias(VALID_DATE_TIME_THRU_NAME));
+        selectXYFields.addAll(transactionMilestoningFieldValues());
+
+        Selection selectXY = Selection.builder().source(joinXY).addAllFields(selectXYFields).build();
+
+        List<Value> insertFields = new ArrayList<>();
+        insertFields.addAll(primaryKeyFields);
+        insertFields.addAll(dataFields);
+        insertFields.add(digest);
+        insertFields.add(targetValidDatetimeFrom);
+        insertFields.add(targetValidDatetimeThru);
+        insertFields.addAll(transactionMilestoningFields());
+
+        return Insert.builder().targetDataset(tempDatasetWithDeleteIndicator).sourceDataset(selectXY).addAllFields(insertFields).build();
     }
 }
