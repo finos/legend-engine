@@ -46,7 +46,7 @@ function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDef
 function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):SQLResult[1]
 {
    let databaseConnection = $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
-   let postProcessors = meta::relational::mapping::sqlQueryDefaultPostProcessors()->map(pp | {select:SelectSQLQuery[*] | $pp->eval($select, $extensions)})->concatenate($databaseConnection.sqlQueryPostProcessors);
+   let postProcessors = meta::relational::mapping::sqlQueryDefaultPostProcessors()->map(pp | {select:SelectSQLQuery[*] | $pp->eval($select, $databaseConnection, ^meta::pure::runtime::ExecutionContext(), $extensions)})->concatenate($databaseConnection.sqlQueryPostProcessors);
    let sql = toSQL($f, $mapping, $databaseConnection.type, $databaseConnection.timeZone, $postProcessors, $extensions, noDebug());
 
    if ($databaseConnection.sqlQueryPostProcessorsConnectionAware->isEmpty(), | $sql, | let newSql = $sql.sqlQueries->map(s | $databaseConnection.sqlQueryPostProcessorsConnectionAware->fold({pp,q|$pp->eval($q, $databaseConnection->cast(@DatabaseConnection)).values->toOne()}, $s->cast(@SelectSQLQuery)));
