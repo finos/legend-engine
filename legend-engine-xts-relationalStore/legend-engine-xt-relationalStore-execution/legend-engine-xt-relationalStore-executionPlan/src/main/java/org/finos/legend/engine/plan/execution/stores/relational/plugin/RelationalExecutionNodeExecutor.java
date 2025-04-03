@@ -186,7 +186,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     public boolean willExecuteMutation(RelationalBlockExecutionNode node)
     {
-        return !Lists.mutable.withAll(node.childNodes()).collect(n -> n instanceof SQLExecutionNode && ((SQLExecutionNode)n).isMutationSQL).isEmpty();
+        return !Lists.mutable.withAll(node.childNodes()).select(n -> n instanceof SQLExecutionNode && ((SQLExecutionNode)n).isMutationSQL).isEmpty();
     }
 
     @Override
