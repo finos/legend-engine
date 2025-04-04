@@ -986,7 +986,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     FROM
         (SELECT * FROM main WHERE BATCH_OUT = INF AND end_date = INF) x
         INNER JOIN
-        (SELECT MAX(start_date), PK_FIELDS AS start_date FROM (SELECT * FROM stage WHERE delete_indicator = 1) GROUP BY PK_FIELDS) y
+        (SELECT MAX(start_date) AS start_date, PK_FIELDS FROM (SELECT * FROM stage WHERE delete_indicator = 1) GROUP BY PK_FIELDS) y
         ON PKS_MATCH AND y.start_date >= x.start_date
      */
     private Insert getMainToTempForTermination()
