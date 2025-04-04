@@ -25,19 +25,19 @@ import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
 import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.code.core.M2MFCTReport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
 public class Test_M2MFCT extends M2MFCTReport
 {
+
     public static Test suite()
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return PureTestHelperFramework.wrapSuite(
                 () -> true,
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::pure::mapping::modelToModel::fct::fctEvaluator__FCTEvaluator_1_", "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport),
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport),
                 () -> false,
                 Lists.mutable.with(new H2TestServerResource())
         );

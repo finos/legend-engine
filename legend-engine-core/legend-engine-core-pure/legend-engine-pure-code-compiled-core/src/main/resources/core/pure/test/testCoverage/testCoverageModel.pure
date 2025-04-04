@@ -27,6 +27,7 @@ Profile meta::pure::testCoverage::featureMatrix::MappingFeature
   stereotypes: [union,filter, embedded, groupBy, crossStore,  distinct,  extend, simple, merge, rowExplosion];
 }
 
+
 Profile meta::pure::testCoverage::featureMatrix::QueryType
 {
   stereotypes: [graphFetch,tds];
@@ -63,7 +64,7 @@ Class meta::pure::testCoverage::featureMatrix::FeatureSet
 
 Class meta::pure::testCoverage::featureMatrix::FeatureTest
 {
-   <<equality.Key>> assertionType :String[1]; 
+   <<equality.Key>> assertionType :FeatureResultAssertionType[1]; 
    <<equality.Key>> functionName: String[1];
    <<equality.Key>> message: String[0..1];
 }
@@ -78,9 +79,19 @@ Class meta::pure::testCoverage::featureMatrix::FeatureResult
    <<equality.Key>> querySubFeature:String[*];
    <<equality.Key>> featureTests:FeatureTest[*];
    <<equality.Key>> testCollection:String[0..1];
+   <<equality.Key>> supportedFeature:Boolean[1]=true;
 
 }
 
+
+Enum meta::pure::testCoverage::featureMatrix::FeatureResultAssertionType
+{
+  Assertion,
+  Ignore,
+  Untested,
+  AssertError
+
+}
 
 
 

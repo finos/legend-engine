@@ -40,6 +40,11 @@ public class FCTTestResult
 
     @JsonProperty("featureTests")
     public List<FeatureTest> featureTests;
+
     @JsonProperty("testCollection")
     public String testCollection;
+
+    @JsonProperty("supportedFeature")
+    public Boolean supportedFeature;
+
 }

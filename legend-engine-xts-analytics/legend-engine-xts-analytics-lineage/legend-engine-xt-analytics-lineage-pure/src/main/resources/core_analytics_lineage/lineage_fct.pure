@@ -34,6 +34,19 @@ function  <<meta::pure::test::fct::model::FCT.evaluator>> meta::analytics::linea
 
 }
 
+
+function  <<meta::pure::test::fct::model::FCT.evaluator>> meta::analytics::lineage::LineageM2MFCTEvaluator():FCTEvaluator[1]
+{
+   
+    ^FCTEvaluator( eval =meta::analytics::lineage::computeTestLineageWrapper_TestParameters_1__TestResult_1_,
+                   assertion = meta::pure::test::fct::assertLineageResult_TestResult_1__TestParameters_1__Boolean_1_,
+                   testParameters = meta::pure::test::fct::createTestParametersLineage_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                   unsupportedFeatures = meta::pure::mapping::modelToModel::unsupportedMappingFeatures__FeatureSet_MANY_
+
+              )
+
+}
+
 function   meta::analytics::lineage::computeTestLineageWrapper(parameters:meta::pure::test::fct::TestParameters[1]):TestResult[1]
 { 
 

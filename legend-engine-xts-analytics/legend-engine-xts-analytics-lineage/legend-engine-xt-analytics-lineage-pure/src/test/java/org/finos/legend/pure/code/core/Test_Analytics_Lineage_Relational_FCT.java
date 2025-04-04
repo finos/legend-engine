@@ -33,7 +33,7 @@ public class Test_Analytics_Lineage_Relational_FCT extends LineageRelationalFCTR
         CompiledExecutionSupport support = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::LineageFCTEvaluator__FCTEvaluator_1_",  "meta::relational::fct::relationalMockAdaptor__FCTAdapter_1_",support);
+        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, evaluatorFunction(),  "meta::relational::fct::relationalMockAdaptor__FCTAdapter_1_",support);
 
 
         return wrapSuite(

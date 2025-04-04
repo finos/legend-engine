@@ -68,4 +68,17 @@ public class RelationalFCTReport extends FCTReport
     {
         return getExpectedFailures();
     }
+
+    @Override
+    public String getEvaluatorFunction()
+    {
+        return evaluatorFunction();
+    }
+
+    public static String evaluatorFunction()
+    {
+        return "meta::relational::fct::relationalEvaluator__FCTEvaluator_1_";
+    }
+
+
 }

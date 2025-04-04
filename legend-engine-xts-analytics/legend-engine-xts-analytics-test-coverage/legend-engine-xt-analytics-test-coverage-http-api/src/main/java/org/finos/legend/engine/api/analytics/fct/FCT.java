@@ -60,7 +60,7 @@ public class FCT
     {
         try
         {
-            List<FCTTestReport> reports = FCTReportCollector.collectReports(modelManager);
+            List<FCTTestReport> reports = FCTReportCollector.collectReports();
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             return Response.status(200).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(reports)).build();

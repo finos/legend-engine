@@ -42,7 +42,7 @@ Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute for each store 
   eval: Function<{TestParameters[1]->TestResult[1]}>[1];
   assertion: Function<{TestResult[1],TestParameters[1]->Boolean[1]}>[0..1];
   testParameters: Function<{FCTMappingTest[1],Runtime[1] ->TestParameters[*]}>[1];
-  unsupportedFeatureSets: Function<{->FeatureSet[*]}>[0..1];
+  unsupportedFeatures: Function<{->FeatureSet[*]}>[0..1];
 }
 
 
@@ -206,13 +206,7 @@ Class  meta::pure::test::fct::TestErrorAssertion extends meta::pure::test::fct::
   expectedErrorMessage:String[0..1];
 }
 
-// Class  meta::pure::test::fct::TestExecutionErrorAssertion extends TestErrorAssertion
-// {
-// }
 
-// Class  meta::pure::test::fct::TestLineageErrorAssertion extends TestErrorAssertion
-// {
-// }
 
 Class  meta::pure::test::fct::IgnoreTest extends meta::pure::test::fct::Test
 {

@@ -37,7 +37,8 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping:
 {
     ^FCTEvaluator( eval= meta::pure::mapping::modelToModel::fct::exeucuteLegendQuery_TestParameters_1__StringResult_1_,
                   assertion = meta::pure::mapping::modelToModel::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
-                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::pure::mapping::modelToModel::unsupportedMappingFeatures__FeatureSet_MANY_
                );
 
 }
@@ -46,7 +47,9 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping:
 {
     ^FCTEvaluator( eval= meta::pure::mapping::modelToModel::fct::exeucuteLegendQuery_TestParameters_1__StringResult_1_,
                   assertion = meta::pure::mapping::modelToModel::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
-                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::pure::mapping::modelToModel::unsupportedMappingFeatures__FeatureSet_MANY_
+
                );
 
 }
@@ -54,13 +57,10 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping:
 function   meta::pure::mapping::modelToModel::unsupportedMappingFeatures():FeatureSet[*] 
 {
 
-   ^FeatureSet(features =[MappingFeature->stereotype('groupBy'),
-                          MappingFeature->stereotype('distinct'),
-                          MappingFeature->stereotype('extends')]
-   );
-
+   ^FeatureSet(features =  MappingFeature->profileSubSet(['groupBy','distinct','extend','embedded','crossStore']));
 
 }
+
 
 
 function   meta::pure::mapping::modelToModel::fct::runtimeBuilder(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1] 

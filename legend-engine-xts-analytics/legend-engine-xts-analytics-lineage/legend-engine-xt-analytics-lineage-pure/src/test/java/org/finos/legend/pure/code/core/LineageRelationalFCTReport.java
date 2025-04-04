@@ -52,4 +52,17 @@ public class LineageRelationalFCTReport extends FCTReport
     {
         return Lists.mutable.empty();
     }
+
+    @Override
+    public String getEvaluatorFunction()
+    {
+        return evaluatorFunction();
+    }
+
+    public static String evaluatorFunction()
+    {
+        return "meta::analytics::lineage::LineageFCTEvaluator__FCTEvaluator_1_";
+    }
+
+
 }

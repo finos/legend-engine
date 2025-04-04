@@ -43,7 +43,9 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::relational::fc
 {
     ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperLegendQueryResult_TestParameters_1__StringResult_1_,
                   assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
-                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::relational::fct::unsupportedMappingFeatures__FeatureSet_MANY_
+
              );
 
 }
@@ -52,7 +54,8 @@ function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::relational::fc
 {
     ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperQueryResult_TestParameters_1__TestResult_1_,
                   assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
-                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::relational::fct::unsupportedMappingFeatures__FeatureSet_MANY_
              );
 
 }
@@ -65,6 +68,12 @@ function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct:
 }
 
 
+function   meta::relational::fct::unsupportedMappingFeatures():FeatureSet[*] 
+{
+
+   ^FeatureSet(features =  MappingFeature->profileSubSet(['rowExplosion']));
+
+}
 
 
 Class meta::relational::fct::CSVSetupData extends meta::pure::test::fct::SetupData

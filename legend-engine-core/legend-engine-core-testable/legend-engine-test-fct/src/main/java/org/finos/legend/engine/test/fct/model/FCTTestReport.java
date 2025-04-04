@@ -58,8 +58,8 @@ public class FCTTestReport
         @JsonProperty("assertionType")
         public String  assertionType;
 
-        @JsonProperty("success")
-        public Boolean  success;
+        @JsonProperty("status")
+        public String  status;
 
         @JsonProperty("errorMessage")
         public String  errorMessage;
