@@ -322,6 +322,7 @@ public abstract class RelationalMultiDatasetIngestorAbstract
                     .stagingDataset(deriveStagingDataset(ingestStage))
                     .mainDataset(deriveMainDataset(ingestStage, ingestStage.ingestMode()))
                     .metadataDataset(metadataDataset)
+                    .deletePartitionDataset(deriveDeletePartitionDataset(ingestStage))
                     .build();
 
                 // 2. Enrich the ingest mode with case conversion
@@ -678,6 +679,25 @@ public abstract class RelationalMultiDatasetIngestorAbstract
         else
         {
             return stagingDataset;
+        }
+    }
+
+    private Optional<Dataset> deriveDeletePartitionDataset(IngestStage ingestStage)
+    {
+        Optional<Dataset> deletePartitionDataset = ingestStage.deletePartitionDataset();
+        if (deletePartitionDataset.isPresent() && ingestStage.stagingDatasetBatchIdField().isPresent())
+        {
+            return Optional.of(DerivedDataset.builder()
+                    .database(deletePartitionDataset.get().datasetReference().database())
+                    .group(deletePartitionDataset.get().datasetReference().group())
+                    .name(deletePartitionDataset.get().datasetReference().name().orElseThrow(IllegalStateException::new))
+                    .schema(deletePartitionDataset.get().schema())
+                    .addDatasetFilters(DatasetFilter.of(ingestStage.stagingDatasetBatchIdField().get(), FilterType.EQUAL_TO, BATCH_ID_PATTERN))
+                    .build());
+        }
+        else
+        {
+            return deletePartitionDataset;
         }
     }
 

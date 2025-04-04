@@ -37,6 +37,8 @@ public abstract class IngestStageAbstract
 
     public abstract DatasetReference mainDataset();
 
+    public abstract Optional<Dataset> deletePartitionDataset();
+
     public abstract IngestMode ingestMode();
 
     public abstract Optional<String> stagingDatasetBatchIdField();
