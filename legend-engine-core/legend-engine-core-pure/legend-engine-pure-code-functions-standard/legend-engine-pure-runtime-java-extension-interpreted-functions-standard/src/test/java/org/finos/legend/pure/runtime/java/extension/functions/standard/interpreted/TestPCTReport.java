@@ -27,7 +27,7 @@ public class TestPCTReport
     {
         Assert.assertEquals("Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
         System.out.println(PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module));
-        ImmutableSet expectedReports = Sets.immutable.of("essential", "grammar", "relation", "standard");
+        ImmutableSet expectedReports = Sets.immutable.of("essential", "grammar", "unclassified", "relation", "standard");
         Assert.assertEquals(expectedReports, PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module).toSet());
     }
 }
