@@ -1592,7 +1592,7 @@ public class DomainParseTreeWalker
         }
         else if (ctx.relationType() != null)
         {
-            type = relationType(ctx);
+            type = relationType(ctx.relationType());
         }
         else if (ctx.unitName() != null)
         {
@@ -1613,9 +1613,9 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    public RelationType relationType(DomainParserGrammar.TypeContext ctx)
+    public RelationType relationType(DomainParserGrammar.RelationTypeContext ctx)
     {
-        return new RelationType(ListIterate.collect(ctx.relationType().columnInfo(), x ->
+        return new RelationType(ListIterate.collect(ctx.columnInfo(), x ->
         {
             Column column = new Column(
                     PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
