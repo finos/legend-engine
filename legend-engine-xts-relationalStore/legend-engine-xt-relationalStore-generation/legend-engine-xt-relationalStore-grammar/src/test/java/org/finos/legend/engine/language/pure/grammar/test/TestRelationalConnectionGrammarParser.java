@@ -216,4 +216,83 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "  ];\n" +
                 "}\n", error);
     }
+
+    @Test
+    public void testQueryGenerationConfigs()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  queryTimeOutInSeconds: 5000;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [];\n" +
+                "  queryGenerationConfigs: [];\n" +
+                "}\n\n", "PARSER error at [2:1-11:1]: Field 'queryGenerationConfigs' should be specified only once");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  queryTimeOutInSeconds: 5000;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    UnknownConfig{}\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [10:5-19]: Unsupported Relational Query Generation Config type 'UnknownConfig'");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  queryTimeOutInSeconds: 5000;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      unknownProp: [];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [12:7-17]: Unexpected token 'unknownProp'. Valid alternatives: ['enabled', 'disabled']");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  queryTimeOutInSeconds: 5000;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: [];\n" +
+                "      enabled: [];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n", "PARSER error at [10:5-14:5]: Field 'enabled' should be specified only once");
+
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: model::firm::Person;\n" +
+                "  queryTimeOutInSeconds: 5000;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 { testDataSetupCSV: 'testCSV'; };\n" +
+                "  auth: DefaultH2;\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['feat1', 'feat 2'];\n" +
+                "      disabled: ['feat3'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n");
+    }
 }

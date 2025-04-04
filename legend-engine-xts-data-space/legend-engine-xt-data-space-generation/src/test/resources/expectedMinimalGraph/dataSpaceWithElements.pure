@@ -1,0 +1,17 @@
+Enum {meta::pure::profiles::doc.doc = 'Types of company'} model::target::IncType
+{
+  LLC,
+  CORP
+}
+
+Class model::target::_Firm
+{
+  employees: model::target::_Person[1..*];
+  type: model::target::IncType[1];
+  name: String[1];
+}
+
+Class model::target::_Person
+{
+  fullName: String[1];
+}

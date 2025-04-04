@@ -18,6 +18,8 @@ TIMEZONE:                                TimeZone;
 
 QUOTE_IDENTIFIERS:                      'quoteIdentifiers';
 
+QUERY_GENERATION_CONFIGS:               'queryGenerationConfigs';
+
 BRACE_OPEN:                             '{' -> pushMode(SPECIFICATION_ISLAND_MODE);
 
 mode SPECIFICATION_ISLAND_MODE;

@@ -14,25 +14,17 @@
 
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
 import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 
 Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::functionRegistry::SqlFunction
-[
-  testsWithMatchingFunction: $this.tests->size()->range()->forAll({i |
-    let t = $this.tests->at($i);
-    if ($t.functionCall->extractFunctionNames()->contains($this.name->joinStrings('.')),
-        | true,
-        | println('SqlFunctionTest at index ' + toString($i) + ' for function "' + $this.name->joinStrings('.') + '" is for a different function "' + $t.functionCall.name.parts->joinStrings('.') + '"');
-          false;
-    );
-  })
-]
 {
   name: String[*];
   variations: SqlFunctionVariation[1..*];
   tests: SqlFunctionTest[1..*];
-  documentation: String[0..1];
+  documentation: String[1];
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::SqlFunctionVariation
@@ -42,8 +34,19 @@ Class meta::external::store::relational::sqlDialectTranslation::functionRegistry
   documentation: String[0..1];
 
   identifier() {
-    '(' + $this.parameterTypes->map(t | $t.name)->joinStrings(', ') + '):' + $this.returnType.name->toOne()
+    $this.parameterTypes->map(t | $t.name)->joinStrings('(', ', ', '):') + $this.returnType.name->toOne()
   }: String[1];
+}
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::VariadicSqlFunctionVariation extends SqlFunctionVariation
+[
+  hasAtLeastOneArgument:  if($this.parameterTypes->size() > 0,
+                            | true,
+                            | println('VariadicSqlFunctionVariation expects at least one argument, found none.');
+                              false;
+                          )
+]
+{
 }
 
 Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTranslation::functionRegistry::PostgresNativeSqlFunction extends SqlFunction
@@ -56,7 +59,8 @@ Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTr
 
 Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::SqlFunctionTest
 {
-  functionCall: FunctionCall[1];
+  setupData: TestSetupData[*];
+  query: Node[1];
   result: Any[*];
 }
 
@@ -73,12 +77,22 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
 {
   ^SqlFunctionTest
   (
-    functionCall = $functionCall,
+    query = $functionCall,
     result = $result
   )
 }
 
-function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(): Map<String, SqlFunction>[1]
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionTest(data: TestSetupData[*], query: Query[1], result: Any[*]): SqlFunctionTest[1]
+{
+  ^SqlFunctionTest
+  (
+    setupData = $data,
+    query = $query,
+    result = $result
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(): Map<Class<SqlFunction>, SqlFunction>[1]
 {
   [
     // Postgres Native Functions
@@ -100,6 +114,11 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::cot(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sin(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::tan(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::power(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::mod(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::sign(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::round(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::numeric::floor(),
 
     // String
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lpad(),
@@ -107,6 +126,21 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ltrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rtrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::ascii(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::lower(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::upper(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::repeat(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::replace(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::left(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::right(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::md5(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::charLength(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::chr(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::reverse(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::splitPart(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::substring(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::stringAgg(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::concat(),
 
     // Temporal function
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::datePart(),
@@ -114,17 +148,25 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::now(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toDate(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::temporal::toTimestamp(),
-    
+
+    // Miscellaneous
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::coalesce(),
+
     // Extension Functions
     // Numeric
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::numeric::log10(),
 
     // Boolean functions
-    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike()
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::boolean::regexpLike(),
+
+    // String functions
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256()
+
   ]
-  ->groupBy(x | $x.name->joinStrings('.')->toLower())->keyValues()
+  ->groupBy(x | $x->type()->cast(@Class<SqlFunction>))->keyValues()
   ->map({kv |
-    assert($kv.second.values->size() == 1, | 'Multiple SQL functions in function registry with same name - ' + $kv.first);
+    assert($kv.second.values->size() == 1, | 'Multiple SQL functions in function registry with same name - ' + $kv.first.name->toOne());
     pair($kv.first, $kv.second.values->toOne());
   })
   ->newMap()

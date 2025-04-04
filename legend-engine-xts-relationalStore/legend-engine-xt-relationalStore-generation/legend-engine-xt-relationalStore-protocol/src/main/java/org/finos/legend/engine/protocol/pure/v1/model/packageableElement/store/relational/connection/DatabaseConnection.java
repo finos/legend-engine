@@ -28,4 +28,5 @@ public abstract class DatabaseConnection extends Connection
     public Integer queryTimeOutInSeconds;
 
     public List<PostProcessorWithParameter> postProcessorWithParameter = Collections.emptyList();
+    public List<RelationalQueryGenerationConfig> queryGenerationConfigs;
 }

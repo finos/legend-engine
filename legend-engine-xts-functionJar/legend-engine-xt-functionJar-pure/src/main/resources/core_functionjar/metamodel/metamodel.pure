@@ -1,0 +1,27 @@
+
+import meta::external::format::shared::binding::*;
+import meta::external::function::activator::*;
+
+Class meta::external::function::activator::functionJar::FunctionJar extends FunctionActivator
+{
+  documentation : String[0..1];
+  ownership : meta::external::function::activator::Ownership[1];
+}
+
+
+// This section needs to be code generated from the section above 
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::FunctionJar extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator
+{
+  documentation : String[0..1];
+  ownership : Integer[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Ownership
+{
+
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Deployment extends meta::protocols::pure::vX_X_X::metamodel::function::activator::functionJar::Ownership
+{
+  id:Integer[1];
+}

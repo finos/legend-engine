@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::relational::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sdt::framework::*;
@@ -99,14 +104,14 @@ function <<access.private>> meta::external::store::relational::sdt::framework::t
 
 function <<access.private>> meta::external::store::relational::sdt::framework::assertSdtTestPasses(sdt: SqlDialectTest[1], actualResult: TestResult[1]): Boolean[1]
 {
-  let expected = $sdt.expectedResult->roundFloats();
-  let actual = $actualResult->roundFloats();
+  let expected = $sdt.expectedResult->transformResult();
+  let actual = $actualResult->transformResult();
   assertEquals($expected, $actual, | 'Expected - ' + $expected->toJSON(100) + '\n' + 'Actual - ' + $actual->toJSON(100));
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::roundFloats(res: TestResult[1]): TestResult[1]
+function <<access.private>> meta::external::store::relational::sdt::framework::transformResult(res: TestResult[1]): TestResult[1]
 {
-  ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([f: Float[1] | round($f, 8), a:Any[*] | $a])))))
+  ^$res(rows = $res.rows->map(r | ^$r(values = $r.values->map(v | $v->match([f: Float[1] | round($f, 8), a:Any[*] | $a])))),columnNames=$res.columnNames->map(c|$c->toLower()))
 }
 
 function meta::external::store::relational::sdt::framework::testConfigForSimpleExpression(expression: String[1], expected: Any[1], identifier: String[1]): SqlDialectTest[1]
@@ -115,26 +120,58 @@ function meta::external::store::relational::sdt::framework::testConfigForSimpleE
   testConfigForSimpleExpression($parsedExpression, $expected, $identifier);
 }
 
+function meta::external::store::relational::sdt::framework::testQueryForSimpleExpression(expression: meta::external::query::sql::metamodel::Expression[1]): Query[1]
+{
+  ^Query(
+    queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^SingleColumn(
+          expression = $expression,
+          alias = 'result'
+        )
+      )
+    )
+  )
+}
+
 function meta::external::store::relational::sdt::framework::testConfigForSimpleExpression(expression: meta::external::query::sql::metamodel::Expression[1], expected: Any[1], identifier: String[1]): SqlDialectTest[1]
 {
   ^SqlDialectTest(
     identifier = $identifier,
-    testQuery = ^Query(
-      queryBody = ^QuerySpecification(
-        select = ^Select(
-          distinct = false,
-          selectItems = ^SingleColumn(
-            expression = $expression,
-            alias = 'result'
-          )
-        )
-      )
-    ),
-    expectedResult = ^TestResult(
-      columnNames = ['result'],
-      rows = [^TestResultRow(values = $expected)]
-    )
-  )
+    testQuery = $expression->testQueryForSimpleExpression(),
+    expectedResult = ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = $expected)])
+  );
+}
+
+function meta::external::store::relational::sdt::framework::testConfigForSqlFunctionTest(test: SqlFunctionTest[1], identifier: String[1]): SqlDialectTest[1]
+{
+  let query = $test.query->match(
+    [
+      q: Query[1]| $q,
+      f: meta::external::query::sql::metamodel::Expression[1]| $f->testQueryForSimpleExpression()
+    ]
+  );
+
+  let expectedResult = $test.result->match(
+    [
+      t: TestExpectedResult[1]| ^TestResult(columnNames = $t.columns, rows = $t.data->map(d| ^TestResultRow(values = $d.values))),
+      a: Any[*]| ^TestResult(columnNames = ['result'], rows = [^TestResultRow(values = $a)])
+    ]
+  );
+
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = $test.setupData->map(d| [
+                                                ^DropTestTable(tableName = $d.tableName, isTempTable = $d.useTempTable),
+                                                ^CreateTestTable(tableName = $d.tableName, columns = $d.columns->map(c| pair($c.first, ^ColumnType(name = $c.second))), isTempTable = $d.useTempTable),
+                                                ^InsertIntoTestTable(tableName = $d.tableName, columns = $d.columns.first, values = $d.data)
+                                              ]
+                                          ),
+    teardownStatements = $test.setupData->map(d| ^DropTestTable(tableName = $d.tableName)),
+    testQuery = $query,
+    expectedResult = $expectedResult
+  );
 }
 
 function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1]): SqlDialectTranslationConfig[1]

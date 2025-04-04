@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
@@ -109,6 +112,27 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
   let config = testSqlDialectTranslationConfig(false);
 
   assertEquals('1.0', $dialect->executeNodeProcessor(literal(1.0), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testDateLiteralProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals('DATE \'2025-01-01\'', $dialect->executeNodeProcessor(literal(%2025-01-01), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTimestampLiteralProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals('TIMESTAMP \'2025-01-01 12:00:00.000\'', $dialect->executeNodeProcessor(literal(%2025-01-01T12:00:00.000), $state, $config));
+
+  let configWithTz = testSqlDialectTranslationConfig(false, false, 'EST');
+  assertEquals('TIMESTAMP \'2025-01-01 01:00:00.000\'', $dialect->executeNodeProcessor(literal(%2025-01-01T12:00:00.000+0600), $state, $configWithTz));
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testNullLiteralProcessing(): Boolean[1]
@@ -1002,4 +1026,296 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     '  WHERE\n' +
     '    103 < 104\n' +
     ')', $dialect->executeNodeProcessor(^TableSubquery(query = ^Query(queryBody = $q1)), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTrimProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let q1 = ^Trim(
+    value=literal('adefa'),
+    characters=literal('a'),
+    mode=TrimMode.BOTH
+  );
+
+  assertEquals('TRIM(BOTH \'a\' FROM \'adefa\')', $dialect->executeNodeProcessor($q1, $state, $config));
+
+  let q2 = ^Trim(
+    value=literal('adefad'),
+    characters=literal('ad'),
+    mode=TrimMode.TRAILING
+  );
+  assertEquals('TRIM(TRAILING \'ad\' FROM \'adefad\')', $dialect->executeNodeProcessor($q2, $state, $config));
+
+  let q3 = ^Trim(
+    value=literal('adefad'),
+    characters=literal('ad'),
+    mode=TrimMode.LEADING
+  );
+  assertEquals('TRIM(LEADING \'ad\' FROM \'adefad\')', $dialect->executeNodeProcessor($q3, $state, $config));
+
+  let q4 = ^Trim(
+    value=literal('adefad'),
+    characters=[],
+    mode=TrimMode.BOTH
+  );
+  assertEquals('TRIM(BOTH FROM \'adefad\')', $dialect->executeNodeProcessor($q4, $state, $config));
+
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testTablePlaceholderProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals('(${temp_table})', $dialect->executeNodeProcessor(^TablePlaceholder(name = 'temp_table'), $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testFunctionCallProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let name = ^QualifiedName(parts = ['log']);
+  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c1']));
+  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c2']));
+  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c3']));
+  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c4']));
+
+  assertEquals('log(101)', $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = literal(101))->inferTypes($config.functionRegistry), $state, $config));
+  assertEquals(
+    'log(101, 2) OVER (PARTITION BY db.schema.tbl.c1, db.schema.tbl.c2 ORDER BY db.schema.tbl.c3 DESC NULLS FIRST, db.schema.tbl.c4 ASC NULLS LAST)',
+    $dialect->executeNodeProcessor(
+      ^FunctionCall(
+        name =  $name,
+        arguments = [literal(101), literal(2)],
+        window = ^meta::external::query::sql::metamodel::Window(
+          partitions = [$c1, $c2],
+          orderBy = [
+            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
+            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
+          ]
+        )
+      )->inferTypes($config.functionRegistry),
+      $state, $config
+    )
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testFunctionCallPrettyFormatProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(true);
+
+  let name = ^QualifiedName(parts = ['log']);
+  let c1 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c1']));
+  let c2 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c2']));
+  let c3 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c3']));
+  let c4 = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'tbl', 'c4']));
+
+  assertEquals('log(101)', $dialect->executeNodeProcessor(^FunctionCall(name =  $name, arguments = literal(101))->inferTypes($config.functionRegistry), $state, $config));
+  assertEquals(
+    'log(101, 2) OVER (\n' +
+    '  PARTITION BY\n' +
+    '    db.schema.tbl.c1,\n' +
+    '    db.schema.tbl.c2\n' +
+    '  ORDER BY\n' +
+    '    db.schema.tbl.c3 DESC NULLS FIRST,\n' +
+    '    db.schema.tbl.c4 ASC NULLS LAST\n' +
+    ')',
+    $dialect->executeNodeProcessor(
+      ^FunctionCall(
+        name =  $name,
+        arguments = [literal(101), literal(2)],
+        window = ^meta::external::query::sql::metamodel::Window(
+          partitions = [$c1, $c2],
+          orderBy = [
+            ^SortItem(sortKey = $c3, ordering = SortItemOrdering.DESCENDING, nullOrdering = SortItemNullOrdering.FIRST),
+            ^SortItem(sortKey = $c4, ordering = SortItemOrdering.ASCENDING, nullOrdering = SortItemNullOrdering.LAST)
+          ]
+        )
+      )->inferTypes($config.functionRegistry),
+      $state, $config
+    )
+  );
+
+  let caseExpression = ^SearchedCaseExpression(whenClauses = [^WhenClause(result = literal(101), operand = literal(false)), ^WhenClause(result = literal(102), operand = literal(true))]);
+  assertEquals(
+    'log(\n' +
+    '  101,\n' +
+    '  CASE\n' +
+    '    WHEN\n' +
+    '      FALSE\n' +
+    '    THEN\n' +
+    '      101\n' +
+    '    WHEN\n' +
+    '      TRUE\n' +
+    '    THEN\n' +
+    '      102\n' +
+    '  END\n' +
+    ')',
+    $dialect->executeNodeProcessor(^FunctionCall(name = $name, arguments = [literal(101), $caseExpression])->inferTypes($config.functionRegistry), $state, $config)
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::getCTEQuery(): Query[1]
+{
+  let cte1 = ^WithQuery(
+    name = 'cte1',
+    query = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(selectItems = [^AllColumns(prefix = 'root')]),
+        from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = ['db', 'schema', 'table_a'])), alias = 'root'),
+        where = ^ComparisonExpression(left = literal(103), right = literal(104), operator = ComparisonOperator.LESS_THAN)
+      )
+    )
+  );
+
+  let cte2 = ^WithQuery(
+    name = 'cte2',
+    columns = ['col1', 'col2'],
+    query = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(selectItems = [
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'col1'))),
+            ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'col2')))
+          ]
+        ),
+        from = ^Table(name = ^QualifiedName(parts = ['cte1']))
+      )
+    )
+  );
+
+  ^Query(
+    with = ^With(
+      withQueries = [$cte1, $cte2]
+    ),
+    queryBody = ^QuerySpecification(
+      select = ^Select(selectItems = [^AllColumns(prefix = 'root')]),
+      from = ^Table(name = ^QualifiedName(parts = ['cte2']))
+    )
+  );
+}
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testWithQueryProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals(
+    'WITH cte1 AS (SELECT root.* FROM db.schema.table_a AS root WHERE 103 < 104), cte2(col1, col2) AS (SELECT col1, col2 FROM cte1) SELECT root.* FROM cte2',
+    $dialect->executeNodeProcessor(getCTEQuery()->inferTypes($config.functionRegistry), $state, $config)
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testWithQueryPrettyFormatProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(true);
+
+  assertEquals(
+    'WITH cte1 AS (\n' +
+    '  SELECT\n' +
+    '    root.*\n' +
+    '  FROM\n' +
+    '    db.schema.table_a AS root\n' +
+    '  WHERE\n' +
+    '    103 < 104\n' +
+    '),\n' +
+    'cte2(col1, col2) AS (\n' +
+    '  SELECT\n' +
+    '    col1,\n' +
+    '    col2\n' +
+    '  FROM\n' +
+    '    cte1\n' +
+    ')\n' +
+    'SELECT\n' +
+    '  root.*\n' +
+    'FROM\n' +
+    '  cte2',
+    $dialect->executeNodeProcessor(getCTEQuery()->inferTypes($config.functionRegistry), $state, $config)
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testCreateTableProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let createQuery1 = ^CreateTestTable(tableName = 'testTable', columns = [pair('age', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar'))]);
+  assertEquals('CREATE TABLE testTable (age integer, name varchar)', $dialect->executeNodeProcessor($createQuery1, $state, $config));
+
+  let createQuery2 = ^CreateTestTable(tableName = 'testTable', columns = [pair('age', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true);
+  assertEquals('CREATE TEMPORARY TABLE testTable (age integer, name varchar)', $dialect->executeNodeProcessor($createQuery2, $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testCreateTableWithPrettyProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(true);
+
+  assertEquals(
+    'CREATE TEMPORARY TABLE testTable (\n' +
+    '  age integer,\n' +
+    '  name varchar\n' +
+    ')',
+    $dialect->executeNodeProcessor(^CreateTestTable(tableName = 'testTable', columns = [pair('age', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true), $state, $config)
+  );
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInsertIntoTableProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let testdata = [
+    list([^IntegerLiteral(value = 18), ^StringLiteral(value = 'Jane'), ^StringLiteral(value = '2025-01-01')]),
+    list([^IntegerLiteral(value = 24), ^StringLiteral(value = 'John'), ^NullLiteral()])
+  ];
+
+  let insertQuery = ^InsertIntoTestTable(tableName = 'testTable', columns = ['age', 'name'], values = $testdata);
+  assertEquals('INSERT INTO testTable (age, name) VALUES (18, \'Jane\', \'2025-01-01\'), (24, \'John\', NULL)', $dialect->executeNodeProcessor($insertQuery, $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInsertIntoTableWithPrettyProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(true);
+
+  let testdata = [
+    list([^IntegerLiteral(value = 18), ^StringLiteral(value = 'Jane'), ^StringLiteral(value = '2025-01-01')]),
+    list([^IntegerLiteral(value = 24), ^StringLiteral(value = 'John'), ^NullLiteral()])
+  ];
+
+  let insertQuery = ^InsertIntoTestTable(tableName = 'testTable', columns = ['age', 'name'], values = $testdata);
+  assertEquals(
+    'INSERT INTO testTable\n' +
+    '(age, name)\n' +
+    'VALUES\n' +
+    '(18, \'Jane\', \'2025-01-01\'),\n' +
+    '(24, \'John\', NULL)',
+    $dialect->executeNodeProcessor($insertQuery, $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testDropTableProcessing(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  assertEquals('DROP TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable'), $state, $config));
+  assertEquals('DROP TEMPORARY TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $config));
+
+  let configWithPretty = testSqlDialectTranslationConfig(true);
+  assertEquals('DROP TEMPORARY TABLE IF EXISTS testTable', $dialect->executeNodeProcessor(^DropTestTable(tableName = 'testTable', isTempTable = true), $state, $configWithPretty));
 }

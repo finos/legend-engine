@@ -8128,6 +8128,7 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                         s:SelectSQLQuery[1]|^$s(filteringOperation = $s.filteringOperation->map(f|$f->reprocessAliases($map, $oldColumnToNewColumn)));,
                         t:TableAlias[1]| let new = $map->filter(o| $o.first == $t.name); if($new->isEmpty(),|$t,|$new->toOne().second);,
                         a:Alias[1]|^$a(relationalElement = $a.relationalElement->reprocessAliases($map, $oldColumnToNewColumn));,
+                        u:UnionOrJoin[1]|^$u(parameters=$u.parameters->map(p | $p->reprocessAliases($map, $oldColumnToNewColumn))),
                         d:DynaFunction[1]|^DynaFunction(name=$d.name, parameters=$d.parameters->map(p | $p->reprocessAliases($map, $oldColumnToNewColumn))),
                         f:FreeMarkerOperationHolder[1]|^FreeMarkerOperationHolder(name=$f.name, parameters=$f.parameters->map(p | $p->reprocessAliases($map, $oldColumnToNewColumn))),
                         op:UnaryOperation[1]|^$op(nested=$op.nested->reprocessAliases($map, $oldColumnToNewColumn)),
@@ -8275,7 +8276,8 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
                               s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),
-                              s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns()
+                              s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns(),
+                              a:Any[*]|[]
                           ]
                       )
                );
@@ -8325,9 +8327,14 @@ function meta::relational::functions::pureToSqlQuery::replaceJoinTreeNodeWithLea
    ^$relationalPropertyMapping(relationalOperationElement = $updatedRelationalOperationElementWithJoin);
 }
 
+function meta::relational::functions::pureToSqlQuery::getClassMapping(setId:String[1], mapping:Mapping[1], state: State[0..1]): SetImplementation[*]
+{
+   if($state->isNotEmpty(), | $state->toOne()->getClassMappingById($setId), | $mapping->classMappingById($setId));
+}
+
 function meta::relational::functions::pureToSqlQuery::getRelation(setId:String[1], mapping:Mapping[1], state: State[0..1]):Relation[1]
 {
-   let classMappings = if($state->isNotEmpty(), | $state->toOne()->getClassMappingById($setId), | $mapping->classMappingById($setId));
+   let classMappings = getClassMapping($setId, $mapping, $state);
    $classMappings->match([r:RootRelationalInstanceSetImplementation[1] | $r, e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner])->toOne()->mainRelation();
 }
 

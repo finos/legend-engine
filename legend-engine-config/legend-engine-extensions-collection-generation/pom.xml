@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.75.1-SNAPSHOT</version>
+        <version>4.77.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -361,6 +361,11 @@
             <artifactId>legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- Relational -->
 
@@ -529,8 +534,22 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-hostedService-generation</artifactId>
         </dependency>
-
         <!-- Hosted Service -->
+
+        <!-- Function Jar -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionJar-protocol</artifactId>
+        </dependency>
+        <!-- Function Jar -->
 
         <!-- BigQuery Function -->
         <dependency>

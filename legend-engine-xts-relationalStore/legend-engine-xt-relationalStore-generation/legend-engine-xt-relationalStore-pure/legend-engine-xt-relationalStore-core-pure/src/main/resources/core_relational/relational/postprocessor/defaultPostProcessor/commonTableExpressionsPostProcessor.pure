@@ -19,7 +19,7 @@ import meta::pure::extension::*;
 import meta::relational::metamodel::relation::*;
 
 
-function meta::relational::postProcessor::cte::collectCommonTableExpressionReferences(selectSQLQuery:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::cte::collectCommonTableExpressionReferences(selectSQLQuery:SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
 {
    let transformations =  {r: RelationalOperationElement[1]|
                                                    $r->match([

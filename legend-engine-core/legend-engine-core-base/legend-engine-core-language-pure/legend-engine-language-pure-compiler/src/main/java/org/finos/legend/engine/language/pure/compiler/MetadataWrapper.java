@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler;
 
-import org.eclipse.collections.api.factory.Stacks;
 import org.eclipse.collections.api.map.MapIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.m3.coreinstance.Package;
@@ -74,13 +73,13 @@ public class MetadataWrapper implements Metadata
         {
             if (this.pureModel != null)
             {
-                CoreInstance type = this.pureModel.getTypeFromIndex(id.substring(M3Paths.Root.length() + 2));
+                CoreInstance type = this.pureModel.getTypeFromIndex(id.startsWith("Root::") ? id.substring(6) : id);
                 if (type != null)
                 {
                     return type;
                 }
             }
-            throw new PureExecutionException(e, Stacks.mutable.empty());
+            throw new PureExecutionException(e);
         }
     }
 

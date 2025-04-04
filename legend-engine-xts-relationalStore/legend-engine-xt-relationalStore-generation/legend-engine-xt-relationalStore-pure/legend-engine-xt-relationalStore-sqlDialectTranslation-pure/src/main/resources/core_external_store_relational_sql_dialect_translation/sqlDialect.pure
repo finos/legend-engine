@@ -158,6 +158,7 @@ function meta::external::store::relational::sqlDialectTranslation::simpleFunctio
   )
 }
 
+
 function meta::external::store::relational::sqlDialectTranslation::argTransformFunctionProcessor(functionName: String[1], transform: Function<{Node[*]->Node[*]}>[1]): FunctionProcessor[1]
 {
   functionProcessor(
@@ -178,6 +179,13 @@ function meta::external::store::relational::sqlDialectTranslation::customFunctio
     },
     {n: FunctionCall[1] | true}
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::nativeFunctionProcessor(functionClass: Class<SqlFunction>[1]): FunctionProcessor[1]
+{
+  let sqlFunctionRegistry = sqlFunctionRegistry();
+  let functionName = $sqlFunctionRegistry->get($functionClass).name->toOne();
+  simpleFunctionProcessor($functionName);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
