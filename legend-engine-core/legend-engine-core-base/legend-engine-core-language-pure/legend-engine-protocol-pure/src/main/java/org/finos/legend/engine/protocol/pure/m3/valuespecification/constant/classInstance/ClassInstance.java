@@ -32,7 +32,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.One;
 import org.finos.legend.engine.protocol.pure.v1.ProcessHelper;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecificationVisitor;
 

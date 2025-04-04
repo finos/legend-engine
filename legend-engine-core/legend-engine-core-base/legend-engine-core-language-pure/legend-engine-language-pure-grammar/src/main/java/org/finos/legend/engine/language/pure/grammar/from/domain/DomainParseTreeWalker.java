@@ -40,7 +40,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPure
 import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -856,7 +856,7 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    private ValueSpecification instanceLiteral(DomainParserGrammar.InstanceLiteralContext ctx, boolean wrapFlag)
+    public ValueSpecification instanceLiteral(DomainParserGrammar.InstanceLiteralContext ctx, boolean wrapFlag)
     {
         ValueSpecification result;
         if (ctx.instanceLiteralToken() != null)
@@ -1334,7 +1334,7 @@ public class DomainParseTreeWalker
         return null;
     }
 
-    private LambdaFunction processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
+    public LambdaFunction processLambda(DomainParserGrammar.AnyLambdaContext lambda, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines, boolean wrapFlag, List<Variable> expressions)
     {
         if (lambda.lambdaFunction() != null)
         {
@@ -1592,16 +1592,7 @@ public class DomainParseTreeWalker
         }
         else if (ctx.relationType() != null)
         {
-            type = new RelationType(ListIterate.collect(ctx.relationType().columnInfo(), x ->
-            {
-                Column column = new Column(
-                        PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
-                        processGenericType(x.type()),
-                        x.multiplicity() == null ? Multiplicity.ZERO_ONE : this.buildMultiplicity(x.multiplicity().multiplicityArgument())
-                );
-                column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
-                return column;
-            }));
+            type = relationType(ctx);
         }
         else if (ctx.unitName() != null)
         {
@@ -1620,6 +1611,20 @@ public class DomainParseTreeWalker
         }
         result.typeVariableValues = processTypeVariableValues(ctx.typeVariableValues());
         return result;
+    }
+
+    public RelationType relationType(DomainParserGrammar.TypeContext ctx)
+    {
+        return new RelationType(ListIterate.collect(ctx.relationType().columnInfo(), x ->
+        {
+            Column column = new Column(
+                    PureGrammarParserUtility.fromIdentifier(x.columnName().identifier()),
+                    processGenericType(x.type()),
+                    x.multiplicity() == null ? Multiplicity.ZERO_ONE : this.buildMultiplicity(x.multiplicity().multiplicityArgument())
+            );
+            column.sourceInformation = walkerSourceInformation.getSourceInformation(x);
+            return column;
+        }));
     }
 
     private ValueSpecification allOrFunction(DomainParserGrammar.AllOrFunctionContext ctx, ValueSpecification instance, DomainParserGrammar.QualifiedNameContext funcName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean addLines)

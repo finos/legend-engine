@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.m3.type;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 
