@@ -53,9 +53,13 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Order;
+import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
@@ -79,6 +83,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private static final String LEFT_DATASET_IN_JOIN_ALIAS = "legend_persistence_x";
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
     private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
+    private static final String ROW_NUMBER = "legend_persistence_row_number";
 
     private final Optional<MergeStrategyDeleteMode> deleteMode;
     private final Optional<String> deleteIndicatorField;
@@ -986,7 +991,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     FROM
         (SELECT * FROM main WHERE BATCH_OUT = INF AND end_date = INF) x
         INNER JOIN
-        (SELECT * FROM stage WHERE delete_indicator = 1) y
+        (SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY PK_FIELDS ORDER BY start_date DESC) as "legend_persistence_row_number" FROM (SELECT * FROM stage WHERE delete_indicator = 1)) WHERE "legend_persistence_row_number" = 1) y
         ON PKS_MATCH AND y.start_date >= x.start_date
      */
     private Insert getMainToTempForTermination()
@@ -994,15 +999,16 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Condition selectXCondition = And.of(Arrays.asList(openRecordCondition, Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), LogicalPlanUtils.INFINITE_BATCH_TIME())));
         Selection selectX = Selection.builder().source(mainDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(selectXCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
 
-        Selection selectY;
+        Selection selectStage;
         if (ingestMode().dataSplitField().isPresent())
         {
-            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(stagingDataset.datasetReference().alias()).build();
         }
         else
         {
-            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(stagingDataset.datasetReference().alias()).build();
         }
+        Selection selectY = getSelectRowNumberIsOne(selectStage).withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
 
         Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));
         Condition yFromGreaterThanEqualToXStart = GreaterThanEqualTo.of(sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()), targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
@@ -1029,5 +1035,39 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         insertFields.addAll(transactionMilestoningFields());
 
         return Insert.builder().targetDataset(tempDatasetWithDeleteIndicator).sourceDataset(selectXY).addAllFields(insertFields).build();
+    }
+
+    private Selection getSelectRowNumberIsOne(Dataset dataset)
+    {
+        OrderedField orderByField = OrderedField.builder()
+            .fieldName(sourceValidDatetimeFrom.fieldName())
+            .datasetRef(dataset.datasetReference())
+            .order(Order.DESC).build();
+
+        List<FieldValue> partitionFields = primaryKeys.stream()
+            .map(field -> FieldValue.builder().fieldName(field).datasetRef(dataset.datasetReference()).build())
+            .collect(Collectors.toList());
+
+        Value rowNumber = WindowFunction.builder()
+            .windowFunction(FunctionImpl.builder().functionName(FunctionName.ROW_NUMBER).build())
+            .addAllPartitionByFields(partitionFields)
+            .addOrderByFields(orderByField)
+            .alias(ROW_NUMBER)
+            .build();
+
+        Selection selectionWithRowNumber = Selection.builder()
+            .source(dataset)
+            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
+            .addFields(rowNumber)
+            .alias(dataset.datasetReference().alias())
+            .build();
+
+        Condition rowNumberFilterCondition = Equals.of(FieldValue.builder().fieldName(ROW_NUMBER).datasetRefAlias(dataset.datasetReference().alias()).build(), ObjectValue.of(1));
+
+        return Selection.builder()
+            .source(selectionWithRowNumber)
+            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
+            .condition(rowNumberFilterCondition)
+            .build();
     }
 }
