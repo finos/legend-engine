@@ -991,7 +991,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     FROM
         (SELECT * FROM main WHERE BATCH_OUT = INF AND end_date = INF) x
         INNER JOIN
-        (SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY PK_FIELDS ORDER BY start_date DESC) as "legend_persistence_row_number" FROM (SELECT * FROM stage WHERE delete_indicator = 1)) WHERE "legend_persistence_row_number" = 1) y
+        (SELECT MAX(start_date) AS start_date FROM (SELECT * FROM stage WHERE delete_indicator = 1) GROUP BY PK_FIELDS) y
         ON PKS_MATCH AND y.start_date >= x.start_date
      */
     private Insert getMainToTempForTermination()
@@ -999,19 +999,30 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Condition selectXCondition = And.of(Arrays.asList(openRecordCondition, Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), LogicalPlanUtils.INFINITE_BATCH_TIME())));
         Selection selectX = Selection.builder().source(mainDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(selectXCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
 
-        Selection selectStage;
+        Selection innerSelectStage;
         if (ingestMode().dataSplitField().isPresent())
         {
-            selectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(stagingDataset.datasetReference().alias()).build();
+            innerSelectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(stagingDataset.datasetReference().alias()).build();
         }
         else
         {
-            selectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(stagingDataset.datasetReference().alias()).build();
+            innerSelectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(stagingDataset.datasetReference().alias()).build();
         }
-        Selection selectY = getSelectRowNumberIsOne(selectStage).withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
+
+        List<Value> selectYFields = new ArrayList<>();
+        selectYFields.add(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(sourceValidDatetimeFrom.withDatasetRef(innerSelectStage.datasetReference())).alias(VALID_DATE_TIME_FROM_NAME).build());
+
+        List<Value> selectYGroupByFields = primaryKeyFields.stream().map(field -> field.withDatasetRef(innerSelectStage.datasetReference())).collect(Collectors.toList());
+
+        Selection selectY = Selection.builder()
+            .source(innerSelectStage)
+            .addAllFields(selectYFields)
+            .groupByFields(selectYGroupByFields)
+            .alias(RIGHT_DATASET_IN_JOIN_ALIAS)
+            .build();
 
         Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));
-        Condition yFromGreaterThanEqualToXStart = GreaterThanEqualTo.of(sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()), targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
+        Condition yFromGreaterThanEqualToXStart = GreaterThanEqualTo.of(validDateTimeFrom.withDatasetRef(selectY.datasetReference()), targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
         Condition joinXYCondition = And.builder().addConditions(xAndYPkMatchCondition, yFromGreaterThanEqualToXStart).build();
 
         Join joinXY = Join.of(selectX, selectY, joinXYCondition, JoinOperation.INNER_JOIN);
@@ -1021,7 +1032,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXYFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
         selectXYFields.add(digest.withDatasetRef(selectX.datasetReference()));
         selectXYFields.add(targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
-        selectXYFields.add(sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()).withAlias(VALID_DATE_TIME_THRU_NAME));
+        selectXYFields.add(validDateTimeFrom.withDatasetRef(selectY.datasetReference()).withAlias(VALID_DATE_TIME_THRU_NAME));
         selectXYFields.addAll(transactionMilestoningFieldValues());
 
         Selection selectXY = Selection.builder().source(joinXY).addAllFields(selectXYFields).build();
@@ -1035,39 +1046,5 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         insertFields.addAll(transactionMilestoningFields());
 
         return Insert.builder().targetDataset(tempDatasetWithDeleteIndicator).sourceDataset(selectXY).addAllFields(insertFields).build();
-    }
-
-    private Selection getSelectRowNumberIsOne(Dataset dataset)
-    {
-        OrderedField orderByField = OrderedField.builder()
-            .fieldName(sourceValidDatetimeFrom.fieldName())
-            .datasetRef(dataset.datasetReference())
-            .order(Order.DESC).build();
-
-        List<FieldValue> partitionFields = primaryKeys.stream()
-            .map(field -> FieldValue.builder().fieldName(field).datasetRef(dataset.datasetReference()).build())
-            .collect(Collectors.toList());
-
-        Value rowNumber = WindowFunction.builder()
-            .windowFunction(FunctionImpl.builder().functionName(FunctionName.ROW_NUMBER).build())
-            .addAllPartitionByFields(partitionFields)
-            .addOrderByFields(orderByField)
-            .alias(ROW_NUMBER)
-            .build();
-
-        Selection selectionWithRowNumber = Selection.builder()
-            .source(dataset)
-            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
-            .addFields(rowNumber)
-            .alias(dataset.datasetReference().alias())
-            .build();
-
-        Condition rowNumberFilterCondition = Equals.of(FieldValue.builder().fieldName(ROW_NUMBER).datasetRefAlias(dataset.datasetReference().alias()).build(), ObjectValue.of(1));
-
-        return Selection.builder()
-            .source(selectionWithRowNumber)
-            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
-            .condition(rowNumberFilterCondition)
-            .build();
     }
 }
