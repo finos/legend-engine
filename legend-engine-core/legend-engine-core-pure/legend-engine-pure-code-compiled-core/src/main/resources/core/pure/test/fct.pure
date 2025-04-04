@@ -30,16 +30,19 @@ Profile meta::pure::test::fct::model::FCT
     stereotypes : [feature,test, adapter, evaluator, testCollection];
 }
 
-Class  meta::pure::test::fct::FCTAdapter //store specific code
+Class  meta::pure::test::fct::FCTAdapter 
 {
   runtime:Function<{FCTMappingTest[1]->Runtime[1]}>[1];
   setup:Function<{Function<{->FCTMappingTest[1]}>[1]->Any[1]}>[0..1]; 
+    
 }
 
-Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute
+Class  meta::pure::test::fct::FCTEvaluator  //Lineage or execute for each store type
 {
   eval: Function<{TestParameters[1]->TestResult[1]}>[1];
   assertion: Function<{TestResult[1],TestParameters[1]->Boolean[1]}>[0..1];
+  testParameters: Function<{FCTMappingTest[1],Runtime[1] ->TestParameters[*]}>[1];
+  unsupportedFeatures: Function<{->FeatureSet[*]}>[0..1];
 }
 
 
@@ -69,6 +72,14 @@ Class meta::pure::test::fct::StringResult extends meta::pure::test::fct::TestRes
   result:String[1];
 }
 
+
+Class meta::pure::test::fct::CSVTestResult extends meta::pure::test::fct::TestResult
+{
+  result:String[1];
+}
+
+
+
 Class  meta::pure::test::fct::SetupData 
 {
 }
@@ -86,8 +97,8 @@ Class  meta::pure::test::fct::InstanceSetupData extends meta::pure::test::fct::S
 
 Class  meta::pure::test::fct::FCTMappingTest
 {
-   setupData:SetupData[1];
-   mapping:meta::pure::mapping::Mapping[1];
+   setupData:SetupData[*];
+   mapping:meta::pure::mapping::Mapping[1..*];
    assertions:meta::pure::test::fct::Test[*];
 
 }
@@ -101,13 +112,14 @@ function meta::pure::test::fct::adaptorSetupFunction(adaptor:Function<{->FCTAdap
  function meta::pure::test::fct::createTestParameters(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
  {
       $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t.tests->map(test| ^TestParameters(runtime=$runtime,
-                                                                                                          mapping=$mappingTest.mapping, 
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
                                                                                                           expectedExecutionResult=$t.expectedExecutionResult, 
                                                                                                           expectedLineageResult = $t.expectedLineageResult,
                                                                                                           test = $test)), 
                                                                                                                               
-                                              e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
-                                                                                                          mapping=$mappingTest.mapping, 
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
                                                                                                           expectedErrorMessage = $e.expectedErrorMessage,
                                                                                                           test = $test))  
                                                            
@@ -115,6 +127,46 @@ function meta::pure::test::fct::adaptorSetupFunction(adaptor:Function<{->FCTAdap
                                                                                  );
 
  }
+
+  function meta::pure::test::fct::createTestParametersLineage(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t->filter(f|$f.expectedLineageResult->isNotEmpty()).tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                                                                            mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                                                                            expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                                                                            expectedLineageResult = $t.expectedLineageResult,
+                                                                                                                                                            test = $test)), 
+                                                                                                                              
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+ 
+
+  function meta::pure::test::fct::createTestParametersExecution(mappingTest:FCTMappingTest[1],runtime:Runtime[1]):meta::pure::test::fct::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t->filter(f|$f.expectedExecutionResult->isNotEmpty()).tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                                                                              mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                                                                              expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                                                                              expectedLineageResult = $t.expectedLineageResult,
+                                                                                                                                                              test = $test)), 
+                                                                                                                              
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+ 
  
 
 Class  meta::pure::test::fct::Test
@@ -151,8 +203,24 @@ Class  meta::pure::test::fct::TestAssertion extends meta::pure::test::fct::Test
 
 Class  meta::pure::test::fct::TestErrorAssertion extends meta::pure::test::fct::Test
 {
-  expectedErrorMessage:String[1];
+  expectedErrorMessage:String[0..1];
 }
+
+
+
+Class  meta::pure::test::fct::IgnoreTest extends meta::pure::test::fct::Test
+{
+  reason:String[1];
+}
+
+Class  meta::pure::test::fct::IgnoreLineageTest extends meta::pure::test::fct::IgnoreTest
+{
+}
+Class  meta::pure::test::fct::IgnoreExecutionTest extends meta::pure::test::fct::IgnoreTest
+{
+}
+
+
 
 Class  meta::pure::test::fct::TestParameters
 {
@@ -179,12 +247,12 @@ Profile  meta::pure::fct::TestReturnType
 
 
 
-function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
+function   meta::pure::fct::tests::testRunnerAssertionLocal(adapter:FCTAdapter[1], evaluator:FCTEvaluator[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): Boolean[*]
 {
+          if($adapter.setup->isNotEmpty(),|$adapter.setup->toOne()->eval($mappingTestFn),|[]);  
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $adapter.runtime->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
-                                                     );
+          $evaluator.testParameters->toOne()->eval($mappingTest,$runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator)->meta::pure::fct::tests::execute::AssertionRunExecute();  );
 }
 
 function   meta::pure::fct::tests::testRunnerAssertion(adapterFN:Function<{->FCTAdapter[1]}>[1], evaluatorFN:Function<{->FCTEvaluator[1]}>[1], mappingTestFn:Function<{->FCTMappingTest[1]}>[1]): AssertionRun[*]
@@ -193,8 +261,8 @@ function   meta::pure::fct::tests::testRunnerAssertion(adapterFN:Function<{->FCT
           let evaluator = $evaluatorFN->eval();
           let mappingTest =  $mappingTestFn->eval();
           let runtime = $adapter.runtime->eval($mappingTest);
-          $mappingTest->createTestParameters($runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator);
-                                                     );
+          $evaluator.testParameters->toOne()->eval($mappingTest,$runtime)->map(p   |  ^meta::pure::fct::AssertionRun(parameter=$p, evaluator=$evaluator));
+                                                     
 }
 
 
@@ -263,3 +331,6 @@ function   meta::pure::test::fct::executeFCTLegendQuery(parameters:meta::pure::t
                           |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
                ));
 }
+
+
+

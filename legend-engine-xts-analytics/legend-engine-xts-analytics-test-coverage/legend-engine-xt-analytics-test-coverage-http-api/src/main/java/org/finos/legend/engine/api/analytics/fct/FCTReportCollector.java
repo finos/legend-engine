@@ -26,6 +26,12 @@ import java.util.List;
 
 public class FCTReportCollector
 {
+
+     public  static  void main(String args[])
+
+     {collectReports();
+     }
+
      public static List<FCTTestReport> collectReports()
     {
         ImmutableList<FCTReport> testAnalytics = Lists.immutable.of(new LineageRelationalFCTReport(), new RelationalFCTReportH2(), new LineageM2MFCTReport(), new M2MFCTReport());

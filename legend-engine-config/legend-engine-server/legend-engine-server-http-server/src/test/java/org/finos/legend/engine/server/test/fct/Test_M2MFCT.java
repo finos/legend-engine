@@ -17,28 +17,31 @@
 package org.finos.legend.engine.server.test.fct;
 
 import junit.framework.Test;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
+import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.FCTTestSuitBuilder;
+import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.code.core.M2MFCTReport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
 public class Test_M2MFCT extends M2MFCTReport
 {
+
     public static Test suite()
     {
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions =  FCTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
-        return wrapSuite(
-                () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
-                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::pure::mapping::modelToModel::fct::fctEvaluator__FCTEvaluator_1_", "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport),
-                PureWithEngineHelper::cleanUp
+        return PureTestHelperFramework.wrapSuite(
+                () -> true,
+                () -> FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport),
+                () -> false,
+                Lists.mutable.with(new H2TestServerResource())
         );
+
     }
 
 }

@@ -33,13 +33,34 @@ function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::pure::mapping::m
 
 
 
-function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::pure::mapping::modelToModel::fct::fctEvaluator():FCTEvaluator[1] 
+function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping::modelToModel::fct::fctEvaluator():FCTEvaluator[1] 
 {
     ^FCTEvaluator( eval= meta::pure::mapping::modelToModel::fct::exeucuteLegendQuery_TestParameters_1__StringResult_1_,
-                  assertion = meta::pure::mapping::modelToModel::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_
+                  assertion = meta::pure::mapping::modelToModel::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::pure::mapping::modelToModel::unsupportedMappingFeatures__FeatureSet_MANY_
                );
 
 }
+
+function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::pure::mapping::modelToModel::fct::fctPureEvaluator():FCTEvaluator[1] 
+{
+    ^FCTEvaluator( eval= meta::pure::mapping::modelToModel::fct::exeucuteLegendQuery_TestParameters_1__StringResult_1_,
+                  assertion = meta::pure::mapping::modelToModel::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::pure::mapping::modelToModel::unsupportedMappingFeatures__FeatureSet_MANY_
+
+               );
+
+}
+
+function   meta::pure::mapping::modelToModel::unsupportedMappingFeatures():FeatureSet[*] 
+{
+
+   ^FeatureSet(features =  MappingFeature->profileSubSet(['groupBy','distinct','extend','embedded','crossStore']));
+
+}
+
 
 
 function   meta::pure::mapping::modelToModel::fct::runtimeBuilder(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1] 

@@ -12,6 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::relational::tests::csv::*;
+import meta::pure::extension::*;
 import meta::relational::dbTestRunner::*;
 import meta::json::*;
 import meta::pure::metamodel::relation::*;
@@ -34,10 +39,23 @@ import meta::relational::fct::*;
 
 
 
-function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct::relationalEvaluator():FCTEvaluator[1] //Maybe on store contract?
+function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::relational::fct::relationalEvaluator():FCTEvaluator[1] 
 {
     ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperLegendQueryResult_TestParameters_1__StringResult_1_,
-                  assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_
+                  assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::relational::fct::unsupportedMappingFeatures__FeatureSet_MANY_
+
+             );
+
+}
+
+function   <<meta::pure::test::fct::model::FCT.evaluator>>  meta::relational::fct::relationalPureExecuteEvaluator():FCTEvaluator[1] 
+{
+    ^FCTEvaluator(eval =meta::relational::fct::relationalExecuteWrapperQueryResult_TestParameters_1__TestResult_1_,
+                  assertion = meta::relational::fct::assertExecute_TestResult_1__TestParameters_1__Boolean_1_,
+                  testParameters = meta::pure::test::fct::createTestParametersExecution_FCTMappingTest_1__Runtime_1__TestParameters_MANY_,
+                  unsupportedFeatures = meta::relational::fct::unsupportedMappingFeatures__FeatureSet_MANY_
              );
 
 }
@@ -50,6 +68,12 @@ function   <<meta::pure::test::fct::model::FCT.adapter>>  meta::relational::fct:
 }
 
 
+function   meta::relational::fct::unsupportedMappingFeatures():FeatureSet[*] 
+{
+
+   ^FeatureSet(features =  MappingFeature->profileSubSet(['rowExplosion']));
+
+}
 
 
 Class meta::relational::fct::CSVSetupData extends meta::pure::test::fct::SetupData
@@ -76,23 +100,23 @@ function   meta::relational::fct::relationalExecuteWrapperExecuteSimple(paramete
 }
 
 
-function   meta::relational::fct::relationalExecuteWrapperLegendQuery(parameters:meta::pure::test::fct::TestParameters[1]):Boolean[1]
-{ 
+// function   meta::relational::fct::relationalExecuteWrapperLegendQuery(parameters:meta::pure::test::fct::TestParameters[1]):Boolean[1]
+// { 
   
-      let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence;
+//       let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence;
 
                       
 
-      if($parameters.expectedErrorMessage->isNotEmpty(),
-              | assertError(|    
-                                meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions()),
-                                $parameters.expectedErrorMessage->toOne()
+//       if($parameters.expectedErrorMessage->isNotEmpty(),
+//               | assertError(|    
+//                                 meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions()),
+//                                 $parameters.expectedErrorMessage->toOne()
                                 
-                                ); false;,
-              |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions()));
-                  meta::relational::fct::assertExecute($result, $parameters->toOne());
-          );
-}
+//                                 ); false;,
+//               |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions()));
+//                   meta::relational::fct::assertExecute($result, $parameters->toOne());
+//           );
+// }
 
 
 
@@ -103,11 +127,48 @@ function   meta::relational::fct::relationalExecuteWrapperLegendQueryResult(para
 
 }
 
+function   meta::relational::fct::relationalExecuteWrapperQueryResult(parameters:meta::pure::test::fct::TestParameters[1]):TestResult[1]
+{ 
+  
+              $parameters->meta::relational::fct::executeFctQuery(relationalExtensions());
+
+}
+
+function   meta::relational::fct::executeFctQuery(parameters:meta::pure::test::fct::TestParameters[1],extensions:Extension[*]):TestResult[1]
+{ 
+  let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>);
+ 
+     // let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence->cast(@SimpleFunctionExpression)->toOne();
+
+  if($parameters.test->hasStereotype('graphFetch',QueryType),
+            | let graph =  $fn.expressionSequence->cast(@SimpleFunctionExpression)->toOne().parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>);
+              if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                            execute(|$fn->serialize($graph), $parameters.mapping,$parameters.runtime,$extensions),
+                                            $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |  let execute = execute(|$fn->serialize($graph), $parameters.mapping,$parameters.runtime,$extensions);  
+                            let result = ^StringResult(result =$execute.values->toOne());
+                  );,
+            |if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                             execute($fn, $parameters.mapping,$parameters.runtime,$extensions),
+                                             $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |     let result = execute($fn, $parameters.mapping,$parameters.runtime,$extensions);
+                                ^CSVTestResult(result = $result.values->cast(@TabularDataSet)->toOne()->toCSV());
+
+               ));
+}
+
+
 
 
 function meta::relational::fct::relationalRunTimeMock(mappingTest:meta::pure::test::fct::FCTMappingTest[1]):Runtime[1]
 {
-      $mappingTest.setupData->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
+      $mappingTest.setupData->at(0)->match([c:CSVSetupData[1]|    ^Runtime(connectionStores =   ^ConnectionStore( connection = ^RelationalDatabaseConnection( type = DatabaseType.H2,
                                                                                                                       datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
                                                                                                                       authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
                                                                                                                     ),
@@ -122,10 +183,20 @@ function meta::relational::fct::relationalRunTimeMock(mappingTest:meta::pure::te
 function meta::relational::fct::assertExecute(result:meta::pure::test::fct::TestResult[1],parameter:TestParameters[1]):Boolean[1]
 {
   let expected = $parameter.expectedExecutionResult->toOne();
-$expected->match([t:TDSResult[1] |let res = $result->cast(@StringResult).result->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
-                                  let actualCSV = $res->resultToCSV();  
-                                   assertEquals( $t.value,$actualCSV);,
-                
+$expected->match([t:TDSResult[1] | let actualCSV=     $result->match([s:StringResult[1] |let res = $s.result->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
+                                                                                            $res->resultToCSV(); ,   
+                                                                      c:CSVTestResult[1] | $c.result
+                                                         ])->split('\n');
+                                   let actualHeader =   $actualCSV->at(0);                      
+                                   let actualContent  =   $actualCSV->tail();                      
+
+                                   let expectedRows = $t.value->split('\n');
+                                   let expectedHeader =  $expectedRows->at(0);
+                                   let expectedContent = $expectedRows->tail(); 
+                                   assertEquals($expectedHeader,$actualHeader );
+                                   assertSameElements($expectedContent, $actualContent);,
+                                  // assertEquals($expectedHeader->split(','),$res.result.columns->map(e|$e->meta::relational::tests::csv::toCSVString()) );
+                                  // assertSameElements($expectedContent, $res.result.rows->map(r | $r.values->map(v | $v->meta::relational::tests::csv::toCSVString())->joinStrings(',')));,
                  j:JSONResult[1]| assertEquals(  $j.value,$result->cast(@StringResult).result)
 
 

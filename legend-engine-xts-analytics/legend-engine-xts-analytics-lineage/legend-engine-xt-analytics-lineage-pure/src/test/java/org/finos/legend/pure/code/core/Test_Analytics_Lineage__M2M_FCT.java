@@ -37,7 +37,7 @@ public class Test_Analytics_Lineage__M2M_FCT extends LineageM2MFCTReport
         CompiledExecutionSupport support = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         MutableMap<String, String> exclusions = Maps.mutable.empty();
 
-        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, "meta::analytics::lineage::LineageFCTEvaluator__FCTEvaluator_1_",  "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",support);
+        TestSuite suite = FCTTestSuitBuilder.buildFCTTestSuiteWithExecutorFunctionFromList(testCollection(support), exclusions, evaluatorFunction(),  "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",support);
 
 
         return wrapSuite(

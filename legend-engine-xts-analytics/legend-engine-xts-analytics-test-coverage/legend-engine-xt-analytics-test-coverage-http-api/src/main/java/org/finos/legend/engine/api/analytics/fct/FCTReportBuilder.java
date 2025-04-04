@@ -22,21 +22,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.test.fct.FCTReport;
 import org.finos.legend.engine.test.fct.model.FCTTestReport;
 import org.finos.legend.engine.test.fct.model.FCTTestResult;
 import org.finos.legend.engine.test.fct.model.FeatureTest;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
+import org.finos.legend.pure.m3.navigation._package._Package;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.pure.generated.core_analytics_test_coverage_modelCoverage_analytics.Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_;
+import static org.finos.legend.pure.generated.core_analytics_test_coverage_modelCoverage_analytics.Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__ConcreteFunctionDefinition_1__String_1_;
 import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled.getClassLoaderExecutionSupport;
 
 public class FCTReportBuilder
@@ -50,13 +45,16 @@ public class FCTReportBuilder
        reports.forEach(report ->
                {
 
-                  MutableMap<String, String> explodedExpectedFailures = PCTReportConfiguration.explodeExpectedFailures(report.expectedFailures(), getClassLoaderExecutionSupport().getProcessorSupport());
                   report.getTestCollection().forEach(collection ->
 
                    {
                        RichIterable<? extends ConcreteFunctionDefinition<? extends Object>> testfunctions = Lists.mutable.withAll(report.getTestCollection().stream()
                                .flatMap(c -> c.getAllTestFunctions().stream()).map(c -> (ConcreteFunctionDefinition<? extends Object>) c).collect(Collectors.toList()));
-                       String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__String_1_(testfunctions, report.getReportID(), collection.getStoreType(), getClassLoaderExecutionSupport());
+
+
+                       ConcreteFunctionDefinition<? extends Object> evalFN = (ConcreteFunctionDefinition<? extends Object>) _Package.getByUserPath(report.getEvaluatorFunction(), (getClassLoaderExecutionSupport().getProcessorSupport()));
+
+                       String json = Root_meta_analytics_testCoverage_featureMatrix_buildStoreReportJSON_ConcreteFunctionDefinition_MANY__String_1__String_1__ConcreteFunctionDefinition_1__String_1_(testfunctions, report.getReportID(), collection.getStoreType(), evalFN, getClassLoaderExecutionSupport());
                        try
                        {
                            FCTTestResult[] fctTestResults = mapper.readValue(json, FCTTestResult[].class);
@@ -68,23 +66,47 @@ public class FCTReportBuilder
                                    for (FeatureTest featureTest : testResult.featureTests)
                                    {
                                        fctTestReport.functionName = featureTest.functionName;
-                                       String error = explodedExpectedFailures.get(featureTest.functionName);
-                                       fctTestReport.success = (error == null && featureTest.expectedError == null && Objects.equals(featureTest.assertionType, "assertion"));
-                                       fctTestReport.errorMessage = featureTest.expectedError != null ? featureTest.expectedError : error;
-                                       if (Objects.equals(featureTest.assertionType, "assertion"))
+                                       //Status is one of Pass,Not Tested,Store Not Supported, Query Not Supported
+
+                                       if (!testResult.supportedFeature)
                                        {
-                                           fctTestReport.assertionType = Objects.equals(testResult.testType, "LineageFCT") ? "Lineage" : "Execution";
+                                           fctTestReport.status = "Mapping Feature Not Supported";
                                        }
                                        else
                                        {
-                                           fctTestReport.assertionType = featureTest.assertionType;
+                                           switch (featureTest.assertionType)
+                                           {
+                                               case "Assertion":
+                                                   fctTestReport.status = "Success";
+                                                   break;
+                                               case "Untested":
+                                                   fctTestReport.status = "Untested";
+                                                   break;
+                                               case "AssertError":
+                                                   fctTestReport.status = "Query Feature Not Supported";
+                                                   break;
+                                               default:
+                                                   fctTestReport.status = "Unknown";
+                                                   break;
+                                           }
                                        }
+                                       fctTestReport.errorMessage = featureTest.message;
+                                       fctTestReport.assertionType = featureTest.assertionType;
+
                                    }
                                }
                                else
                                {
                                    fctTestReport.assertionType = "UnTested";
+                                   fctTestReport.status = "UnTested";
+
                                }
+
+                               if (!testResult.supportedFeature)
+                               {
+                                   fctTestReport.status = "Mapping Feature Not Supported";
+                               }
+
                                results.add(fctTestReport);
 
                            }

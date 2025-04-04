@@ -41,9 +41,11 @@ import java.util.Scanner;
 
 public class FCT
 {
+    private  ModelManager modelManager;
 
     public FCT(ModelManager modelManager)
     {
+        this.modelManager = modelManager;
     }
 
     public FCT()

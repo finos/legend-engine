@@ -60,4 +60,16 @@ public class M2MFCTReport extends  FCTReport
     {
         return Lists.mutable.empty();
     }
+
+    @Override
+    public String getEvaluatorFunction()
+    {
+        return evaluatorFunction();
+    }
+
+    public static String evaluatorFunction()
+    {
+        return "meta::pure::mapping::modelToModel::fct::fctEvaluator__FCTEvaluator_1_";
+    }
+
 }

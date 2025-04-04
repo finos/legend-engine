@@ -53,4 +53,16 @@ public class LineageM2MFCTReport extends FCTReport
     {
         return Lists.mutable.empty();
     }
+
+    @Override
+    public String getEvaluatorFunction()
+    {
+        return evaluatorFunction();
+    }
+
+    public static String evaluatorFunction()
+    {
+        return "meta::analytics::lineage::LineageM2MFCTEvaluator__FCTEvaluator_1_";
+    }
+
 }

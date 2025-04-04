@@ -134,7 +134,7 @@ public class FCTTestSuitBuilder extends PureTestBuilder
             subSuites.add(buildFCTSuite(collection,  evaluator, adaptor,  executionSupport));
         }
 
-        return buildFCTSuite(PackageableElement.getUserPathForPackageableElement(testCollection.getPackage()),
+        return buildFCTSuite(testCollection.getTestCollectionName(),
                 evaluator,
                 adaptor,
                 testCollection.getTestFunctions(),
@@ -143,14 +143,14 @@ public class FCTTestSuitBuilder extends PureTestBuilder
         );
     }
 
-    private static TestSuite buildFCTSuite(String packageName,
+    private static TestSuite buildFCTSuite(String suiteName,
                                            String evaluator,
                                            String adaptor,
                                            RichIterable<CoreInstance> testFunctions,
                                            ListIterable<TestSuite> subSuites,  ExecutionSupport executionSupport)
     {
         PureTestBuilderCompiled suite = new PureTestBuilderCompiled();
-        suite.setName(packageName);
+        suite.setName(suiteName);
 
         for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
         {

@@ -28,6 +28,11 @@ public abstract class FCTReport
 
     public abstract MutableList<ExclusionSpecification> expectedFailures();
 
+    public abstract String getEvaluatorFunction();
+
+
+
+
     public FCTReport()
     {
     }
@@ -39,4 +44,5 @@ public abstract class FCTReport
         expectedFailures.forEach(x -> result.putAll(x.resolveExclusion(processorSupport)));
         return result;
     }
+
 }

@@ -17,11 +17,16 @@ import meta::pure::testCoverage::featureMatrix::*;
 // limitations under the License.
 
 
+Profile meta::pure::testCoverage::featureMatrix::QueryPatterns
+{
+  stereotypes: [binding,multiExecution]; //Todo - these patterns will be implemented as part of core test suite in combination with the existing tests
+}
 
 Profile meta::pure::testCoverage::featureMatrix::MappingFeature
 {
-  stereotypes: [modelToModel,union,filter,binding, embedded, groupBy, association, distinct, enumeration, extend, simple];
+  stereotypes: [union,filter, embedded, groupBy, crossStore,  distinct,  extend, simple, merge, rowExplosion];
 }
+
 
 Profile meta::pure::testCoverage::featureMatrix::QueryType
 {
@@ -31,21 +36,22 @@ Profile meta::pure::testCoverage::featureMatrix::QueryType
 
 Profile meta::pure::testCoverage::featureMatrix::QueryFeature
 {
-  stereotypes: [multiExecution,sort,last,first,filter, head, groupBy]; 
+  stereotypes: [sort,first,filter, take, drop, slice,  distinct, groupBy,simple]; 
 }
 
 
 Profile  meta::pure::testCoverage::featureMatrix::QuerySubFeature
 {
-  stereotypes: [filterPrimitive,filterAssociation, filterIsNotEmpty , sortPrimitive, sortAssociation, limit];
+  stereotypes: [enumeration, primitive,association, filterExists, filterIsEmpty];
 
 }
 
 function meta::pure::testCoverage::featureMatrix::featureSets():FeatureSet[*]
 {
-  [^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes('union'),QueryFeature,QueryType]),
-  ^FeatureSet(name='basic',features=[MappingFeature,QueryFeature,QueryType])];
-}
+  [^FeatureSet(name='unions',features=[MappingFeature->stereotype('union'),MappingFeature->profileExceptStereoTypes(['union','simple']),QueryFeature,QueryType]),
+   ^FeatureSet(name='TDS',features=[MappingFeature->profileExceptStereoTypes('merge'),QueryFeature,QueryType->stereotype('tds')]),
+   ^FeatureSet(name='graphfetch',features=[MappingFeature,QueryFeature->profileExceptStereoTypes('groupBy'),QueryType->stereotype('graphFetch')])];
+} 
 
 
 Class meta::pure::testCoverage::featureMatrix::FeatureSet
@@ -58,9 +64,9 @@ Class meta::pure::testCoverage::featureMatrix::FeatureSet
 
 Class meta::pure::testCoverage::featureMatrix::FeatureTest
 {
-   <<equality.Key>> assertionType :String[1]; 
+   <<equality.Key>> assertionType :FeatureResultAssertionType[1]; 
    <<equality.Key>> functionName: String[1];
-   <<equality.Key>> expectedError: String[0..1];
+   <<equality.Key>> message: String[0..1];
 }
 
 Class meta::pure::testCoverage::featureMatrix::FeatureResult
@@ -73,9 +79,19 @@ Class meta::pure::testCoverage::featureMatrix::FeatureResult
    <<equality.Key>> querySubFeature:String[*];
    <<equality.Key>> featureTests:FeatureTest[*];
    <<equality.Key>> testCollection:String[0..1];
+   <<equality.Key>> supportedFeature:Boolean[1]=true;
 
 }
 
+
+Enum meta::pure::testCoverage::featureMatrix::FeatureResultAssertionType
+{
+  Assertion,
+  Ignore,
+  Untested,
+  AssertError
+
+}
 
 
 
