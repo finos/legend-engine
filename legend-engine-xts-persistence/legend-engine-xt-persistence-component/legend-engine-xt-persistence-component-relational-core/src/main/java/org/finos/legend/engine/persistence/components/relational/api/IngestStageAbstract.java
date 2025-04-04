@@ -41,7 +41,7 @@ public abstract class IngestStageAbstract
 
     public abstract IngestMode ingestMode();
 
-    public abstract Optional<String> stagingDatasetBatchIdField();
+    public abstract Optional<String> batchIdField();
 
     @Value.Derived
     public String getRunId()

@@ -346,9 +346,9 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
-        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).batchIdField(batchIdName).build();
 
         return buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
     }
@@ -630,9 +630,9 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
-        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).batchIdField(batchIdName).build();
 
         return buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
     }
@@ -737,7 +737,7 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad1).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad2).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(nontemporalSnapshot).stagingDataset(nontemporalSnapshotStageTableForDataset2).mainDataset(nontemporalSnapshotMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(nontemporalSnapshot).stagingDataset(nontemporalSnapshotStageTableForDataset2).mainDataset(nontemporalSnapshotMainTableForDataset2).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset3 = IngestStage.builder().ingestMode(noOp).stagingDataset(noOpStageTable1ForDataset3).mainDataset(noOpMainTable1ForDataset3).build();
         IngestStage ingestStage2ForDataset3 = IngestStage.builder().ingestMode(noOp).stagingDataset(noOpStageTable2ForDataset3).mainDataset(noOpMainTable2ForDataset3).build();
 
@@ -896,9 +896,9 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
-        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).batchIdField(batchIdName).build();
 
         List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
 
@@ -1021,9 +1021,9 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
-        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset1).mainDataset(unitemporalDeltaMainTableForDataset1).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalDelta).stagingDataset(unitemporalDeltaStageTableForDataset2).mainDataset(unitemporalDeltaMainTableForDataset2).batchIdField(batchIdName).build();
 
         List<DatasetIngestDetails> datasetIngestDetails = buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
 
@@ -1269,9 +1269,9 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
-        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalSnapshot).stagingDataset(unitemporalSnapshotStageTableForDataset1).mainDataset(unitemporalSnapshotMainTableForDataset1).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset1 = IngestStage.builder().ingestMode(unitemporalSnapshot).stagingDataset(unitemporalSnapshotStageTableForDataset1).mainDataset(unitemporalSnapshotMainTableForDataset1).batchIdField(batchIdName).build();
         IngestStage ingestStage1ForDataset2 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset2).mainDataset(bulkLoadMainTableForDataset2).build();
-        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalSnapshot).stagingDataset(unitemporalSnapshotStageTableForDataset2).mainDataset(unitemporalSnapshotMainTableForDataset2).stagingDatasetBatchIdField(batchIdName).build();
+        IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalSnapshot).stagingDataset(unitemporalSnapshotStageTableForDataset2).mainDataset(unitemporalSnapshotMainTableForDataset2).batchIdField(batchIdName).build();
 
         return buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
     }
