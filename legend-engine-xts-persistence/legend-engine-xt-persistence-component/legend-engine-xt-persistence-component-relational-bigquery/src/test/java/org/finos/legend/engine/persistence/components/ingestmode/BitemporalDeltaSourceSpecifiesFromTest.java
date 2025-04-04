@@ -1283,7 +1283,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     }
 
     @Override
-    public void verifyBitemporalDeltaBatchIdBasedWithTerminateIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges) {
+    public void verifyBitemporalDeltaBatchIdBasedWithTerminateIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    {
         String tempName = "`mydb`.`main_legend_persistence_temp_lp_yosulf`";
         String tempWithDeleteIndicatorName = "`mydb`.`main_legend_persistence_tempWithDeleteIndicator_lp_yosulf`";
 

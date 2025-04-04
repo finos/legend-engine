@@ -53,13 +53,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Order;
-import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
-import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
@@ -83,7 +79,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private static final String LEFT_DATASET_IN_JOIN_ALIAS = "legend_persistence_x";
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
     private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
-    private static final String ROW_NUMBER = "legend_persistence_row_number";
 
     private final Optional<MergeStrategyDeleteMode> deleteMode;
     private final Optional<String> deleteIndicatorField;
