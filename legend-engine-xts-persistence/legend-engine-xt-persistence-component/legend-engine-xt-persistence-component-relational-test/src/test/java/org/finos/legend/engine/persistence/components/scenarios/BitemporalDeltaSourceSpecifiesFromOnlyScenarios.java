@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
@@ -404,5 +405,64 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .tempDataset(tempTableWithBitemporalFromOnlySchema)
                 .build());
         return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_TERMINATE_IND__NO_DATA_SPLITS()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestField)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(validityFromTargetField)
+                .dateTimeThruName(validityThroughTargetField)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(validityFromReferenceField)
+                    .build())
+                .build())
+            .mergeStrategy(TerminateLatestActiveMergeStrategy.builder()
+                .terminateField(deleteIndicatorField)
+                .addAllTerminateValues(Arrays.asList(deleteIndicatorValues))
+                .build())
+            .build();
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+            .mainDataset(mainTableWithBitemporalFromOnlySchema)
+            .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDeleteInd)
+            .tempDataset(tempTableWithBitemporalFromOnlySchema)
+            .tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator)
+            .build());
+        return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_TERMINATE_IND__WITH_DATA_SPLITS__USING_DEFAULT_TEMP_TABLE()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestField)
+            .versioningStrategy(AllVersionsStrategy.builder()
+                .versioningField(versionField)
+                .dataSplitFieldName(dataSplitField)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(false)
+                .build())
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(validityFromTargetField)
+                .dateTimeThruName(validityThroughTargetField)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(validityFromReferenceField)
+                    .build())
+                .build())
+            .mergeStrategy(TerminateLatestActiveMergeStrategy.builder()
+                .terminateField(deleteIndicatorField)
+                .addAllTerminateValues(Arrays.asList(deleteIndicatorValues))
+                .build())
+            .build();
+        return new TestScenario(mainTableWithBitemporalFromOnlyWithVersionSchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithVersionWithDataSplit, ingestMode);
     }
 }

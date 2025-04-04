@@ -22,6 +22,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
@@ -246,6 +248,16 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .deleteField(strategy.apply(deleteIndicatorMergeStrategy.deleteField()))
                     .addAllDeleteValues(deleteIndicatorMergeStrategy.deleteValues())
                     .build();
+        }
+
+        @Override
+        public MergeStrategy visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+        {
+            return TerminateLatestActiveMergeStrategy
+                .builder()
+                .terminateField(strategy.apply(terminateLatestActiveMergeStrategy.terminateField()))
+                .addAllTerminateValues(terminateLatestActiveMergeStrategy.terminateValues())
+                .build();
         }
     }
 

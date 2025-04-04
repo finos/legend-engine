@@ -420,7 +420,7 @@ public class SchemaEvolution
         public Set<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
             Set stagingFieldsToIgnore = getDedupAndVersioningFields(unitemporalDelta);
-            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(stagingFieldsToIgnore::add);
+            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD).ifPresent(stagingFieldsToIgnore::add);
             return stagingFieldsToIgnore;
         }
 
@@ -437,7 +437,7 @@ public class SchemaEvolution
         {
             Set stagingFieldsToIgnore = getDedupAndVersioningFields(bitemporalDelta);
             stagingFieldsToIgnore.addAll(bitemporalDelta.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE_IN_STAGING));
-            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(stagingFieldsToIgnore::add);
+            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD).ifPresent(stagingFieldsToIgnore::add);
             return stagingFieldsToIgnore;
         }
 

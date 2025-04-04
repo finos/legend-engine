@@ -464,7 +464,7 @@ public class LogicalPlanUtils
         {
             String mainDatasetName = datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
             String tempDatasetName = TableNameGenUtils.generateTableName(mainDatasetName, TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME, ingestRunId);
-            Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
+            Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).nullable(true).build();
             List<Field> mainFieldsPlusDeleteIndicator = new ArrayList<>(datasets.mainDataset().schema().fields());
             mainFieldsPlusDeleteIndicator.add(deleteIndicator);
             return DatasetDefinition.builder()

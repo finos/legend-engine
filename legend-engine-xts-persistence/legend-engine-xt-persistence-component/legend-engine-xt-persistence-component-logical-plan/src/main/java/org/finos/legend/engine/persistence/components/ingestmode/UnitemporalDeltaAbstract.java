@@ -15,8 +15,12 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
@@ -63,6 +67,27 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
     @Value.Check
     default void validate()
     {
+        mergeStrategy().accept(new MergeStrategyVisitor<Object>()
+        {
+            @Override
+            public Object visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Object visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Object visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+            {
+                throw new IllegalStateException("Cannot build UnitemporalDelta, TerminateLatestActiveMergeStrategy not supported");
+            }
+        });
+
         versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
         {
 

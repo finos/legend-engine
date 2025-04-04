@@ -169,7 +169,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             nontemporalDelta.digestField().ifPresent(metaFields::add);
-            nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
+            nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD).ifPresent(metaFields::add);
             nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
@@ -191,7 +191,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             unitemporalDelta.digestField().ifPresent(metaFields::add);
-            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
+            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD).ifPresent(metaFields::add);
             unitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
@@ -213,7 +213,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             bitemporalDelta.digestField().ifPresent(metaFields::add);
-            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
+            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD).ifPresent(metaFields::add);
             bitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;

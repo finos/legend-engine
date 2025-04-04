@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.merge;
 
-public interface MergeStrategyVisitor<T>
+public enum MergeStrategyDeleteMode
 {
-    T visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy);
-
-    T visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy);
-
-    T visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy);
+    // TODO: review names
+    DELETE_MISTAKE,
+    TERMINATE_LATEST_ACTIVE
 }
