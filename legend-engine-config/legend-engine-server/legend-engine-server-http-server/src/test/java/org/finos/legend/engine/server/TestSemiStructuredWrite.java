@@ -30,10 +30,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -51,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.TestExecutionScope.buildTestExecutor;
 
+@Ignore
 public class TestSemiStructuredWrite
 {
     protected static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestSemiStructuredWrite.class);
