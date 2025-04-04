@@ -68,6 +68,7 @@ public class TestUtils
     public static String stagingTableName = "staging";
     public static String tempTableName = "temp";
     public static String tempWithDeleteIndicatorTableName = "tempWithDeleteIndicator";
+    public static String tempWithTerminateIndicatorTableName = "tempWithTerminateIndicator";
     public static String stagingTableWithoutDuplicatesName = "stagingWihtoutDuplicates";
 
     // Sample table 1
@@ -109,6 +110,8 @@ public class TestUtils
     public static String deleteIndicatorName = "delete_indicator";
     public static String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
     public static String[] deleteIndicatorValuesEdgeCase = new String[]{"0"};
+    public static String terminateIndicatorName = "terminate_indicator";
+    public static String[] terminateIndicatorValues = new String[]{"yes", "1", "true"};
     public static String alterColumnName = "alter_column";
     public static String fromName = "from";
     public static String throughName = "through";
@@ -165,6 +168,7 @@ public class TestUtils
     public static Field batchTimeIn = Field.builder().name(batchTimeInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchTimeInName).build();
     public static Field batchTimeOut = Field.builder().name(batchTimeOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(batchTimeOutName).build();
     public static Field deleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
+    public static Field terminateIndicator = Field.builder().name(terminateIndicatorName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(terminateIndicatorName).build();
     public static Field booleanDeleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
     public static Field alterColumn = Field.builder().name(alterColumnName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(alterColumnName).build();
     public static Field incomeChanged = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
@@ -1218,6 +1222,25 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getBitemporalFromOnlyTempTableWithTerminateIndicatorIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(tempWithTerminateIndicatorTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(terminateIndicator)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalFromOnlyStagingTableIdBased()
     {
         return DatasetDefinition.builder()
@@ -1300,6 +1323,22 @@ public class TestUtils
                 .addFields(digest)
                 .addFields(version)
                 .addFields(dataSplit)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithTerminateIndicatorIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(terminateIndicator)
                 .build()
             )
             .build();
