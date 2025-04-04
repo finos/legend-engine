@@ -28,7 +28,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 
-public class Test_RelationalFCTH2 extends RelationalMFTReportH2
+public class Test_RelationalMFTH2 extends RelationalMFTReportH2
 {
     public static Test suite()
     {
@@ -36,7 +36,7 @@ public class Test_RelationalFCTH2 extends RelationalMFTReportH2
         MutableMap<String, String> exclusions =  MFTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return PureTestHelperFramework.wrapSuite(
                 () -> true,
-                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalEvaluator__FCTEvaluator_1_", "meta::relational::fct::relationalAdaptorH2__FCTAdapter_1_",executionSupport),
+                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, "meta::relational::fct::relationalEvaluator__MFTEvaluator_1_", "meta::relational::mft::relationalAdaptorH2__MFTAdapter_1_",executionSupport),
                 () -> false,
                 Lists.mutable.with(new H2TestServerResource())
         );

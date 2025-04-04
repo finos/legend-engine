@@ -37,7 +37,7 @@ public class Test_M2MMFT extends M2MMFTReport
         MutableMap<String, String> exclusions =  MFTReport.explodeExpectedFailures(getExpectedFailures(),executionSupport.getProcessorSupport());
         return PureTestHelperFramework.wrapSuite(
                 () -> true,
-                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::fct::fctAdaptor__FCTAdapter_1_",executionSupport),
+                () -> MFTTestSuitBuilder.buildMFTTestSuiteWithExecutorFunctionFromList(testCollection(), exclusions, evaluatorFunction(), "meta::pure::mapping::modelToModel::mft::mftAdaptor__MFTAdapter_1_",executionSupport),
                 () -> false,
                 Lists.mutable.with(new H2TestServerResource())
         );
