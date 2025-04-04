@@ -1,0 +1,199 @@
+import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::mft::*;
+import meta::pure::test::mft::*;
+import meta::core::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+
+
+function   meta::relational::mft::relationalRunTime(mappingTest:meta::pure::test::mft::MFTMappingTest[1]):Runtime[1]
+{
+    meta::relational::mft::testRelationalRunTime($mappingTest,DatabaseType.H2)
+  
+ }
+
+function   meta::relational::mft::testRelationalPureH2RunTime(mappingTest:meta::pure::test::mft::MFTMappingTest[1]):Runtime[1]
+{
+       let chainConnections =  if($mappingTest.mapping->size()>1,  //chain runtime
+                                    |  $mappingTest.mapping->tail()->map(m| ^ConnectionStore( element=^meta::external::store::model::ModelStore(),
+                                                                                             connection=^meta::external::store::model::ModelChainConnection(mappings = $m))),
+                                    |[]);  
+
+
+       ^Runtime(connectionStores= $mappingTest.setupData->map(d|$d->match([c:CSVSetupData[1]|   testDatabaseConnection($c.database,[]),
+                                                                                                                 
+                                                                           a:Any[1]|[]  ]))->concatenate($chainConnections));
+
+ }
+
+
+function   meta::relational::mft::testRelationalRunTime(mappingTest:meta::pure::test::mft::MFTMappingTest[1],databaseType:DatabaseType[1]):Runtime[1]
+{
+       let connection =  meta::pure::testConnection::getTestConnection($databaseType);
+       let chainConnections =  if($mappingTest.mapping->size()>1,  //chain runtime
+                                    |  $mappingTest.mapping->tail()->map(m| ^ConnectionStore( element=^meta::external::store::model::ModelStore(),
+                                                                                             connection=^meta::external::store::model::ModelChainConnection(mappings = $m))),
+                                    |[]);  
+
+       ^Runtime(connectionStores= $mappingTest.setupData->map(d|$d->match([c:CSVSetupData[1]| testmftConnectionStore($c.database,$connection),
+                                                                           a:Any[1]|[]  ]))->concatenate($chainConnections));
+
+ }
+
+function   <<meta::pure::test::mft::model::MFT.adapter>>  meta::relational::mft::relationalAdaptorH2():MFTAdapter[1]
+{
+    ^MFTAdapter(
+              runtime= meta::relational::mft::relationalRunTime_MFTMappingTest_1__Runtime_1_,
+              setup =  meta::relational::mft::setupDataRunnerLegendH2_Function_1__Any_1_
+             );
+
+}
+
+
+function   <<meta::pure::test::mft::model::MFT.adapter>>  meta::relational::mft::relationalExecuteAdaptorH2():MFTAdapter[1]
+{
+    ^MFTAdapter(
+               runtime= meta::relational::mft::testRelationalPureH2RunTime_MFTMappingTest_1__Runtime_1_,
+               setup =  meta::relational::mft::setupDataExecuteRunner_Function_1__Any_1_
+             );
+
+}
+
+
+
+function   meta::relational::mft::relationalTestSetUpH2(mappingTestFN:Function<{->MFTMappingTest[1]}>[1]):Any[1]
+{
+     meta::relational::mft::setupData($mappingTestFN,DatabaseType.H2);
+}
+
+
+
+
+
+function   meta::relational::mft::testmftRuntime(database:Database[1],databaseType:DatabaseType[1]):Runtime[1]
+{
+   ^Runtime(connectionStores=  ^ConnectionStore( connection= meta::pure::testConnection::getTestConnection($databaseType),
+                                                 element = $database))
+}
+function   meta::relational::mft::testmftConnectionStore(database:Database[1],connection:RelationalDatabaseConnection[1]):ConnectionStore[1]
+{
+  ^ConnectionStore( connection= $connection,
+                     element = $database);
+}
+
+function   meta::relational::mft::setupData(mappingTestFN:Function<{->MFTMappingTest[1]}>[1],databaseType:DatabaseType[1]):Any[1]
+{
+    let mappingTest = $mappingTestFN->eval();
+    $mappingTest.setupData->meta::relational::mft::setupDataRunnerLegend($databaseType);
+
+}
+
+function   meta::relational::mft::setupDataRunnerLegendH2(mappingTestFN:Function<{->MFTMappingTest[1]}>[1]):Any[1]
+{
+     let mappingTest = $mappingTestFN->eval();
+
+    meta::relational::mft::setupDataRunnerLegend($mappingTest.setupData,DatabaseType.H2);
+}
+function   meta::relational::mft::setupDataRunnerLegend(setUp:SetupData[*], databaseType:DatabaseType[1]):Any[1]
+{
+
+
+   $setUp->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+                                                                 let rt = meta::relational::mft::testmftRuntime($c.database,$databaseType);
+
+                                                                 let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
+                                                                                        ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
+                                                                                        ->concatenate(list(''));
+
+                                                                  let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database,createDbConfig($databaseType));
+                                                                  let nodes = $setUpSQLs->map(sql | meta::relational::mapping::generateSQLExecNode($sql, $rt.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::DatabaseConnection)));
+                                                                    let updatePlan = ^meta::pure::executionPlan::ExecutionPlan
+                                                                    (
+                                                                        func = |'dummy',
+                                                                        mapping = ^Mapping(package=meta::pure::executionPlan, name='dummy'),
+                                                                        runtime = $rt,
+                                                                        rootExecutionNode = ^meta::pure::executionPlan::SequenceExecutionNode(
+                                                                                              resultType = ^meta::pure::executionPlan::VoidResultType(genericType=^GenericType(rawType = Any)),
+                                                                                              executionNodes = $nodes
+                                                                                            ),
+                                                                        authDependent = false
+                                                                    );
+
+
+                                                                  let plan = $updatePlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::relational::extension::relationalExtensions());
+
+                                                                  let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+
+                                                                  meta::legend::executePlanAsJSON($planAsJson, []);,
+
+                                            a:Any[1]|[]
+
+          ] ));
+true;
+}
+
+
+function   meta::relational::mft::setupDataExecuteRunner(mappingTestFN:Function<{->MFTMappingTest[1]}>[1]):Any[1]
+{
+     let mappingTest = $mappingTestFN->eval();
+
+
+     $mappingTest.setupData->map(s|$s->match([c:CSVSetupData[1]|let csvData = meta::pure::functions::io::readFile($c.path)->toOne();
+                                                                 let rt =      testRuntime($c.database);
+                                                                 let connection = $rt->connectionByElement($c.database)->cast(@DatabaseConnection);
+                                                                 let formattedData = $csvData->meta::pure::functions::string::splitIntoLines()
+                                                                                        ->map(l|list($l->trim()->meta::alloy::service::execution::splitWithEmptyValue()))
+                                                                                        ->concatenate(list(''));
+
+                                                                  let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($formattedData, $c.database,createDbConfig(DatabaseType.H2));
+                                                                  $setUpSQLs->map(s | $s->executeInDb(  $connection));,
+
+                                            a:Any[1]|[]
+
+          ] ));
+   true;
+}
+
+###Pure
+import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::*;
+import meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::*;
+import meta::relational::mft::testGeneration::*;
+import meta::pure::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::extension::*;
+import meta::relational::mft::*;
+import meta::pure::test::mft::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
+
+
+function  meta::relational::mft::testGeneration::buildExpectedInstance(result:String[1],expected:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
+{ 
+ let instance = if($expected == 'tds',
+          |  let r =$result->meta::json::fromJSON(RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@RelationalTDSResult)->toOne()->meta::relational::mft::resultToCSV();
+              ^TDSResult(value=$r)->deactivate() ->transformValueSpecification([],  [pair('r',list($r))] ->newMap(), true, false, relationalExtensions());,
+          |  ^JSONResult(value=$result)->deactivate()->transformValueSpecification([],  [pair('result',list($result))] ->newMap(), true, false, relationalExtensions());
+  );
+
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='expectedExecutionResult'),expression=$instance);
+
+}
+
+
+
+
+function   meta::relational::mft::testGeneration::testReference(function:ConcreteFunctionDefinition<Any>[1]):meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression[1]
+{ 
+
+    ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression(_type='keyExpression',key=^CString(_type='string',value='tests'),expression=^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr(_type ='packageableElementPtr',fullPath=$function->elementToPath()));
+
+}
+
+
+
+            

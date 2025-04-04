@@ -1,6 +1,6 @@
 import meta::relational::extension::*;
 import meta::analytics::testCoverage::featureMatrix::*;
-import meta::pure::test::fct::*;
+import meta::pure::test::mft::*;
 import meta::json::*;
 import meta::pure::extension::*;
 import meta::pure::testCoverage::featureMatrix::*;
@@ -84,7 +84,7 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
  }
 
 
- function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:FeatureResultAssertionType[1],testType:String[1], store:String[1],message:String[0..1], testCollection:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[1]):FeatureResult[*]
+ function meta::analytics::testCoverage::featureMatrix::featureForFN(fn:ConcreteFunctionDefinition<Any>[1],mappingFeatures:String[*],assertionType:FeatureResultAssertionType[1],testType:String[1], store:String[1],message:String[0..1], testCollection:ConcreteFunctionDefinition<{->MFTMappingTest[1]}>[1]):FeatureResult[*]
 {
 
                              let p =    $fn.stereotypes->groupBy(v|$v.profile->elementToPath());
@@ -107,11 +107,11 @@ function meta::analytics::testCoverage::featureMatrix::hasStereotypeFixed(f:Conc
 }
 
 
-function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(functions:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*], reportType:String[1],  store:String[1], evaluatorFunction:ConcreteFunctionDefinition<{->FCTEvaluator[1]}>[1]):String[1]
+function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(functions:ConcreteFunctionDefinition<{->MFTMappingTest[1]}>[*], reportType:String[1],  store:String[1], evaluatorFunction:ConcreteFunctionDefinition<{->MFTEvaluator[1]}>[1]):String[1]
 {
-  let testFunctions = meta::pure::testCoverage::featureMatrix::collectFCTFeatures();
+  let testFunctions = meta::pure::testCoverage::featureMatrix::collectMFTFeatures();
   let features = meta::pure::testCoverage::featureMatrix::featureSets();
-  let evalFN = $evaluatorFunction->eval()->cast(@FCTEvaluator);
+  let evalFN = $evaluatorFunction->eval()->cast(@MFTEvaluator);
   let unsupportedFeatures = if($evalFN.unsupportedFeatures->isNotEmpty(),
                                 |$evalFN.unsupportedFeatures->toOne()->eval();,
                                 | []);
@@ -124,7 +124,7 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
 
 
 
- function meta::analytics::testCoverage::featureMatrix::buildStoreReport(mappingTests:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[*],testFunctions:Map<String,ConcreteFunctionDefinition<Any>>[1], allFeatures:FeatureSet[*], reportType:String[1],store:String[1], unsupportedFeatures:FeatureSet[*]):FeatureResult[*]
+ function meta::analytics::testCoverage::featureMatrix::buildStoreReport(mappingTests:ConcreteFunctionDefinition<{->MFTMappingTest[1]}>[*],testFunctions:Map<String,ConcreteFunctionDefinition<Any>>[1], allFeatures:FeatureSet[*], reportType:String[1],store:String[1], unsupportedFeatures:FeatureSet[*]):FeatureResult[*]
  {
   let unspportedST =  $unsupportedFeatures->map(f|$f->flattenFeatureSet());
 
@@ -133,16 +133,16 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
                                           let mappingFeatures =  $mappingTest.stereotypes->filter(s|$s.profile->elementToPath()=='meta::pure::testCoverage::featureMatrix::MappingFeature').value;
                                           let instance =  $mappingTest->eval();
                                           let assertionTestsMap = $instance.assertions->map(a|  $a.tests->map( test| pair( $test->elementToPath(),  $a  )))->newMap();
-                                          $testFunctions->keyValues()->map(fctTest |let assert = $assertionTestsMap->get($fctTest.first);
+                                          $testFunctions->keyValues()->map(mftTest |let assert = $assertionTestsMap->get($mftTest.first);
                                                                                               if(  $assert->isNotEmpty(), 
                                                                                                   |  
                                                                                                       
                                                                                                   
-                                                                                                      $assert->match([ t:TestAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Assertion,$reportType,$store,[],$mappingTest),
-                                                                                                                       t:TestErrorAssertion[1]|$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.AssertError,$reportType,$store,$t.expectedErrorMessage,$mappingTest),   
-                                                                                                                       i:IgnoreTest[1]    |$fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Ignore,$reportType,$store,$i.reason,$mappingTest)   
+                                                                                                      $assert->match([ t:TestAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Assertion,$reportType,$store,[],$mappingTest),
+                                                                                                                       t:TestErrorAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.AssertError,$reportType,$store,$t.expectedErrorMessage,$mappingTest),
+                                                                                                                       i:IgnoreTest[1]    |$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Ignore,$reportType,$store,$i.reason,$mappingTest)
                                                                                                                     ]);,  
-                                                                                                  |   $fctTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, FeatureResultAssertionType.Untested,$reportType,$store,[],$mappingTest)
+                                                                                                  |   $mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, FeatureResultAssertionType.Untested,$reportType,$store,[],$mappingTest)
                                                                                                 );
                                                                         );             
                                           );

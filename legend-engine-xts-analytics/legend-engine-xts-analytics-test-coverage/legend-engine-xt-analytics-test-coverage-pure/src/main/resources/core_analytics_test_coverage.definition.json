@@ -15,7 +15,7 @@
     "core_functions_relation",
     "core_functions_json",
     "core_relational",
-    "core_relational_fct",
+    "core_relational_mft",
     "core_analytics_lineage"
   ]
 }

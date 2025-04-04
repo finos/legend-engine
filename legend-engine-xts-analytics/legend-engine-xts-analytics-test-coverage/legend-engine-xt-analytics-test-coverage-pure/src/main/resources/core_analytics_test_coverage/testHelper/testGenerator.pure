@@ -5,27 +5,27 @@ import meta::analytics::lineage::*;
 import meta::analytics::testCoverage::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::relational::fct::testGeneration::*;
+import meta::relational::mft::testGeneration::*;
 import meta::pure::mapping::*;
 import meta::relational::runtime::*;
 import meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::*;
 import meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
 import meta::relational::extension::*;
-import meta::relational::fct::*;
-import meta::pure::test::fct::*;
+import meta::relational::mft::*;
+import meta::pure::test::mft::*;
 import meta::pure::testCoverage::featureMatrix::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
    
 
 function  {doc.doc ='Use this function to generate the assertions for a mapping test collection. The collection should be created with a mapping and setup data and this function will generate assertions for any missing features'}
-meta::analytics::testCoverage::testGeneratorBulkUpdate(package:Package[1], adapter:FCTAdapter[1], skipTDS:Boolean[1]):String[1]   //FCT mapping   with the mapping and the data setup 
+meta::analytics::testCoverage::testGeneratorBulkUpdate(package:Package[1], adapter:MFTAdapter[1], skipTDS:Boolean[1]):String[1]   //MFT mapping   with the mapping and the data setup
 {
-  let testFunctions = $package->getAllPackageElements(true)->filter(e|$e->hasStereotype('testCollection',meta::pure::test::fct::model::FCT))->cast(@ConcreteFunctionDefinition<{->FCTMappingTest[1]}>);
+  let testFunctions = $package->getAllPackageElements(true)->filter(e|$e->hasStereotype('testCollection',meta::pure::test::mft::model::MFT))->cast(@ConcreteFunctionDefinition<{->MFTMappingTest[1]}>);
     $testFunctions->map(f| 'Mapping'->println(); 
                             $f->elementToPath()->println();
                             
-                            let result = $f->cast(@ConcreteFunctionDefinition<{->FCTMappingTest[1]}>)->testGenerator($adapter,$skipTDS);
+                            let result = $f->cast(@ConcreteFunctionDefinition<{->MFTMappingTest[1]}>)->testGenerator($adapter,$skipTDS);
                             'Done\n'->println();
                             $result->println(););
 
@@ -34,25 +34,25 @@ meta::analytics::testCoverage::testGeneratorBulkUpdate(package:Package[1], adapt
 
 
 function  {doc.doc ='Use this function to generate the assertions for a mapping test collection. The collection should be created with a mapping and setup data and this function will generate assertions for any missing features'}
-meta::analytics::testCoverage::testGenerator(fctTestfn:ConcreteFunctionDefinition<{->FCTMappingTest[1]}>[1], adapter:FCTAdapter[1], skipTDS:Boolean[1]):String[1]   //FCT mapping   with the mapping and the data setup 
+meta::analytics::testCoverage::testGenerator(mftTestfn:ConcreteFunctionDefinition<{->MFTMappingTest[1]}>[1], adapter:MFTAdapter[1], skipTDS:Boolean[1]):String[1]   //MFT mapping   with the mapping and the data setup
 {
-  let fctTest= $fctTestfn->eval();
-  let mapping = $fctTest.mapping->first()->toOne();
-  let allTests =  meta::pure::testCoverage::featureMatrix::collectFCTFeatures();  
-  let existingTest =  $fctTest.assertions.tests->map(t|$t->elementToPath());
-  let lineageSkipLists  =  $fctTest.assertions->filter(a|$a->instanceOf(TestAssertion) ||  $a->instanceOf(IgnoreLineageTest) || $a->instanceOf(TestErrorAssertion)).tests->map(e|$e->elementToPath()); 
-  let executionSkipLists  =  $fctTest.assertions->filter(a|$a->instanceOf(TestAssertion) ||  $a->instanceOf(IgnoreExecutionTest) || $a->instanceOf(TestErrorAssertion)).tests->map(e|$e->elementToPath());  
-  let setupData =  $fctTest.setupData;
+  let mftTest= $mftTestfn->eval();
+  let mapping = $mftTest.mapping->first()->toOne();
+  let allTests =  meta::pure::testCoverage::featureMatrix::collectMFTFeatures();
+  let existingTest =  $mftTest.assertions.tests->map(t|$t->elementToPath());
+  let lineageSkipLists  =  $mftTest.assertions->filter(a|$a->instanceOf(TestAssertion) ||  $a->instanceOf(IgnoreLineageTest) || $a->instanceOf(TestErrorAssertion)).tests->map(e|$e->elementToPath());
+  let executionSkipLists  =  $mftTest.assertions->filter(a|$a->instanceOf(TestAssertion) ||  $a->instanceOf(IgnoreExecutionTest) || $a->instanceOf(TestErrorAssertion)).tests->map(e|$e->elementToPath());
+  let setupData =  $mftTest.setupData;
   if($adapter.setup->isNotEmpty(),
-      |$adapter.setup->toOne()->eval($fctTestfn),|[]);
+      |$adapter.setup->toOne()->eval($mftTestfn),|[]);
   
  
-  let rt =  $adapter.runtime->toOne()->eval($fctTest);
+  let rt =  $adapter.runtime->toOne()->eval($mftTest);
   let state = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::defaultAlloyToPureState([]);
   let updatedState =  ^$state( removeFunctionPaths= false, 
                                 forceFullElementPaths=true,
-                              injectFirstParamFuncs = meta::pure::test::fct::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_,
-                              funcs=$state.funcs->put(meta::pure::test::fct::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_.name->toOne(), list(meta::pure::test::fct::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_)));
+                              injectFirstParamFuncs = meta::pure::test::mft::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_,
+                              funcs=$state.funcs->put(meta::pure::test::mft::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_.name->toOne(), list(meta::pure::test::mft::expectedLineage_String_MANY__String_MANY__String_1__ExpectedLineage_1_)));
 
 
   let asserts = $allTests->keyValues()->sortBy({v:meta::pure::functions::collection::Pair<String,ConcreteFunctionDefinition<Any>>[1]|$v.second->elementToPath()})
@@ -85,7 +85,7 @@ $v->elementToPath()->println();
                                                                                                             meta::legend::executeLegendQuery(|$fnExpression->from( $mapping,$rt)->serialize($graph), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions()); ,
                                                                                                           | meta::legend::executeLegendQuery(|$fnExpression->from( $mapping,$rt), [], ^meta::pure::runtime::ExecutionContext(), relationalExtensions());  
                                                                                                   );
-                                                                                    $execute->meta::relational::fct::testGeneration::buildExpectedInstance($testType);,
+                                                                                    $execute->meta::relational::mft::testGeneration::buildExpectedInstance($testType);,
                                                                                |[]);
                                                           if($lineageAssertion->isEmpty() &&  $expectedExecutionResultExp ->isEmpty() ,
                                                               |[],

@@ -1,4 +1,4 @@
-import meta::pure::test::fct::*;
+import meta::pure::test::mft::*;
 import meta::pure::testCoverage::featureMatrix::*;
 // Copyright 2023 Goldman Sachs
 //
@@ -35,9 +35,9 @@ function <<QueryType.tds,QueryFeature.filter,access.private>> meta::analytics::t
      {|'test'};
 }
 
-function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest():FCTMappingTest[1]
+function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest():MFTMappingTest[1]
 { 
-    ^FCTMappingTest(setupData = ^meta::pure::test::fct::SetupData(),
+    ^MFTMappingTest(setupData = ^meta::pure::test::mft::SetupData(),
                     mapping=meta::analytics::testCoverage::featureMatrix::tests::testMapping,
                     assertions = [^TestAssertion(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_),
                                   ^IgnoreTest(tests = meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_,reason='ignored due to error'),
@@ -66,28 +66,28 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
 
 
 
-  let report = meta::analytics::testCoverage::featureMatrix::buildStoreReport( meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_,$featureTests,$features,'test','testStore', ^FeatureSet(features=[MappingFeature->profileSubSet(['groupBy'])]));
+  let report = meta::analytics::testCoverage::featureMatrix::buildStoreReport( meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__MFTMappingTest_1_,$featureTests,$features,'test','testStore', ^FeatureSet(features=[MappingFeature->profileSubSet(['groupBy'])]));
   let expected  = [
          ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN2__FunctionDefinition_1_', assertionType=FeatureResultAssertionType.Assertion),  
                                 mappingFeature='filter',
                                 queryFeature='filter',
                                 sourceTypeFeature = 'tds',
                                 store = 'testStore',
-                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
+                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__MFTMappingTest_1_',
                                 testType= 'test'),
          ^FeatureResult(featureTests=^FeatureTest(message= 'ignored due to error', functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN3__FunctionDefinition_1_', assertionType=FeatureResultAssertionType.Ignore),
                                 mappingFeature='filter',
                                 queryFeature='filter',
                                 sourceTypeFeature = 'tds',
                                 store = 'testStore',
-                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
+                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__MFTMappingTest_1_',
                                 testType= 'test'),
          ^FeatureResult(featureTests=^FeatureTest(message= 'Asserted error', functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN4__FunctionDefinition_1_', assertionType=FeatureResultAssertionType.AssertError),
                                 mappingFeature='filter',
                                 queryFeature='filter',
                                 sourceTypeFeature = 'tds',
                                 store = 'testStore',
-                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
+                                testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__MFTMappingTest_1_',
                                 testType= 'test'),
 
         ^FeatureResult(featureTests=^FeatureTest(functionName='meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestFN__FunctionDefinition_1_', assertionType=FeatureResultAssertionType.Untested),
@@ -95,7 +95,7 @@ function <<MappingFeature.filter, access.private>> meta::analytics::testCoverage
         queryFeature='sort',
         sourceTypeFeature = 'tds',
         store = 'testStore',
-        testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__FCTMappingTest_1_',
+        testCollection = 'meta::analytics::testCoverage::featureMatrix::tests::testFeatureMatrixtestMappingTest__MFTMappingTest_1_',
         testType= 'test'),
        ^FeatureResult(
         mappingFeature=['filter','union'],

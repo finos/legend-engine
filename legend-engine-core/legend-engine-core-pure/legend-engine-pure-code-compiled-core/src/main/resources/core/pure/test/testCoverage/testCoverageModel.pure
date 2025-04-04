@@ -110,9 +110,9 @@ function meta::pure::testCoverage::featureMatrix::profileSubSet(profile:Profile[
 }
 
 
- function meta::pure::testCoverage::featureMatrix::collectFCTFeatures():Map<String,ConcreteFunctionDefinition<Any>>[1]
+ function meta::pure::testCoverage::featureMatrix::collectMFTFeatures():Map<String,ConcreteFunctionDefinition<Any>>[1]
 {
-   let fctTestPackage = meta::pure::fct::tests;
+   let mftTestPackage = meta::pure::mft::tests;
 
-  let testFunctions = $fctTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('feature',meta::pure::test::fct::model::FCT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
+  let testFunctions = $mftTestPackage->getAllPackageElements(true)->filter(e|$e->hasStereotype('feature',meta::pure::test::mft::model::MFT))->cast(@ConcreteFunctionDefinition<Any>)->map(f|pair($f->elementToPath(),$f ) )->newMap();
 }

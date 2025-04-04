@@ -1,0 +1,336 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::graphFetch::execution::*;
+import meta::pure::graphFetch::*;
+import meta::pure::extension::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::configuration::*;
+import meta::pure::runtime::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::pure::mft::tests::collection::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::test::mft::*;
+import meta::pure::mft::*;
+
+Profile meta::pure::test::mft::model::MFT
+{
+    stereotypes : [feature,test, adapter, evaluator, testCollection];
+}
+
+Class  meta::pure::test::mft::MFTAdapter
+{
+  runtime:Function<{MFTMappingTest[1]->Runtime[1]}>[1];
+  setup:Function<{Function<{->MFTMappingTest[1]}>[1]->Any[1]}>[0..1];
+    
+}
+
+Class  meta::pure::test::mft::MFTEvaluator  //Lineage or execute for each store type
+{
+  eval: Function<{TestParameters[1]->TestResult[1]}>[1];
+  assertion: Function<{TestResult[1],TestParameters[1]->Boolean[1]}>[0..1];
+  testParameters: Function<{MFTMappingTest[1],Runtime[1] ->TestParameters[*]}>[1];
+  unsupportedFeatures: Function<{->FeatureSet[*]}>[0..1];
+}
+
+
+Class meta::pure::test::mft::TestResult
+{
+}
+
+ Class meta::pure::test::mft::LineageResult extends  meta::pure::test::mft::TestResult
+{
+    result:meta::pure::lineage::result::LineageResult[1];
+}
+Class meta::pure::test::mft::ExpectedLineage
+{
+    storeLineage:String[*];
+    classLineage:String[*];
+    reportLineage:String[1];
+}
+
+Class meta::pure::test::mft::ExecuteResult<T> extends meta::pure::test::mft::TestResult
+{
+  result:meta::pure::mapping::Result<T|*>[1];
+  
+}
+
+Class meta::pure::test::mft::StringResult extends meta::pure::test::mft::TestResult
+{
+  result:String[1];
+}
+
+
+Class meta::pure::test::mft::CSVTestResult extends meta::pure::test::mft::TestResult
+{
+  result:String[1];
+}
+
+
+
+Class  meta::pure::test::mft::SetupData
+{
+}
+
+Class  meta::pure::test::mft::JSONSetupData extends meta::pure::test::mft::SetupData
+{
+  class: Class<Any>[1];
+  json:String[1];
+}
+Class  meta::pure::test::mft::InstanceSetupData extends meta::pure::test::mft::SetupData
+{
+  instance: Map<Class<Any>, List<Any>>[1];
+}
+
+
+Class  meta::pure::test::mft::MFTMappingTest
+{
+   setupData:SetupData[*];
+   mapping:meta::pure::mapping::Mapping[1..*];
+   assertions:meta::pure::test::mft::Test[*];
+
+}
+
+function meta::pure::test::mft::adaptorSetupFunction(adaptor:Function<{->MFTAdapter[1]}>[1]):Function<{Function<{->MFTMappingTest[1]}>[1]->Any[1]}>[0..1]
+{
+    $adaptor->eval().setup; 
+}
+
+
+ function meta::pure::test::mft::createTestParameters(mappingTest:MFTMappingTest[1],runtime:Runtime[1]):meta::pure::test::mft::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                          expectedLineageResult = $t.expectedLineageResult,
+                                                                                                          test = $test)), 
+                                                                                                                              
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+
+  function meta::pure::test::mft::createTestParametersLineage(mappingTest:MFTMappingTest[1],runtime:Runtime[1]):meta::pure::test::mft::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t->filter(f|$f.expectedLineageResult->isNotEmpty()).tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                                                                            mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                                                                            expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                                                                            expectedLineageResult = $t.expectedLineageResult,
+                                                                                                                                                            test = $test)), 
+                                                                                                                              
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+ 
+
+  function meta::pure::test::mft::createTestParametersExecution(mappingTest:MFTMappingTest[1],runtime:Runtime[1]):meta::pure::test::mft::TestParameters[*]
+ {
+      $mappingTest.assertions->map(a|$a->match( [ t:TestAssertion[1]|  $t->filter(f|$f.expectedExecutionResult->isNotEmpty()).tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                                                                              mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                                                                              expectedExecutionResult=$t.expectedExecutionResult, 
+                                                                                                                                                              expectedLineageResult = $t.expectedLineageResult,
+                                                                                                                                                              test = $test)), 
+                                                                                                                              
+                                                i:IgnoreTest[1] | [],
+                                                e:TestErrorAssertion[1]| $e.tests->map(test| ^TestParameters(runtime=$runtime,
+                                                                                                          mapping=$mappingTest.mapping->first()->toOne(), 
+                                                                                                          expectedErrorMessage = $e.expectedErrorMessage,
+                                                                                                          test = $test))  
+                                                           
+                                                                                         ])
+                                                                                 );
+
+ }
+ 
+ 
+
+Class  meta::pure::test::mft::Test
+{
+  tests:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[*]  ;
+
+}
+
+Class  meta::pure::test::mft::CSVResult extends ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::mft::TDSResult extends ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::mft::JSONResult extends  ExecutionResult
+{
+  value:String[1];
+}
+
+Class  meta::pure::test::mft::ExecutionResult
+{
+}
+
+Class  meta::pure::test::mft::TestAssertion extends meta::pure::test::mft::Test
+
+{
+  expectedExecutionResult:ExecutionResult[0..1];
+  expectedLineageResult:ExpectedLineage[0..1];
+}
+
+Class  meta::pure::test::mft::TestErrorAssertion extends meta::pure::test::mft::Test
+{
+  expectedErrorMessage:String[0..1];
+}
+
+
+
+Class  meta::pure::test::mft::IgnoreTest extends meta::pure::test::mft::Test
+{
+  reason:String[1];
+}
+
+Class  meta::pure::test::mft::IgnoreLineageTest extends meta::pure::test::mft::IgnoreTest
+{
+}
+Class  meta::pure::test::mft::IgnoreExecutionTest extends meta::pure::test::mft::IgnoreTest
+{
+}
+
+
+
+Class  meta::pure::test::mft::TestParameters
+{
+  expectedExecutionResult:Any[0..1];
+  expectedErrorMessage : String[0..1];
+  expectedLineageResult:ExpectedLineage[0..1];
+  runtime:meta::core::runtime::Runtime[1];
+  mapping:meta::pure::mapping::Mapping[1];
+  test:ConcreteFunctionDefinition<{->FunctionDefinition<{->Any[1]}>[1]}>[1];
+
+}
+
+Class  meta::pure::test::mft::TestConfig<T>
+{
+  parameters:meta::pure::test::mft::TestParameters[1];
+  toEval: Function<{FunctionDefinition<T>[1],TestParameters[1]->TestResult[1]}>[1];
+}
+
+Profile  meta::pure::mft::TestReturnType
+{
+  stereotypes: [String,ClassInstance, TabularDataSet];
+
+}
+
+
+
+function   meta::pure::mft::tests::testRunnerAssertionLocal(adapter:MFTAdapter[1], evaluator:MFTEvaluator[1], mappingTestFn:Function<{->MFTMappingTest[1]}>[1]): Boolean[*]
+{
+          if($adapter.setup->isNotEmpty(),|$adapter.setup->toOne()->eval($mappingTestFn),|[]);  
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $adapter.runtime->eval($mappingTest);
+          $evaluator.testParameters->toOne()->eval($mappingTest,$runtime)->map(p   |  ^meta::pure::mft::AssertionRun(parameter=$p, evaluator=$evaluator)->meta::pure::mft::tests::execute::AssertionRunExecute();  );
+}
+
+function   meta::pure::mft::tests::testRunnerAssertion(adapterFN:Function<{->MFTAdapter[1]}>[1], evaluatorFN:Function<{->MFTEvaluator[1]}>[1], mappingTestFn:Function<{->MFTMappingTest[1]}>[1]): AssertionRun[*]
+{
+          let adapter = $adapterFN->eval();
+          let evaluator = $evaluatorFN->eval();
+          let mappingTest =  $mappingTestFn->eval();
+          let runtime = $adapter.runtime->eval($mappingTest);
+          $evaluator.testParameters->toOne()->eval($mappingTest,$runtime)->map(p   |  ^meta::pure::mft::AssertionRun(parameter=$p, evaluator=$evaluator));
+                                                     
+}
+
+
+
+
+Class meta::pure::mft::AssertionRun
+{
+  evaluator:MFTEvaluator[1];
+  parameter:TestParameters[1] ;
+  
+}
+
+function  meta::pure::mft::tests::execute::AssertionRunExecute(assertion:meta::pure::mft::AssertionRun[1]):Boolean[1]
+{
+ let result = $assertion.evaluator.eval->eval($assertion.parameter);
+ if($assertion.evaluator.assertion->isNotEmpty() && $assertion.parameter.expectedErrorMessage->isEmpty(),
+    |$assertion.evaluator.assertion->toOne()->eval($result,$assertion.parameter),
+    |true);
+ 
+
+}
+
+function meta::pure::test::mft::expectedLineage( storeLineage:String[*], classLineage:String[*], reportLineage:String[1]):ExpectedLineage[1]
+{
+^ExpectedLineage(storeLineage= $storeLineage, classLineage =$classLineage, reportLineage =$reportLineage);
+  
+}
+
+
+function meta::pure::test::mft::assertLineageResult( result:meta::pure::test::mft::TestResult[1],parameter:TestParameters[1]):Boolean[1]
+{
+   
+   $parameter.expectedLineageResult->isNotEmpty() &&  meta::pure::test::mft::assertLineageResult($parameter.expectedLineageResult->toOne().storeLineage,$parameter.expectedLineageResult->toOne().classLineage,$parameter.expectedLineageResult->toOne().reportLineage,$result,$parameter.test->elementToPath());
+}
+
+function meta::pure::test::mft::assertLineageResult( storeLineage:String[*], classLineage:String[*], reportLineage:String[1],result:meta::pure::test::mft::TestResult[1], sourceDetail:String[1]):Boolean[1]
+{
+
+  if($result->instanceOf(meta::pure::test::mft::LineageResult),
+           | let lineage = $result->cast(@meta::pure::test::mft::LineageResult).result;
+            meta::pure::lineage::test::assertLineage($storeLineage,$classLineage,$reportLineage,$lineage,$sourceDetail);,
+           | true);
+}
+
+
+
+function   meta::pure::test::mft::executeMFTLegendQuery(parameters:meta::pure::test::mft::TestParameters[1],extensions:Extension[*]):StringResult[1]
+{ 
+  let fn =  $parameters.test->at(0).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->at(0)->cast(@FunctionDefinition<{->Any[*]}>).expressionSequence->cast(@SimpleFunctionExpression)->toOne();
+  if($parameters.test->hasStereotype('graphFetch',QueryType),
+            | let graph =  $fn->cast(@SimpleFunctionExpression)->toOne().parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>);
+              if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                            meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime)->serialize($graph), [], ^meta::pure::runtime::ExecutionContext(), $extensions),
+                                            $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime)->serialize($graph), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
+                  );,
+            |if($parameters.expectedErrorMessage->isNotEmpty(),
+                          | assertError(|    
+                                            meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(),$extensions),
+                                            $parameters.expectedErrorMessage->toOne()
+                                            
+                                            ); @StringResult;,
+                          |   let result = ^StringResult(result =meta::legend::executeLegendQuery(|$fn->from($parameters.mapping,$parameters.runtime), [], ^meta::pure::runtime::ExecutionContext(), $extensions));
+               ));
+}
+
+
+
