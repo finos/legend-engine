@@ -1265,7 +1265,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"validity_through_target\" = '9999-12-31 23:59:59')) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT MAX(stage.\"validity_from_reference\") as \"legend_persistence_start_date\" FROM (SELECT * FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" IN ('yes','1','true')) as stage GROUP BY stage.\"id\", stage.\"name\") as legend_persistence_y " +
+            "(SELECT MAX(stage.\"validity_from_reference\") as \"legend_persistence_start_date\",stage.\"id\",stage.\"name\" FROM (SELECT * FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" IN ('yes','1','true')) as stage GROUP BY stage.\"id\", stage.\"name\") as legend_persistence_y " +
             "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) " +
             "AND (legend_persistence_y.\"legend_persistence_start_date\" >= legend_persistence_x.\"validity_from_target\"))";
 
@@ -1395,7 +1395,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"validity_through_target\" = '9999-12-31 23:59:59')) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT MAX(stage.\"validity_from_reference\") as \"legend_persistence_start_date\" FROM (SELECT * FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" IN ('yes','1','true')) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as stage GROUP BY stage.\"id\", stage.\"name\") as legend_persistence_y " +
+            "(SELECT MAX(stage.\"validity_from_reference\") as \"legend_persistence_start_date\",stage.\"id\",stage.\"name\" FROM (SELECT * FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" IN ('yes','1','true')) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as stage GROUP BY stage.\"id\", stage.\"name\") as legend_persistence_y " +
             "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) " +
             "AND (legend_persistence_y.\"legend_persistence_start_date\" >= legend_persistence_x.\"validity_from_target\"))";
 
