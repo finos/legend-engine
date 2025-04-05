@@ -196,7 +196,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-test-fct</artifactId>
+                        <artifactId>legend-engine-test-mft</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -447,7 +447,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-fct</artifactId>
+            <artifactId>legend-engine-test-mft</artifactId>
         </dependency>
 
         <dependency>

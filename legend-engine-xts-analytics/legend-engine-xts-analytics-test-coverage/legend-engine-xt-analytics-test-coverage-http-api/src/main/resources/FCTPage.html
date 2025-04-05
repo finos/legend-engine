@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCT Test Report</title>
+    <title>MFT Test Report</title>
     <style>
         table {
             width: 100%;
@@ -20,14 +20,14 @@
     </style>
 </head>
 <body>
-<h1>FCT Test Report</h1>
+<h1>MFT Test Report</h1>
 <table id="reportTable">
     <thead>
     <tr>
         <th>Store</th>
-<!--        <th>Feature Set Name</th>-->
         <th>Source Type Feature</th>
         <th>Query Feature</th>
+        <th>Query Sub Feature</th>
         <th>Collection Feature</th>
         <th>Mapping Feature</th>
         <th>Test Type</th>
@@ -45,7 +45,7 @@
 <script>
     async function fetchData() {
         try {
-            const response = await fetch('/api/fct/json');
+            const response = await fetch('/api/mft/json');
             const jsonData = await response.json();
             populateTable(jsonData);
         } catch (error) {

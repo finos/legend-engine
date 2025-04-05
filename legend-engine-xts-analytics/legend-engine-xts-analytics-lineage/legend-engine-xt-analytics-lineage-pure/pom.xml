@@ -311,13 +311,13 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-fct</artifactId>
+            <artifactId>legend-engine-test-mft</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-fct</artifactId>
+            <artifactId>legend-engine-test-mft</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
         </dependency>

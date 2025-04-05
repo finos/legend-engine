@@ -1,0 +1,133 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+import meta::pure::mft::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::mapping::groupBy::model::store::*;
+import meta::pure::mft::tests::collection::*;
+import meta::pure::test::mft::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::relational::mft::*;
+
+function <<MappingFeature.simple, meta::pure::test::mft::model::MFT.testCollection>> meta::relational::tests::mft::mapping::simple::testSimpleMapping():MFTMappingTest[1]
+{
+ ^MFTMappingTest(setupData= ^CSVSetupData(database=meta::relational::tests::mapping::simple::model::mapping::mft::store::MFTtestDB,path='/core_relational/relational/tests/mft/shared/setup.csv'),
+                 mapping =  meta::relational::tests::mapping::simple::model::mapping::mft::simpleTestMapping,
+                 assertions= [^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::drop::dropTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJohn\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"Joe"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"John"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName,legalName\nJohn,Firm D\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>], legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"Joe"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::first::firstTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJohn\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::groupBy::groupByTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='name,cnt\nJoe,1\nJohn,1\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[cnt: [PERSON.LASTNAME <TableAliasColumn>], name: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::slice::sliceTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::sort::sortTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::take::takeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::drop::dropGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"Joe"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::exists::existsTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJohn\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName\nJoe\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Address','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::simpleGraph__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":{"street":"MAIN","type":"PRIMARY"},"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"Joe","lastName":"Smith","fullName()":"Joe Smith","birthDate":"2010-02-02","address":{"street":"FIRST","type":"SECONDARY"},"firm":{"legalName":"Co","optionalDescription":"Company"}}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(
+                              ['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'],
+                                  ['Lambda','meta::pure::mft::tests::collection::Address','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'],
+                                  '[Person.address.street: [PERSON.STREET <TableAliasColumn>], Person.address.type: [PERSON.ADDRESS_TYPE <TableAliasColumn>], Person.birthDate: [PERSON.BIRTHDATE <TableAliasColumn>], Person.firm.legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>], Person.firm.optionalDescription: [FIRM.ID <JoinTreeNode>, FIRM.OPTIONAL_DESCRIPTION <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>], Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>], Person.fullName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON.LASTNAME <TableAliasColumn>], Person.lastName: [PERSON.LASTNAME <TableAliasColumn>]]'
+                                  )),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::simpleTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='firstName,lastName,fullName,birthDate,street,type,legalName,optionalDescription\nJohn,Doe,John Doe,2020-02-02,MAIN,PRIMARY,Firm D,TDSNull\nJoe,Smith,Joe Smith,2010-02-02,FIRST,SECONDARY,Co,Company\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(
+                              ['Lambda','db_MFTtestDB','tb_MFTtestDBTESTFIRM','tb_MFTtestDBTESTPERSON'],
+                                  ['Lambda','meta::pure::mft::tests::collection::Address','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'],
+                                  '[birthDate: [PERSON.BIRTHDATE <TableAliasColumn>], firstName: [PERSON.FIRSTNAME <TableAliasColumn>], fullName: [PERSON.FIRSTNAME <TableAliasColumn>, PERSON.LASTNAME <TableAliasColumn>], lastName: [PERSON.LASTNAME <TableAliasColumn>], legalName: [FIRM.ID <JoinTreeNode>, FIRM.LEGAL_NAME <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>], optionalDescription: [FIRM.ID <JoinTreeNode>, FIRM.OPTIONAL_DESCRIPTION <TableAliasColumn>, PERSON.FIRM_ID <JoinTreeNode>], street: [PERSON.STREET <TableAliasColumn>], type: [PERSON.ADDRESS_TYPE <TableAliasColumn>]]'
+                                  )),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::first::firstGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"Joe"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::TDSResult(value='name,cnt,cnt2\nJoe,1,1\nJohn,1,1\n'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[cnt2: [PERSON.BIRTHDATE <TableAliasColumn>], cnt: [PERSON.LASTNAME <TableAliasColumn>], name: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::slice::sliceGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"John"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::sort::sortGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"Joe"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]')),
+                              ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::take::takeGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":{"firstName":"John"}}'),expectedLineageResult=meta::pure::test::mft::expectedLineage(['Lambda','db_MFTtestDB','tb_MFTtestDBTESTPERSON'], ['Lambda','meta::pure::mft::tests::collection::Person','pack_meta::pure::mft::tests::collection'], '[Person.firstName: [PERSON.FIRSTNAME <TableAliasColumn>]]'))
+                           ]
+            );
+
+}
+
+###Mapping
+import meta::pure::mft::tests::collection::*;
+import meta::relational::tests::mapping::simple::model::mapping::mft::store::*;
+Mapping meta::relational::tests::mapping::simple::model::mapping::mft::simpleTestMapping
+(
+    Person: Relational
+    {
+       scope([MFTtestDB]TEST.PERSON)
+       (
+          firstName: FIRSTNAME,
+          lastName : LASTNAME,
+          birthDate: BIRTHDATE,
+          address(
+            street:STREET,
+             type: EnumerationMapping AddressTypeMapping: ADDRESS_TYPE  
+
+          )      
+       ),
+       firm: [MFTtestDB]@personFirm
+    }
+
+
+    Firm: Relational
+    {
+       legalName: [MFTtestDB]TEST.FIRM.LEGAL_NAME,
+       optionalDescription: [MFTtestDB]TEST.FIRM.OPTIONAL_DESCRIPTION,
+       employees: [MFTtestDB]@personFirm
+    }
+
+       AddressType: EnumerationMapping AddressTypeMapping
+  {
+    PRIMARY: ['PRIMARY'],
+    SECONDARY: ['SECONDARY']
+  }
+)
+
+
+###Relational
+
+Database meta::relational::tests::mapping::simple::model::mapping::mft::store::MFTtestDB
+(
+    Schema TEST
+    (
+    Table PERSON
+    (
+        ID INT PRIMARY KEY,
+        FIRSTNAME VARCHAR(20),
+        LASTNAME VARCHAR(20),
+        FIRM_ID INT,
+        BIRTHDATE DATE,
+        STREET VARCHAR(20),
+        ADDRESS_TYPE  VARCHAR(20)
+
+    )
+
+    Table FIRM
+    (
+       ID INT PRIMARY KEY,
+       LEGAL_NAME VARCHAR(20),
+       OPTIONAL_DESCRIPTION VARCHAR(20)
+
+    )
+
+    )
+    Join personFirm(TEST.PERSON.FIRM_ID = TEST.FIRM.ID)
+
+)

@@ -331,7 +331,9 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
 
    if ($setImplementationId->size() > 1,
        |   $setImplementationId->map(setId|let offset = $setImplementationId->indexOf($setId);
-                                           let setImplementation = $mapping->classMappingById($setId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->toOne();
+                                           let classMapping = $mapping->classMappingById($setId);
+                                           assert($classMapping->isNotEmpty(),' Did not find setID '+  $setId + ' from properties '  +$relationalPropertyMappings.property.name->distinct()->joinStrings(',')   +' in any in scope mapping'  );
+                                           let setImplementation = $classMapping->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->toOne();
                                            let mainTable = $setImplementation->mainRelation();
                                            let cols = $propertyMappingBySetIds->get($setId).values.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode
                                                                               ->extractTableAliasColumns()

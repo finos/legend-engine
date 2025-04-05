@@ -168,7 +168,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::scanRelations(p:
                                         if($p.children->isEmpty(),
                                            | $tt,
                                            | let singleTT = $tt->toOne();
-                                             let targetSet = $m->classMappingById($rpm.targetSetImplementationId)->cast(@RootRelationalInstanceSetImplementation);
+                                             let targetSetI = $m->classMappingById($rpm.targetSetImplementationId);
+                                             assert($targetSetI->toOne()->instanceOf(RootRelationalInstanceSetImplementation),'for property '+$prop.name->toOne()+', Source set: ' + if($epm->isNotEmpty(), |$epm, | $source).id->joinStrings('[', ', ', ']') +   'Expected propertyMapping to relational set but instead maps to Operation');
+                                             let targetSet = $targetSetI->cast(@RootRelationalInstanceSetImplementation);
                                              let targetRelation = $targetSet.mainTableAlias.relationalElement->cast(@NamedRelation)->toOne();
 
                                              let filterTree = $targetSet->toOne()->resolveFilter().joinTreeNode->map(x|$x->getRelationTree($targetRelation, $targetSet->toOne()->resolveFilter().filter.operation));

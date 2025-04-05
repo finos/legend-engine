@@ -1,0 +1,239 @@
+// // Copyright 2024 Goldman Sachs
+// //
+// // Licensed under the Apache License, Version 2.0 (the "License");
+// // you may not use this file except in compliance with the License.
+// // You may obtain a copy of the License at
+// //
+// //      http://www.apache.org/licenses/LICENSE-2.0
+// //
+// // Unless required by applicable law or agreed to in writing, software
+// // distributed under the License is distributed on an "AS IS" BASIS,
+// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// // See the License for the specific language governing permissions and
+// // limitations under the License.
+import meta::pure::mapping::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::pure::test::mft::model::MFT::*;
+import meta::pure::mft::tests::collection::*;
+import meta::pure::mft::*;
+
+Class meta::pure::mft::tests::collection::EntityWithAddress
+{
+  address:meta::pure::mft::tests::collection::Address[0..1];
+}
+
+Class meta::pure::mft::tests::collection::Address
+{
+   street : String[1];
+   type: AddressType[1];
+}
+
+Class meta::pure::mft::tests::collection::Firm extends EntityWithAddress
+{
+   legalName : String[1];
+   optionalDescription : String[0..1];
+   
+}
+
+Class meta::pure::mft::tests::collection::Person extends EntityWithAddress
+
+{
+   firstName : String[1];
+   lastName : String[1];
+   description: String[0..1];
+   fullName(){$this.firstName+' '+$this.lastName}:String[1] ;
+   birthDate: StrictDate[1];
+}
+
+Enum meta::pure::mft::tests::collection::AddressType
+{
+  PRIMARY,
+  SECONDARY
+
+}
+ 
+Association meta::pure::mft::tests::collection::PersonFirm
+{
+   firm : Firm[1];
+   employees : Person[*];
+}
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.simple, QuerySubFeature.primitive, QuerySubFeature.enumeration, QuerySubFeature.association, QueryType.tds>>  meta::pure::mft::tests::collection::filter::simpleTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName,p|$p.lastName,p|$p.fullName(),p|$p.birthDate,p|$p.address.street,p|$p.address.type,p|$p.firm.legalName,p|$p.firm.optionalDescription],['firstName', 'lastName', 'fullName',  'birthDate', 'street', 'type', 'legalName', 'optionalDescription'     ])};
+
+}
+
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::mft::tests::collection::filter::filterTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->filter(i|$i.firstName  == 'Joe')->project([p|$p.firstName],['firstName'])};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.tds>>  meta::pure::mft::tests::collection::filter::filterPropertyFromSuperTypeTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->filter(i|$i.address.street  == 'FIRST')->project([p|$p.firstName],['firstName'])};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.tds>>  meta::pure::mft::tests::collection::filter::filterAssociationTDS():FunctionDefinition<{->Any[*]}>[1]
+{
+   {|Person.all()->filter(i|$i.firm.legalName->in(['Co']))->project([p|$p.firstName],['firstName'])};
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.association, QueryType.tds>>  meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyTDS():FunctionDefinition<{->Any[*]}>[1]
+{
+   {|Person.all()->filter(i|$i.firm.optionalDescription->isEmpty())->project([p|$p.firstName,p|$p.firm.legalName],['firstName','legalName'])};
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.sort, QuerySubFeature.primitive, QueryType.tds>>  meta::pure::mft::tests::collection::sort::sortTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->sortBy(i|$i.firstName)->project([p|$p.firstName],['firstName'])};
+
+}
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.sort, QuerySubFeature.association, QueryType.tds>>  meta::pure::mft::tests::collection::sort::sortAssociationTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->sortBy(i|$i.firm.legalName)->project([p|$p.firstName],['firstName'])};
+
+}
+
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.groupBy,QueryType.tds>>  meta::pure::mft::tests::collection::groupBy::groupByTDS():FunctionDefinition<{->Any[*]}>[1]
+{
+ 
+   {|Person.all()->groupBy(i|[$i.firstName],
+                             agg( x|$x.lastName,
+                                  y|$y->count()),  ['name', 'cnt'])};
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.groupBy,QueryType.tds>>  meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS():FunctionDefinition<{->Any[*]}>[1]
+{
+ 
+   {|Person.all()->groupBy(i|[$i.firstName],
+                             [agg( x|$x.lastName,
+                                  y|$y->count()),
+                             agg( x|$x.birthDate,
+                                  y|$y->count())]      
+                                  ,  ['name', 'cnt','cnt2'])};
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.take,QueryType.tds>>  meta::pure::mft::tests::collection::take::takeTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName],['firstName'])->take(1)};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.first,QueryType.tds>>  meta::pure::mft::tests::collection::first::firstTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName],['firstName'])->first()};
+
+}
+
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.drop,QueryType.tds>>  meta::pure::mft::tests::collection::drop::dropTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName],['firstName'])->drop(0)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.slice,QueryType.tds>>  meta::pure::mft::tests::collection::slice::sliceTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName],['firstName'])->slice(0,1)};
+
+}
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.filterExists, QueryType.tds>>  meta::pure::mft::tests::collection::exists::existsRecursiveTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->filter(p | $p.firm.employees->exists(e | $e.firstName == 'Joe'))->project([p|$p.firstName],['firstName'])};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter,QuerySubFeature.filterExists, QueryType.tds>>  meta::pure::mft::tests::collection::exists::existsTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->filter(p | $p.firm->exists(e | $e.legalName == 'Firm D'))->project([p|$p.firstName],['firstName'])};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.distinct,QueryType.tds>>  meta::pure::mft::tests::collection::distinct::distinctTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+ {  
+   {|Person.all()->project([p|$p.firstName],['firstName'])->distinct()};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature,QueryType.graphFetch, QueryFeature.simple>>  meta::pure::mft::tests::collection::filter::simpleGraph():FunctionDefinition<{->Any[*]}>[1]
+ {  
+ 
+   {|Person.all()->graphFetch(#{Person{firstName,lastName,fullName,birthDate,address{street,type},firm{legalName,optionalDescription}}}#)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.primitive,QueryType.graphFetch>>  meta::pure::mft::tests::collection::filter::filterGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->filter(i|$i.firstName  == 'Joe')->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.sort,QuerySubFeature.primitive,QueryType.graphFetch>>  meta::pure::mft::tests::collection::sort::sortGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->sortBy(i|$i.firstName )->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.first,QueryType.graphFetch>>  meta::pure::mft::tests::collection::first::firstGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->first()->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.take,QueryType.graphFetch>>  meta::pure::mft::tests::collection::take::takeGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->take(1)->graphFetch(#{Person{firstName}}#)};
+
+}
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.drop,QueryType.graphFetch>>  meta::pure::mft::tests::collection::drop::dropGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->drop(1)->graphFetch(#{Person{firstName}}#)};
+
+ }
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.slice,QueryType.graphFetch>>  meta::pure::mft::tests::collection::slice::sliceGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->slice(0,1)->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.graphFetch>>  meta::pure::mft::tests::collection::filter::filterAssociationGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->filter(i|$i.firm.legalName ->in(['Co']))->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.filter, QuerySubFeature.association,QueryType.graphFetch>>  meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyGraphFetch():FunctionDefinition<{->Any[*]}>[1]
+ { 
+   {|Person.all()->filter(i|$i.firm.optionalDescription->isEmpty())->graphFetch(#{Person{firstName}}#)};
+
+}
+
+
+//TODO - these patterns fail in sql generation only with the ->from()  pattern
+// function  <<meta::pure::test::mft::model::MFT.feature, QueryFeature.take,QueryType.tds>>  meta::pure::mft::tests::collection::take::takeBeforeProjectTDS():FunctionDefinition<{->TabularDataSet[*]}>[1]
+//  {  
+//    {|Person.all()->take(1)->project([p|$p.firstName],['firstName'])};
+
+// }
+

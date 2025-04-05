@@ -191,7 +191,7 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                                                             b : meta::external::format::shared::binding::Binding[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
                                                             sc : meta::pure::tds::schema::SchemaState[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $sc)->evaluateAndDeactivate(),
                                                             s : meta::pure::store::Store[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
-                                                            b : meta::pure::test::fct::TestParameters[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
+                                                            b : meta::pure::test::mft::TestParameters[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
  
                                                             a : Any[*]| assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
                                                             
@@ -271,7 +271,7 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                         {s: meta::pure::store::RelationStoreAccessor<Any>[1] | ^PrevalWrapper<Any>(value = $s, canPreval = false, modified = false);},
                         {s:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
                         {s:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
-                        {b: meta::pure::test::fct::TestParameters[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
+                        {b: meta::pure::test::mft::TestParameters[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
 
                         {a : Any[1]|
                             assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
