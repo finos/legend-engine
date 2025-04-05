@@ -64,6 +64,12 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        return "CREATE TEMPORARY TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(", ")) + ");";
+    }
+
+    @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
         return IngestionMethod.CLIENT_FILE;

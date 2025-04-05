@@ -444,6 +444,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           l:Literal[1]| processLiteral($l, $dbConfig),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
+                                          u:UpsertSQLQuery[1]| $u->processUpsertSQLQuery($sgc),
                                           c:CommitQuery[1]| $c->processCommitQuery($sgc),
                                           i:InsertIntoTableSQL[1] |
                                              ['INSERT INTO ',
