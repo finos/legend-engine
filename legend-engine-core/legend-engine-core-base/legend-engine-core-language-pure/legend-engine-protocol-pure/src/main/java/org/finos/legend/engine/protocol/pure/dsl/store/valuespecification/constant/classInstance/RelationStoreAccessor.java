@@ -15,7 +15,7 @@
 
 package org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.util.List;
 

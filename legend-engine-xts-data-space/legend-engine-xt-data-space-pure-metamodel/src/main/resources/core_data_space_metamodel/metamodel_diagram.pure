@@ -123,113 +123,14 @@ Diagram meta::pure::metamodel::dataSpace::DataSpace_Diagram(width=0.0, height=0.
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_20(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnalysisResult,
-        position=(1116.51102, 578.28771),
-        width=343.88333,
-        height=131.10609,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_17(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceClassDocumentationEntry,
-        position=(1154.74686, 938.53067),
-        width=303.58333,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_22(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpacePropertyDocumentationEntry,
-        position=(1533.03200, 950.09888),
-        width=269.00000,
-        height=113.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_16(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceBasicDocumentationEntry,
-        position=(1076.61750, 746.96695),
-        width=516.71747,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_15(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceAssociationDocumentationEntry,
-        position=(1021.07749, 1018.09634),
-        width=303.58333,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_19(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceEnumerationDocumentationEntry,
-        position=(830.35998, 1073.73613),
-        width=272.66667,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_21(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEntry,
-        position=(967.83010, 843.32544),
-        width=310.00000,
-        height=59.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_14(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult,
-        position=(1604.83755, 652.92155),
-        width=367.50964,
-        height=88.37967,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
-    TypeView cview_18(
-        type=meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResult,
-        position=(1621.62094, 591.09802),
-        width=367.15000,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_9(
         type=meta::pure::metamodel::dataSpace::DataSpaceExecutable,
@@ -324,50 +225,10 @@ Diagram meta::pure::metamodel::dataSpace::DataSpace_Diagram(width=0.0, height=0.
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_5(
-        source=cview_15,
-        target=cview_21,
-        points=[(1129.30341,1021.63862),(1128.09616,894.24337)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_6(
-        source=cview_21,
-        target=cview_16,
-        points=[(1122.83010,872.82544),(1124.08957,780.49863)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_7(
-        source=cview_17,
-        target=cview_21,
-        points=[(1250.52513,947.34143),(1249.89357,890.81246)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_8(
-        source=cview_19,
-        target=cview_21,
-        points=[(993.74363,1084.20467),(993.74363,896.50651)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_9(
-        source=cview_22,
-        target=cview_16,
-        points=[(1564.65886,966.89332),(1564.65886,802.65744)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     PropertyView pview_0(
         property=meta::pure::metamodel::dataSpace::DataSpace.executionContexts,
@@ -509,115 +370,11 @@ Diagram meta::pure::metamodel::dataSpace::DataSpace_Diagram(width=0.0, height=0.
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_10(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceEnumerationDocumentationEntry.enumValues,
-        source=cview_19,
-        target=cview_16,
-        points=[(966.69333,1088.73613),(1872.27528,1090.72197),(1868.36490,773.98133),(1334.97623,775.96695)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_11(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnalysisResult.compatibleRuntimes,
-        source=cview_20,
-        target=cview_8,
-        points=[(1136.34019,650.38203),(865.39653,648.59663)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_12(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult.executionContexts,
-        source=cview_14,
-        target=cview_20,
-        points=[(1610.91000,681.11511),(1424.53688,679.54479)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_13(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResult.executionContexts,
-        source=cview_18,
-        target=cview_20,
-        points=[(1805.19595,613.09802),(1442.27303,612.47018)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_14(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEntry.element,
-        source=cview_21,
-        target=cview_6,
-        points=[(971.98963,885.66609),(-267.14108,888.62882),(-265.18771,27.67134),(-91.96187,26.84190)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_15(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult.elementDocs,
-        source=cview_14,
-        target=cview_21,
-        points=[(1624.54867,723.08947),(865.04155,723.18974),(865.04155,858.33855),(1005.03532,857.34579)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_16(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceAssociationDocumentationEntry.properties,
-        source=cview_15,
-        target=cview_22,
-        points=[(1172.86916,1040.09634),(1533.37583,1039.88705)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_17(
-        property=meta::pure::metamodel::dataSpace::analytics::DataSpaceClassDocumentationEntry.properties,
-        source=cview_17,
-        target=cview_22,
-        points=[(1162.74686,973.53067),(1799.03200,970.09888)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 }

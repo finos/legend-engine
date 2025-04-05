@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 /**
  * Provide information on the line/column offset of the parse tree walker as well as source ID which can be used to uniquely identify (sub) element

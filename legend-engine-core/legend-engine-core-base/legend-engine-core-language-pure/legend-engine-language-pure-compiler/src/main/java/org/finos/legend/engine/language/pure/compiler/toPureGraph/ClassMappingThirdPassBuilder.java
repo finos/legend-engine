@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.primitive.ObjectIntProcedure;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
@@ -172,7 +172,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
     }
 
 
-    private static void checkPureMappingCompatibility(CompileContext context, Type actualReturnType, Type signatureType, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    private static void checkPureMappingCompatibility(CompileContext context, Type actualReturnType, Type signatureType, String errorStub, SourceInformation errorSourceInformation)
     {
         //In a pure mapping. The src implementation  can be anywhere in the class hierarchy of the return type
         if (signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(signatureType, actualReturnType, context.pureModel.getExecutionSupport().getProcessorSupport()))

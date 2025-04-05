@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.m3.type.generics;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.Type;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;

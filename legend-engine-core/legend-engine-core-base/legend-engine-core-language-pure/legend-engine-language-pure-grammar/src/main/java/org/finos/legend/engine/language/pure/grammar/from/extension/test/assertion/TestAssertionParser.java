@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.extension.test.assert
 
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 public interface TestAssertionParser

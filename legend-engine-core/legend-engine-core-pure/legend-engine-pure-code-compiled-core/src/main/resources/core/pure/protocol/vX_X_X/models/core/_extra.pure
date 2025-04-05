@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::protocols::pure::vX_X_X::metamodel::SourceInformation
+Class meta::protocols::pure::vX_X_X::metamodel::m3::SourceInformation
 {
     sourceId : String[1];
     mainLine: Integer[1];

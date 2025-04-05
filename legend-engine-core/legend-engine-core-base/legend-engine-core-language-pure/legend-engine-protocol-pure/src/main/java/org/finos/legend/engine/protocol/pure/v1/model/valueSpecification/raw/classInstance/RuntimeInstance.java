@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 
 // Should NOT extend ValueSpecification

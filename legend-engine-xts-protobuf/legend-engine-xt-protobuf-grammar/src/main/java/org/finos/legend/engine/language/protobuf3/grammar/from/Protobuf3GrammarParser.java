@@ -73,7 +73,7 @@ import org.finos.legend.engine.protocol.protobuf3.metamodel.StringLiteral;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Syntax;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.UInt32;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.UInt64;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.util.BitSet;
 import java.util.List;

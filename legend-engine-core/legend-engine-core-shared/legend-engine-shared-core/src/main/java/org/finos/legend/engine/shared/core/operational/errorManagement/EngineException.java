@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.shared.core.operational.errorManagement;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 
 public class EngineException extends RuntimeException

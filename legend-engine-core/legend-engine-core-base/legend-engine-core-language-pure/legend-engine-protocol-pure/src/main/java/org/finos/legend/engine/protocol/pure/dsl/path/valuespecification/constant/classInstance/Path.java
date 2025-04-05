@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.consta
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Collections;
 import java.util.List;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 @JsonIgnoreProperties("_type")
 public class Path

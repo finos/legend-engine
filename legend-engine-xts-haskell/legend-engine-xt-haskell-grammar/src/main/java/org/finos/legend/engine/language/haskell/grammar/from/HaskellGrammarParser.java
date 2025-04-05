@@ -41,7 +41,7 @@ import org.finos.legend.engine.protocol.haskell.metamodel.ModuleElement;
 import org.finos.legend.engine.protocol.haskell.metamodel.NamedConstructor;
 import org.finos.legend.engine.protocol.haskell.metamodel.NamedTypeRef;
 import org.finos.legend.engine.protocol.haskell.metamodel.RecordTypeConstructor;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.util.BitSet;
 import java.util.List;

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.shared.core.operational.errorManagement;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

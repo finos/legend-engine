@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.m
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.modelStore.ModelStoreDataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 
 public class ModelStoreEmbeddedDataParser implements EmbeddedDataParser

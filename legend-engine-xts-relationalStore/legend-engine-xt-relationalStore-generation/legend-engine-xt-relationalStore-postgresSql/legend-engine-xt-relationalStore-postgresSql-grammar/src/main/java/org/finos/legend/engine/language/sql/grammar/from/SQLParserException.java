@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.sql.grammar.from;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 public class SQLParserException extends RuntimeException
 {
