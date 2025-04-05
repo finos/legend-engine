@@ -108,5 +108,5 @@ function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testSimpleWind
                   '   3,1.0,0.5\n'+
                   '   3,1.5,0.5\n'+
                   '   3,2.0,0.5\n'+
-                  '#', $res->sort(~id->ascending())->toString());
+                  '#', $res->sort([~id->ascending(), ~val->ascending()])->toString());
 }

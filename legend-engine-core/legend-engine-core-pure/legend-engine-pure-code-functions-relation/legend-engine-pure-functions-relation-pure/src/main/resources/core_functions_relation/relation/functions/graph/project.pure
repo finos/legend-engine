@@ -151,7 +151,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpl
                 '   one,two,three\n'+
                 '   ok,no,null\n'+
                 '   ok,other,null\n'+
-                '#', $res->toString());
+                '#', $res->sort([~one->ascending(), ~two->ascending(), ~three->ascending()])->toString());
 }
 
 
@@ -177,7 +177,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpl
                   '   a1\n'+
                   '   ewe3\n'+
                   '   qw4\n'+
-                  '   wwe5\n'+
                   '   weq6\n'+
-                  '#', $res->toString());
+                  '   wwe5\n'+
+                  '#', $res->sort([~name->ascending()])->toString());
 }
