@@ -51,6 +51,5 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
-        <module>legend-engine-xt-relationalStore-h2-1.4.200-execution</module>
     </modules>
 </project>
