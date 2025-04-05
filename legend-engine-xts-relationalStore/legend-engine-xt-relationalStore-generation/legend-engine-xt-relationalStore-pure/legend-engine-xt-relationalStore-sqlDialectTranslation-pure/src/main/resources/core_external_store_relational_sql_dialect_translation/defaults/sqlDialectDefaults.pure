@@ -17,6 +17,8 @@ import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sqlDialectTranslation::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::tests::metamodel::*;
 
 Enum meta::external::store::relational::sqlDialectTranslation::defaults::SqlOperatorTypes_default
 {
@@ -195,6 +197,28 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::dou
     DoubleLiteral,
     {sqlDialect, d, state, config | 
       $d.value->toString()
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dateLiteralNodeProcessor_default(): NodeProcessor<DateLiteral>[1]
+{
+  nodeProcessor(
+    DateLiteral,
+    {sqlDialect, d, state, config |
+      'DATE \'' + $d.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
+    },
+    {n | true}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::timestampLiteralNodeProcessor_default(): NodeProcessor<TimestampLiteral>[1]
+{
+  nodeProcessor(
+    TimestampLiteral,
+    {sqlDialect, t, state, config |
+      'TIMESTAMP \'' + $t.value->convertDateToSqlString($config.dbConfig.dbTimeZone) + '\''
     },
     {n | true}
   )
@@ -690,11 +714,34 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::que
   nodeProcessor(
     Query,
     {sqlDialect, query, state, config |
+      let sep0 = $state.separator(0, $config);
+
       if ($query.limit->isEmpty() && $query.orderBy->isEmpty() && $query.offset->isEmpty(),
-          | $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config),
-          | failWithMessage('Unexpected limit, orderBy or offset at Query level')
-      )
+        | if($query.with.withQueries->isNotEmpty(),
+            | $sqlDialect->keyword('with', $state, $config) + ' ' + $query.with.withQueries->map(c|$sqlDialect->executeNodeProcessor($c, $state, $config))->joinStrings(',' + $sep0) + $sep0
+              + $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config),
+            | $sqlDialect->executeNodeProcessor($query.queryBody, $state, $config)
+          ),
+        | failWithMessage('Unexpected limit, orderBy or offset at Query level')
+      );
     }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::withQueryProcessor_default(): NodeProcessor<WithQuery>[1]
+{
+  nodeProcessor(
+    WithQuery,
+    {sqlDialect, wq, state, config |
+      let sep0 = $state.separatorIfPretty(0, $config);
+      let sep1 = $state.separatorIfPretty(1, $config);
+
+      let columns = if($wq.columns->isNotEmpty(), | $wq.columns->joinStrings('(', ', ', ')'), | '');
+      $sqlDialect->executeIdentifierProcessor($wq.name, $config.dbConfig.quoteIdentifiers, $state, $config) + $columns + ' ' + $sqlDialect->keyword('as', $state, $config) + ' (' + $sep1
+      + $sqlDialect->executeNodeProcessor($wq.query, $state->increaseLevel(), $config) + $sep0
+      + ')';
+    },
+    {n | true}
   )
 }
 
@@ -723,6 +770,15 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tab
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::defaults::tablePlaceholderProcessor_default(): NodeProcessor<TablePlaceholder>[1]
+{
+  nodeProcessor(
+    TablePlaceholder,
+    {sqlDialect, t, state, config | '(${' + $t.name + '})'},
+    {n: TablePlaceholder[1] | true}
+  );
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::functionCallProcessor_default(): NodeProcessor<FunctionCall>[1]
 {
   nodeProcessor(
@@ -734,6 +790,57 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fun
     },
     {n: FunctionCall[1] | true}
   );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::createTableProcessor_default(): NodeProcessor<CreateTestTable>[1]
+{
+  nodeProcessor(
+    CreateTestTable,
+    {sqlDialect, c, state, config |
+      $sqlDialect->keyword('create', $state, $config) +
+      if($c.isTempTable, | ' ' + $sqlDialect->keyword('temporary', $state, $config) + ' ', |' ') +
+      $sqlDialect->keyword('table', $state, $config) + ' ' +
+      $sqlDialect->executeIdentifierProcessor($c.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) +
+      ' (' + $state.separatorIfPretty(1, $config) +
+      $c.columns->map(c|$sqlDialect->executeIdentifierProcessor($c.first, $config.dbConfig.quoteIdentifiers, $state, $config) + ' ' + $c.second.name)->joinStrings(',' + $state.separator(1, $config)) + $state.separatorIfPretty(0, $config) +
+      ')';
+    }
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::dropTableProcessor_default(): NodeProcessor<DropTestTable>[1]
+{
+  nodeProcessor(
+    DropTestTable,
+    {sqlDialect, d, state, config |
+      $sqlDialect->keyword('drop', $state, $config) +
+      if($d.isTempTable, | ' ' + $sqlDialect->keyword('temporary', $state, $config) + ' ', |' ') +
+      $sqlDialect->keyword('table', $state, $config) +
+      ' ' + $sqlDialect->keyword('if', $state, $config) + ' ' +
+      $sqlDialect->keyword('exists', $state, $config) + ' ' +
+      $sqlDialect->executeIdentifierProcessor($d.tableName, $config.dbConfig.quoteIdentifiers, $state, $config)
+    }
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::insertIntoTableProcessor_default(): NodeProcessor<InsertIntoTestTable>[1]
+{
+  nodeProcessor(
+    InsertIntoTestTable,
+    {sqlDialect, i, state, config |
+      let sep0 = $state.separator(0, $config);
+
+      $sqlDialect->keyword('insert', $state, $config) + ' ' + $sqlDialect->keyword('into', $state, $config) + ' ' + $sqlDialect->executeIdentifierProcessor($i.tableName, $config.dbConfig.quoteIdentifiers, $state, $config) + $sep0 +
+      '(' + $i.columns->map(c| $sqlDialect->executeIdentifierProcessor($c, $config.dbConfig.quoteIdentifiers, $state, $config))->joinStrings(', ') + ')' +
+      $sep0 + $sqlDialect->keyword('values', $state, $config) + $sep0 +
+      $i.values->map(row|$row->rowMapper($sqlDialect, $state, $config))->joinStrings(',' +  $sep0);
+    }
+  );
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::rowMapper(row: List<Any>[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  $row.values->map(v| $sqlDialect->executeNodeProcessor($v->cast(@Literal), $state, $config))->joinStrings('(', ', ', ')') ;
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::regexpPattern(regexOperator:String[1]):String[1]
@@ -760,3 +867,31 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   regexpPattern('~')->format($processedArgs->transformRegexpParams());
 }
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::trimProcessor_default(): NodeProcessor<Trim>[1]
+{
+  nodeProcessor(
+    Trim,
+    {sqlDialect, t, state, config |
+      $sqlDialect->keyword('trim', $state, $config) + '(' + $sqlDialect->keyword($t.mode.name, $state, $config) +  if($t.characters->isEmpty(), |'',|' '+ $sqlDialect->executeNodeProcessor($t.characters->toOne(), $state, $config)) +' ' + $sqlDialect->keyword('from', $state, $config) + ' '
+      + $sqlDialect->executeNodeProcessor($t.value, $state, $config) +')'
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+  //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+  let timeZone = if($dbTimeZone->isEmpty(), |'GMT', |$dbTimeZone->toOne());
+  if($date->hasSecond(),
+  | if ($date->hasSubsecond(),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)
+    ),
+  | if ($date->hasMonth() || $date->hasDay(),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date),
+      | fail('Ensure the target system understands Year or Year-month semantic.'); '';
+    )
+  );
+}
+

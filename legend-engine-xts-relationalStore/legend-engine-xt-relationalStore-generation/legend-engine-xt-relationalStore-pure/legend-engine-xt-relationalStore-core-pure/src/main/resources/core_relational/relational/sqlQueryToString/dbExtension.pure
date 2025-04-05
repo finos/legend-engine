@@ -261,6 +261,9 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
    preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
    processTempTableName: meta::pure::metamodel::function::Function<{String[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> String[1]}>[0..1];
+
+   pureTypeToDatabaseTypeConverter : meta::pure::metamodel::function::Function<{meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1] -> meta::relational::metamodel::datatype::DataType[1]}>[0..1];
+   buildDummyConnection : meta::pure::metamodel::function::Function<{->RelationalDatabaseConnection[1]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -270,6 +273,7 @@ Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTransl
   dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   createTable : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   loadTable: meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
+  createView : meta::pure::metamodel::function::Function<{CreateViewSQL[1], DbConfig[1] ->  String[*]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::DbExtensionLoader
@@ -450,6 +454,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ALL ')+')',
                                           u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ')+')',
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
+                                          u:meta::relational::functions::pureToSqlQuery::union::UnionOrJoin[1]|processDynaFunction($u.parameters->reverse()->meta::relational::functions::pureToSqlQuery::orFilters($extensions)->toOne()->cast(@DynaFunction), $sgc),
                                           d:DynaFunction[1]|processDynaFunction($d, $sgc),
                                           c:ColumnName[1]|$dbConfig.identifierProcessor($c.name->toOne()),
                                           s:SemiStructuredObjectNavigation[1]|$dbConfig.semiStructuredElementProcessor($s, $sgc),

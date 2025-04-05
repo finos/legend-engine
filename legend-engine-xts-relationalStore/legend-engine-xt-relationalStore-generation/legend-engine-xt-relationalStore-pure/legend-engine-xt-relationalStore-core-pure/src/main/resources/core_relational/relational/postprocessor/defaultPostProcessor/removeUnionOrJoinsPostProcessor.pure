@@ -1,0 +1,68 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::relational::extension::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::postProcessor::removeUnionOrJoins::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+
+function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName(): String[1]
+{
+  'REMOVE_UNION_OR_JOINS'
+}
+
+function meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins(selectSQLQuery: SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[0..1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*]): Result<SelectSQLQuery|1>[1]
+{
+  let shouldAttemptRemovingUnionOrJoins = (
+    (
+      $exeCtx->match([
+        rCtx: RelationalExecutionContext[1] | $rCtx.insertDriverTablePkInTempTable->isEmpty(),
+        a: Any[*] | true
+      ])
+    ) 
+    &&
+    (
+      (
+        // Database type is part of target database types and feature is not disabled in config
+        $dbConnection.type.name->isNotEmpty() &&
+        $dbConnection.type.name->toOne()->in([DatabaseType.Snowflake.name]) &&
+        (!$dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).disabled->contains(removeUnionOrJoinsGenerationFeatureName())))
+      ) 
+      ||
+      (
+        // Feature is enabled in config
+        $dbConnection.queryGenerationConfigs->exists(cfg | $cfg->instanceOf(GenerationFeaturesConfig) && $cfg->cast(@GenerationFeaturesConfig).enabled->contains(removeUnionOrJoinsGenerationFeatureName()))
+      )
+    )
+  );
+
+  let transformedSelect = if ($shouldAttemptRemovingUnionOrJoins, | $selectSQLQuery->meta::relational::functions::pureToSqlQuery::union::removeUnionOrJoins($extensions), | $selectSQLQuery);
+  ^Result<SelectSQLQuery|1>(values = $transformedSelect);
+}
+
+function meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureEnabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(enabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()))))))
+}
+
+function meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRemoveUnionOrJoinsFeatureDisabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(disabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()))))))
+}

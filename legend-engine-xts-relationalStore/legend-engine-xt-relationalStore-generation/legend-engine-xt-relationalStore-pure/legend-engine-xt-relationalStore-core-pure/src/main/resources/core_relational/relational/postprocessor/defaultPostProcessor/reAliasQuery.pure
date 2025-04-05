@@ -23,7 +23,7 @@ import meta::pure::mapping::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::join::*;
 
-function meta::relational::postProcessor::reAlias::replaceAliasName(query:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::reAlias::replaceAliasName(query:SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
 {
    let tableNamesCaseSensitive = $query->cast(@SelectSQLQuery)->traverse();
    let tableNames = $tableNamesCaseSensitive->map(x| pair($x.first->toLower(), $x.second)); //switch all tableNamesTolowerCase

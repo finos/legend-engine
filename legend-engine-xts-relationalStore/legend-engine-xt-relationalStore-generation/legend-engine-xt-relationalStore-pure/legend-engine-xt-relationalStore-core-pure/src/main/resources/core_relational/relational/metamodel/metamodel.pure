@@ -47,6 +47,12 @@ Class meta::relational::metamodel::DataRow
    values : Any[*];
 }
 
+Class meta::relational::metamodel::CreateViewSQL extends SQLQuery
+{
+    id : String[1];
+    generatedSQL : String[1];
+}
+
 Class meta::relational::metamodel::CreateSchemaSQL extends SQLQuery
 {
     schema: Schema[1];

@@ -200,25 +200,29 @@ function meta::relational::tests::pct::process::buildDate(dateStr:String[1]):Dat
 
 function meta::relational::tests::pct::process::printDatabase(d:Database[1]):String[1]
 {
-  'Database '+$d->elementToPath()+
+  'Database ' + $d->elementToPath() + '\n' +
   '('+
    $d.schemas->map(
-      s | 'Schema '+$s.name + '('+ $s.tables->map(x|
-              'Table '+$x.name+'('+
+      s | '\n  Schema '+$s.name + '\n  ('+ $s.tables->map(x|
+              '\n    Table '+$x.name+' ('+
                   $x.columns->map(z|let c = $z->cast(@meta::relational::metamodel::Column);
                                     if($c.name->contains(' '),|'"'+$c.name+'"',|$c.name) + ' ' + $c.type->match([
-                                                          x : Varchar[1] | 'VARCHAR('+$x.size->toString()+')',
+                                                          x : Varchar[1] | 'VARCHAR(' + $x.size->toString() + ')',
+                                                          d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(' + $d.precision->toString() + ',' + $d.scale->toString() + ')',
                                                           z : Any[1] | $z->type().name->toOne()
                                                         ]
-                                                      ) + if ($x.primaryKey->contains($c),|' PRIMARY KEY',|'');
-                                 )->joinStrings(',')+
+                                                      ) + if ($x.primaryKey->contains($c),
+                                                                |' PRIMARY KEY',
+                                                                |if ($c.nullable->isNotEmpty() && $c.nullable->toOne(), |'', |' NOT NULL')
+                                                          );
+                                 )->joinStrings(', ')+
               ')'
-                  )->joinStrings(' ') + ')'
-          )->joinStrings(';')+
+                  )->joinStrings('') + '\n  )'
+          )->joinStrings('')+
     $d.joins->map(
       j | 'Join '+$j.name+'('+$j.operation->printRelationalOperationElement(false)+')'
     )->joinStrings(' ')+
-  ')';
+  '\n)';
 }
 
 function meta::relational::tests::pct::process::printMapping(d:Mapping[1]):String[1]

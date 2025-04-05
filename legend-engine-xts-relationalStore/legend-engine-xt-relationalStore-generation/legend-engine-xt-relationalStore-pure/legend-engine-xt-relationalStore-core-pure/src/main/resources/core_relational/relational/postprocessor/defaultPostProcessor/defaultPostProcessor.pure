@@ -50,22 +50,23 @@ function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime
    let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connectionStores.connection->at(0));
    let connectionProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
 
-   let defaultPostProcessorOutput = sqlQueryDefaultPostProcessors()->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery));
+   let defaultPostProcessorOutput = sqlQueryDefaultPostProcessors()->fold({pp,q|$pp->eval($q, $connection->match([dbc:DatabaseConnection[1] | $dbc, a:Any[*] | []]), $exeCtx, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery));
    let connectionPostProcessorOutput = $connectionProcessors->fold({pp,q|$pp->eval($q).values->toOne()}, $defaultPostProcessorOutput->cast(@SelectSQLQuery));
    ^PostProcessorResult(query = $connectionPostProcessorOutput,resultPostProcessor = {result:Result<Any|*>[1] | $result});
 }
 
-function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Extension[*]->Result<SelectSQLQuery|1>[1]}>[*]
+function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::metamodel::function::Function<{SelectSQLQuery[1], meta::external::store::relational::runtime::DatabaseConnection[0..1], meta::pure::runtime::ExecutionContext[1], Extension[*]->Result<SelectSQLQuery|1>[1]}>[*]
 {
    [
-      meta::relational::postProcessor::cte::collectCommonTableExpressionReferences_SelectSQLQuery_1__Extension_MANY__Result_1_,
-      meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__Extension_MANY__Result_1_,
-      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__Extension_MANY__Result_1_,
-      meta::relational::postProcessor::comments::prependSQLComments_SelectSQLQuery_1__Extension_MANY__Result_1_
+      meta::relational::postProcessor::cte::collectCommonTableExpressionReferences_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoins_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::comments::prependSQLComments_SelectSQLQuery_1__DatabaseConnection_$0_1$__ExecutionContext_1__Extension_MANY__Result_1_
    ]
 }
 
-function meta::relational::postProcessor::comments::prependSQLComments(selectSQLQuery:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::comments::prependSQLComments(selectSQLQuery:SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
 {
    ^Result<SelectSQLQuery|1>(values= ^$selectSQLQuery(comment= '-- "executionTraceID" : "${execID}"'));
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-duckdb</artifactId>
-        <version>4.75.4-SNAPSHOT</version>
+        <version>4.77.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -95,17 +95,6 @@
                         <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                    <excludes>
-                        <exclude>**/Test_DuckDB_SDT*.java</exclude>
-                        <exclude>**/SdtTestSuiteBuilder*.java</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

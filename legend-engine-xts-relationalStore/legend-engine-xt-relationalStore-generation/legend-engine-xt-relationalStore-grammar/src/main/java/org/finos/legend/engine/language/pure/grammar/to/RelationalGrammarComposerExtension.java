@@ -35,7 +35,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.GenerationFeaturesConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
@@ -54,6 +56,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
@@ -235,6 +238,20 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                         ? "postProcessors:\n" + getTabString() + "[\n" + String.join(",\n", postProcessorStrings) + "\n" + getTabString() + "];\n"
                         : null;
 
+                String queryGenerationConfigs = (relationalDatabaseConnection.queryGenerationConfigs != null) && (!relationalDatabaseConnection.queryGenerationConfigs.isEmpty()) ?
+                        (
+                                "queryGenerationConfigs: [\n" +
+                                        relationalDatabaseConnection.queryGenerationConfigs.stream().map(config ->
+                                                IRelationalGrammarComposerExtension.process(
+                                                        config,
+                                                        ListIterate.flatCollect(extensions, IRelationalGrammarComposerExtension::getExtraRelationalQueryConfigComposers),
+                                                        context
+                                                )
+                                        ).collect(Collectors.joining(",\n")) + "\n" +
+                                (context.getIndentationString() + getTabString(baseIndentation + 1) + "];\n")
+                        ) :
+                        null;
+
                 return Tuples.pair(RelationalGrammarParserExtension.RELATIONAL_DATABASE_CONNECTION_TYPE, context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                         (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
@@ -250,6 +267,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                         (postProcessors != null
                                 ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
                                 : "") +
+                        (queryGenerationConfigs != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + queryGenerationConfigs) : "") +
                         context.getIndentationString() + "}");
             }
             return null;
@@ -405,6 +423,41 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
     public List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
     {
         return Lists.mutable.with((specification, offset, context) -> HelperRelationalGrammarComposer.visitMilestoning(specification, offset, RelationalGrammarComposerContext.Builder.newInstance(context).build()));
+    }
+
+    @Override
+    public List<Function2<RelationalQueryGenerationConfig, PureGrammarComposerContext, String>> getExtraRelationalQueryConfigComposers()
+    {
+        return Lists.mutable.with(
+                (config, context) ->
+                {
+                    if (config instanceof GenerationFeaturesConfig)
+                    {
+                        GenerationFeaturesConfig generationFeaturesConfig = (GenerationFeaturesConfig) config;
+                        int baseIndent = 2;
+
+                        String enabledFeatures = (generationFeaturesConfig.enabled != null) && (!generationFeaturesConfig.enabled.isEmpty()) ?
+                                generationFeaturesConfig.enabled.stream().map(s -> "'" + s + "'").collect(Collectors.joining(", ")) :
+                                "";
+                        String enabledString =  context.getIndentationString() + getTabString(baseIndent + 1) + "enabled: [" + enabledFeatures + "];\n";
+
+                        String disabledFeatures = (generationFeaturesConfig.disabled != null) && (!generationFeaturesConfig.disabled.isEmpty()) ?
+                                generationFeaturesConfig.disabled.stream().map(s -> "'" + s + "'").collect(Collectors.joining(", ")) :
+                                "";
+                        String disabledString =  context.getIndentationString() + getTabString(baseIndent + 1) + "disabled: [" + disabledFeatures + "];\n";
+
+                        return context.getIndentationString() + getTabString(baseIndent) + "GenerationFeaturesConfig\n" +
+                                context.getIndentationString() + getTabString(baseIndent) + "{\n" +
+                                enabledString +
+                                disabledString +
+                                context.getIndentationString() + getTabString(baseIndent) + "}";
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+        );
     }
 
     public static String renderRelationalOperationElement(RelationalOperationElement operationElement)
