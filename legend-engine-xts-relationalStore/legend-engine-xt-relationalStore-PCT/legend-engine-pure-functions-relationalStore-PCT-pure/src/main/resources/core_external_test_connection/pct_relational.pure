@@ -123,8 +123,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
               // processResult
               if ($resultType->toOne()->instanceOf(PrimitiveType),
                 | let preResultFinal = $res.result.rows->at(0).values->at(0);
-                println($preResultFinal);
-                  let resultFinal = 
+                  let resultFinal =
                     if ([
                           pair(|$preResultFinal == TDSNull, |[]),
                           pair(|$resultType->toOne()->subTypeOf(DateTime), |meta::pure::functions::string::parseDate($preResultFinal->toString())),

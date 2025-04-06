@@ -185,7 +185,7 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //testWrite
-            one("meta::pure::functions::relation::testWrite_Function_1__Boolean_1_", "\"\nexpected: 5\nactual:   0\"")
+            one("meta::pure::functions::relation::tests::write::testWrite_Function_1__Boolean_1_", "\"\nexpected: 5\nactual:   0\"")
             );
 
     public static Test suite()

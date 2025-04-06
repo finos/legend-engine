@@ -1209,7 +1209,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testDecimalType():Boo
   let expected = {|meta::pure::router::preeval::tests::FinancialInstrument.all()
                   ->project([
                       ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'price', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| $f.price }),
-                      ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'decimal_constant_col', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| 3.14})
+                      ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'decimal_constant_col', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| 3.14D})
                     ])
                   };
 
@@ -1569,17 +1569,20 @@ function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(
 
       let open = $input->openVariableValues();
 
-      //println($input->cast(@Function<Any>)->functionReturnMultiplicity());
-
       let mInput = $input->cast(@Function<Any>)->functionReturnMultiplicity();
       let mExpected = $expected->cast(@Function<Any>)->functionReturnMultiplicity();
       let mResult = $result->cast(@Function<Any>)->functionReturnMultiplicity();
 
-      let jInputEvalResult = $inputEvalResult->transformAny([], $open, $mExpected, $extensions)->toJSON(50000);
-      let jExpectedEvalResult = $expectedEvalResult->transformAny([], $open, $mExpected, $extensions)->toJSON(50000);
-      println($jExpectedEvalResult);
-      let jResultEvalResult = $resultEvalResult->transformAny([], $open, $mExpected, $extensions)->toJSON(50000);
+      let toJson = {x: Any[*] | 
+        $x->match([
+          tds: TabularDataSet[1] | $tds, // tds cannot be translated to protocol
+          any: Any[*]            | $any->transformAny([], $open, $mExpected, $extensions)
+        ])->toJSON(50000);
+      };
 
+      let jInputEvalResult = eval($toJson, [$inputEvalResult]);
+      let jExpectedEvalResult = eval($toJson, [$expectedEvalResult]);
+      let jResultEvalResult = eval($toJson, [$resultEvalResult]);
 
       assertEquals($jExpectedEvalResult, $jResultEvalResult, '\nexpected eval result: %r\nactual eval result:   %r', [$jExpectedEvalResult->toOne(), $jResultEvalResult->toOne()]);
 

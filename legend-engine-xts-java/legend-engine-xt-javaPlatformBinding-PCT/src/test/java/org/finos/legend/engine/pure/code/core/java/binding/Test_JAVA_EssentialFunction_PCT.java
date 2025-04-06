@@ -41,22 +41,27 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
-            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::contains::ClassWithoutEquality\""),
+            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Can't find a match for function 'contains(?)'"),
 
             // Drop
-            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'"),
 
             // Exists
             one("meta::pure::functions::collection::tests::exists::testExistsInSelect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
             one("meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""),
 
             // Find (Not Supported Yet)
-            pack("meta::pure::functions::collection::tests::find", "\"meta::pure::functions::collection::find_T_MANY__Function_1__T_$0_1$_ is not supported yet!\""),
+            pack("meta::pure::functions::collection::tests::find", "Can't resolve the builder for function 'find'"),
+
+            // Init (Not Supported Yet)
+            pack("meta::pure::functions::collection::tests::init", "Can't resolve the builder for function 'init'"),
+
 
             // Fold
-            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
-            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
-            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::fold::FO_Person\""),
+            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Can't resolve the builder for function 'copy'"),
+            one("meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 4 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:"),
+            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Can't resolve the builder for function 'copy'"),
+            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Can't resolve the builder for function 'copy'"),
 
             // ForAll
             one("meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:"),
@@ -68,10 +73,10 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:"),
 
             // Slice
-            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'"),
 
             // Take
-            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_", "Can't resolve the builder for function 'list'"),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "Failed in node: root"),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_", "Failed in node: root"),
 
@@ -80,16 +85,16 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // Format
             one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\""),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "\"evaluate_Function_1__List_MANY__Any_MANY_ is prohibited!\""),
+            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "Can't resolve the builder for function 'evaluate'"),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
 
             // ToString
             one("meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 3 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java"),
             one("meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 4 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java"),
             one("meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
-            one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
             one("meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_", "\"\nexpected: '// Warning: Good for gin -- Sad times no tonic'\nactual:   '_pure.internal.meta.pure.functions.string.tests.toString.ClassWithComplexToString_Impl"),
 
             // Exp
@@ -160,17 +165,19 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::metamodel::function::NativeFunction\""),
 
             // Date
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__W_q__V_m_ is prohibited!\""),
+            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Error in 'test::testFunction': Can't find a match for function 'eval(?)'"),
             one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
             one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\""),
 
             // If
-            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "\"Function meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_ is not yet supported as functions with more than one expression can not be routed\""),
+            one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "Can't find a match for function 'if(?)'"),
 
             // Match
-            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParam_Function_1__Boolean_1_", "\"meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!\""),
-            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_", "\"meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!\""),
-            one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "\"deactivate_Any_MANY__ValueSpecification_1_ is prohibited!\""),
+            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParam_Function_1__Boolean_1_", "Can't find a match for function 'match(?)'"),
+            one("meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(?)'"),
+            one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'"),
+            one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'"),
+            one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Can't resolve the builder for function 'deactivate'"),
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:")
     );
 

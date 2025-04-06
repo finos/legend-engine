@@ -99,7 +99,7 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\""),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\"; SQL statement:\nselect (-9223372036854775718 - 132) [22003-214]\n"),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "\"Cast exception: StoreRoutingStrategy cannot be cast to StoreMappingRoutingStrategy\""),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Invalid value \"1\" for parameter \"columnIndex\" [90008-214]"),
 

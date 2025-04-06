@@ -70,7 +70,7 @@ function meta::protocols::pure::v1_25_0::transformation::fromPureGraph::executio
             ^meta::protocols::pure::v1_25_0::metamodel::executionPlan::ConstantExecutionNode(
                _type='constant',
                resultType=$cons.resultType->transformResultType($mapping, $extensions),
-               values=$cons.values->map(v | $v->meta::protocols::pure::v1_25_0::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions))
+               values=$cons.values->meta::protocols::pure::v1_25_0::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions)
             ),
          seq:meta::pure::executionPlan::SequenceExecutionNode[1]|
             ^meta::protocols::pure::v1_25_0::metamodel::executionPlan::SequenceExecutionNode(

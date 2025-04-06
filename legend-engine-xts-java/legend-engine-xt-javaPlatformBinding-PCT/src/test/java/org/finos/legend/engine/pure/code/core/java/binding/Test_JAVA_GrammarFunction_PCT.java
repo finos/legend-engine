@@ -61,7 +61,12 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""),
-            one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Address\""),
+            one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "\"Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:"),
+
+            // let
+            one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "Can't resolve the builder for function 'letAsLastStatement'"),
+            one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "Can't resolve the builder for function 'letChainedWithAnotherFunction'"),
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "Can't resolve the builder for function 'letWithParam'"),
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
@@ -73,6 +78,8 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""),
 
+            // range
+            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "Can't find a match for function 'range(?)'"),
 
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\""),
