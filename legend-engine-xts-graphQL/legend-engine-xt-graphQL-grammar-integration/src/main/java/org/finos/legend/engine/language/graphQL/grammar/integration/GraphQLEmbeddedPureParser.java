@@ -18,7 +18,7 @@ import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParse
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 public class GraphQLEmbeddedPureParser implements EmbeddedPureParser
 {

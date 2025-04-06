@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.conte
 
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.SpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 public class PersistencePlatformSourceCode extends SpecificationSourceCode
 {

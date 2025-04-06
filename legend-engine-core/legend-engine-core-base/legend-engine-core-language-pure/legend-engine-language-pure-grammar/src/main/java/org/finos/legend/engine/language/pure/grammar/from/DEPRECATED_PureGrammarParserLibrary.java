@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 // FIXME: remove this when we move everything to extension
 @Deprecated

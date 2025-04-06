@@ -27,7 +27,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParse
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;

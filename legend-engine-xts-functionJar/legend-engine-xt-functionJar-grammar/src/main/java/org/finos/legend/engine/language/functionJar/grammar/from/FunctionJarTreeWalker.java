@@ -26,7 +26,6 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.FunctionJarParserGrammar;
 import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
@@ -35,7 +34,6 @@ import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class FunctionJarTreeWalker
 {

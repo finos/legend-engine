@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ExternalFormatParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;

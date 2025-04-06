@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.util.List;
 
