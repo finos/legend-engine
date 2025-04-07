@@ -18,8 +18,11 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -74,13 +77,19 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
+    enum DeleteMode
+    {
+        DELETE_PROVIDED,
+        TERMINATE_LATEST_ACTIVE
+    }
+
     private static final String VALID_DATE_TIME_FROM_NAME = "legend_persistence_start_date";
     private static final String VALID_DATE_TIME_THRU_NAME = "legend_persistence_end_date";
     private static final String LEFT_DATASET_IN_JOIN_ALIAS = "legend_persistence_x";
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
     private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
 
-    private final Optional<MergeStrategyDeleteMode> deleteMode;
+    private final Optional<DeleteMode> deleteMode;
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
 
@@ -121,7 +130,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.stagingDataset = stagingDataset();
         }
 
-        this.deleteMode = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.DETERMINE_DELETE_MODE);
+        this.deleteMode = getDeleteMode();
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_VALUES);
 
@@ -198,6 +207,30 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             .build());
     }
 
+    private Optional<DeleteMode> getDeleteMode()
+    {
+        return ingestMode().mergeStrategy().accept(new MergeStrategyVisitor<Optional<DeleteMode>>()
+        {
+            @Override
+            public Optional<DeleteMode> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
+            {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<DeleteMode> visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
+            {
+                return Optional.of(DeleteMode.DELETE_PROVIDED);
+            }
+
+            @Override
+            public Optional<DeleteMode> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+            {
+                return Optional.of(DeleteMode.TERMINATE_LATEST_ACTIVE);
+            }
+        });
+    }
+
     @Override
     protected BitemporalDelta ingestMode()
     {
@@ -235,7 +268,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 switch (deleteMode.orElseThrow(IllegalStateException::new))
                 {
-                    case DELETE_MISTAKE:
+                    case DELETE_PROVIDED:
                         // Op 5: Insert records from main table to temp table for deletion
                         operations.add(getMainToTempForDeletion());
                         // Op 6: Milestone records in main table for deletion

@@ -18,9 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode.DELETE_MISTAKE;
-import static org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyDeleteMode.TERMINATE_LATEST_ACTIVE;
-
 public class MergeStrategyVisitors
 {
     private MergeStrategyVisitors()
@@ -66,27 +63,6 @@ public class MergeStrategyVisitors
         public List<Object> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
         {
             return terminateLatestActiveMergeStrategy.terminateValues();
-        }
-    };
-
-    public static final MergeStrategyVisitor<Optional<MergeStrategyDeleteMode>> DETERMINE_DELETE_MODE = new MergeStrategyVisitor<Optional<MergeStrategyDeleteMode>>()
-    {
-        @Override
-        public Optional<MergeStrategyDeleteMode> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
-        {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<MergeStrategyDeleteMode> visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
-        {
-            return Optional.of(DELETE_MISTAKE);
-        }
-
-        @Override
-        public Optional<MergeStrategyDeleteMode> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
-        {
-            return Optional.of(TERMINATE_LATEST_ACTIVE);
         }
     };
 }
