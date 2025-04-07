@@ -20,7 +20,7 @@ import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.set.mutable.UnifiedSet;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink.RelationalPersistenceTarget;

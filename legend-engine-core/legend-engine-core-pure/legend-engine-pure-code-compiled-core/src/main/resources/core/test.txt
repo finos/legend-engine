@@ -1,0 +1,72 @@
+###Pure
+Class test::Person
+{
+  firstName : String[1];
+  lastName : String[1];
+  age: Integer[0..1];
+  tenure : Integer[0..1];
+
+}
+
+
+Class test::_Person
+{
+  fullName : String[1];
+  age: Integer[0..1];
+  tenure : Integer[1];
+}
+
+
+function test::myfn():meta::pure::tds::TabularDataSet[1]
+{test::Person.all()
+                                                          ->groupBy(
+                                                            [g | $g.tenure],
+                                                            [
+                                                        //      agg(x | $x.age, y | $y->count()),
+                                                             agg(z | $z.firstName, t | $t->count())    
+                                                                 ]
+
+                                                          , ['Tenure', 'last name'])}
+
+
+
+
+###Mapping 
+Mapping test::m2m
+(
+  include test::relationalM 
+  test::Person : Pure
+  {
+    ~src test::_Person
+    firstName : $src.fullName,
+    age : $src.age,
+    tenure : $src.tenure
+  }
+)
+
+Mapping test::relationalM
+(
+  test::_Person : Relational
+  {
+    ~primaryKey
+    (
+      [test::relationalDb]Person.fullName
+    )
+    ~mainTable [test::relationalDb]Person
+    fullName: [test::relationalDb]Person.fullName,
+    age:[test::relationalDb]Person.age,
+    tenure:[test::relationalDb]Person.tenure
+  }
+)
+
+###Relational
+Database test::relationalDb
+(
+  Table Person
+  (
+    fullName VARCHAR(1000) PRIMARY KEY,
+    firm VARCHAR(200),
+    age INTEGER,
+    tenure INTEGER
+  )
+)

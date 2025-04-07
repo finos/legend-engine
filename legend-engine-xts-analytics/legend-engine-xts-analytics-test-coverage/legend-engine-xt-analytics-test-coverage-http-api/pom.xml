@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-analytics-test-coverage</artifactId>
-        <version>4.77.2-SNAPSHOT</version>
+        <version>4.78.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -78,13 +78,13 @@
 
     <dependency>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-test-fct</artifactId>
+        <artifactId>legend-engine-test-mft</artifactId>
         <version>${project.version}</version>
     </dependency>
 
     <dependency>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-test-fct</artifactId>
+        <artifactId>legend-engine-test-mft</artifactId>
         <type>test-jar</type>
         <version>${project.version}</version>
     </dependency>

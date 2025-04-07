@@ -46,7 +46,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
 
             //composition
             one("meta::pure::functions::relation::tests::composition::testExtendFilter_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Where, false]) is not supported yet\""),
-            one("meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   legalName,firstName\n   Firm X,Peter\n   Firm X,John\n   Firm X,John\n   Firm X,Anthony\n#'\nactual:   '#TDS\n   legalName,firstName\n   Firm X,Anthony\n   Firm X,John\n   Firm X,John\n   Firm X,Peter\n#'\""),
             one("meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter_Function_1__Boolean_1_", "Error while executing: insert into"),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_", "Error while executing: insert into"),
@@ -56,7 +55,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "Error while executing: insert into"),
 
             //concatenate
-            one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str\n   1,a\n   3,ewe\n   4,qw\n   5,qwea\n   6,eeewe\n   7,qqwew\n#'\nactual:   '#TDS\n   val,str\n   1,a\n   6,eeewe\n   7,qqwew\n   3,ewe\n   4,qw\n   5,qwea\n#'\""),
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //cumulativeDistribution
@@ -74,7 +72,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::distinct::testDistinctSingle_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: insert into"),
 
             //drop
-            one("meta::pure::functions::relation::tests::drop::testSimpleDropShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str\n   5,wwe\n   6,weq\n#'\nactual:   '#TDS\n   val,str\n   6,weq\n   4,qw\n#'\""),
             one("meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //extend
@@ -102,9 +99,7 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
-            one("meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,doub,name\n   1,1.2,2.2\n   3,2.3,3.3\n   4,4.2,5.2\n   5,4.2,5.2\n   6,4.5,5.5\n#'\nactual:   '#TDS\n   val,doub,name\n   5,4.2,5.2\n   4,4.2,5.2\n   3,2.3,3.3\n   1,1.2,2.2\n   6,4.5,5.5\n#'\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
-            one("meta::pure::functions::relation::tests::extend::testSimpleExtendInt_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str,name\n   1,a,2\n   3,ewe,4\n   4,qw,5\n   5,wwe,6\n   6,weq,7\n#'\nactual:   '#TDS\n   val,str,name\n   5,wwe,6\n   4,qw,5\n   3,ewe,4\n   1,a,2\n   6,weq,7\n#'\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
@@ -112,7 +107,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //filter
-            one("meta::pure::functions::relation::tests::filter::testSimpleFilterShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val\n   3\n   4\n#'\nactual:   '#TDS\n   val\n   4\n   3\n#'\""),
             one("meta::pure::functions::relation::tests::filter::testSimpleFilter_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //first
@@ -137,7 +131,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindow_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             //limit
-            one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str\n   1,a\n   3,ewe\n   4,qw\n#'\nactual:   '#TDS\n   val,str\n   5,wwe\n   3,ewe\n   1,a\n#'\""),
             one("meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //nth
@@ -161,25 +154,20 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: insert into"),
 
             //project
-            one("meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   one,two,three\n   ok,no,null\n   ok,other,null\n#'\nactual:   '#TDS\n   one,two,three\n   ok,other,null\n   ok,no,null\n#'\""),
             one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
 
             //rank
             one("meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             //rename
-            one("meta::pure::functions::relation::tests::rename::testSimpleRenameShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,newStr\n   1,a\n   3,ewe\n   4,qw\n   5,wwe\n   6,weq\n#'\nactual:   '#TDS\n   val,newStr\n   3,ewe\n   5,wwe\n   1,a\n   4,qw\n   6,weq\n#'\""),
             one("meta::pure::functions::relation::tests::rename::testSimpleRename_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //rowNumber
             one("meta::pure::functions::relation::tests::rowNumber::testOLAPWithPartitionAndRowNumber_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             //select
-            one("meta::pure::functions::relation::tests::select::testMultiColsSelectShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,other\n   1,a\n   3,b\n   4,c\n   5,d\n   6,e\n#'\nactual:   '#TDS\n   val,other\n   3,b\n   5,d\n   1,a\n   4,c\n   6,e\n#'\""),
             one("meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
-            one("meta::pure::functions::relation::tests::select::testSelectAll_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str,other\n   1,a,a\n   3,ewe,b\n   4,qw,c\n   5,wwe,d\n   6,weq,e\n#'\nactual:   '#TDS\n   val,str,other\n   3,ewe,b\n   5,wwe,d\n   1,a,a\n   4,qw,c\n   6,weq,e\n#'\""),
             one("meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
-            one("meta::pure::functions::relation::tests::select::testSingleColSelectShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   str\n   a\n   ewe\n   qw\n   wwe\n   weq\n#'\nactual:   '#TDS\n   str\n   ewe\n   wwe\n   a\n   qw\n   weq\n#'\""),
             one("meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_", "Error while executing: Create Table"),
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: Create Table"),
@@ -191,7 +179,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::size::testSize_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             //slice
-            one("meta::pure::functions::relation::tests::slice::testSimpleSliceShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   val,str\n   3,ewe\n   4,qw\n#'\nactual:   '#TDS\n   val,str\n   1,a\n   5,wwe\n#'\""),
             one("meta::pure::functions::relation::tests::slice::testSimpleSlice_MultipleExpressions_Function_1__Boolean_1_", "\"Common table expression not supported on DB Spanner\""),
 
             //sort

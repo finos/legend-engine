@@ -33,7 +33,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.build
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.MultiHandlerFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.RequiredInferenceSimilarSignatureFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;

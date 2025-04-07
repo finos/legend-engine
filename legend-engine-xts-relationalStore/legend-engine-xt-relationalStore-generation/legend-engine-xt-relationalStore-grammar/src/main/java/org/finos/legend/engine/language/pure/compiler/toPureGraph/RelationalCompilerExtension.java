@@ -43,7 +43,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -1049,7 +1049,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
     public static Root_meta_relational_metamodel_TableMapper processTableMapper(TableMapper tblMap, CompileContext context)
     {
-        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(HelperRelationalBuilder.resolveDatabase(tblMap.from.database, tblMap.from.sourceInformation, context), tblMap.from.schema, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+        SetIterable<Table> tables = HelperRelationalBuilder.getAllTablesInSchema(HelperRelationalBuilder.resolveDatabase(tblMap.from.database, tblMap.from.sourceInformation, context), tblMap.from.schema, SourceInformation.getUnknownSourceInformation());
         Table tbl = tables.toList().stream().filter(t -> t._name().equals(tblMap.from.table)).findFirst().orElseThrow(() -> new RuntimeException("Can't find " + tblMap.from.table + " table in " + tblMap.from.schema + " schema."));
 
         Root_meta_relational_metamodel_TableMapper tblMapper = new Root_meta_relational_metamodel_TableMapper_Impl("")

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-elasticsearch</artifactId>
-        <version>4.77.2-SNAPSHOT</version>
+        <version>4.78.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>

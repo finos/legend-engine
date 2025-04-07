@@ -50,7 +50,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,qw4\n'+
                   '   5,wwe,wwe5\n'+
                   '   6,weq,weq6\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -76,7 +76,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,qw4\n'+
                   '   5,wwe,wwe5\n'+
                   '   6,weq,weq6\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendInt<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -101,7 +101,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,5\n'+
                   '   5,wwe,6\n'+
                   '   6,weq,7\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -127,7 +127,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,5\n'+
                   '   5,wwe,6\n'+
                   '   6,weq,7\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendFloat<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -152,7 +152,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,4.2,5.2\n'+
                   '   5,4.2,5.2\n'+
                   '   6,4.5,5.5\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -178,7 +178,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,4.2,5.2\n'+
                   '   5,4.2,5.2\n'+
                   '   6,4.5,5.5\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -203,7 +203,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,5,qw_ext\n'+
                   '   5,wwe,6,wwe_ext\n'+
                   '   6,weq,7,weq_ext\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -229,7 +229,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::extend::testSimple
                   '   4,qw,5,qw_ext\n'+
                   '   5,wwe,6,wwe_ext\n'+
                   '   6,weq,7,weq_ext\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

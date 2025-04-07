@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOw
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;

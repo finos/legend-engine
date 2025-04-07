@@ -23,7 +23,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction;
 import org.finos.legend.engine.shared.core.operational.Assert;

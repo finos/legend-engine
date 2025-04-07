@@ -21,7 +21,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;

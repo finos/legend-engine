@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")

@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGrap
 import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.Collections;
