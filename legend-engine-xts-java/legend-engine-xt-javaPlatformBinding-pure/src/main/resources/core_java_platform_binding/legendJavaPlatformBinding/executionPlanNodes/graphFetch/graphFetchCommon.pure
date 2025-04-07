@@ -258,7 +258,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1], extensions:Extension[*]):Boolean[1]
 {
    $property.genericType.rawType->toOne()->instanceOf(DataType)
-   && $setImpl->meta::pure::router::store::routing::isPropertyAutoMapped($property, $extensions)
+   && $setImpl->meta::pure::router::store::routing::isPropertyAutoMapped($property, $extensions, $setImpl.parent)
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
