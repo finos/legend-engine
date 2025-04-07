@@ -62,7 +62,7 @@ function meta::external::store::relational::sqlDialectTranslation::postgres::pos
 function meta::external::store::relational::sqlDialectTranslation::postgres::postgresFunctionTestsExpectedErrors(): Map<String, String>[1]
 {
   [
-    
+
   ]->newMap()->cast(@Map<String, String>)
 }
 
@@ -95,6 +95,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     ->concatenate(
       postgresDialectOtherNodeProcessors()
     )
+    ->concatenate(
+      postgresDialectDDLProcessors()
+    )
     ->map(n | pair($n.nodeType, $n))
   )
 }
@@ -115,7 +118,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     joinProcessor_default(),
     querySpecificationProcessor_default(),
     unionProcessor_default(),
-    tableSubqueryProcessor_default()
+    tableSubqueryProcessor_default(),
+    tablePlaceholderProcessor_default()
   ]
 }
 
@@ -153,7 +157,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     booleanLiteralNodeProcessor_default(),
     longLiteralNodeProcessor_default(),
     doubleLiteralNodeProcessor_default(),
-    nullLiteralNodeProcessor_default()
+    nullLiteralNodeProcessor_default(),
+    dateLiteralNodeProcessor_default(),
+    timestampLiteralNodeProcessor_default()
   ]
 }
 
@@ -169,7 +175,17 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     sortItemProcessor_default(),
-    selectProcessor_default()
+    selectProcessor_default(),
+    withQueryProcessor_default()
+  ]
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresDialectDDLProcessors(): NodeProcessor<Node>[*]
+{
+  [
+    createTableProcessor_default(),
+    dropTableProcessor_default(),
+    insertIntoTableProcessor_default()
   ]
 }
 
@@ -185,7 +201,6 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     operatorPrecedence = operatorPrecedence_default()
   )
 }
-
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::postgresKeywords(): String[*]
 {
@@ -319,7 +334,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Sin->nativeFunctionMapEntry(),
     Tan->nativeFunctionMapEntry(),
     Power->nativeFunctionMapEntry(),
-    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)), 
+    pair(Sign, customFunctionProcessor(processorForSign_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     Mod->nativeFunctionMapEntry(),
     Round->nativeFunctionMapEntry(),
     Floor->nativeFunctionMapEntry(),
@@ -345,6 +360,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     StrPos->nativeFunctionMapEntry(),
     pair(Sha1, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha1', $f, $sqlDialect, $state, $config )})),
     pair(Sha256, customFunctionProcessor({f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]| processorForSha('sha256', $f, $sqlDialect, $state, $config )})),
+    StringAgg->nativeFunctionMapEntry(),
+    Concat->nativeFunctionMapEntry(),
 
     // Boolean
     pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -354,10 +371,13 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DatePart, customFunctionProcessor(processorForDatePart_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     Now->nativeFunctionMapEntry(),
     ToDate->nativeFunctionMapEntry(),
-    ToTimestamp->nativeFunctionMapEntry()
-    
+    ToTimestamp->nativeFunctionMapEntry(),
+
+    // Miscellaneous
+    Coalesce->nativeFunctionMapEntry()
   ])
 }
+
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForSha(hashing:String[1], f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);

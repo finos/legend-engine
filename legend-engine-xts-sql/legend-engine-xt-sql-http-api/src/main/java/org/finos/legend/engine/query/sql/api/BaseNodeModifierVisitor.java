@@ -76,6 +76,8 @@ import org.finos.legend.engine.protocol.sql.metamodel.Union;
 import org.finos.legend.engine.protocol.sql.metamodel.WhenClause;
 import org.finos.legend.engine.protocol.sql.metamodel.Window;
 import org.finos.legend.engine.protocol.sql.metamodel.WindowFrame;
+import org.finos.legend.engine.protocol.sql.metamodel.With;
+import org.finos.legend.engine.protocol.sql.metamodel.WithQuery;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -140,6 +142,22 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     @Override
     public Node visit(ColumnType val)
     {
+        return val;
+    }
+
+    @Override
+    public Node visit(WithQuery val)
+    {
+        val.query = _visit(val.query);
+        
+        return val;
+    }
+
+    @Override
+    public Node visit(With val)
+    {
+        val.withQueries = _visit(val.withQueries);
+        
         return val;
     }
 

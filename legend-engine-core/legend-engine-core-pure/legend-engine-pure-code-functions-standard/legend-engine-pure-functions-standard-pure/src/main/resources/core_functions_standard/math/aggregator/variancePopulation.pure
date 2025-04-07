@@ -67,5 +67,5 @@ function <<PCT.test>> meta::pure::functions::math::tests::variance::testSimpleWi
                   '   1,2,0.25\n'+
                   '   2,2,1.0\n'+
                   '   2,4,1.0\n'+
-                  '#', $res->sort(~id->ascending())->toString());
+                  '#', $res->sort([~id->ascending(), ~val->ascending()])->toString());
 }

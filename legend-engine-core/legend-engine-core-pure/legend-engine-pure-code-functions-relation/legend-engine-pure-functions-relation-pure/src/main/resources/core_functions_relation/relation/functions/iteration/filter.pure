@@ -34,7 +34,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimple
                   '   val\n'+
                   '   3\n'+
                   '   4\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimpleFilter_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -57,5 +57,5 @@ function <<PCT.test>> meta::pure::functions::relation::tests::filter::testSimple
     assertEquals( '#TDS\n'+
                   '   val\n'+
                   '   5\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }

@@ -21,29 +21,32 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.test.fct.model.FCTTestReport;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Scanner;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Scanner;
+import org.finos.legend.engine.api.analytics.mft.MFTReportCollector;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.test.mft.model.MFTTestReport;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 @Api(tags = "FCT")
 @Path("fct")
 
 public class FCT
 {
+    private  ModelManager modelManager;
 
     public FCT(ModelManager modelManager)
     {
+        this.modelManager = modelManager;
     }
 
     public FCT()
@@ -58,7 +61,7 @@ public class FCT
     {
         try
         {
-            List<FCTTestReport> reports = FCTReportCollector.collectReports();
+            List<MFTTestReport> reports = MFTReportCollector.collectReports();
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             return Response.status(200).type(MediaType.APPLICATION_JSON).entity(mapper.writeValueAsString(reports)).build();

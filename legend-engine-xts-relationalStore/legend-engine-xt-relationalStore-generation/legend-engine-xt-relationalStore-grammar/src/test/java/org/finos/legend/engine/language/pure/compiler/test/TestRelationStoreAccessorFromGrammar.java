@@ -62,7 +62,8 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
                 "        bit BIT,\n" +
                 "        dec DECIMAL(18,6),\n" +
                 "        r REAL,\n" +
-                "        n NUMERIC(18,6)\n" +
+                "        n NUMERIC(18,6),\n" +
+                "        o OTHER\n" +
                 "    )\n" +
                 ")\n" +
                 "###Pure\n" +

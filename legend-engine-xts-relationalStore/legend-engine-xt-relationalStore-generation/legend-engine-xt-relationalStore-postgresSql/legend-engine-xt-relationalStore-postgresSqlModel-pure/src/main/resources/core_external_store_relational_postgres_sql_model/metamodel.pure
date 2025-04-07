@@ -24,10 +24,23 @@ Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Statemen
 
 Class meta::external::query::sql::metamodel::Query extends meta::external::query::sql::metamodel::Statement
 {
+  <<equality.Key>> with: meta::external::query::sql::metamodel::With[0..1];
   <<equality.Key>> queryBody: meta::external::query::sql::metamodel::QueryBody[1];
   <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
   <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
+}
+
+Class meta::external::query::sql::metamodel::WithQuery extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> columns: String[*];
+  <<equality.Key>> query: meta::external::query::sql::metamodel::Query[1];
+}
+
+Class meta::external::query::sql::metamodel::With extends meta::external::query::sql::metamodel::Statement
+{
+  <<equality.Key>> withQueries: meta::external::query::sql::metamodel::WithQuery[*];
 }
 
 Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
@@ -68,7 +81,7 @@ Class meta::external::query::sql::metamodel::AliasedRelation extends meta::exter
 {
   <<equality.Key>> relation:meta::external::query::sql::metamodel::Relation[1];
   <<equality.Key>> alias: String[1];
-  <<equality.Key>>  columnNames: String[*];
+  <<equality.Key>> columnNames: String[*];
 }
 
 Class meta::external::query::sql::metamodel::Union extends meta::external::query::sql::metamodel::SetOperation

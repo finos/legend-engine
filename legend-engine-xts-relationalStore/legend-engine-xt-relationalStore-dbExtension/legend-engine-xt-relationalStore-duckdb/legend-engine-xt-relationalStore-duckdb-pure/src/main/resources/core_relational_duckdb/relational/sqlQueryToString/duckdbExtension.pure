@@ -36,7 +36,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       commitQueryProcessor = processCommitQueryForDuckDB_CommitQuery_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslator()
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+
+      pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::duckDB::convert_GenericType_1__DataType_1_,
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_
    );
 }
 
@@ -68,7 +71,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                 dropSchema = translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
                 createTable = translateCreateTableStatementDuckDB_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
-                loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+                loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_,
+                createView = createView_CreateViewSQL_1__DbConfig_1__String_1_
               );
 }
 

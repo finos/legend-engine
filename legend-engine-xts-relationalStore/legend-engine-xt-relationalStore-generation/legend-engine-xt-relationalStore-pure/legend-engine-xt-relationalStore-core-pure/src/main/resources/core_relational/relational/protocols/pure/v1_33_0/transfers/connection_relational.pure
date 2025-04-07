@@ -35,8 +35,9 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
                                       | [],
                                       | $otherConnection.queryPostProcessorsWithParameter->transformPostProcessors($extensions));
 
+   let queryGenerationConfigs = $otherConnection.queryGenerationConfigs->map(c | $c->transformQueryGenerationConfig($extensions));
 
-   let alloyConnection = $otherConnection->match($extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_33_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformDatabaseConnection->map(f | $f->eval($_type, $element, $type, $postProcessorsWithParams))->concatenate([
+   let alloyConnection = $otherConnection->match($extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_33_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformDatabaseConnection->map(f | $f->eval($_type, $element, $type, $postProcessorsWithParams, $queryGenerationConfigs))->concatenate([
       test:meta::external::store::relational::runtime::TestDatabaseConnection[1]|
           ^RelationalDatabaseConnection(
             _type = 'RelationalDatabaseConnection',
@@ -53,11 +54,12 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
             authenticationStrategy = ^meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy(
               _type = 'test'
             ),
-            postProcessorWithParameter = $postProcessorsWithParams
+            postProcessorWithParameter = $postProcessorsWithParams,
+            queryGenerationConfigs = $queryGenerationConfigs
          ),
       relational:meta::external::store::relational::runtime::RelationalDatabaseConnection[1] |
          let processors = transformPostProcessors($relational.postProcessors, $extensions);
-         relational($type, $element, $relational.timeZone, $relational.quoteIdentifiers, $relational.queryTimeOutInSeconds, $processors, $relational.datasourceSpecification, $relational.authenticationStrategy, $extensions);,
+         relational($type, $element, $relational.timeZone, $relational.quoteIdentifiers, $relational.queryTimeOutInSeconds, $processors, $relational.datasourceSpecification, $relational.authenticationStrategy, $queryGenerationConfigs, $extensions);,
       dbCon:meta::external::store::relational::runtime::DatabaseConnection[1]|
          ^meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::DatabaseConnection(
                   _type = $_type,
@@ -66,6 +68,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
                   queryTimeOutInSeconds = $dbCon.queryTimeOutInSeconds,
                   element = $element,
                   postProcessorWithParameter = $postProcessorsWithParams,
+                  queryGenerationConfigs = $queryGenerationConfigs,
                   type = $type)
     ])->toOneMany());
 }
@@ -107,6 +110,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
                                                                                               processors:meta::protocols::pure::v1_33_0::metamodel::store::relational::postProcessor::PostProcessor[*],
                                                                                               spec:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1],
                                                                                               auth:meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1],
+                                                                                              queryGenerationConfigs: meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalQueryGenerationConfig[*],
                                                                                               extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalDatabaseConnection[1]
 {
    ^meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalDatabaseConnection(
@@ -118,7 +122,8 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
       type = $type,
       datasourceSpecification = $spec->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::transformDatasourceSpecification($extensions),
       authenticationStrategy = $auth->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::transformAuthenticationStrategy($extensions),
-      postProcessors = $processors
+      postProcessors = $processors,
+      queryGenerationConfigs = $queryGenerationConfigs
    );
 }
 
@@ -210,4 +215,11 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
                t: meta::relational::postProcessor::TableNameMapper[1]| ^meta::protocols::pure::v1_33_0::metamodel::store::relational::TableNameMapper(_type='tableMapper',in =$t.in, out = $t.out, schemaMapperIn = $t.schemaNameMapper.in, schemaMapperOut = $t.schemaNameMapper.out),
                s: meta::relational::postProcessor::SchemaNameMapper[1]| ^meta::protocols::pure::v1_33_0::metamodel::store::relational::SchemaNameMapper(_type='schemaMapper',in =$s.in, out = $s.out )
             ]->concatenate($extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::v1_33_0::extension::RelationalModuleSerializerExtension).transfers_connection_transformPostProcessorParameters)->toOneMany()));
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::transformQueryGenerationConfig(cfg: meta::external::store::relational::runtime::RelationalQueryGenerationConfig[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::RelationalQueryGenerationConfig[1]
+{
+   $cfg->match([
+    genCfg: meta::external::store::relational::runtime::GenerationFeaturesConfig[1] | ^meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::GenerationFeaturesConfig(_type= 'generationFeaturesConfig', enabled = $genCfg.enabled, disabled = $genCfg.disabled)
+   ])
 }
