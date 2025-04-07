@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.partitioning.Partitioning;
@@ -36,10 +37,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.DatasetIngestDetails;
@@ -69,38 +67,15 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.appendTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestUDF;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersion;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPk;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithVersionWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchema2WithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithNonPkVersion;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithVersionWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.getStagingSchemaWithoutPkWithoutDigest;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.ratingName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
-import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 public class RelationalMultiDatasetIngestorTest extends BaseTest
 {
     private static final String suffixForAppendTable = "_APPEND";
     private static final String suffixForFinalTable = "_FINAL";
     private static final String suffixForBatchMetadataTable = "_BATCH_METADATA";
+
+    private static final String suffixForDeletePartitionTable = "_DELETED_PARTITIONS";
     private static final String dataset1 = "DATASET_1";
     private static final String dataset2 = "DATASET_2";
     private static final String dataset3 = "DATASET_3";
@@ -1200,72 +1175,72 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
     {
         // Configure ingest modes
         BulkLoad bulkLoad = BulkLoad.builder()
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
-            .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
-            .batchIdField(batchIdName)
-            .build();
+                .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+                .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
+                .batchIdField(batchIdName)
+                .build();
 
         UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
-            .partitioningStrategy(Partitioning.builder()
-                .addPartitionFields(idName)
-                .derivePartitionSpec(true)
-                .maxPartitionSpecFilters(100L).build())
-            .digestField(digestName)
-            .transactionMilestoning(BatchId.builder()
-                .batchIdInName(batchIdInName)
-                .batchIdOutName(batchIdOutName)
-                .build())
-            .build();
+                .partitioningStrategy(Partitioning.builder()
+                        .addPartitionFields(idName)
+                        .derivePartitionSpec(true)
+                        .maxPartitionSpecFilters(100L).build())
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .build();
 
         // Configure dataset 1
         StagedFilesDataset bulkLoadStageTableForDataset1 = StagedFilesDataset.builder()
-            .stagedFilesDatasetProperties(
-                H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormatType.CSV)
-                    .addAllFilePaths(Collections.singletonList(filePathForBulkLoad1)).build())
-            .schema(getStagingSchemaWithoutPkWithoutDigest())
-            .build();
+                .stagedFilesDatasetProperties(
+                        H2StagedFilesDatasetProperties.builder()
+                                .fileFormat(FileFormatType.CSV)
+                                .addAllFilePaths(Collections.singletonList(filePathForBulkLoad1)).build())
+                .schema(getStagingSchemaWithoutPkWithoutDigest())
+                .build();
         DatasetReference bulkLoadMainTableForDataset1 = DatasetReferenceImpl.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset1 + suffixForAppendTable)
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForAppendTable)
+                .build();
         DatasetDefinition unitemporalSnapshotStageTableForDataset1 = DatasetDefinition.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset1 + suffixForAppendTable)
-            .schema(getStagingSchema())
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForAppendTable)
+                .schema(getStagingSchema())
+                .build();
         DatasetReference unitemporalSnapshotMainTableForDataset1 = DatasetReferenceImpl.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset1 + suffixForFinalTable)
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForFinalTable)
+                .build();
 
         // Configure dataset 2
         StagedFilesDataset bulkLoadStageTableForDataset2 = StagedFilesDataset.builder()
-            .stagedFilesDatasetProperties(
-                H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormatType.CSV)
-                    .addAllFilePaths(Collections.singletonList(filePathForBulkLoad2)).build())
-            .schema(getStagingSchema2WithoutPkWithoutDigest())
-            .build();
+                .stagedFilesDatasetProperties(
+                        H2StagedFilesDatasetProperties.builder()
+                                .fileFormat(FileFormatType.CSV)
+                                .addAllFilePaths(Collections.singletonList(filePathForBulkLoad2)).build())
+                .schema(getStagingSchema2WithoutPkWithoutDigest())
+                .build();
         DatasetReference bulkLoadMainTableForDataset2 = DatasetReferenceImpl.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset2 + suffixForAppendTable)
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset2 + suffixForAppendTable)
+                .build();
         DatasetDefinition unitemporalSnapshotStageTableForDataset2 = DatasetDefinition.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset2 + suffixForAppendTable)
-            .schema(getStagingSchema2())
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset2 + suffixForAppendTable)
+                .schema(getStagingSchema2())
+                .build();
         DatasetReference unitemporalSnapshotMainTableForDataset2 = DatasetReferenceImpl.builder()
-            .database(testDatabaseName)
-            .group(testSchemaName)
-            .name(dataset2 + suffixForFinalTable)
-            .build();
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset2 + suffixForFinalTable)
+                .build();
 
         // Configure ingest stages
         IngestStage ingestStage1ForDataset1 = IngestStage.builder().ingestMode(bulkLoad).stagingDataset(bulkLoadStageTableForDataset1).mainDataset(bulkLoadMainTableForDataset1).build();
@@ -1274,6 +1249,250 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
         IngestStage ingestStage2ForDataset2 = IngestStage.builder().ingestMode(unitemporalSnapshot).stagingDataset(unitemporalSnapshotStageTableForDataset2).mainDataset(unitemporalSnapshotMainTableForDataset2).batchIdField(batchIdName).build();
 
         return buildDatasetIngestDetails(Arrays.asList(ingestStage1ForDataset1, ingestStage2ForDataset1), Arrays.asList(ingestStage1ForDataset2, ingestStage2ForDataset2));
+    }
+
+    /*
+Test Case:
+    - [Dataset1: [DeletePartitionLoad, BulkLoad, UnitemporalSnapshot],
+    - Partitioning with deriving partition spec list
+ */
+    @Test
+    public void testDerivePartitionStagingAndDeletePartitionSpec() throws IOException
+    {
+        // Register UDF
+        H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
+
+        // Batch 1
+        RelationalMultiDatasetIngestor ingestor = RelationalMultiDatasetIngestor.builder()
+                .relationalSink(H2Sink.get())
+                .lockInfoDataset(lockInfoDataset)
+                .ingestRequestId(requestId1)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .enableIdempotencyCheck(true)
+                .build();
+
+        List<DatasetIngestDetails> datasetIngestDetails = configureForTest7("src/test/resources/data/multi-dataset/set7/input/delete_partitions1.csv",
+                "src/test/resources/data/multi-dataset/set7/input/staging_data_pass1.csv");
+
+        // Run ingestion
+        ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
+        ingestor.create();
+        List<DatasetIngestResults> actual = ingestor.ingest();
+
+        // Verify results
+        IngestStageResult ingestStageResult1 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 0);
+        IngestStageResult ingestStageResult2 = buildIngestStageResultForBulkLoad("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 7);
+        IngestStageResult ingestStageResult3 = buildIngestStageResult("2000-01-01 00:00:00.000000", "2000-01-01 00:00:00.000000", 7, 0, 7, 0, 0);
+
+        List<DatasetIngestResults> expected = new ArrayList<>();
+        expected.add(DatasetIngestResults.builder()
+                .dataset(dataset1)
+                .batchId(1L)
+                .ingestRequestId(requestId1)
+                .addAllIngestStageResults(Arrays.asList(ingestStageResult1, ingestStageResult2, ingestStageResult3))
+                .build());
+
+        verifyResults(
+                actual, expected,
+                Arrays.asList("src/test/resources/data/multi-dataset/set7/expected/expected_pass1_append.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass1_main.csv"),
+                Arrays.asList(dataset1 + suffixForAppendTable,
+                        dataset1 + suffixForFinalTable),
+        Arrays.asList(new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdName},
+                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName}));
+
+        // Batch 2
+        ingestor = RelationalMultiDatasetIngestor.builder()
+                .relationalSink(H2Sink.get())
+                .lockInfoDataset(lockInfoDataset)
+                .ingestRequestId(requestId2)
+                .executionTimestampClock(fixedClock_2000_01_02)
+                .build();
+
+        datasetIngestDetails = configureForTest7("src/test/resources/data/multi-dataset/set7/input/delete_partitions2.csv",
+                "src/test/resources/data/multi-dataset/set7/input/staging_data_pass2.csv");
+
+        // Run ingestion
+        ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
+        // No impact of re-init
+        ingestor.create();
+        actual = ingestor.ingest();
+
+        // Verify results
+        ingestStageResult1 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 1);
+        ingestStageResult2 = buildIngestStageResultForBulkLoad("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 4);
+        ingestStageResult3 = buildIngestStageResult("2000-01-02 00:00:00.123456", "2000-01-02 00:00:00.123456", 4, 0, 2, 4, 1);
+
+        expected = new ArrayList<>();
+        expected.add(DatasetIngestResults.builder()
+                .dataset(dataset1)
+                .batchId(2L)
+                .ingestRequestId(requestId2)
+                .addAllIngestStageResults(Arrays.asList(ingestStageResult1, ingestStageResult2, ingestStageResult3))
+                .build());
+
+        verifyResults(
+                actual, expected,
+                Arrays.asList(
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass2_deleted_partitions.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass2_append.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass2_main.csv"),
+                Arrays.asList(
+                        dataset1 + suffixForDeletePartitionTable,
+                        dataset1 + suffixForAppendTable,
+                        dataset1 + suffixForFinalTable),
+                Arrays.asList(
+                        new String[]{dateName, batchIdName},
+                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdName},
+                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName}));
+
+        // Batch 3
+        ingestor = RelationalMultiDatasetIngestor.builder()
+                .relationalSink(H2Sink.get())
+                .lockInfoDataset(lockInfoDataset)
+                .ingestRequestId(requestId3)
+                .executionTimestampClock(fixedClock_2000_01_03)
+                .build();
+
+        datasetIngestDetails = configureForTest7("src/test/resources/data/multi-dataset/set7/input/delete_partitions3.csv",
+                "src/test/resources/data/empty_file.csv");
+
+        // Run ingestion
+        ingestor.init(datasetIngestDetails, JdbcConnection.of(h2Sink.connection()));
+        // No impact of re-init
+        ingestor.create();
+        actual = ingestor.ingest();
+
+        // Verify results
+        ingestStageResult1 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 1);
+        ingestStageResult2 = buildIngestStageResultForBulkLoad("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 0);
+        ingestStageResult3 = buildIngestStageResult("2000-01-03 00:00:00.000000", "2000-01-03 00:00:00.000000", 0, 0, 0, 1, 0);
+
+        expected = new ArrayList<>();
+        expected.add(DatasetIngestResults.builder()
+                .dataset(dataset1)
+                .batchId(3L)
+                .ingestRequestId(requestId3)
+                .addAllIngestStageResults(Arrays.asList(ingestStageResult1, ingestStageResult2, ingestStageResult3))
+                .build());
+
+        verifyResults(
+                actual, expected,
+                Arrays.asList(
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass3_deleted_partitions.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass2_append.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass3_main.csv"),
+                Arrays.asList(
+                        dataset1 + suffixForDeletePartitionTable,
+                        dataset1 + suffixForAppendTable,
+                        dataset1 + suffixForFinalTable),
+                Arrays.asList(
+                        new String[]{dateName, batchIdName},
+                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdName},
+                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName}));
+
+    }
+
+    public static List<DatasetIngestDetails> configureForTest7(String filePathForDeletePartitionFile, String filePathForDataFile)
+    {
+        // Configure ingest modes
+        BulkLoad deletePartitionLoad = BulkLoad.builder()
+                .digestGenStrategy(NoDigestGenStrategy.builder().build())
+                .auditing(NoAuditing.builder().build())
+                .batchIdField(batchIdName)
+                .build();
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+                .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+                .auditing(DateTimeAuditing.builder().dateTimeField(appendTimeName).build())
+                .batchIdField(batchIdName)
+                .build();
+
+        UnitemporalSnapshot unitemporalSnapshot = UnitemporalSnapshot.builder()
+                .partitioningStrategy(Partitioning.builder()
+                        .addPartitionFields(dateName)
+                        .derivePartitionSpec(true)
+                        .maxPartitionSpecFilters(100L).build())
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .build();
+
+        // Configure dataset 1
+
+        StagedFilesDataset deletePartitionStagingTable = StagedFilesDataset.builder()
+                .stagedFilesDatasetProperties(
+                        H2StagedFilesDatasetProperties.builder()
+                                .fileFormat(FileFormatType.CSV)
+                                .addAllFilePaths(Collections.singletonList(filePathForDeletePartitionFile)).build())
+                .schema(getDeletePartitionStagingSchema())
+                .build();
+        DatasetReference deletePartitionMainTable = DatasetReferenceImpl.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForDeletePartitionTable)
+                .build();
+
+        DatasetDefinition deletePartitionMainDataset = DatasetDefinition.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForDeletePartitionTable)
+                .schema(getDeletePartitionMainTableSchema())
+                .build();
+
+        StagedFilesDataset bulkLoadStageTable = StagedFilesDataset.builder()
+                .stagedFilesDatasetProperties(
+                        H2StagedFilesDatasetProperties.builder()
+                                .fileFormat(FileFormatType.CSV)
+                                .addAllFilePaths(Collections.singletonList(filePathForDataFile)).build())
+                .schema(getEntityPriceStagingSchemaWithoutDigest())
+                .build();
+        DatasetReference bulkLoadMainTable = DatasetReferenceImpl.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForAppendTable)
+                .build();
+
+        DatasetDefinition unitemporalSnapshotStageTable = DatasetDefinition.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForAppendTable)
+                .schema(getEntityPriceStagingSchema())
+                .build();
+        DatasetReference unitemporalSnapshotMainTable = DatasetReferenceImpl.builder()
+                .database(testDatabaseName)
+                .group(testSchemaName)
+                .name(dataset1 + suffixForFinalTable)
+                .build();
+
+        // Configure ingest stages
+        IngestStage ingestStage1 = IngestStage.builder()
+                .ingestMode(deletePartitionLoad)
+                .stagingDataset(deletePartitionStagingTable)
+                .mainDataset(deletePartitionMainTable)
+                .build();
+        IngestStage ingestStage2 = IngestStage.builder()
+                .ingestMode(bulkLoad)
+                .stagingDataset(bulkLoadStageTable)
+                .mainDataset(bulkLoadMainTable)
+                .build();
+        IngestStage ingestStage3 = IngestStage.builder()
+                .ingestMode(unitemporalSnapshot)
+                .stagingDataset(unitemporalSnapshotStageTable)
+                .mainDataset(unitemporalSnapshotMainTable)
+                .deletePartitionDataset(deletePartitionMainDataset)
+                .batchIdField(batchIdName)
+                .build();
+
+        List<DatasetIngestDetails> datasetIngestDetails = new ArrayList<>();
+        datasetIngestDetails.add(DatasetIngestDetails.builder()
+                .dataset(dataset1)
+                .addAllIngestStages(Arrays.asList(ingestStage1, ingestStage2, ingestStage3))
+                .metadataDataset(metadataDataset1)
+                .build());
+        return datasetIngestDetails;
     }
 
     private static List<DatasetIngestDetails> buildDatasetIngestDetails(List<IngestStage> ingestStages1, List<IngestStage> ingestStages2)

@@ -66,6 +66,8 @@ public class TestUtils
     public static String testDatabaseName = "TEST_DB";
     public static String mainTableName = "main";
     public static String stagingTableName = "staging";
+
+    public static String deletePartitionTableName = "main_deleted_partitions";
     public static String tempTableName = "temp";
     public static String tempWithDeleteIndicatorTableName = "tempWithDeleteIndicator";
     public static String stagingTableWithoutDuplicatesName = "stagingWihtoutDuplicates";
@@ -183,6 +185,9 @@ public class TestUtils
     public static Field rating = Field.builder().name(ratingName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(ratingName).build();
     public static Field accountNum = Field.builder().name(accountNumName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(accountNumName).primaryKey(true).build();
     public static Field dimension = Field.builder().name(dimensionName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(dimensionName).primaryKey(true).build();
+
+    public static Field dateNonPk = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(false).fieldAlias(dateName).build();
+    public static Field entityNonPk = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(false).fieldAlias(entityName).build();
 
     public static DatasetDefinition getBasicMainTable()
     {
@@ -305,6 +310,51 @@ public class TestUtils
             .addFields(startTimeNonPk)
             .addFields(expiryDate)
             .build();
+    }
+
+    public static SchemaDefinition getEntityPriceStagingSchemaWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+                .addFields(dateNonPk)
+                .addFields(entityNonPk)
+                .addFields(price)
+                .addFields(volume)
+                .build();
+    }
+
+    public static SchemaDefinition getEntityPriceStagingSchema()
+    {
+        return SchemaDefinition.builder()
+                .addFields(date)
+                .addFields(entity)
+                .addFields(price)
+                .addFields(volume)
+                .addFields(digest)
+                .build();
+    }
+
+    public static SchemaDefinition getDeletePartitionStagingSchema()
+    {
+        return SchemaDefinition.builder()
+                .addFields(dateNonPk)
+                .build();
+    }
+
+    public static SchemaDefinition getDeletePartitionMainTableSchema()
+    {
+        return SchemaDefinition.builder()
+                .addFields(dateNonPk)
+                .addFields(batchId)
+                .build();
+    }
+
+    public static SchemaDefinition getDeletePartitionMultiMainTableSchema()
+    {
+        return SchemaDefinition.builder()
+                .addFields(dateNonPk)
+                .addFields(entityNonPk)
+                .addFields(batchId)
+                .build();
     }
 
     public static SchemaDefinition getStagingSchemaWithVersionWithoutPkWithoutDigest()

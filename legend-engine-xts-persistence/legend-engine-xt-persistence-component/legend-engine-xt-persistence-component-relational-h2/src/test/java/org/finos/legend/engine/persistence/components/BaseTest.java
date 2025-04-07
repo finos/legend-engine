@@ -405,6 +405,18 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadDeletePartitionDataWithMultiPartitionKeys(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"main_deleted_partitions\";" +
+                "INSERT INTO \"TEST\".\"main_deleted_partitions\"(date, accountNum, batch_id) " +
+                "SELECT CONVERT( \"date\",DATE ), \"accountNum\", CONVERT( \"batch_id\",INT )," +
+                " FROM CSVREAD( '" + path + "', 'date, accountNum, batch_id', NULL )";
+
+        h2Sink.executeStatement(loadSql);
+    }
+
+
     protected void loadBasicStagingDataInUpperCase(String path) throws Exception
     {
         validateFileExists(path);
