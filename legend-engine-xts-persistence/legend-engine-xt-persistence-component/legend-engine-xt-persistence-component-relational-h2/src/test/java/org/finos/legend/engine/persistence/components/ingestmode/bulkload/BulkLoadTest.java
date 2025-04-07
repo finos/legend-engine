@@ -487,11 +487,11 @@ public class BulkLoadTest extends BaseTest
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table4.csv";
 
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), additionalMetadata);
-        executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats, "");
 
         // Duplicate Request: Idempotency
         getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), additionalMetadata);
-        executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
+        executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats, "");
 
         Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from BATCH_METADATA").get(0);
         verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(additionalMetadata));

@@ -352,7 +352,17 @@ public class BaseTest
         return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
     }
 
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, String orderByClause) throws Exception
+    {
+        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), orderByClause);
+    }
+
     public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, "");
+    }
+
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, String orderByClause) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -365,10 +375,10 @@ public class BaseTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .writeStatistics(true)
                 .build();
-        return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
+        return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats, orderByClause);
     }
 
-    public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, String orderByClause) throws Exception
     {
         Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
 
@@ -384,7 +394,7 @@ public class BaseTest
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
         // Verify the database data
-        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"MAIN\"");
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"MAIN\"" + orderByClause);
 
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
@@ -633,6 +643,16 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, terminate_indicator) " +
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"terminate_indicator\"" +
             " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, terminate_indicator', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(INDEX, DATETIME, BALANCE, DIGEST, TERMINATE_INDICATOR) " +
+            "SELECT CONVERT( \"INDEX\", INT), CONVERT( \"DATETIME\", DATETIME), CONVERT( \"BALANCE\", BIGINT), \"DIGEST\", \"TERMINATE_INDICATOR\"" +
+            " FROM CSVREAD( '" + path + "', 'INDEX, DATETIME, BALANCE, DIGEST, TERMINATE_INDICATOR  ', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

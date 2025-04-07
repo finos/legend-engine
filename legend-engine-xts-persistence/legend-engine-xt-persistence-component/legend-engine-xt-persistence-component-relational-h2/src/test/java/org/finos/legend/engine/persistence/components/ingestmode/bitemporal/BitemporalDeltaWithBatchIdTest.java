@@ -1716,15 +1716,15 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     Scenario: Test milestoning Logic with only validity from time specified with terminate indicator when staging table pre populated
     */
     @Test
-    void testMilestoningSourceSpecifiesFromWithTerminateIndicatorSet1WithDerivedTables() throws Exception
+    void testMilestoningSourceSpecifiesFromWithTerminateIndicatorSet1WithDerivedTablesWithUpperCase() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithTerminateIndicatorIdBased();
 
-        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName.toUpperCase(), balanceName.toUpperCase(), digestName.toUpperCase(), startDateTimeName.toUpperCase(), endDateTimeName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase()};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"INDEX\" INTEGER NOT NULL,\"DATETIME\" TIMESTAMP NOT NULL,\"BALANCE\" BIGINT,\"DIGEST\" VARCHAR,\"TERMINATE_INDICATOR\" VARCHAR,PRIMARY KEY (\"INDEX\", \"DATETIME\"))");
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -1752,38 +1752,38 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(3, 0, 3, 3, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
 
         // ------------ Perform Pass3 ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass3.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass3);
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(3, 0, 3, 3, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
 
         // ------------ Perform Pass4 ------------------------
         // First batch of terminates, but no effect because incoming date < latest interval
         String dataPass4 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass4);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass4);
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(3, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
 
         // ------------ Perform Pass5 ------------------------
         // Second batch of terminates
@@ -1792,10 +1792,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass5 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass5.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass5.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass5);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass5);
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(6, 0, 0, 3, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
 
         // ------------ Perform Pass6 (identical records) ------------------------
         // Third batch of terminates
@@ -1803,9 +1803,9 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass6 = basePathForInput + "source_specifies_from/with_terminate_ind/set_1/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_terminate_ind/set_1/expected_pass6.csv";
         // 1. Load Staging table
-        loadStagingDataForBitemporalFromOnlyWithTerminateInd(dataPass6);
+        loadStagingDataForBitemporalFromOnlyWithTerminateIndWithUpperCase(dataPass6);
         // 2. Execute Plan and Verify Results
         expectedStats = createExpectedStatsMap(1, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, " ORDER BY " + indexName + "," + startDateTimeName + "," + batchIdInName);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, " ORDER BY " + indexName.toUpperCase() + "," + startDateTimeName.toUpperCase() + "," + batchIdInName.toUpperCase());
     }
 }
