@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.AbstractGenerationSpecification;
 

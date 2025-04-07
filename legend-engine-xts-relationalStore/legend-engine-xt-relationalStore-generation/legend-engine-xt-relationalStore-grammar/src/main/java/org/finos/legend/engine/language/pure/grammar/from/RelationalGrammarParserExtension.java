@@ -50,7 +50,9 @@ import org.finos.legend.engine.language.pure.grammar.from.milestoning.Milestonin
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.queryGenerationConfigs.QueryGenerationConfigParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.queryGenerationConfigs.QueryGenerationConfigSourceCode;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -60,6 +62,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.ExtractSubQueriesAsCTEsPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
@@ -294,6 +297,20 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
     {
         return Lists.immutable.with(new RelationalEmbeddedDataParser());
+    }
+
+    @Override
+    public List<Function<QueryGenerationConfigSourceCode, RelationalQueryGenerationConfig>> getExtraQueryGenerationConfigParsers()
+    {
+        QueryGenerationConfigParseTreeWalker walker = new QueryGenerationConfigParseTreeWalker();
+        return Collections.singletonList(code ->
+        {
+            if ("GenerationFeaturesConfig".equals(code.getType()))
+            {
+                return QueryGenerationConfigParseTreeWalker.parseQueryGenerationConfig(code, p -> walker.visitGenerationFeaturesConfig(code, p.generationFeaturesConfig()));
+            }
+            return null;
+        });
     }
 
     private static InputData parseObjectInputData(MappingParserGrammar.TestInputElementContext inputDataContext, ParseTreeWalkerSourceInformation walkerSourceInformation)

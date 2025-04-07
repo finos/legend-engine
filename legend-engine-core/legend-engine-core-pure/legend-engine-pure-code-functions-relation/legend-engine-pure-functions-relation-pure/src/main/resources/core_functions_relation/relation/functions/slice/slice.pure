@@ -27,7 +27,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::slice::testSimpleS
                   4, qw
                   5, wwe
                   6, weq
-                #->slice(1,3);
+                #->sort(~val->ascending())->slice(1,3);
               };
 
     let res =  $f->eval($expr);
@@ -36,7 +36,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::slice::testSimpleS
                   '   val,str\n'+
                   '   3,ewe\n'+
                   '   4,qw\n'+
-                  '#', $res->toString());
+                  '#', $res->sort(~val->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::slice::testSimpleSlice_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ //  Copyright 2023 Goldman Sachs
+  ~ //
+  ~ //  Licensed under the Apache License, Version 2.0 (the "License");
+  ~ //  you may not use this file except in compliance with the License.
+  ~ //  You may obtain a copy of the License at
+  ~ //
+  ~ //       http://www.apache.org/licenses/LICENSE-2.0
+  ~ //
+  ~ //  Unless required by applicable law or agreed to in writing, software
+  ~ //  distributed under the License is distributed on an "AS IS" BASIS,
+  ~ //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ //  See the License for the specific language governing permissions and
+  ~ //  limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xts-relationalStore</artifactId>
+        <version>4.78.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xt-relationalStore-MFT-pure</artifactId>
+    <packaging>jar</packaging>
+    <name>Legend Engine - XT - RelationalStore - MFT - Pure</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build-pure-jar</goal>
+                        </goals>
+                        <configuration>
+                            <repositories>
+                                <repository>core_relational_mft</repository>
+                            </repositories>
+                            <sourceDirectory>src/main/resources</sourceDirectory>
+                            <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                            <extraRepositories>
+                                <extraRepository>
+                                    ${project.basedir}/src/main/resources/core_relational_mft.definition.json
+                                </extraRepository>
+                            </extraRepositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_relational_mft</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                        <dependency>
+                            <groupId>org.finos.legend.pure</groupId>
+                            <artifactId>legend-pure-m3-core</artifactId>
+                            <version>${legend.pure.version}</version>
+                        </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

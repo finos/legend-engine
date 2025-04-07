@@ -41,7 +41,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.GregorianCalendar;
-import java.util.Stack;
 import java.util.TimeZone;
 
 public class RunSqlDialectTestQueryCompiledExtension extends BaseCompiledExtension

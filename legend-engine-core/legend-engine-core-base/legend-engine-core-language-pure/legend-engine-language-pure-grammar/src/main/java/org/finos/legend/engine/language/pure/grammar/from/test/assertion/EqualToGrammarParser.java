@@ -26,7 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 

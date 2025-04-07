@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;

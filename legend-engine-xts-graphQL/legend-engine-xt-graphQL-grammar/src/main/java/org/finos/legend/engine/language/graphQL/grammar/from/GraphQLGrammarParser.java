@@ -60,7 +60,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeReferen
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDirectiveLocation;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
 import java.util.BitSet;
 import java.util.Collections;

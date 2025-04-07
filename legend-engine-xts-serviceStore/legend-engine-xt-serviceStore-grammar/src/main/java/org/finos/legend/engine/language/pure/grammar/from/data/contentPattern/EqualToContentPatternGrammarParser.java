@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.serviceStore.contentPattern.equalTo.EqualToContentPatternLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.serviceStore.contentPattern.equalTo.EqualToContentPatternParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToPattern;
 

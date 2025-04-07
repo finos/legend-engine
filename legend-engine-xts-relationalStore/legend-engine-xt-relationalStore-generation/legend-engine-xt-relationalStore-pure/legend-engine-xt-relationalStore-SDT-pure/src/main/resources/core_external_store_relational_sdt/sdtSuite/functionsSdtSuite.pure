@@ -12,15 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::store::relational::sdt::framework::*;
 
 function <<SDT.test>> meta::external::store::relational::sdt::suite::functions::functionsSdtTests(): SqlDialectTest[*]
 {
-  meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()->keyValues()->map({kv |
-    let funcName = $kv.first;
-    let tests = $kv.second.tests;
+  meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()->values()->map({sf |
+    let functionName = $sf.name->joinStrings('.');
+    let tests = $sf.tests;
     let testCount = $tests->size();
-    $testCount->range()->map(i | $tests->at($i).functionCall->testConfigForSimpleExpression($tests->at($i).result->toOne(), 'FuncTests - ' + $kv.first.name->toOne() + '(' + toString($i) + '/' + toString($testCount-1) + ')'));
-  })
+    $testCount->range()->map(i| let test = $tests->at($i);
+                                let functionCallsInQuery = nodeCollector($test.query)->filter(n | $n->instanceOf(FunctionCall))->cast(@FunctionCall);
+                                assert($functionCallsInQuery->map(f|$f.name.parts->joinStrings('.'))->contains($functionName), 'SqlFunctionTest query at index ' + toString($i) + ' for function "' + $functionName + '" doesn\'t contain a call to ' + $functionName + '!');
+                                let testId = 'FuncTests - ' + $functionName + '(' + toString($i) + '/' + toString($testCount-1) + ')';
+                                $test->testConfigForSqlFunctionTest($testId);
+                            );
+  });
 }

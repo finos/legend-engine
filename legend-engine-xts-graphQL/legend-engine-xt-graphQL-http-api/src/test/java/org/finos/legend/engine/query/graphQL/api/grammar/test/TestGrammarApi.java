@@ -18,7 +18,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;

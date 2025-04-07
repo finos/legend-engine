@@ -66,8 +66,8 @@ function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors
 function meta::relational::mapping::postProcessQuery(exeCtx:meta::pure::runtime::ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[*], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
 {
    let defaultPostProcessors = sqlQueryDefaultPostProcessors();
-   let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));
    let c = if($store->isNotEmpty(),|$store->map(s|$runtime->connectionByElement($s))->removeDuplicates()->toOne(),|$runtime.connectionStores.connection->at(0));
+   let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $c->match([dbc:DatabaseConnection[1] | $dbc, a:Any[*] | []]), $exeCtx, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));
    let postProcessors1 = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
    let newQuery1 = if($postProcessors1->isEmpty(), | $postProcesedQuery, | $postProcessors1->fold({pp,q|$pp->eval($q).values->toOne()}, $postProcesedQuery->cast(@SelectSQLQuery)));
    let postProcessors = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);

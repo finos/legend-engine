@@ -3,6 +3,7 @@
   "pattern": "(meta::pure::functions::relation)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_dsl_tds"
+    "platform_dsl_tds",
+    "core_functions_unclassified"
   ]
 }

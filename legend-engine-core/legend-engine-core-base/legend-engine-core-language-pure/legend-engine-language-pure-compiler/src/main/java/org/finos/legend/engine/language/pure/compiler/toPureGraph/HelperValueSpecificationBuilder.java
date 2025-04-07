@@ -22,7 +22,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;

@@ -1,8 +1,9 @@
 {
   "name": "core_relational_duckdb",
-  "pattern": "(meta::relational::functions::sqlQueryToString::duckDB|meta::relational::tests::sqlQueryToString::duckDB|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
+  "pattern": "(meta::relational::functions::typeConversion::duckDB|meta::relational::functions::sqlQueryToString::duckDB|meta::relational::tests::sqlQueryToString::duckDB|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
   "dependencies": [
     "platform",
+    "platform_dsl_store",
     "platform_store_relational",
     "core",
     "core_functions_unclassified",

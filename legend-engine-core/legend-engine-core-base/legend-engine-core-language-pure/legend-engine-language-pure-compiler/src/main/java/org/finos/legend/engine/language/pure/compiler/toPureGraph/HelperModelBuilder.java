@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
@@ -185,13 +186,13 @@ public class HelperModelBuilder
         };
     }
 
-    public static void checkCompatibility(CompileContext context, GenericType actualReturnType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, GenericType signatureType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    public static void checkCompatibility(CompileContext context, GenericType actualReturnType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, GenericType signatureType, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, SourceInformation errorSourceInformation)
     {
         checkTypeCompatibility(context, actualReturnType, signatureType, errorStub, errorSourceInformation);
         checkMultiplicityCompatibility(actualMultiplicity, signatureMultiplicity, errorStub, errorSourceInformation);
     }
 
-    public static void checkTypeCompatibility(CompileContext context, GenericType actualReturnType, GenericType signatureType, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    public static void checkTypeCompatibility(CompileContext context, GenericType actualReturnType, GenericType signatureType, String errorStub, SourceInformation errorSourceInformation)
     {
         ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
         if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(actualReturnType, signatureType, ps))//signatureType != null && !actualReturnType.equals(signatureType) && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(actualReturnType, signatureType, context.pureModel.getExecutionSupport().getProcessorSupport()))
@@ -200,7 +201,7 @@ public class HelperModelBuilder
         }
     }
 
-    public static void checkMultiplicityCompatibility(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation errorSourceInformation)
+    public static void checkMultiplicityCompatibility(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity actualMultiplicity, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity signatureMultiplicity, String errorStub, SourceInformation errorSourceInformation)
     {
         if (!org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(signatureMultiplicity, actualMultiplicity))
         {
@@ -353,13 +354,13 @@ public class HelperModelBuilder
      */
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, final String name, CompiledExecutionSupport executionSupport)
     {
-        return getOwnedProperty(_class, name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation(), executionSupport);
+        return getOwnedProperty(_class, name, SourceInformation.getUnknownSourceInformation(), executionSupport);
     }
 
     /**
      * Find the normal/non-derived property that the class owns.
      */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, final String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, final String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         return HelperModelBuilder.getOwnedProperty(_class, null, name, sourceInformation, executionSupport);
     }
@@ -367,7 +368,7 @@ public class HelperModelBuilder
     /**
      * Find the normal/non-derived property that the class owns.
      */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getOwnedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, final String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _class._properties().detect(p -> name.equals(p.getName()));
         if (property == null)
@@ -378,21 +379,21 @@ public class HelperModelBuilder
         return property;
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getAssociationProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getAssociationProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, SourceInformation sourceInformation, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _association._properties().detect(p -> name.equals(p.getName()));
         Assert.assertTrue(property != null, () -> "Can't find property '" + name + "' in association '" + (getElementFullPath(_association, context.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return property;
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getAssociationPropertyClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getAssociationPropertyClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, SourceInformation sourceInformation, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _association._properties().detect(p -> !name.equals(p.getName()));
         Assert.assertTrue(property != null, () -> "Can't find associated property of property '" + name + "' in association '" + (getElementFullPath(_association, context.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType();
     }
 
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         return HelperModelBuilder.getOwnedAppliedProperty(_class, null, name, sourceInformation, executionSupport);
     }
@@ -400,7 +401,7 @@ public class HelperModelBuilder
     /**
      * Find the property (normal and derived) that the class owns.
      */
-    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String classPath, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         AbstractProperty<?> prop = _class._properties().detect(p -> name.equals(p.getName()));
         if (prop == null)
@@ -422,7 +423,7 @@ public class HelperModelBuilder
     /**
      * Find the property (normal and derived) that the a property owner (class or association) owns.
      */
-    public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         AbstractProperty<?> prop = null;
         if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
@@ -455,12 +456,12 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
      */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, SourceInformation sourceInformation)
     {
         return getPropertyOrResolvedEdgePointProperty(context, _class, parameters, name, false, sourceInformation);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, excludeQualified, sourceInformation);
         if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
@@ -475,10 +476,10 @@ public class HelperModelBuilder
      */
     public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name)
     {
-        return getAppliedProperty(context, _class, parameters, name, false, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation.getUnknownSourceInformation());
+        return getAppliedProperty(context, _class, parameters, name, false, SourceInformation.getUnknownSourceInformation());
     }
 
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, SourceInformation sourceInformation)
     {
         return getAppliedProperty(context, _class, parameters, name, false, sourceInformation);
     }
@@ -486,7 +487,7 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property.
      */
-    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static AbstractProperty<?> getAppliedProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>> parameters, String name, boolean excludeQualified, SourceInformation sourceInformation)
     {
         for (CoreInstance c_type : org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()))
         {

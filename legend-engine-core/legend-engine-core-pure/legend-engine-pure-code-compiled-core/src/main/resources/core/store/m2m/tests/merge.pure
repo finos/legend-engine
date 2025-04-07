@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;

@@ -19,8 +19,9 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalQueryGenerationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -57,6 +58,11 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
         return process(milestoning, processors, context, offset, "Milestoning", milestoning.sourceInformation);
     }
 
+    static String process(RelationalQueryGenerationConfig queryGenerationConfig, List<Function2<RelationalQueryGenerationConfig, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context)
+    {
+        return process(queryGenerationConfig, processors, context, "Relational Query Generation Config", queryGenerationConfig.sourceInformation);
+    }
+
     static <T> String process(T item, List<Function2<T, PureGrammarComposerContext, String>> processors, PureGrammarComposerContext context, String type, SourceInformation srcInfo)
     {
         return ListIterate
@@ -91,6 +97,11 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
     }
 
     default List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
+    {
+        return FastList.newList();
+    }
+
+    default List<Function2<RelationalQueryGenerationConfig, PureGrammarComposerContext, String>> getExtraRelationalQueryConfigComposers()
     {
         return FastList.newList();
     }
