@@ -195,9 +195,9 @@ public class RelationalParseTreeWalker
     {
         Schema schema = new Schema();
         schema.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        schema.name = ctx.relationalIdentifier().QUOTED_STRING() == null ? ctx.relationalIdentifier().unquotedIdentifier().getText() : ctx.relationalIdentifier().QUOTED_STRING().getText();
+        schema.name = ctx.schemaIdentifier().QUOTED_STRING() == null ? ctx.schemaIdentifier().identifier().getText() : ctx.schemaIdentifier().QUOTED_STRING().getText();
         schema.tables = ListIterate.collect(ctx.table(), this::visitTable);
-        schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.relationalIdentifier().getStart()).build()));
+        schema.views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, ScopeInfo.Builder.newInstance(scopeInfo).withSchemaToken(ctx.schemaIdentifier().getStart()).build()));
         schema.tabularFunctions = ListIterate.collect(ctx.tabularFunction(), funcCtx -> this.visitTabularFunc(funcCtx));
         if (ctx.stereotypes() != null)
         {
