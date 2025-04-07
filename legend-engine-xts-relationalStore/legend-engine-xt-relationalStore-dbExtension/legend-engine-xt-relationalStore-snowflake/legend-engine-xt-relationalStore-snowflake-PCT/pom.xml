@@ -49,10 +49,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <systemProperties>
+                            <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>
-                            </systemProperties>
+                                <pct.external.resources.properties>${env.PCT_EXTERNAL_RESOURCES_PROPERTIES}</pct.external.resources.properties>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                     <plugin>
