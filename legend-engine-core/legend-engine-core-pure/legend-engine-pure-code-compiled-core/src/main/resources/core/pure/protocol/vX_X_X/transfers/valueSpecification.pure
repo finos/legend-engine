@@ -446,6 +446,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                        _type = 'packageableElementPtr',
                        fullPath = $u->elementToPath()
                     ),
+                  // todo this does not belong here, but will required some other refactorings to better handle this value  
+                  pv: meta::pure::executionPlan::PlanVarPlaceHolder[1] | ^VariableExpression(name = $pv.name, multiplicity = $pv.multiplicity->toOne(), genericType = $pv.genericType)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
                   v:ValueSpecification[1]|$v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
                   a:Path<Nil,Any|*>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::classInstance::ClassInstance

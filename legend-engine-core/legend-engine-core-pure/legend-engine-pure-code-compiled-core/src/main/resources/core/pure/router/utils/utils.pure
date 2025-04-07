@@ -31,19 +31,6 @@ function meta::pure::router::utils::deepByPassRouterInfo(value:Any[1]):Any[1]
                                            a:Any[1]                              | $a]);
 }
 
-function meta::pure::router::utils::byPassRouterPlanVarPlaceHolder(value:Any[1]):Any[1]
-{
-   $value
-    ->deepByPassRouterInfo()
-    ->match([
-              e:FunctionExpression[1]               | ^$e(parametersValues = $e->evaluateAndDeactivate().parametersValues->map(x | $x->byPassRouterPlanVarPlaceHolder())->cast(@ValueSpecification)),
-              f:FunctionDefinition<Any>[1]          | ^$f(expressionSequence=$f.expressionSequence->map(x | $x->byPassRouterPlanVarPlaceHolder())->cast(@ValueSpecification)),
-              i:InstanceValue[1]                    | ^$i(values = $i.values->map(x | $x->byPassRouterPlanVarPlaceHolder())),
-              p:PlanVarPlaceHolder[1]               | ^VariableExpression(multiplicity = $p.multiplicity->toOne('plan var \'%s\' without multiplicity'->format($p.name)), genericType = $p.genericType, name = $p.name),
-              a:Any[1]                              | $a;
-    ]);
-}
-
 function meta::pure::router::utils::byPassValueSpecificationWrapper(v:ValueSpecification[1]):ValueSpecification[1]
 {
    $v->match([ e: RoutedValueSpecification[1]|byPassValueSpecificationWrapper($e.value),

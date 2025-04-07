@@ -54,7 +54,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::def
 
    ^PureExpressionPlatformExecutionNode
    (
-      expression = $fe->meta::pure::router::utils::byPassRouterPlanVarPlaceHolder()->cast(@FunctionExpression),
+      expression = $fe,
       resultType = ^ResultType(genericType=$fe.genericType),
       requiredVariableInputs = $variableExpressionInputs->concatenate($varPlaceHolderInputs),
       resultSizeRange = $fe.multiplicity,

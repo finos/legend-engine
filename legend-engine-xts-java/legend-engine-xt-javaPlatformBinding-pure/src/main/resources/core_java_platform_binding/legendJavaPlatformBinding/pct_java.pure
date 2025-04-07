@@ -47,6 +47,8 @@ function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::e
       );
     );
 
+    let mult = $rawF->functionReturnMultiplicity();
+
     let functionProtocol = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::Function
     (
         _type = 'function',
@@ -54,7 +56,7 @@ function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::e
         package = 'test',
         body = $letFunctions->concatenate($rawF->cast(@FunctionDefinition<Any>).expressionSequence->map(e|$e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), false, true, []))),
         returnGenericType = $rawF->functionReturnType()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(),
-        returnMultiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne()
+        returnMultiplicity =  if($mult->in([PureOne, ZeroMany, OneMany, ZeroOne]), |$mult, |ZeroMany)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne()
     );
 
     let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData

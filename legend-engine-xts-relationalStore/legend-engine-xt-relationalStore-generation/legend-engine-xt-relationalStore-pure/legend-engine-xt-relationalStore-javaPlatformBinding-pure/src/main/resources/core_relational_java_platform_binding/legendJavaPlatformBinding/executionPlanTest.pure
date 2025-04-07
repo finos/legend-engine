@@ -780,7 +780,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '            type = Date\n' +
    '            resultSizeRange = 1\n'+
    '            requires = [businessDate(StrictDate[0..1])]\n' +
-   '            expression = $businessDate -> isNotEmpty() -> if( | $businessDate -> toOne();,  | now();)\n' +
+   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
    '            implementation\n' +
    '            (\n' +
    '              calls = _pure.plan.root.n2.n1.Execute.execute\n'+
@@ -849,7 +849,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '            type = Date\n' +
    '            resultSizeRange = 1\n'+
    '            requires = [businessDate(StrictDate[0..1])]\n' +
-   '            expression = $businessDate -> isNotEmpty() -> if( | $businessDate -> toOne();,  | now();)\n' +
+   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
    '            implementation\n' +
    '            (\n' +
    '              calls = _pure.plan.root.n2.n1.Execute.execute\n'+
