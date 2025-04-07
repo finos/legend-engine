@@ -1716,7 +1716,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
                 '(\n' +
                 '  type = String\n' +
                 '  resultSizeRange = 1\n'+
-                '  expression = [Node Index:0] -> makeString(\', \')\n' +
+                '  expression = [Node Index:-1] -> makeString(\', \')\n' +
                 '  (\n' +
                 '    Relational\n' +
                 '    (\n' +
@@ -2641,7 +2641,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
         '            type = String\n'+
         '            resultSizeRange = *\n'+
         '            requires = [names(String[*])]\n'+
-        '            expression = $names -> map([Routed Func:n:String[1] | $n -> toUpper();])\n'+
+        '            expression = $names -> map(n:String[1] | $n -> toUpper();)\n'+
         '          )\n'+
         '        )\n'+
         '    )\n'+
