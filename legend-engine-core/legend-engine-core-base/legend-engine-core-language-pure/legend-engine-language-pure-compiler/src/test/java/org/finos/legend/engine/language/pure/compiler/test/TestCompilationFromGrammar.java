@@ -1065,6 +1065,17 @@ public class TestCompilationFromGrammar
         );
     }
 
+    @Test
+    public void testDateFunctionTypeInference()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "function x::func(param1: Date[1], param2:Date[1]):Any[*]" +
+                        "{" +
+                        "   max([$param1, $param2])->toString()" +
+                        "}","COMPILATION error at [2:86-93]: Can't find a match for function 'toString(Date[0..1])'"
+        );
+    }
 
     @Test
     public void testTypeVariables()

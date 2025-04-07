@@ -2403,14 +2403,14 @@ public class Handlers
         map.put("cov_String", Sets.mutable.with("String", "Varchar", "Nil"));
         map.put("cov_function_LambdaFunction", Sets.mutable.with("LambdaFunction", "Nil"));
         map.put("cov_type_Unit", Sets.mutable.with("Unit", "Nil"));
-        map.put("cov_Number", Sets.mutable.with("Number", "Integer", "Float", "Decimal", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Float4", "Double", "Decimal", "Nil"));
+        map.put("cov_Number", Sets.mutable.with("Number", "Integer", "Float", "Decimal", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Float4", "Double", "Numeric", "Nil"));
         map.put("cov_Boolean", Sets.mutable.with("Boolean", "Nil"));
         map.put("cov_type_Type", Sets.mutable.with("Type", "Class", "FunctionType", "DataType", "RelationType", "ClassProjection", "MappingClass", "Unit", "Enumeration", "PrimitiveType", "Measure", "Mass", "Gram", "Kilogram", "Pound", "Nil"));
         map.put("cov_Integer", Sets.mutable.with("Integer", "TinyInt", "UTinyInt", "SmallInt", "USmallInt", "Int", "UInt", "BigInt", "UBigInt", "Nil"));
-        map.put("cov_Date", Sets.mutable.with("Date", "StrictDate", "DateTime", "LatestDate", "Date", "Timestamp", "Nil"));
+        map.put("cov_Date", Sets.mutable.with("Date", "StrictDate", "DateTime", "LatestDate", "Timestamp", "Nil"));
         map.put("cov_function_FunctionDefinition", Sets.mutable.with("FunctionDefinition", "NewPropertyRouteNodeFunctionDefinition", "LambdaFunction", "QualifiedProperty", "ConcreteFunctionDefinition", "Nil"));
         map.put("cov_graphFetch_RootGraphFetchTree", Sets.mutable.with("RootGraphFetchTree", "ExtendedRootGraphFetchTree", "RoutedRootGraphFetchTree", "DataQualityRootGraphFetchTree", "SerializeTopRootGraphFetchTree", "Nil"));
-        map.put("cov_StrictDate", Sets.mutable.with("StrictDate", "Date", "Nil"));
+        map.put("cov_StrictDate", Sets.mutable.with("StrictDate", "Nil"));
         map.put("cov_date_Duration", Sets.mutable.with("Duration", "Nil"));
         map.put("cov_date_DurationUnit", Sets.mutable.with("DurationUnit", "Nil"));
         map.put("cov_DateTime", Sets.mutable.with("DateTime", "Timestamp", "Nil"));
@@ -2418,7 +2418,7 @@ public class Handlers
         map.put("cov_hash_HashType", Sets.mutable.with("HashType", "Nil"));
         map.put("cov_function_KeyExpression", Sets.mutable.with("KeyExpression", "Nil"));
         map.put("cov_Float", Sets.mutable.with("Float", "Float4", "Double", "Nil"));
-        map.put("cov_Decimal", Sets.mutable.with("Decimal", "Decimal", "Nil"));
+        map.put("cov_Decimal", Sets.mutable.with("Decimal", "Numeric", "Nil"));
         map.put("cov_wavgUtility_WavgRowMapper", Sets.mutable.with("WavgRowMapper", "Nil"));
         map.put("cov_relation_Relation", Sets.mutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor", "TDSRelationAccessor", "Nil"));
         map.put("cov_relation_ColSpec", Sets.mutable.with("ColSpec", "Nil"));

@@ -169,7 +169,43 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  }\n" +
                 ")\n");
     }
-    
+
+    @Test
+    public void testRelationalSchemaDoubleQuote()
+    {
+        test("###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Schema \"productSchema\"\n" +
+                "  (\n" +
+                "    Table \"productTable\"\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY,\n" +
+                "      NAME VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n"
+        );
+    }
+
+    @Test
+    public void testRelationalSchemaSingleDoubleQuote()
+    {
+        test("###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Schema '\"productSchema\"'\n" +
+                "  (\n" +
+                "    Table \"productTable\"\n" +
+                "    (\n" +
+                "      \"ID\" INTEGER PRIMARY KEY,\n" +
+                "      NAME VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n"
+        );
+    }
+
     @Test
     public void testRelationalSimpleFullInPretty()
     {

@@ -58,7 +58,7 @@ taggedValue:                                    qualifiedName DOT identifier EQU
 
 // -------------------------------------- SCHEMA & TABLE --------------------------------------
 
-schema:                                     SCHEMA stereotypes? taggedValues? relationalIdentifier
+schema:                                     SCHEMA stereotypes? taggedValues? schemaIdentifier
                                                 PAREN_OPEN
                                                     (
                                                         table
@@ -331,4 +331,7 @@ scopeInfo:                                  relationalIdentifier (DOT relational
 databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
 ;
 relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+;
+// Should be the same as relationalIdentifier, but it currently breaks some projects
+schemaIdentifier:                           identifier | QUOTED_STRING
 ;

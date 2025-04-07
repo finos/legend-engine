@@ -3182,4 +3182,49 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")", null, Arrays.asList("COMPILATION error at [21:3-52]: Found filters with duplicate names: FirmFilter", "COMPILATION error at [22:3-44]: Found filters with duplicate names: FirmFilter"));
     }
 
+
+    @Test
+    public void testRelationalSchema()
+    {
+        test("###Relational\n" +
+                        "Database model::relational::tests::dbInc\n" +
+                        "(\n" +
+                        "   Schema test" +
+                        "   (" +
+                        "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                        "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                        "   )" +
+                        "\n" +
+                        ")");
+    }
+
+    @Test
+    public void testRelationalSchemaDoubleQuoted()
+    {
+        test("###Relational\n" +
+                "Database model::relational::tests::dbInc\n" +
+                "(\n" +
+                "   Schema \"test\"" +
+                "   (" +
+                "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                "   )" +
+                "\n" +
+                ")");
+    }
+
+    @Test
+    public void testRelationalSchemaSingleAndDoubleQuoted()
+    {
+        test("###Relational\n" +
+                "Database model::relational::tests::dbInc\n" +
+                "(\n" +
+                "   Schema '\"test\"'" +
+                "   (" +
+                "    Table personTable (ID INT PRIMARY KEY, FIRMID INT)\n" +
+                "    Table firmTable(ID INT PRIMARY KEY)\n" +
+                "   )" +
+                "\n" +
+                ")");
+    }
 }
