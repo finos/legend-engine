@@ -20,16 +20,25 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import software.amazon.awssdk.regions.Region;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 
 public class SnowflakeTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
+    private final RelationalDatabaseConnection conn = new RelationalDatabaseConnection();
+
     @Override
     public MutableList<String> group()
     {
@@ -45,37 +54,77 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
     @Override
     public void setup()
     {
-        Vault.INSTANCE.registerImplementation(
-                new AWSVaultImplementation(
-                        System.getProperty("AWS_ACCESS_KEY_ID"),
-                        System.getProperty("AWS_SECRET_ACCESS_KEY"),
-                        Region.US_EAST_1,
-                        "snowflake.INTEGRATION_USER1"
-                )
-        );
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
+        SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
+
+        Path localPctProperties = Paths.get(System.getProperty("pct.external.resources.properties", ""));
+        if (!Files.isDirectory(localPctProperties) && Files.isReadable(localPctProperties))
+        {
+            try (InputStream is = Files.newInputStream(localPctProperties))
+            {
+                Properties properties = new Properties();
+                properties.load(is);
+
+                Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(properties));
+
+                snowflakeDatasourceSpecification.accountName = properties.getProperty("snowflake.spec.accountName");
+                snowflakeDatasourceSpecification.region = properties.getProperty("snowflake.spec.region");
+                snowflakeDatasourceSpecification.warehouseName = properties.getProperty("snowflake.spec.warehouseName");
+                snowflakeDatasourceSpecification.databaseName = properties.getProperty("snowflake.spec.databaseName");
+                snowflakeDatasourceSpecification.cloudType = properties.getProperty("snowflake.spec.cloudType");
+                snowflakeDatasourceSpecification.role = properties.getProperty("snowflake.spec.role");
+
+                authSpec.publicUserName = properties.getProperty("snowflake.auth.publicUserName");
+                authSpec.privateKeyVaultReference = "snowflake.auth.privateKey";
+                authSpec.passPhraseVaultReference = "snowflake.auth.passPhrase";
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
+        }
+        else if (!System.getProperty("AWS_ACCESS_KEY_ID", "").isEmpty() && !System.getProperty("AWS_SECRET_ACCESS_KEY", "").isEmpty())
+        {
+            Vault.INSTANCE.registerImplementation(
+                    new AWSVaultImplementation(
+                            System.getProperty("AWS_ACCESS_KEY_ID"),
+                            System.getProperty("AWS_SECRET_ACCESS_KEY"),
+                            Region.US_EAST_1,
+                            "snowflake.INTEGRATION_USER1"
+                    )
+            );
+
+            snowflakeDatasourceSpecification.accountName = "ki79827";
+            snowflakeDatasourceSpecification.region = "us-east-2";
+            snowflakeDatasourceSpecification.warehouseName = "INTEGRATION_WH1";
+            snowflakeDatasourceSpecification.databaseName = "INTEGRATION_DB1";
+            snowflakeDatasourceSpecification.cloudType = "aws";
+            snowflakeDatasourceSpecification.role = "INTEGRATION_ROLE1";
+
+            authSpec.privateKeyVaultReference = "encrypted_private_key";
+            authSpec.passPhraseVaultReference = "private_key_encryption_password";
+            authSpec.publicUserName = "INTEGRATION_USER1";
+        }
+        else
+        {
+            throw new IllegalStateException("Cannot initialize Snowflake integration connection");
+        }
+
+        conn.type = DatabaseType.Snowflake;
+        conn.databaseType = DatabaseType.Snowflake;
+        conn.element = null;
+        conn.datasourceSpecification = snowflakeDatasourceSpecification;
+        conn.authenticationStrategy = authSpec;
     }
 
     @Override
     public RelationalDatabaseConnection getConnection()
     {
-        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
-        snowflakeDatasourceSpecification.accountName = "ki79827";
-        snowflakeDatasourceSpecification.region = "us-east-2";
-        snowflakeDatasourceSpecification.warehouseName = "INTEGRATION_WH1";
-        snowflakeDatasourceSpecification.databaseName = "INTEGRATION_DB1";
-        snowflakeDatasourceSpecification.cloudType = "aws";
-        snowflakeDatasourceSpecification.role = "INTEGRATION_ROLE1";
-
-        SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
-        authSpec.privateKeyVaultReference = "encrypted_private_key";
-        authSpec.passPhraseVaultReference = "private_key_encryption_password";
-        authSpec.publicUserName = "INTEGRATION_USER1";
-
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
-        conn.type = DatabaseType.Snowflake;           // for compatibility with legacy DatabaseConnection
-        conn.element = null;
-
-        return conn;
+        if (conn.datasourceSpecification == null)
+        {
+            this.setup();
+        }
+        return this.conn;
     }
 
     @Override

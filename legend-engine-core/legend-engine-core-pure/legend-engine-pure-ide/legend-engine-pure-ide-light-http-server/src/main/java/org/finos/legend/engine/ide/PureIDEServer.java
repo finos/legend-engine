@@ -67,18 +67,6 @@ public abstract class PureIDEServer extends Application<ServerConfiguration>
     @Override
     public void initialize(Bootstrap<ServerConfiguration> bootstrap)
     {
-        if (System.getProperty("env.AWS_ACCESS_KEY_ID") != null && System.getProperty("env.AWS_SECRET_ACCESS_KEY") != null)
-        {
-            Vault.INSTANCE.registerImplementation(
-                    new AWSVaultImplementation(
-                            System.getProperty("env.AWS_ACCESS_KEY_ID"),
-                            System.getProperty("env.AWS_SECRET_ACCESS_KEY"),
-                            Region.US_EAST_1,
-                            "snowflake.INTEGRATION_USER1"
-                    )
-            );
-        }
-
         bootstrap.addBundle(new SwaggerBundle<ServerConfiguration>()
         {
             @Override
