@@ -44,7 +44,6 @@ public class TrinoDatasourceSpecificationRuntime extends DataSourceSpecification
     public static final String KERBEROS_DELEGATION = "KerberosDelegation";
     public static final String USER = "user";
     public static final String PASSWORD = "password";
-    public static final String DEFAULT_TRUST_STORE_PATH = "/gns/mw/security/ssl/ssl-certs-prod/cacerts.jks";
     private final TrinoDatasourceSpecificationKey key;
 
     public static final List<String> propertiesForDriver = Arrays.asList(CLIENT_TAGS, SSL, SSL_TRUST_STORE_PATH, SSL_TRUST_STORE_PASSWORD, KERBEROES_REMOTE_SERVICE_NAME, KERBEROS_USE_CANONICAL_HOSTNAME, KERBEROS_DELEGATION, USER, PASSWORD);
@@ -96,21 +95,9 @@ public class TrinoDatasourceSpecificationRuntime extends DataSourceSpecification
     {
         if (vaultRef == null)
         {
-            setDefaultSSLTrustStorePath();
+            return;
         }
-        else
-        {
-            setCustomSSLTrustStorePath(vaultRef);
-        }
-    }
 
-    private void setDefaultSSLTrustStorePath()
-    {
-        extraDatasourceProperties.setProperty(SSL_TRUST_STORE_PATH, DEFAULT_TRUST_STORE_PATH);
-    }
-
-    private void setCustomSSLTrustStorePath(String vaultRef)
-    {
         String sslTrustStoreValue = Vault.INSTANCE.getValue(vaultRef);
         if (sslTrustStoreValue == null)
         {
@@ -157,7 +144,6 @@ public class TrinoDatasourceSpecificationRuntime extends DataSourceSpecification
     {
         if (vaultRef == null)
         {
-            // vault ref can be null for default trust store path;
             return;
         }
 

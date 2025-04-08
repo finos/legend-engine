@@ -51,22 +51,6 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
     }
 
     @Test
-    public void testTrinoDatasourceSpecificationProperties_WithDefaultTrustStore()
-    {
-        TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, null, null);
-        TrinoDatasourceSpecificationRuntime ds = buildDatasourceSpecificationRuntime(trinoSSLSpecification);
-
-        Properties properties = ds.getExtraDatasourceProperties();
-        assertEquals("catalog", properties.getProperty(CATALOG));
-        assertEquals("schema", properties.getProperty(SCHEMA));
-        assertEquals("cg:test", properties.getProperty(CLIENT_TAGS));
-        assertEquals("true", properties.getProperty(SSL));
-        assertEquals("test_user", properties.getProperty(USER));
-        assertEquals(DEFAULT_TRUST_STORE_PATH, properties.getProperty(SSL_TRUST_STORE_PATH));
-        assertNull(properties.getProperty(SSL_TRUST_STORE_PASSWORD));
-    }
-
-    @Test
     public void testTrinoDatasourceSpecificationProperties_WithValidCustomTrustStore()
     {
         TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, "testPathRef", "testPwdRef");
@@ -80,6 +64,22 @@ public class TrinoDatasourceSpecificationRuntimeTest extends TrinoDatasourceSpec
         assertEquals("test_user", properties.getProperty(USER));
         assertEquals("changeme", properties.getProperty(SSL_TRUST_STORE_PASSWORD));
         assertTrue(properties.getProperty(SSL_TRUST_STORE_PATH).matches("/tmp/trino_keystore_testPathRef.*jks"));
+    }
+
+    @Test
+    public void testTrinoDatasourceSpecificationProperties_WithEmptyTrustStoreAndPwd_AddNothing()
+    {
+        TrinoSSLSpecification trinoSSLSpecification = buildSSLSpecWith(true, null, null);
+        TrinoDatasourceSpecificationRuntime ds = buildDatasourceSpecificationRuntime(trinoSSLSpecification);
+
+        Properties properties = ds.getExtraDatasourceProperties();
+        assertEquals("catalog", properties.getProperty(CATALOG));
+        assertEquals("schema", properties.getProperty(SCHEMA));
+        assertEquals("cg:test", properties.getProperty(CLIENT_TAGS));
+        assertEquals("true", properties.getProperty(SSL));
+        assertEquals("test_user", properties.getProperty(USER));
+        assertNull(properties.getProperty(SSL_TRUST_STORE_PATH));
+        assertNull(properties.getProperty(SSL_TRUST_STORE_PASSWORD));
     }
 
     @Test
