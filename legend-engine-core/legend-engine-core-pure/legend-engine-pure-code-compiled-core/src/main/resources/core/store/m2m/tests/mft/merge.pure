@@ -20,9 +20,24 @@ function <<MappingFeature.merge, meta::pure::test::mft::model::MFT.testCollectio
  ^MFTMappingTest(setupData= [ ^InstanceSetupData(instance= pair(S_PersonSource1, list([ ^S_PersonSource1(firstName='John',birthDate=%2020-02-02, firm=^S_Firm(legalName='Firm D'))]))->newMap()) ,
                                ^InstanceSetupData(instance=pair(S_PersonSource2, list([  ^S_PersonSource2(firstName='John', lastName='Doe') ]))->newMap()) ],                            
                  mapping =  meta::pure::mapping::modelToModel::test::mft::mapping::merge::mergeTestMapping,
-                 assertions= []//TODO:  The test runner needs to be updated to handle the merge scenario 
-            );
-
+                assertions= [ ^TestErrorAssertion(tests = [meta::pure::mft::tests::collection::filter::filterTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::drop::dropTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::exists::existsTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::first::firstTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::groupBy::groupByTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::slice::sliceTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::sort::sortTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::take::takeTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::filter::simpleTDS__FunctionDefinition_1_,
+                                              meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_     ])]
+                                  //TODO:  The test runner needs to be updated to handle the merge scenario 
+                      );
 }
 
 Class meta::pure::mapping::modelToModel::test::mft::mapping::merge::S_Firm
