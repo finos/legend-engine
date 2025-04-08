@@ -14,35 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.to;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.junit.Assert;
+import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Objects;
-
-public class TestMappingGrammarTo
+public class TestMappingGrammarTo extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
-    private static void testTo(String protocolResource, String expectedCode)
-    {
-        try
-        {
-            PureModelContextData modelData = objectMapper.readValue(Objects.requireNonNull(TestMappingGrammarTo.class.getClassLoader().getResourceAsStream(protocolResource)), PureModelContextData.class);
-            String modelCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(modelData);
-            Assert.assertEquals(expectedCode, modelCode);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Test
     public void testSimpleAggregationAwareMapping()
     {
