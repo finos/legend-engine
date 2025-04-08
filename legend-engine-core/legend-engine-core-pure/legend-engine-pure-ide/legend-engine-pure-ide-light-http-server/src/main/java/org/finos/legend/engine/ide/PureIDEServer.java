@@ -41,8 +41,6 @@ import org.finos.legend.engine.ide.api.find.FindPureFile;
 import org.finos.legend.engine.ide.api.find.FindTextPreview;
 import org.finos.legend.engine.ide.api.source.UpdateSource;
 import org.finos.legend.engine.ide.session.PureSession;
-import org.finos.legend.engine.shared.core.vault.Vault;
-import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
@@ -50,7 +48,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.Reposit
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.regions.Region;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
