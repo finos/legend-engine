@@ -428,7 +428,11 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    // New Queries
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-   let targetSetImplementations = $targetSetImplementationIds->map(t|$state->getClassMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+   
+
+   let targetSetImplementations = $targetSetImplementationIds->map(t|  let set  = $state->getClassMappingById($t);
+                                                                       assert($set->toOne()->instanceOf(RootRelationalInstanceSetImplementation),' expected a target to be a relational property mappings with for these properties with targetID ' + $relationalPropertyMappings->filter(p|$p.targetSetImplementationId==$t).property.name->joinStrings(',')    + ' [' +$t+      '] but found type'   +  $set->toOne()->type()->elementToPath()  );
+                                                                       $set->cast(@RootRelationalInstanceSetImplementation)->toOne(););
 
    print(if(!$context.debug, |'', | $context.space+'  - sourceSetImplIds: ['+$sourceSetImplementationIds->joinStrings(',')+']\n'+$context.space+'  - targetSetImplIds: ['+$targetSetImplementationIds->joinStrings(',')+']\n'));
 
