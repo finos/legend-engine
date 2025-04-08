@@ -12,24 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function meta::pure::functions::math::pi():Float[1]
-{
-   3.141592653589793;
-}
-
 function {doc.doc = 'Earth radius in km'} meta::pure::functions::math::earthRadius():Float[1]
 {
    6371.0;
-}
-
-function meta::pure::functions::math::toRadians(degrees:Number[1]):Float[1]
-{
-   $degrees * pi() / 180;
-}
-
-function meta::pure::functions::math::toDegrees(radians:Number[1]):Float[1]
-{
-   $radians * 180 / pi();
 }
 
 function meta::pure::functions::math::distanceHaversineDegrees(lat1Degrees:Number[1],lon1Degrees:Number[1],lat2Degrees:Number[1],lon2Degrees:Number[1]):Number[1]
