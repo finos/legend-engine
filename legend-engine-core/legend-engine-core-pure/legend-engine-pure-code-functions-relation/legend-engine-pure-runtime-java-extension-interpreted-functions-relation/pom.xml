@@ -100,21 +100,18 @@
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-unclassified</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-unclassified</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-unclassified</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.pure</groupId>-->
+        <!--            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.pure</groupId>-->
+        <!--            <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>-->
+        <!--            <scope>runtime</scope>-->
+        <!--        </dependency>-->
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>

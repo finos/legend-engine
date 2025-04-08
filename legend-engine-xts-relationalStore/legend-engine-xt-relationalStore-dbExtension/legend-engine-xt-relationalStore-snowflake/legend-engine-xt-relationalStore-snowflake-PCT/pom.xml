@@ -140,12 +140,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-vault-aws</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
