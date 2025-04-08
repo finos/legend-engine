@@ -18,7 +18,11 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.TerminateLatestActiveMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -28,6 +32,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Con
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.IsNull;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
@@ -59,6 +64,7 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,12 +77,19 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
+    enum DeleteMode
+    {
+        DELETE_PROVIDED,
+        TERMINATE_LATEST_ACTIVE
+    }
+
     private static final String VALID_DATE_TIME_FROM_NAME = "legend_persistence_start_date";
     private static final String VALID_DATE_TIME_THRU_NAME = "legend_persistence_end_date";
     private static final String LEFT_DATASET_IN_JOIN_ALIAS = "legend_persistence_x";
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
     private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
 
+    private final Optional<DeleteMode> deleteMode;
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
 
@@ -84,7 +97,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private final Optional<Condition> deleteIndicatorIsSetCondition;
     private final Optional<Condition> dataSplitInRangeCondition;
 
-    // TODO: optional? final?
     private Dataset stagingDataset;
     private Dataset tempDataset;
     private Dataset tempDatasetWithDeleteIndicator;
@@ -118,8 +130,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.stagingDataset = stagingDataset();
         }
 
-        this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
-        this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
+        this.deleteMode = getDeleteMode();
+        this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_FIELD);
+        this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_INDICATOR_VALUES);
 
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset, field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset, field, deleteIndicatorValues));
@@ -194,6 +207,30 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             .build());
     }
 
+    private Optional<DeleteMode> getDeleteMode()
+    {
+        return ingestMode().mergeStrategy().accept(new MergeStrategyVisitor<Optional<DeleteMode>>()
+        {
+            @Override
+            public Optional<DeleteMode> visitNoDeletesMergeStrategy(NoDeletesMergeStrategyAbstract noDeletesMergeStrategy)
+            {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<DeleteMode> visitDeleteIndicatorMergeStrategy(DeleteIndicatorMergeStrategyAbstract deleteIndicatorMergeStrategy)
+            {
+                return Optional.of(DeleteMode.DELETE_PROVIDED);
+            }
+
+            @Override
+            public Optional<DeleteMode> visitTerminateLatestActiveMergeStrategy(TerminateLatestActiveMergeStrategyAbstract terminateLatestActiveMergeStrategy)
+            {
+                return Optional.of(DeleteMode.TERMINATE_LATEST_ACTIVE);
+            }
+        });
+    }
+
     @Override
     protected BitemporalDelta ingestMode()
     {
@@ -226,15 +263,30 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             // Op 3: Milestone records in main table
             operations.add(getUpdateMain(tempDataset));
             // Op 4: Insert records from temp table to main table
-            operations.add(getTempToMain());
+            operations.add(getTempToMain(tempDataset));
             if (deleteIndicatorField.isPresent())
             {
-                // Op 5: Insert records from main table to temp table for deletion
-                operations.add(getMainToTempForDeletion());
-                // Op 6: Milestone records in main table for deletion
-                operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
-                // Op 7: Insert records from temp table to main table for deletion
-                operations.add(getTempToMainForDeletion());
+                switch (deleteMode.orElseThrow(IllegalStateException::new))
+                {
+                    case DELETE_PROVIDED:
+                        // Op 5: Insert records from main table to temp table for deletion
+                        operations.add(getMainToTempForDeletion());
+                        // Op 6: Milestone records in main table for deletion
+                        operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
+                        // Op 7: Insert records from temp table to main table for deletion
+                        operations.add(getTempToMainForDeletion());
+                        break;
+                    case TERMINATE_LATEST_ACTIVE:
+                        // Op 5: Insert records from main table to temp table for termination
+                        operations.add(getMainToTempForTermination());
+                        // Op 6: Milestone records in main table for termination
+                        operations.add(getUpdateMain(tempDatasetWithDeleteIndicator));
+                        // Op 7: Insert records from temp table to main table for termination
+                        operations.add(getTempToMain(tempDatasetWithDeleteIndicator));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unrecognized delete mode: " + deleteMode.get());
+                }
             }
             // Op 8: Cleanup temp tables
             operations.add(Delete.builder().dataset(tempDataset).build());
@@ -777,9 +829,11 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     INSERT INTO main (ALL_FIELDS_FROM_TEMP)
         SELECT ALL_FIELDS_FROM_TEMP FROM temp
     */
-    private Insert getTempToMain()
+    private Insert getTempToMain(Dataset tempDataset)
     {
-        List<Value> tempFields = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        List<FieldValue> tempFields = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        deleteIndicatorField.ifPresent(deleteIndicatorName -> tempFields.removeIf(fieldValue -> fieldValue.fieldName().equals(deleteIndicatorName)));
+
         Selection select = Selection.builder().source(tempDataset).addAllFields(tempFields).build();
         return Insert.builder().sourceDataset(select).targetDataset(mainDataset()).addAllFields(tempFields).build();
     }
@@ -791,12 +845,11 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT, DELETE_INDICATOR)
     SELECT PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, x.end_date as THRU_FIELD, <batch_id> as BATCH_IN, INF as BATCH_OUT, CASE WHEN y.delete_indicator IS NULL THEN 0 ELSE 1 END
     FROM
-    (SELECT * FROM main WHERE BATCH_OUT = INF
-    AND EXISTS
+    (SELECT * FROM main WHERE BATCH_OUT = INF AND EXISTS
         (SELECT * FROM stage WHERE PKS_MATCH AND (main.start_date = start_date OR main.end_date = start_date) AND stage.delete_indicator = 1) x
-        LEFT JOIN
-        (SELECT * FROM stage) y
-        ON PKS_MATCH AND x.start_date = y.start_date
+    LEFT JOIN
+    (SELECT * FROM stage) y
+    ON PKS_MATCH AND x.start_date = y.start_date
     */
     private Insert getMainToTempForDeletion()
     {
@@ -955,5 +1008,72 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         insertFields.addAll(transactionMilestoningFields());
 
         return Insert.builder().targetDataset(mainDataset()).sourceDataset(selectXY2).addAllFields(insertFields).build();
+    }
+
+    /*
+    -------------------
+    Main to Temp (for termination) Logic:
+    -------------------
+    INSERT INTO tempWithDeleteIndicator (PK_FIELDS, DATA_FIELDS, DIGEST, FROM_FIELD, THRU_FIELD, BATCH_IN, BATCH_OUT)
+    SELECT PK_FIELDS, DATA_FIELDS, DIGEST, x.start_date, y.start_date, <batch_id> as BATCH_IN, INF as BATCH_OUT
+    FROM
+        (SELECT * FROM main WHERE BATCH_OUT = INF AND end_date = INF) x
+        INNER JOIN
+        (SELECT MAX(start_date) AS start_date, PK_FIELDS FROM (SELECT * FROM stage WHERE delete_indicator = 1) GROUP BY PK_FIELDS) y
+        ON PKS_MATCH AND y.start_date >= x.start_date
+     */
+    private Insert getMainToTempForTermination()
+    {
+        Condition selectXCondition = And.of(Arrays.asList(openRecordCondition, Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), LogicalPlanUtils.INFINITE_BATCH_TIME())));
+        Selection selectX = Selection.builder().source(mainDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(selectXCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+
+        Selection innerSelectStage;
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            innerSelectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(stagingDataset.datasetReference().alias()).build();
+        }
+        else
+        {
+            innerSelectStage = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).alias(stagingDataset.datasetReference().alias()).build();
+        }
+
+        List<Value> selectYFields = new ArrayList<>();
+        selectYFields.add(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(sourceValidDatetimeFrom.withDatasetRef(innerSelectStage.datasetReference())).alias(VALID_DATE_TIME_FROM_NAME).build());
+        selectYFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(innerSelectStage.datasetReference())).collect(Collectors.toList()));
+
+        List<Value> selectYGroupByFields = primaryKeyFields.stream().map(field -> field.withDatasetRef(innerSelectStage.datasetReference())).collect(Collectors.toList());
+
+        Selection selectY = Selection.builder()
+            .source(innerSelectStage)
+            .addAllFields(selectYFields)
+            .groupByFields(selectYGroupByFields)
+            .alias(RIGHT_DATASET_IN_JOIN_ALIAS)
+            .build();
+
+        Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));
+        Condition yFromGreaterThanEqualToXStart = GreaterThanEqualTo.of(validDateTimeFrom.withDatasetRef(selectY.datasetReference()), targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
+        Condition joinXYCondition = And.builder().addConditions(xAndYPkMatchCondition, yFromGreaterThanEqualToXStart).build();
+
+        Join joinXY = Join.of(selectX, selectY, joinXYCondition, JoinOperation.INNER_JOIN);
+
+        List<Value> selectXYFields = new ArrayList<>();
+        selectXYFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
+        selectXYFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
+        selectXYFields.add(digest.withDatasetRef(selectX.datasetReference()));
+        selectXYFields.add(targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
+        selectXYFields.add(validDateTimeFrom.withDatasetRef(selectY.datasetReference()).withAlias(VALID_DATE_TIME_THRU_NAME));
+        selectXYFields.addAll(transactionMilestoningFieldValues());
+
+        Selection selectXY = Selection.builder().source(joinXY).addAllFields(selectXYFields).build();
+
+        List<Value> insertFields = new ArrayList<>();
+        insertFields.addAll(primaryKeyFields);
+        insertFields.addAll(dataFields);
+        insertFields.add(digest);
+        insertFields.add(targetValidDatetimeFrom);
+        insertFields.add(targetValidDatetimeThru);
+        insertFields.addAll(transactionMilestoningFields());
+
+        return Insert.builder().targetDataset(tempDatasetWithDeleteIndicator).sourceDataset(selectXY).addAllFields(insertFields).build();
     }
 }
