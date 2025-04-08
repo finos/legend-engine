@@ -35,11 +35,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeB
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -64,7 +64,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_DatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
+import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -480,8 +483,8 @@ public class ServiceTestGenerationHelper
                 "import org.finos.legend.pure.m3.execution.ExecutionSupport;\n" +
                 "import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;\n" +
                 "import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.*;\n" +
-                "import java.util.Map;" +
-                "" +
+                "import java.util.Map;\n" +
+                "\n" +
                 "public class " + className + "\n" +
                 "{\n" +
                 "    private static Map localLambdas = UnifiedMap.newMap();\n" +
@@ -501,4 +504,3 @@ public class ServiceTestGenerationHelper
         return "test" + assertNumber;
     }
 }
-
