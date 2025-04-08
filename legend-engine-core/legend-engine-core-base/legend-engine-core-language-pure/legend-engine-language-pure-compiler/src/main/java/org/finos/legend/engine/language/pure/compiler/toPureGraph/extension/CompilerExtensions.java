@@ -158,7 +158,11 @@ public class CompilerExtensions
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
         this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
-        this.extensions.forEach(e -> extraSubTypesForFunctionMatching.putAll(e.getExtraSubtypesForFunctionMatching()));
+        this.extensions.forEach(
+                e -> e.getExtraSubtypesForFunctionMatching().keysView().forEach(
+                        k -> extraSubTypesForFunctionMatching.getIfAbsentPut(k, Sets.mutable::empty).addAll(e.getExtraSubtypesForFunctionMatching().get(k))
+                )
+        );
     }
 
     public List<CompilerExtension> getExtensions()
