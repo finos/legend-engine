@@ -14,6 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.integration;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -25,14 +33,6 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.aws.AWSVaultImplementation;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import software.amazon.awssdk.regions.Region;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Properties;
 
 
 public class SnowflakeTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
@@ -57,7 +57,12 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
         SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
         SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
 
-        Path localPctProperties = Paths.get(System.getProperty("pct.external.resources.properties", ""));
+        String pctProperties = System.getProperty("pct.external.resources.properties", System.getenv("PCT_EXTERNAL_RESOURCES_PROPERTIES"));
+        Path localPctProperties = Paths.get(pctProperties != null ? pctProperties : "");
+
+        String awsAccessKeyId = System.getProperty("AWS_ACCESS_KEY_ID", System.getenv("AWS_ACCESS_KEY_ID"));
+        String awsSecretAccessKey = System.getProperty("AWS_SECRET_ACCESS_KEY", System.getenv("AWS_SECRET_ACCESS_KEY"));
+
         if (!Files.isDirectory(localPctProperties) && Files.isReadable(localPctProperties))
         {
             try (InputStream is = Files.newInputStream(localPctProperties))
@@ -83,12 +88,12 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
                 throw new UncheckedIOException(e);
             }
         }
-        else if (!System.getProperty("AWS_ACCESS_KEY_ID", "").isEmpty() && !System.getProperty("AWS_SECRET_ACCESS_KEY", "").isEmpty())
+        else if (!StringUtils.isEmpty(awsAccessKeyId) && !StringUtils.isEmpty(awsSecretAccessKey))
         {
             Vault.INSTANCE.registerImplementation(
                     new AWSVaultImplementation(
-                            System.getProperty("AWS_ACCESS_KEY_ID"),
-                            System.getProperty("AWS_SECRET_ACCESS_KEY"),
+                            awsAccessKeyId,
+                            awsSecretAccessKey,
                             Region.US_EAST_1,
                             "snowflake.INTEGRATION_USER1"
                     )
@@ -109,6 +114,7 @@ public class SnowflakeTestConnectionIntegration implements TestConnectionIntegra
         {
             throw new IllegalStateException("Cannot initialize Snowflake integration connection");
         }
+
 
         conn.type = DatabaseType.Snowflake;
         conn.databaseType = DatabaseType.Snowflake;

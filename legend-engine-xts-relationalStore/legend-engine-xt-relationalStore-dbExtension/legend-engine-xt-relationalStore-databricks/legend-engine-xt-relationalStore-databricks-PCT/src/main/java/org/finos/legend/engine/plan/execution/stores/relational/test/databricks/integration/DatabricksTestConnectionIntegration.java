@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.databricks.integration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -56,7 +57,12 @@ public class DatabricksTestConnectionIntegration implements TestConnectionIntegr
         DatabricksDatasourceSpecification dsSpecs = new DatabricksDatasourceSpecification();
         ApiTokenAuthenticationStrategy authSpec = new ApiTokenAuthenticationStrategy();
 
-        Path localPctProperties = Paths.get(System.getProperty("pct.external.resources.properties", ""));
+        String pctProperties = System.getProperty("pct.external.resources.properties", System.getenv("PCT_EXTERNAL_RESOURCES_PROPERTIES"));
+        Path localPctProperties = Paths.get(pctProperties != null ? pctProperties : "");
+
+        String awsAccessKeyId = System.getProperty("AWS_ACCESS_KEY_ID", System.getenv("AWS_ACCESS_KEY_ID"));
+        String awsSecretAccessKey = System.getProperty("AWS_SECRET_ACCESS_KEY", System.getenv("AWS_SECRET_ACCESS_KEY"));
+
         if (!Files.isDirectory(localPctProperties) && Files.isReadable(localPctProperties))
         {
             try (InputStream is = Files.newInputStream(localPctProperties))
@@ -78,12 +84,12 @@ public class DatabricksTestConnectionIntegration implements TestConnectionIntegr
                 throw new UncheckedIOException(e);
             }
         }
-        else if (!System.getProperty("AWS_ACCESS_KEY_ID", "").isEmpty() && !System.getProperty("AWS_SECRET_ACCESS_KEY", "").isEmpty())
+        else if (!StringUtils.isEmpty(awsAccessKeyId) && !StringUtils.isEmpty(awsSecretAccessKey))
         {
             Vault.INSTANCE.registerImplementation(
                     new AWSVaultImplementation(
-                            System.getProperty("AWS_ACCESS_KEY_ID"),
-                            System.getProperty("AWS_SECRET_ACCESS_KEY"),
+                            awsAccessKeyId,
+                            awsSecretAccessKey,
                             Region.US_EAST_1,
                             "databricks"
                     )
