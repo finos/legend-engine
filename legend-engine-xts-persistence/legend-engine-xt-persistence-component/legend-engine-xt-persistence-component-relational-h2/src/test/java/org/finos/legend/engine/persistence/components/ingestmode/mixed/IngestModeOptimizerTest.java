@@ -212,9 +212,7 @@ public class IngestModeOptimizerTest extends BaseTest
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "IBM");
         addPartitionSpec(expectedPartitionSpec, "2021-12-02", "JPMX");
 
-        System.out.println("Obtained" + ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
         assertEquals(expectedPartitionSpec, ((Partitioning)(enrichedUnitempSnapshot.partitioningStrategy())).partitionSpecList());
-
     }
 
     @Test

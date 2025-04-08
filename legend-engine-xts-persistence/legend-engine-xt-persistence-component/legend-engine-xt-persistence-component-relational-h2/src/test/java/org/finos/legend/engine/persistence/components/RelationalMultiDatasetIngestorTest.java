@@ -74,7 +74,6 @@ public class RelationalMultiDatasetIngestorTest extends BaseTest
     private static final String suffixForAppendTable = "_APPEND";
     private static final String suffixForFinalTable = "_FINAL";
     private static final String suffixForBatchMetadataTable = "_BATCH_METADATA";
-
     private static final String suffixForDeletePartitionTable = "_DELETED_PARTITIONS";
     private static final String dataset1 = "DATASET_1";
     private static final String dataset2 = "DATASET_2";
@@ -1294,12 +1293,18 @@ Test Case:
 
         verifyResults(
                 actual, expected,
-                Arrays.asList("src/test/resources/data/multi-dataset/set7/expected/expected_pass1_append.csv",
+                Arrays.asList(
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass1_deleted_partitions.csv",
+                        "src/test/resources/data/multi-dataset/set7/expected/expected_pass1_append.csv",
                         "src/test/resources/data/multi-dataset/set7/expected/expected_pass1_main.csv"),
-                Arrays.asList(dataset1 + suffixForAppendTable,
+                Arrays.asList(
+                        dataset1 + suffixForDeletePartitionTable,
+                        dataset1 + suffixForAppendTable,
                         dataset1 + suffixForFinalTable),
-        Arrays.asList(new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdName},
-                        new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName}));
+        Arrays.asList(
+                new String[]{dateName, batchIdName},
+                new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdName},
+                new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName}));
 
         // Batch 2
         ingestor = RelationalMultiDatasetIngestor.builder()

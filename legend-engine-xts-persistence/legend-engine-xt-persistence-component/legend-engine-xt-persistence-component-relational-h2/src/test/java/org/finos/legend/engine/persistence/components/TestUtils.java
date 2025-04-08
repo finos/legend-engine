@@ -348,15 +348,6 @@ public class TestUtils
                 .build();
     }
 
-    public static SchemaDefinition getDeletePartitionMultiMainTableSchema()
-    {
-        return SchemaDefinition.builder()
-                .addFields(dateNonPk)
-                .addFields(entityNonPk)
-                .addFields(batchId)
-                .build();
-    }
-
     public static SchemaDefinition getStagingSchemaWithVersionWithoutPkWithoutDigest()
     {
         return SchemaDefinition.builder()
