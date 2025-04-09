@@ -74,7 +74,7 @@ function meta::relational::mapping::postProcessQuery(exeCtx:meta::pure::runtime:
    let newQuery = if($postProcessors->isEmpty(), | $newQuery1, | $postProcessors->fold({pp,q|$pp->eval($q, $c->cast(@DatabaseConnection)).values->toOne()}, $newQuery1->cast(@SelectSQLQuery)));
    let newQueryAfterTrimColumnNameProcessing = if($runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
                                    | let type = $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
-                                     if ($type->isNotEmpty() && $type->toOne()->createDbConfig([]).dbExtension.aliasLimit->isNotEmpty() && $type != DatabaseType.H2,
+                                     if ($type->isNotEmpty() && $type->toOne()->createDbConfig([]).dbExtension.aliasLimit->isNotEmpty() ,
                                           | trimColumnNamePostProcessors()->eval($newQuery->cast(@SelectSQLQuery),$runtime).values->cast(@SelectSQLQuery);,
                                           | $newQuery);,
                                    | $newQuery);
