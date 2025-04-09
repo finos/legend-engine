@@ -1,7 +1,0 @@
-{
-  "purePackage": "meta::external::ingest::metamodel",
-  "javaPackage": "org.finos.legend.engine.protocol.ingest.metamodel",
-  "elementsToBeExcluded": [
-    "meta::external::ingest::metamodel::IngestConfig"
-  ]
-}
