@@ -48,9 +48,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skip>false</skip>
-                            <systemProperties>
-                                <DATABRICKS_API_TOKEN>${env.DATABRICKS_API_TOKEN}&gt;</DATABRICKS_API_TOKEN>
-                            </systemProperties>
+                            <systemPropertyVariables>
+                                <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
+                                <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>
+                                <pct.external.resources.properties>${env.PCT_EXTERNAL_RESOURCES_PROPERTIES}</pct.external.resources.properties>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -189,6 +191,19 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-vault-aws</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>regions</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
 
         <!-- TEST -->
         <dependency>
