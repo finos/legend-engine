@@ -102,18 +102,53 @@ function meta::external::store::relational::sqlDialectTranslation::utils::simple
   ^Query(
     queryBody = ^QuerySpecification(
       select = ^Select(
-        selectItems = ^SingleColumn(
-          expression = $aggFunctionCall, 
-          alias = 'result'
-        )
+        selectItems = $groupByCols->map(colName|
+            ^SingleColumn(
+              expression = ^QualifiedNameReference(name = ^QualifiedName(parts = $colName))
+            ))->concatenate(
+            ^SingleColumn(
+              expression = $aggFunctionCall,
+              alias = 'result'
+            )
+          )
       ), 
       from = ^Table(name = ^QualifiedName(parts = $table)),
-      groupBy = $groupByCols->map(c| ^QualifiedNameReference(name = ^QualifiedName(parts = $c))),
+      groupBy = $groupByCols->map(colName| ^QualifiedNameReference(name = ^QualifiedName(parts = $colName))),
       orderBy = ^SortItem(
         sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'result')),
         ordering = SortItemOrdering.ASCENDING, 
         nullOrdering = SortItemNullOrdering.LAST
       )
+    )
+  );
+}
+
+function meta::external::store::relational::sqlDialectTranslation::utils::windowFunctionCall(windowFuncCall:FunctionCall[1], table:String[1], consistentSortKey:String[1]): Query[1]
+{
+  ^Query(
+    queryBody = ^QuerySpecification(
+      select = ^Select(
+        selectItems = [
+          ^AllColumns(),
+          ^SingleColumn(
+            expression = $windowFuncCall,
+            alias = 'result'
+          )
+        ]
+      ),
+      from = ^Table(name = ^QualifiedName(parts = $table)),
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'result')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.LAST
+        ),
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = $consistentSortKey)),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.LAST
+        )
+      ]
     )
   );
 }

@@ -1,0 +1,72 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::BoolOr extends PostgresNativeSqlFunction
+[
+  $this.name == 'bool_or'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::boolOr(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::boolean::BoolOr
+  (
+    name = 'bool_or',
+    documentation = 'Returns true if at least one input value is true, otherwise false',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = BooleanSqlType,
+        returnType = BooleanSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        ^TestSetupData(
+          tableName = 'testTable', 
+          columns = [pair('name', 'varchar'), pair('task_done', 'boolean')], 
+          data = [
+            dataRow(['Alex', false]), 
+            dataRow(['Alex', false]), 
+            dataRow(['Bob', false]),
+            dataRow(['Bob', true])
+          ]
+        ),
+        // SELECT name, bool_or(task_done) AS result FROM testTable GROUP BY name ORDER BY result ASC NULLS LAST
+        simpleAggFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'bool_or'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'task_done'))]
+          ),
+          'testTable',
+          'name'
+        ),
+        ^TestExpectedResult(
+          columns = ['name', 'result'], 
+          data = [
+            list(['Alex', false]),
+            list(['Bob', true]) 
+          ]
+        )
+      )      
+    ]
+  )
+}
