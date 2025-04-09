@@ -49,10 +49,9 @@ function meta::relational::transform::fromPure::pureTypeToDataTypeMap():Map<Type
       pair(meta::pure::precisePrimitives::UBigInt, ^meta::relational::metamodel::datatype::BigInt()),
       pair(meta::pure::precisePrimitives::Varchar, ^meta::relational::metamodel::datatype::Varchar(size = 1024)),
       pair(meta::pure::precisePrimitives::Time, ^meta::relational::metamodel::datatype::Timestamp()),
-      pair(meta::pure::precisePrimitives::Date, ^meta::relational::metamodel::datatype::Date()),
       pair(meta::pure::precisePrimitives::Timestamp, ^meta::relational::metamodel::datatype::Timestamp()),
       pair(meta::pure::precisePrimitives::Float4, ^meta::relational::metamodel::datatype::Float()),
       pair(meta::pure::precisePrimitives::Double, ^meta::relational::metamodel::datatype::Double()),
-      pair(meta::pure::precisePrimitives::Decimal, ^meta::relational::metamodel::datatype::Decimal(scale=10, precision=10))
+      pair(meta::pure::precisePrimitives::Numeric, ^meta::relational::metamodel::datatype::Decimal(scale=10, precision=10))
    ]);
 }

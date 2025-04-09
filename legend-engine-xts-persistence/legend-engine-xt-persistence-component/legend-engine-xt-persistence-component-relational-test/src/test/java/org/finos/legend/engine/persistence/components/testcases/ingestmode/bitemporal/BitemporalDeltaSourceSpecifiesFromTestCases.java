@@ -214,6 +214,38 @@ public abstract class BitemporalDeltaSourceSpecifiesFromTestCases extends BaseTe
 
     public abstract void verifyBitemporalDeltaDateTimeBasedNoDeleteIndNoDataSplits(GeneratorResult operations);
 
+    @Test
+    void testBitemporalDeltaBatchIdBasedWithTerminateIndNoDataSplits()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_TERMINATE_IND__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .collectStatistics(true)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyBitemporalDeltaBatchIdBasedWithTerminateIndNoDataSplits(operations);
+    }
+
+    public abstract void verifyBitemporalDeltaBatchIdBasedWithTerminateIndNoDataSplits(GeneratorResult operations);
+
+    @Test
+    void testBitemporalDeltaBatchIdBasedWithTerminateIndWithDataSplits()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_TERMINATE_IND__WITH_DATA_SPLITS__USING_DEFAULT_TEMP_TABLE();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .collectStatistics(true)
+            .ingestRunId(ingestRunId)
+            .build();
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyBitemporalDeltaBatchIdBasedWithTerminateIndWithDataSplits(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyBitemporalDeltaBatchIdBasedWithTerminateIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     public abstract RelationalSink getRelationalSink();
 }

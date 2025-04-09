@@ -34,6 +34,7 @@ public class DatasetsCaseConverter
         Optional<Dataset> stagingWithoutDuplicates = datasets.stagingDatasetWithoutDuplicates().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<MetadataDataset> metadata = Optional.ofNullable(datasetCaseConverter.applyCaseOnMetadataDataset(datasets.metadataDataset().orElseThrow(IllegalStateException::new), strategy));
         Optional<LockInfoDataset> lockInfo = datasets.lockInfoDataset().map(dataset -> datasetCaseConverter.applyCaseOnLockInfoDataset(dataset, strategy));
+        Optional<Dataset> deletePartitionDataset = datasets.deletePartitionDataset().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
 
         return Datasets.builder()
             .mainDataset(main)
@@ -43,6 +44,7 @@ public class DatasetsCaseConverter
             .stagingDatasetWithoutDuplicates(stagingWithoutDuplicates)
             .metadataDataset(metadata)
             .lockInfoDataset(lockInfo)
+            .deletePartitionDataset(deletePartitionDataset)
             .build();
     }
 }

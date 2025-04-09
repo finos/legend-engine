@@ -34,6 +34,7 @@ import java.util.Optional;
 import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.getFirstColumnValue;
 import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.getFirstRowForFirstResult;
 import static org.finos.legend.engine.persistence.components.relational.api.utils.IngestionUtils.retrieveValueAsLong;
+import static org.finos.legend.engine.persistence.components.relational.api.utils.PartitionExtractorUtils.extractPartitions;
 
 public class UnitemporalSnapshotOptimizer
 {
@@ -82,30 +83,27 @@ public class UnitemporalSnapshotOptimizer
     private List<Map<String, Object>> derivePartitionSpecList(List<String> partitionFields, Long maxAllowedPartitionSpecFilters)
     {
         List<Map<String, Object>> partitionSpecList = new ArrayList<>();
-
-        // select count_distinct_approx (pk1, pk2, ...) from staging_table with staging_filters
-        LogicalPlan logicalPlanForApproxDistinctCount = LogicalPlanFactory.getLogicalPlanForApproxDistinctCount(datasets.stagingDataset(), partitionFields);
-        List<TabularData> approxCountResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForApproxDistinctCount), placeHolderKeyValues);
-        Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(approxCountResult));
-        Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
-        if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > maxAllowedPartitionSpecFilters)
+        // Delete partitions must be extracted
+        if (datasets.deletePartitionDataset().isPresent())
         {
-            return partitionSpecList;
+            partitionSpecList.addAll(extractPartitions(executor, transformer, datasets.deletePartitionDataset().get(), partitionFields, placeHolderKeyValues));
         }
 
-        // Select distinct pk1, pk2, ... from staging_table with staging_filters
-        LogicalPlan logicalPlanForPartitionSpec = LogicalPlanFactory.getLogicalPlanForDistinctValues(datasets.stagingDataset(), partitionFields);
-        List<TabularData> partitionSpecResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForPartitionSpec), placeHolderKeyValues);
-
-        if (!partitionSpecResult.isEmpty())
+        // Check distinct count of existing partitions if there are no deleted partitions
+        if (partitionSpecList.isEmpty())
         {
-            List<Map<String, Object>> partitionSpecRows = partitionSpecResult.get(0).data();
-            for (Map<String, Object> partitionSpec: partitionSpecRows)
+            // select count_distinct_approx (pk1, pk2, ...) from staging_table with staging_filters
+            LogicalPlan logicalPlanForApproxDistinctCount = LogicalPlanFactory.getLogicalPlanForApproxDistinctCount(datasets.stagingDataset(), partitionFields);
+            List<TabularData> approxCountResult = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForApproxDistinctCount), placeHolderKeyValues);
+            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(approxCountResult));
+            Optional<Long> approxCountValue = retrieveValueAsLong(obj.orElse(null));
+            if (approxCountValue.isPresent() && approxCountValue.get() > maxAllowedPartitionSpecFilters)
             {
-                partitionSpecList.add(partitionSpec);
+                return new ArrayList<>();
             }
         }
 
+        partitionSpecList.addAll(extractPartitions(executor, transformer, datasets.stagingDataset(), partitionFields, placeHolderKeyValues));
         return partitionSpecList;
     }
 }

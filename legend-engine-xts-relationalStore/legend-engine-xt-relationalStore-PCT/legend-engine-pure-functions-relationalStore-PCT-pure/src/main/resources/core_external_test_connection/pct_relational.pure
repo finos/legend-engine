@@ -149,7 +149,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                                                                           $type == 'meta::pure::precisePrimitives::Varchar', |'null'),
                                                                                     pair(|$type == 'DateTime' ||
                                                                                           $type == 'meta::pure::precisePrimitives::Timestamp' ||
-                                                                                          $type == 'meta::pure::precisePrimitives::Date', |'')
+                                                                                          $type == 'StrictDate', |'')
                                                                                   ],
                                                                                   |fail($type->toOne()+' is not managed yet!');0;
                                                                               );,

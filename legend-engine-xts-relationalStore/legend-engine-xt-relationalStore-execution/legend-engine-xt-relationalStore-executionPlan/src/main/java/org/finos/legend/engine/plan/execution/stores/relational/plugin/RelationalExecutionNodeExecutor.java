@@ -59,6 +59,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.GraphExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetchResultWithExecInfo;
@@ -67,6 +68,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
@@ -182,6 +184,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         this.identity = identity;
     }
 
+    public boolean willExecuteMutation(RelationalBlockExecutionNode node)
+    {
+        return !Lists.mutable.withAll(node.childNodes()).select(n -> n instanceof SQLExecutionNode && ((SQLExecutionNode)n).isMutationSQL).isEmpty();
+    }
+
     @Override
     public Result visit(ExecutionNode executionNode)
     {
@@ -191,6 +198,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             ExecutionState connectionAwareState = new ExecutionState(this.executionState);
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setIsolationLevel(relationalBlockExecutionNode.isolationLevel);
+            boolean willExecuteMutation = willExecuteMutation(relationalBlockExecutionNode);
+            ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setWillExecuteMutation(willExecuteMutation);
+
             try
             {
                 Result res = new ExecutionNodeExecutor(this.identity, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
@@ -287,7 +297,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
                 String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
-                if (connectionManagerConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
+                if (((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).willExecuteMutation())
                 {
                     databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTableVisitor(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
 
@@ -376,6 +386,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         .forEachKeyValue((columnName, node) ->
                         {
                             Result columnValue = node.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
+                            if (columnValue instanceof StreamingResult)
+                            {
+                                StreamingResult sr = ((StreamingResult)columnValue);
+                                columnValue = new ConstantResult(sr.flush(sr.getSerializer(SerializationFormat.DEFAULT)));
+                            }
                             Result realizedColumnValue = columnValue.realizeInMemory();
                             this.executionState.addResult(columnName, realizedColumnValue);
                         });
