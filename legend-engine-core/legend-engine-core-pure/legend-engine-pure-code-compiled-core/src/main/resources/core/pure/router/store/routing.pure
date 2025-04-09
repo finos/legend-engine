@@ -114,11 +114,10 @@ function meta::pure::router::store::routing::routeRelationFunctionSetImplementat
 
 function meta::pure::router::store::routing::routeRelationFunctionSetImplementation(s:SetImplementation[1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):SetImplementation[1]
 {
-   $s->match([
-              t:RelationFunctionInstanceSetImplementation[1]|^$t(relationFunction=$t->routeRelationFunction($mapping, $runtime, $extensions)),
-              s:InstanceSetImplementation[1]|$s,
-              o:OperationSetImplementation[1]|^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$mapping->classMappingById($i.id)->toOne()->routeRelationFunctionSetImplementation($mapping, $runtime, $extensions))))
-            ]);
+  $s->match([
+    r:RelationFunctionInstanceSetImplementation[1]| ^$r(relationFunction = $r->routeRelationFunction($mapping, $runtime, $extensions)),
+    s:SetImplementation[1]| $s
+  ]);
 }
 
 function meta::pure::router::store::routing::routeRelationFunction(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
