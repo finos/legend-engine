@@ -31,6 +31,7 @@
         <module>legend-engine-xt-relationalStore-memsql-connection</module>
         <module>legend-engine-xt-relationalStore-memsql-execution</module>
         <module>legend-engine-xt-relationalStore-memsql-grammar</module>
+        <module>legend-engine-xt-relationalStore-memsql-PCT</module>
         <module>legend-engine-xt-relationalStore-memsql-protocol</module>
         <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
     </modules>
