@@ -437,7 +437,7 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
                                 ->filter(s|$s->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
                                 ->filter(isi| $isi.class == $class || $class->getAllTypeGeneralisations()->contains($isi.class) || $isi.class->getAllTypeGeneralisations()->contains($class));
          let explicitlyMapped = $classMappings.propertyMappings->filter(pm| $pm.property == $node.property)->isNotEmpty();
-         let implicitlyMapped = $classMappings->exists(cm| $cm->meta::pure::router::store::routing::isPropertyAutoMapped($node.property, $extensions));
+         let implicitlyMapped = $classMappings->exists(cm| $cm->meta::pure::router::store::routing::isPropertyAutoMapped($node.property, $extensions, $mapping));
          ($explicitlyMapped || $implicitlyMapped)
             && if($pTree.children->isEmpty(),
                   | true,
