@@ -211,6 +211,12 @@ public class DataQualityCompilerExtension implements CompilerExtension
         assertionInputParam.multiplicity = Multiplicity.PURE_ONE;
         assertionInputParam.genericType = getAssertionInputParamGenericType(relationQuery, relationalValidation.type);
 
+        String assertionReturnType = Compiler.getLambdaReturnType(relationalValidation.assertion, compileContext.pureModel);
+        if (!"Boolean".equals(assertionReturnType))
+        {
+            throw new EngineException("Assertion should return Boolean", relationalValidation.assertion.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        
         LambdaFunction<?> assertion = HelperValueSpecificationBuilder.buildLambda(relationalValidation.assertion, compileContext);
         relationValidation._assertion(assertion);
         return relationValidation;
