@@ -71,7 +71,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ConstantExecutionNode(
                _type='constant',
                resultType=$cons.resultType->transformResultType($extensions),
-               values=$cons.values->map(v | $v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions))
+               values=$cons.values->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions)
             ),
          seq:meta::pure::executionPlan::SequenceExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::SequenceExecutionNode(

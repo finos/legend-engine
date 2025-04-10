@@ -28,7 +28,7 @@ import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::core::runtime::*;
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting41():Boolean[1]
+function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting41():Boolean[1]
 {
   let runtime = ^Runtime();
   let context = ^meta::pure::runtime::ExecutionContext();
@@ -123,7 +123,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Bo
   assertRoundTrip($input, $expected, noDebug());
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Store():Boolean[1]
+function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting_Store():Boolean[1]
 {
   let input = {| meta::relational::tests::db};
   let expected = {| meta::relational::tests::db};

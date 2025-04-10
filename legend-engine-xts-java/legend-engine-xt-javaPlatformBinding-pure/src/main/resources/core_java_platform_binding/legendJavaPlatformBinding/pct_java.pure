@@ -12,17 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::platformBinding::legendJava::pct::*;
 import meta::json::*;
+import meta::pure::executionPlan::platformBinding::legendJava::pct::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::test::pct::*;
 
-function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(rawF:Function<{->X[o]}>[1]):X[o]
 {
     let debug = noDebug();
 
-    let rawPlan = meta::pure::executionPlan::executionPlan($f->cast(@FunctionDefinition<{->Any[*]}>), ^meta::pure::runtime::ExecutionContext(), [], $debug);
+    let elements = extractDependentElements($rawF)->distinct();
+
+    // $elements->map(x | $x->elementToPath())->joinStrings(', ')->println();
+
+    // open variables from pct lambdas
+    let letFunctions = $rawF->openVariableValues()->keyValues()->map(x | 
+      let varName = $x.first;
+      let varValue = $x.second.values->instanceToProtocol();
+
+      ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
+      (
+          _type = 'func',
+          fControl = 'letFunction_String_1__T_m__T_m_',
+          function = 'letFunction',
+          parameters = [
+            ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString
+            (
+              _type = 'string',
+              value = $varName             
+            ),
+            $varValue
+          ]
+      );
+    );
+
+    let mult = $rawF->functionReturnMultiplicity();
+
+    let functionProtocol = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::Function
+    (
+        _type = 'function',
+        name = 'testFunction',
+        package = 'test',
+        body = $letFunctions->concatenate($rawF->cast(@FunctionDefinition<Any>).expressionSequence->map(e|$e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), false, true, []))),
+        returnGenericType = $rawF->functionReturnType()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformGenericType(),
+        returnMultiplicity =  if($mult->in([PureOne, ZeroMany, OneMany, ZeroOne]), |$mult, |ZeroMany)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne()
+    );
+
+    let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+    (
+        _type = 'data',
+        serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
+        elements = $elements->map(x | $x->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement([]))->concatenate($functionProtocol)
+    )->meta::alloy::metadataServer::alloyToJSON();
+
+    let alloyCompiled = meta::legend::compileLegendPMCD($pmcd)->filter(x|$x.name->startsWith('testFunction__'))->cast(@FunctionDefinition<{->X[o]}>)->toOne();
+
+    let rawPlan = meta::pure::executionPlan::executionPlan($alloyCompiled, ^meta::pure::runtime::ExecutionContext(), [], $debug);
 
     let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
 
@@ -32,18 +78,89 @@ function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::e
 
     let x = meta::legend::executePlanAsJSON($planAsJson, []);
 
-    let funcReturnType = $f->functionReturnType().rawType->toOne();
+    let funcReturnType = $rawF->functionReturnType().rawType->toOne();
     let returnType = if ($funcReturnType->isEmpty(), |Any, |$funcReturnType);
 
     let res = if ($returnType != Nil && $returnType->meta::pure::functions::meta::subTypeOf(Date),
       | jsonToDate($x),
       |$x->meta::json::parseJSON()->meta::json::fromJSON($returnType, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull));
     );
-    
-    // processResult
-    let resultType = $f->functionReturnType().rawType;    
 
     $res->cast(@X)->toMultiplicity(@[o]);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::pct::instanceToProtocol(a: Any[*]): meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
+{
+  let type = $a->type();
+  if ($type != Nil && $type != Any && !$type->subTypeOf(Function) && !$type->subTypeOf(meta::pure::metamodel::relation::Relation) && $type->instanceOf(Class),
+    |
+      let props = $a->genericType()->properties()->filter(p | $p.name != 'classifierGenericType');
+      let newObjectProtocol = $a->map(o | 
+        let keyExpressions = $props->map(p | 
+          let valueAsProtocol = $p->eval($o)->instanceToProtocol();
+          if ($valueAsProtocol->isEmpty(), 
+            | [], 
+            |
+              ^meta::protocols::pure::vX_X_X::metamodel::m3::function::KeyExpression
+              (
+                _type = 'keyExpression',
+                add =  false,
+                key =  ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString
+                        (
+                          _type = 'string',
+                          value = $p.name->toOne()             
+                        ),
+                expression = $valueAsProtocol->toOne($p.name->toOne())
+              )
+          );
+        );
+
+        ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
+        (
+            _type = 'func',
+            fControl = 'new_Class_1__String_1__KeyExpression_MANY__T_1_',
+            function = 'new',
+            parameters = [
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
+                (
+                    _type = 'packageableElementPtr',
+                    fullPath = $type->elementToPath()
+                ),
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::datatype::primitive::CString
+                (
+                  _type = 'string',
+                  value = ''                   
+                ),
+                ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection
+                (
+                  _type = 'collection',
+                  multiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
+                  values = $keyExpressions
+                )->map(c | if($c.values->size() == 1, |$c.values->toOne(), |$c))
+            ]
+        );          
+      );
+
+      ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection
+      (
+        _type = 'collection',
+        multiplicity = ZeroMany->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
+        values = $newObjectProtocol
+      )->map(c | if($c.values->size() == 1, |$c.values->toOne(), |$c));      
+     ,
+    |
+    $a->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), ZeroMany, []);
+  );
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::pct::extractDependentElements(f:Any[1]):PackageableElement[*]
+{
+  $f->match([
+    z:FunctionDefinition<Any>[1]|$z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentElements()),
+    x:SimpleFunctionExpression[1]|let res = $x.parametersValues->map(p|$p->extractDependentElements());
+                                  $res->concatenate(if(!$x.func->hasStereotype('function', PCT) && !$x.func->instanceOf(NativeFunction) && $x.func->instanceOf(PackageableElement),|$x.func,|[]));,
+    a:Any[1]|[]
+  ])->cast(@PackageableElement);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::pct::jsonToDate(s:String[1]):Date[1]

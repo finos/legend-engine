@@ -89,6 +89,8 @@ public abstract class FunctionExpressionBuilder
     {
         return (valueSpecification instanceof Variable
                 && processingContext.getInferredVariable(((Variable) valueSpecification).name) != null
+                // When variable is Nil, it says is subtype of function, so avoid that scenario
+                && !Type.isBottomType(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getExecutionSupport().getProcessorSupport())
                 && Type.subTypeOf(processingContext.getInferredVariable(((Variable) valueSpecification).name)._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport()));
     }
 
