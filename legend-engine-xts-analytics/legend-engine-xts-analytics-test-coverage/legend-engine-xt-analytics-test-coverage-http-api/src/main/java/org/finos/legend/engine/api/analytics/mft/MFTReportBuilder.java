@@ -97,8 +97,8 @@ public class MFTReportBuilder
                                }
                                else
                                {
-                                   mftTestReport.assertionType = "UnTested";
-                                   mftTestReport.status = "UnTested";
+                                   mftTestReport.assertionType = "Untested";
+                                   mftTestReport.status = "Untested";
 
                                }
 
