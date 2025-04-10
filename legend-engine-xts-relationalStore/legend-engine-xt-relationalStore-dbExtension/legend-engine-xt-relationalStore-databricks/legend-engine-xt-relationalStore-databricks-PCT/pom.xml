@@ -74,6 +74,9 @@
                                 <PCTTestSuite>
                                     org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_RelationFunctions_PCT
                                 </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_UnclassifiedFunctions_PCT
+                                </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
                         <executions>
@@ -160,6 +163,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

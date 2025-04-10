@@ -648,6 +648,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testAdjust
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
+   splitPartResult :String[1];
    joinStringsResult :String[1];
    rtrimResult  :String[1];
    ltrimResult  :String[1];
@@ -766,6 +767,7 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
        scope([myDB] dataTable)
        (
           concatResult : concat(string1, string2),
+          splitPartResult : splitPart(string1, string2, string3),
           joinStringsResult : joinStrings(string1,':'),
           rtrimResult  :rtrim(string2),
           ltrimResult  :ltrim(string2),
