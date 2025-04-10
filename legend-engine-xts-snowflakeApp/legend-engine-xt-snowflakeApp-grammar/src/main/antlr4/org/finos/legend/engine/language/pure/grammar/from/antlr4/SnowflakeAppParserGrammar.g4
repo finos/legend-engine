@@ -18,6 +18,7 @@ identifier:     VALID_STRING | STRING |
                 SNOWFLAKE_APP__ACTIVATION|
                 SNOWFLAKE_APP__USAGE_ROLE |
                 SNOWFLAKE_APP__PERMISSION |
+                SNOWFLAKE_APP__DEPLOYMENT_SCHEMA |
                 CONFIGURATION| DEPLOYMENT_STAGE
                 | ACTIVATION_CONNECTION |
                 ALL |
@@ -41,6 +42,7 @@ snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifi
                                                 | activation
                                                 | role
                                                 | scheme
+                                                | deploymentSchema
                                             )*
                                         BRACE_CLOSE;
 
@@ -66,6 +68,8 @@ ownership :                         SNOWFLAKE_APP__OWNER COLON
                                         BRACE_CLOSE SEMI_COLON;
 
 activation:                     SNOWFLAKE_APP__ACTIVATION COLON qualifiedName SEMI_COLON ;
+
+deploymentSchema:               SNOWFLAKE_APP__DEPLOYMENT_SCHEMA COLON STRING SEMI_COLON;
 
 // ----------------------------------- Deployment ------------------------------------------------------
 deploymentConfig:                      CONFIGURATION qualifiedName

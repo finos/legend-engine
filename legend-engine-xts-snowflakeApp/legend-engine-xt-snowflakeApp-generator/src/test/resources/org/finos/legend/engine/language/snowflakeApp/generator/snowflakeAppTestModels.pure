@@ -51,7 +51,15 @@ SnowflakeApp demo::activators::snowflakeApp::UDTFWithParam
    activationConfiguration : demo::connections::DeploymentConnection;
 }
 
-
+SnowflakeApp demo::activators::snowflakeApp::UDTFWithDeploymentSchema
+{
+   applicationName : 'UDTFWithDeploymentSchema';
+   function : demo::functions::NativeApp_QueryFunction(Integer[1],String[1]):TabularDataSet[1];
+   ownership : Deployment { identifier: 'id1'};
+   description : 'UDTFWithDeploymentSchema';
+   deploymentSchema : 'My Deployment Schema';
+   activationConfiguration : demo::connections::DeploymentConnection;
+}
 
 ###Pure
 
