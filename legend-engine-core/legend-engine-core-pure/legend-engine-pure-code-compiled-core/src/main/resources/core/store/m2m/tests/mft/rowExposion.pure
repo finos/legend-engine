@@ -1,0 +1,240 @@
+import meta::pure::testCoverage::featureMatrix::*;
+import meta::pure::test::mft::*;
+import meta::pure::mapping::modelToModel::test::mft::rowExplosion::*;
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<MappingFeature.rowExplosion, meta::pure::test::mft::model::MFT.testCollection>> meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::testRowExplosionMapping():MFTMappingTest[1]
+{
+ ^MFTMappingTest(setupData=  ^InstanceSetupData(instance= pair(S_Person1, list([^S_Person1(firstName='John',lastName='Doe',birthDate=%2020-02-02, description=['row 1','row2'], firm=^S_Firm(legalName='Firm D')), ^S_Person1(firstName='Joe',lastName='Smith',birthDate=%2010-02-02,firm=^S_Firm(legalName='Co',optionalDescription='Company'))]))->newMap()),
+                 mapping =  meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::rowexplosionTestMapping,
+                 assertions= [                        ^TestErrorAssertion(tests = [meta::pure::mft::tests::collection::filter::filterTDS__FunctionDefinition_1_,
+                                                           meta::pure::mft::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,
+                                                           meta::pure::mft::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,
+                                                           meta::pure::mft::tests::collection::drop::dropTDS__FunctionDefinition_1_,
+                                                           meta::pure::mft::tests::collection::exists::existsTDS__FunctionDefinition_1_,
+                                                           meta::pure::mft::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::first::firstTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::groupBy::groupByTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::slice::sliceTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::sort::sortTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::take::takeTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::filter::simpleTDS__FunctionDefinition_1_,
+                                                            meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_     ],
+                                                  expectedErrorMessage='Found unexpected connection type for TabularDataSet Query: JsonModelConnection'),
+                                   ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::drop::dropGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::simpleGraph__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Address','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Address','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.address.street: [], Person.address.type: [], Person.birthDate: [], Person.firm.legalName: [], Person.firm.optionalDescription: [], Person.firstName: [], Person.fullName: [], Person.lastName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::first::firstGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::slice::sliceGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::sort::sortGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                                  ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::take::takeGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]'))
+                                                            
+                           ]
+            );
+
+}
+
+
+function <<MappingFeature.rowExplosion, MappingFeature.union, meta::pure::test::mft::model::MFT.testCollection>> meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::testRowExplosionUnionMapping():MFTMappingTest[1]
+{
+ ^MFTMappingTest(setupData= [ ^InstanceSetupData(instance= pair(S_Person1, list([ ^S_Person1(firstName='John',lastName='Doe',birthDate=%2020-02-02,  description=['row 1','row2'],  firm=^S_Firm(legalName='Firm D'))]))->newMap()) ,
+                              ^InstanceSetupData(instance=pair(S_Person2, list([ ^S_Person1(firstName='Joe',lastName='Smith',birthDate=%2010-02-02, description=['row 3','row4'], firm=^S_Firm(legalName='Co',optionalDescription='Company'))]))->newMap()) ],                            
+                 mapping =  meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::rowexplosionTestUnionMapping,
+                 assertions= [
+                          ^TestErrorAssertion(tests = [meta::pure::mft::tests::collection::filter::filterTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::filter::filterAssociationTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::distinct::distinctTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::drop::dropTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::exists::existsTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::exists::existsRecursiveTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::filter::filterPropertyFromSuperTypeTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::first::firstTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::groupBy::groupByTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::slice::sliceTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::sort::sortAssociationTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::sort::sortTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::take::takeTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::filter::simpleTDS__FunctionDefinition_1_,
+                              meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_     ],
+                                        expectedErrorMessage='2 connection(s) for "ModelStore" were found in the runtime. Expected 1 connection.'),
+                         ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::drop::dropGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterAssociationIsEmptyGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::filterGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::filter::simpleGraph__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}},{"firstName":"John","lastName":"Doe","fullName()":"John Doe","birthDate":"2020-02-02","address":null,"firm":{"legalName":"Firm D","optionalDescription":null}}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Address','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Address','meta::pure::mft::tests::collection::Firm','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.address.street: [], Person.address.type: [], Person.birthDate: [], Person.firm.legalName: [], Person.firm.optionalDescription: [], Person.firstName: [], Person.fullName: [], Person.lastName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::first::firstGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::slice::sliceGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::sort::sortGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]')),
+                      ^meta::pure::test::mft::TestAssertion(tests=meta::pure::mft::tests::collection::take::takeGraphFetch__FunctionDefinition_1_,expectedExecutionResult=^meta::pure::test::mft::JSONResult(value='{"builder":{"_type":"json"},"values":[{"firstName":"John"},{"firstName":"John"},{"firstName":"John"},{"firstName":"John"}]}'),expectedLineageResult=meta::pure::test::mft::expectedLineage([], ['Lambda','meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1','meta::pure::mft::tests::collection::Person','pack_meta::pure::mapping::modelToModel::test::mft::rowExplosion','pack_meta::pure::mft::tests::collection'], '[Person.firstName: []]'))
+                         
+                           ]
+            );
+
+} 
+
+
+Class meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm
+{
+   legalName : String[1];
+   optionalDescription : String[0..1];
+   employees:meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1[*];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Firm2
+{
+   legalName : String[1];
+   optionalDescription : String[0..1];
+   employees:meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1[*];
+
+}
+
+Class meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person1
+{
+   firstName : String[1];
+   lastName : String[1];
+   description : String[*];
+   birthDate: StrictDate[1];
+   firm:S_Firm[1];
+   address:meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Address[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Person2
+{
+   firstName : String[1];
+   lastName : String[1];
+   description : String[*];
+   birthDate: StrictDate[1];
+   firm:S_Firm[1];
+   address:meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Address[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::mft::rowExplosion::S_Address
+{
+   street :String[1];
+   type:String[1];
+
+}
+
+
+###Mapping
+import meta::pure::mft::tests::collection::*;
+import meta::pure::mapping::modelToModel::test::mft::rowExplosion::*;
+Mapping meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::rowexplosionTestUnionMapping
+(
+ 
+ 
+   *Person : Operation
+               {
+             meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)
+             }
+
+   Person[p1] : Pure
+            {
+               ~src S_Person1
+                  firstName:$src.firstName,
+                  lastName:$src.lastName,
+                  description*:$src.description,
+                  birthDate:$src.birthDate,
+                  firm:$src.firm,
+                  address:$src.address
+            }
+
+      Person[p2] : Pure
+            {
+               ~src S_Person1
+                  firstName:$src.firstName,
+                  lastName:$src.lastName,
+                  description*:$src.description,
+                  birthDate:$src.birthDate,
+                  firm:$src.firm,
+                  address:$src.address
+            }         
+    Address : Pure
+            {
+               ~src S_Address
+                street:$src.street,
+                type: EnumerationMapping AddressTypeMapping: $src.type
+
+            }   
+   
+   AddressType: EnumerationMapping AddressTypeMapping
+  {
+    PRIMARY: ['PRIMARY'],
+    SECONDARY: ['SECONDARY']
+  }
+   Firm : Pure
+            {
+               ~src S_Firm
+                  legalName:$src.legalName,
+                  optionalDescription:$src.optionalDescription,
+                  employees:$src.employees
+            }
+
+ 
+
+)
+
+
+###Mapping
+import meta::pure::mft::tests::collection::*;
+import meta::pure::mapping::modelToModel::test::mft::rowExplosion::*;
+Mapping meta::pure::mapping::modelToModel::test::mft::mapping::rowexplosion::rowexplosionTestMapping
+(
+
+
+   Person : Pure
+            {
+               ~src S_Person1
+                  firstName:$src.firstName,
+                  lastName:$src.lastName,
+                  description*:$src.description,
+                  birthDate:$src.birthDate,
+                  firm:$src.firm,
+                  address:$src.address
+            }
+
+
+    Address : Pure
+            {
+               ~src S_Address
+                street:$src.street,
+                type: EnumerationMapping AddressTypeMapping: $src.type
+
+            }   
+   
+   AddressType: EnumerationMapping AddressTypeMapping
+  {
+    PRIMARY: ['PRIMARY'],
+    SECONDARY: ['SECONDARY']
+  }
+   Firm : Pure
+            {
+               ~src S_Firm
+                  legalName:$src.legalName,
+                  optionalDescription:$src.optionalDescription,
+                  employees:$src.employees
+            }
+
+ 
+
+)
+
