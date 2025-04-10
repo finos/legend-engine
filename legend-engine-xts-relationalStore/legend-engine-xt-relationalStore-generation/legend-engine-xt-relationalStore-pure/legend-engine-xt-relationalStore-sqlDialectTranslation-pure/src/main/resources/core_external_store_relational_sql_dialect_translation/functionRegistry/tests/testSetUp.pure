@@ -1,0 +1,53 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF Aas rNY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::testSetupDataForStatistics(): TestSetupData[1]
+{
+  ^TestSetupData(
+    tableName = 'testTable', 
+    columns = [pair('temperature', 'double precision'), pair('city', 'varchar'), pair('country', 'varchar')], 
+    data = [
+      dataRow([29.6, 'Hyderabad', 'India']), 
+      dataRow([23, 'Bengaluru', 'India']), 
+      dataRow([-2, 'New York', 'US']), 
+      dataRow([-3, 'SFO', 'US']), 
+      dataRow([15.2, 'New Delhi', 'India'])
+    ]
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::tests::testSetupDataForWindowFunctions(): TestSetupData[1]
+{
+  ^TestSetupData(
+    tableName = 'testTable', 
+    columns = [pair('student', 'varchar'), pair('dept', 'varchar'), pair('score', 'integer')], 
+    data = [
+      dataRow(['Alice', 'Science', 90]), 
+      dataRow(['Bob', 'Science', 88]), 
+      dataRow(['Charlie', 'Science', 85]), 
+      dataRow(['David', 'Science', 80]), 
+      dataRow(['Eve', 'Arts', 88]), 
+      dataRow(['Frank', 'Arts', 85]), 
+      dataRow(['Grace', 'Arts', 84]), 
+      dataRow(['Hannah', 'Arts', 80])
+    ]
+  )  
+}

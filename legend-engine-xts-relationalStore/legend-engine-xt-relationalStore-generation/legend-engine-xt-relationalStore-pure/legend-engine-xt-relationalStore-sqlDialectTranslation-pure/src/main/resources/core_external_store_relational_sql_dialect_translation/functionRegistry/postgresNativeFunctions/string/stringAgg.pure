@@ -52,7 +52,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
             dataRow([^NullLiteral(), 'Oliver'])
           ]
         ),
-        // SELECT string_agg(name, ',') AS result FROM testTable GROUP BY age ORDER BY result ASC NULLS LAST
+        // SELECT age, string_agg(name, ',') AS result FROM testTable GROUP BY age ORDER BY result ASC NULLS LAST
         simpleAggFunctionCall(
           ^FunctionCall(
             name = ^QualifiedName(parts = 'string_agg'), 
@@ -62,12 +62,12 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
           'age'
         ),
         ^TestExpectedResult(
-          columns = ['result'], 
+          columns = ['age', 'result'], 
           data = [
-            list(['Anthony,John']),
-            list(['Fabrice']),
-            list(['Oliver']),
-            list([null()])
+            list([18, 'Anthony,John']),
+            list([20, 'Fabrice']),
+            list([null(), 'Oliver']),
+            list([30, null()])
           ]
         )
       )

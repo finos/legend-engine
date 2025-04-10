@@ -1,0 +1,106 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlDialectTranslation::tests::utils::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+Class meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Max extends PostgresNativeSqlFunction
+[
+  $this.name == 'max'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::max(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::misc::Max
+  (
+    name = 'max',
+    documentation = 'Returns the maximum value of expression across all non-null input values',
+    variations = orderedSubTypes(SqlType)->map({sqlType |
+      ^SqlFunctionVariation
+      (
+        parameterTypes = $sqlType,
+        returnType = $sqlType
+      )
+    }),
+    tests = [
+      sqlFunctionTest(
+        ^TestSetupData(
+          tableName = 'testTable', 
+          columns = [pair('marks', 'integer'), pair('subject', 'varchar'), pair('name', 'varchar')], 
+          data = [
+            dataRow([18, 'Math', 'Robert']), 
+            dataRow([32, 'Physics', 'Robert']), 
+            dataRow([20, 'Math', 'Jane']),
+            dataRow([25, 'Physics', 'Jane']),
+            dataRow([16, 'Math', 'John']),
+            dataRow([43, 'Chemistry', 'Robert']), 
+            dataRow([26, 'Chemistry', 'Jane'])
+          ]
+        ),
+        // SELECT subject, max(marks) AS result FROM testTable GROUP BY subject ORDER BY result ASC NULLS LAST
+        simpleAggFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'max'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'marks'))]
+          ),
+          'testTable',
+          'subject'
+        ),
+        ^TestExpectedResult(
+          columns = ['subject', 'result'], 
+          data = [
+            list(['Math', 20]), 
+            list(['Physics', 32]), 
+            list(['Chemistry', 43])
+          ]
+        )
+      ),
+      sqlFunctionTest(
+        ^TestSetupData(
+          tableName = 'testTable', 
+          columns = [pair('name', 'varchar'), pair('class', 'varchar'), pair('dob', 'date')], 
+          data = [
+            dataRow(['Robert', 'Fifth', '2015-12-30']), 
+            dataRow(['Julie', 'Fifth', '2015-12-31']), 
+            dataRow(['Alex', 'Fourth', '2014-11-30']), 
+            dataRow(['Katie', 'Fourth', '2014-07-30']), 
+            dataRow(['Thomas', 'Third', '2013-07-30'])
+          ]
+        ),
+        // SELECT class, max(dob) AS result FROM testTable GROUP BY class ORDER BY result ASC NULLS LAST
+        simpleAggFunctionCall(
+          ^FunctionCall(
+            name = ^QualifiedName(parts = 'max'), 
+            arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dob'))]
+          ),
+          'testTable',
+          'class'
+        ),
+        ^TestExpectedResult(
+          columns = ['class', 'result'], 
+          data = [
+            list(['Third', %2013-07-30]), 
+            list(['Fourth', %2014-11-30]), 
+            list(['Fifth', %2015-12-31])
+          ]
+        )
+      )        
+    ]
+  )
+}
