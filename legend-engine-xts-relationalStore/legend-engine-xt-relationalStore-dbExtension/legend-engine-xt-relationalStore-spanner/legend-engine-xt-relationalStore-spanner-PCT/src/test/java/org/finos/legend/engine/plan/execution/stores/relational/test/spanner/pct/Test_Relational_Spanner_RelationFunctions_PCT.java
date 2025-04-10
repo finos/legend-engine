@@ -152,6 +152,8 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: insert into"),
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_", "Error while executing: insert into"),
             one("meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_", "Error while executing: insert into"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_", "UNIMPLEMENTED: Postgres function concat(bigint, text, text) is not supported"),
+            one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   year,\'UK__|__LDN__|__sum\',\'UK__|__LDN__|__count\',\'USA__|__NYC__|__sum\',\'USA__|__NYC__|__count\',\'USA__|__SAN__|__sum\',\'USA__|__SAN__|__count\'\n   2000,null,null,30000,2,2000,1\n   2011,6000,1,5000,1,2700,2\n   2012,null,null,22800,2,null,null\n#'\nactual:   '#TDS\n   year\n   2000\n   2000\n   2000\n   2000\n   2011\n   2011\n   2011\n   2011\n   2011\n   2011\n   2012\n   2012\n#'\""),
 
             //project
             one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
