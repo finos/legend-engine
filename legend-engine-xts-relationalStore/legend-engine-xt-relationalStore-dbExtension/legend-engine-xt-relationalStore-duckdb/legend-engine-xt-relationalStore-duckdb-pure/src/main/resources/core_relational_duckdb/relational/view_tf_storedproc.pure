@@ -30,5 +30,12 @@ function meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnec
 
 function meta::relational::functions::sqlQueryToString::duckDB::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1]):String[1]
 {
-    'Create or Replace View "' + $createViewSQL.id + '" as ' + $createViewSQL.generatedSQL + ';'
+    // Secure is not supported
+    // Copy Grants is not supported
+    'Create or Replace View ' +
+    if($createViewSQL.schemaName->isEmpty(),|'',|$createViewSQL.schemaName->toOne() + '.') +
+    $createViewSQL.name +
+    ' as ' +
+    $createViewSQL.generatedSQL +
+    ';'
 }
