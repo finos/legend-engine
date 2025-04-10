@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 public class NewLambdaFunction extends AbstractNative
 {
     private static final String TEMPLATE = "new " + FullJavaPaths.LambdaFunction_Impl + "<Object>(\"NOID\")" +
-            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"Root::meta::pure::metamodel::function::LambdaFunction\"))" +
+            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"meta::pure::metamodel::function::LambdaFunction\"))" +
             "._typeArguments(Lists.immutable.of(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType({0}))))";
 
     public NewLambdaFunction()
