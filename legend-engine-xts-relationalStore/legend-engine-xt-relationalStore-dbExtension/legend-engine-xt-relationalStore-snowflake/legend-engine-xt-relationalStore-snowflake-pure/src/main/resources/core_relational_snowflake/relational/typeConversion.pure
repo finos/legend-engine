@@ -17,13 +17,25 @@ import meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constan
 
 function meta::relational::functions::typeConversion::snowflake::convert(genericType:meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1]):meta::relational::metamodel::datatype::DataType[1]
 {
-    let path = $genericType.rawType->cast(@PackageableType).fullPath;
+    let _path = $genericType.rawType->cast(@PackageableType).fullPath;
+    let path = if($_path->indexOf('::') != -1,|$_path->substring($_path->lastIndexOf('::')+2),|$_path);
     let variables = $genericType.typeVariableValues;
     if (
         [
+            pair(|$path == 'Boolean', |fail('not supported yet!')),
+            pair(|$path == 'Integer', |^meta::relational::metamodel::datatype::Decimal(precision=19, scale=0)),
+            pair(|$path == 'Float', |^meta::relational::metamodel::datatype::Double()),
+            pair(|$path == 'Byte', |fail('not supported yet!')),
+            pair(|$path == 'StrictTime', |fail('not supported yet!')),
+            pair(|$path == 'Decimal', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
+            pair(|$path == 'String', |^meta::relational::metamodel::datatype::Varchar(size=1024)),
+            pair(|$path == 'DateTime', |^meta::relational::metamodel::datatype::Timestamp()),
+            pair(|$path == 'Number', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=10)),
+            pair(|$path == 'Date', |^meta::relational::metamodel::datatype::Timestamp()),
+
             pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::Decimal(precision=19, scale=0)),
-            pair(|$path == 'Date', |^meta::relational::metamodel::datatype::Date()),
-            pair(|$path == 'Decimal', |^meta::relational::metamodel::datatype::Decimal(precision=$variables->cast(@CInteger)->at(0).value, scale=$variables->cast(@CInteger)->at(1).value)),
+            pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),
+            pair(|$path == 'Numeric', |^meta::relational::metamodel::datatype::Decimal(precision=$variables->cast(@CInteger)->at(0).value, scale=$variables->cast(@CInteger)->at(1).value)),
             pair(|$path == 'Double', |^meta::relational::metamodel::datatype::Double()),
             pair(|$path == 'Float4', |^meta::relational::metamodel::datatype::Float()),
             pair(|$path == 'Int', |^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
