@@ -137,6 +137,48 @@ jobs:
           name: pct-html-report
           path: target/ok.html
 
+      - name: Checkout Legend Docs
+        if: github.repository == 'finos/legend-engine' # todo - delete
+#        if: github.ref == 'refs/heads/master'
+        uses: actions/checkout@v4
+        with:
+          path: 'legend-docs'
+          ref: 'master'
+          repository: 'finos/legend'
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Copy Legend Docs
+        if: github.repository == 'finos/legend-engine' # todo - delete
+        #        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          mkdir -p legend-docs/website/static/pct/
+          cp -rvT target/ok.html legend-docs/website/static/pct/PCT_Report_Compatibility.html
+
+      - name: Check for new doc files
+        if: github.repository == 'finos/legend-engine' # todo - delete
+        #        if: github.ref == 'refs/heads/master'
+        id: newFiles
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git add -A
+          git status --porcelain | wc -l
+          if [[ $(git status --porcelain | wc -l) -gt 0 ]];
+            echo  "::set-output name=hasNewFiles::true"
+          else
+            echo  "::set-output name=hasNewFiles::false"
+
+      - name: Check for new doc files
+        if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git commit -m "update legend-engine docs"
+          git push
+
       - name: Upload CI Event
         if: always()
         uses: actions/upload-artifact@v4
