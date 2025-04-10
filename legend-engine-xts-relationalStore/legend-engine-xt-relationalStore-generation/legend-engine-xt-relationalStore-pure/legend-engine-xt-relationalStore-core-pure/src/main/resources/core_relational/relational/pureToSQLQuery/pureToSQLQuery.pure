@@ -2881,7 +2881,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
     | let fe = $p->at($p->size()-2);
       let ft = $fe.func->functionType();
       if($ft.parameters->head().genericType->concatenate($ft.returnType)->forAll(x|
-      $fe->println();
       $x.rawType->toOne()->_subTypeOf(TabularDataSet) || $x.rawType->toOne()->_subTypeOf(meta::pure::metamodel::relation::Relation);),
                   | isolateTdsSelect($select, $query, $extensions);,
                   | ^$query(select=$select)
