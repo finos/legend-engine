@@ -40,6 +40,7 @@
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_EssentialFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_GrammarFunction_PCT</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_RelationFunction_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_UnclassifiedFunction_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -107,6 +108,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

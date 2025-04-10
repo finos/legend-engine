@@ -249,6 +249,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='TIME_SLICE(%s)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
@@ -257,7 +258,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('convertTimeZone',            $allStates,           ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
+    dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
   ];
 }
 
