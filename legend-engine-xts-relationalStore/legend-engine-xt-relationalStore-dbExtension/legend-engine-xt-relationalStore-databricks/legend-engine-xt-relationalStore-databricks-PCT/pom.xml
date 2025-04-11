@@ -40,7 +40,7 @@
 
     <profiles>
         <profile>
-            <id>pct-cloud-test</id>
+            <id>pct-cloud-test-wip</id>
             <build>
                 <plugins>
                     <plugin>
