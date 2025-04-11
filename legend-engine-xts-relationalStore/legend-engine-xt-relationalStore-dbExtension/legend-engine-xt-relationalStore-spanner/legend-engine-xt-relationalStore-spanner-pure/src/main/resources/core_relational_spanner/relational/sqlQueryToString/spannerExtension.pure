@@ -130,7 +130,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s::float)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract(second from %s)')),
     dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
-    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split(%s, %s)[ORDINAL(%s)]', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    // dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split(%s, %s)[ORDINAL(%s)]', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
     // dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null')),
     dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, [], $literalProcessor)})),

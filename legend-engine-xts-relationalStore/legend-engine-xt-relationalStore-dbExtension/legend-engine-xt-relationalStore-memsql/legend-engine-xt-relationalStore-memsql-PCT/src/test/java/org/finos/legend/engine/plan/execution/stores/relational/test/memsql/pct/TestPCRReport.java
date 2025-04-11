@@ -24,6 +24,6 @@ public class TestPCRReport
     public void canFindPCTReport()
     {
         Assert.assertEquals("MemSQL, Native", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals(10, PCTReportProviderLoader.gatherReports().size());
     }
 }

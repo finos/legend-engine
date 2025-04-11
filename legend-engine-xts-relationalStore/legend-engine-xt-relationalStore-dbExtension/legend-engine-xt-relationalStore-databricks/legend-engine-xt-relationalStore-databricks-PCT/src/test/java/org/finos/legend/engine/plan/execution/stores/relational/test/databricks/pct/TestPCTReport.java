@@ -24,6 +24,6 @@ public class TestPCTReport
     public void canFindPCTReport()
     {
         Assert.assertEquals("Native, Databricks", PCTReportProviderLoader.gatherReports().collect(c -> c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(9, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals(10, PCTReportProviderLoader.gatherReports().size());
     }
 }
