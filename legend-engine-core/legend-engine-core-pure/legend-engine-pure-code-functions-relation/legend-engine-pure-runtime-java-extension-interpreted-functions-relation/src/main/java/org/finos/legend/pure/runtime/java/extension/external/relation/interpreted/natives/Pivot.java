@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives;
 
 import io.deephaven.csv.parsers.DataType;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.FixedSizeList;
 import org.eclipse.collections.api.list.ListIterable;
@@ -31,6 +32,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -98,24 +100,10 @@ public class Pivot extends Shared
             throw new RuntimeException("Not Possible");
         }
 
-        // TODO: right now we make assumption that the map expression is really simple so we can safely extract the column(s)
-        // used for aggregation, we make sure these column(s) are not part of the groupBy calculation
-        ListIterable<String> columnsUsedInAggregation = aggColSpecs.collect(col ->
+        ListIterable<String> columnsUsedInAggregation = aggColSpecs.flatCollect(col ->
         {
-            try
-            {
-                ValueSpecification lambda = ((LambdaFunction<?>) col._map())._expressionSequence().getFirst();
-                if (lambda instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) lambda)._func() instanceof Column)
-                {
-                    return ((SimpleFunctionExpression) lambda)._func()._name();
-                }
-                return null;
-            }
-            catch (Exception e)
-            {
-                // do nothing, the shape is not as expected, we will try to inspect no further
-                return null;
-            }
+            LambdaFunction<?> lambdaFunction = (LambdaFunction<?>) col._map();
+            return getColumnsUsedInAggregation(lambdaFunction._expressionSequence());
         }).select(Objects::nonNull);
 
         // these are the columns not being aggregated on, which will be used for groupBy calculation before transposing
@@ -221,6 +209,41 @@ public class Pivot extends Shared
             parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(subList, true, processorSupport));
             CoreInstance re = this.functionExecution.executeFunction(false, reduceF, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, reduceFVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
             setter.value(j, re.getValueForMetaPropertyToOne("values"));
+        }
+    }
+
+    private MutableList<String> getColumnsUsedInAggregation(RichIterable<? extends ValueSpecification> lambdas)
+    {
+        MutableList<String> columnsUsedInAggregation = Lists.mutable.empty();
+        recursivelyCollectColumnsUsedInAggregation(lambdas, columnsUsedInAggregation);
+        return columnsUsedInAggregation;
+    }
+
+    private void recursivelyCollectColumnsUsedInAggregation(RichIterable<? extends ValueSpecification> lambdas, MutableList<String> columnsUsedInAggregation)
+    {
+        for (ValueSpecification lambda : lambdas)
+        {
+            if (lambda instanceof SimpleFunctionExpression)
+            {
+                SimpleFunctionExpression fe = (SimpleFunctionExpression) lambda;
+                if (fe._func() instanceof Column)
+                {
+                    Column column = (Column) fe._func();
+                    columnsUsedInAggregation.add(column._name());
+                }
+
+                else
+                {
+                    recursivelyCollectColumnsUsedInAggregation(fe._parametersValues(), columnsUsedInAggregation);
+                }
+            }
+
+            else if (lambda instanceof InstanceValue)
+            {
+                InstanceValue instanceValue = (InstanceValue) lambda;
+                RichIterable<? extends ValueSpecification> values = instanceValue._values().selectInstancesOf(ValueSpecification.class);
+                recursivelyCollectColumnsUsedInAggregation(values, columnsUsedInAggregation);
+            }
         }
     }
 }

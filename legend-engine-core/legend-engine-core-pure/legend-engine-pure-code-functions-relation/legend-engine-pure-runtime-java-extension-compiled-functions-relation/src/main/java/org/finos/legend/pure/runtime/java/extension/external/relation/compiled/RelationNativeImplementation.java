@@ -26,11 +26,11 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -128,19 +128,19 @@ public class RelationNativeImplementation
     public static <T> Relation<? extends Object> select(Relation<? extends T> r, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Sets.mutable.withAll(RelationNativeImplementation.getTDS(r).getColumnNames())), ps);
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Lists.mutable.withAll(RelationNativeImplementation.getTDS(r).getColumnNames())), ps);
     }
 
     public static <T> Relation<? extends Object> select(Relation<? extends T> r, ColSpec<?> col, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Sets.mutable.with(col._name())), ps);
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Lists.mutable.with(col._name())), ps);
     }
 
     public static <T> Relation<? extends Object> select(Relation<? extends T> r, ColSpecArray<?> cols, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Sets.mutable.withAll(cols._names())), ps);
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(r).select(Lists.mutable.withAll(cols._names())), ps);
     }
 
     public static <T> Relation<? extends T> concatenate(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
@@ -495,24 +495,10 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel);
 
-        // TODO: right now we make assumption that the map expression is really simple so we can safely extract the column(s)
-        // used for aggregation, we make sure these column(s) are not part of the groupBy calculation
-        ListIterable<String> columnsUsedInAggregation = aggColSpecTransAll.collect(col ->
+        ListIterable<String> columnsUsedInAggregation = aggColSpecTransAll.flatCollect(col ->
         {
-            try
-            {
-                ValueSpecification lambda = ((LambdaFunction<?>) col.aggColSpec._map())._expressionSequence().getFirst();
-                if (lambda instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) lambda)._func() instanceof Column)
-                {
-                    return ((SimpleFunctionExpression) lambda)._func()._name();
-                }
-                return null;
-            }
-            catch (Exception e)
-            {
-                // do nothing, the shape is not as expected, we will try to inspect no further
-                return null;
-            }
+            LambdaFunction<?> lambdaFunction = (LambdaFunction<?>) col.aggColSpec._map();
+            return getColumnsUsedInAggregation(lambdaFunction._expressionSequence());
         }).select(Objects::nonNull);
 
         // these are the columns not being aggregated on, which will be used for groupBy calculation before transposing
@@ -556,6 +542,41 @@ public class RelationNativeImplementation
         TestTDSCompiled result = (TestTDSCompiled) temp.applyPivot(groupByColumns.reject(pivotCols::contains), pivotCols, aggColSpecTransAll.collect(col -> col.newColName));
 
         return new TDSContainer(result, ps);
+    }
+
+    private static MutableList<String> getColumnsUsedInAggregation(RichIterable<? extends ValueSpecification> lambdas)
+    {
+        MutableList<String> columnsUsedInAggregation = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+        recursivelyCollectColumnsUsedInAggregation(lambdas, columnsUsedInAggregation);
+        return columnsUsedInAggregation;
+    }
+
+    private static void recursivelyCollectColumnsUsedInAggregation(RichIterable<? extends ValueSpecification> lambdas, MutableList<String> columnsUsedInAggregation)
+    {
+        for (ValueSpecification lambda : lambdas)
+        {
+            if (lambda instanceof SimpleFunctionExpression)
+            {
+                SimpleFunctionExpression fe = (SimpleFunctionExpression) lambda;
+                if (fe._func() instanceof Column)
+                {
+                    Column column = (Column) fe._func();
+                    columnsUsedInAggregation.add(column._name());
+                }
+
+                else
+                {
+                    recursivelyCollectColumnsUsedInAggregation(fe._parametersValues(), columnsUsedInAggregation);
+                }
+            }
+
+            else if (lambda instanceof InstanceValue)
+            {
+                InstanceValue instanceValue = (InstanceValue) lambda;
+                RichIterable<? extends ValueSpecification> values = instanceValue._values().selectInstancesOf(ValueSpecification.class);
+                recursivelyCollectColumnsUsedInAggregation(values, columnsUsedInAggregation);
+            }
+        }
     }
 
     public static <T> Long write(Relation<? extends T> rel, RelationElementAccessor<? extends T> relationElementAccessor, ExecutionSupport es)

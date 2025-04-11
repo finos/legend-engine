@@ -657,11 +657,13 @@ public abstract class TestTDS
         return copy;
     }
 
-    public TestTDS select(MutableSet<? extends String> columns)
+    public TestTDS select(MutableList<? extends String> columns)
     {
         MutableSet<String> allColumns = Sets.mutable.withAll(this.getColumnNames());
-        allColumns.removeAll(columns);
-        return removeColumns(allColumns);
+        allColumns.removeAll(Sets.mutable.withAll(columns));
+        TestTDS testTDS = removeColumns(allColumns);
+        testTDS.columnsOrdered = Lists.mutable.withAll(columns);
+        return testTDS;
     }
 
     public TestTDS rename(String oldName, String newName)
@@ -744,7 +746,7 @@ public abstract class TestTDS
     {
         Pair<TestTDS, MutableList<Pair<Integer, Integer>>> res = this.sort(columns.collect(c -> new SortInfo(c, SortDirection.ASC)));
         TestTDS result = res.getOne()._distinct(res.getTwo());
-        return result.select(columns.toSet());
+        return result.select(columns.toList());
     }
 
     public TestTDS _distinct(MutableList<Pair<Integer, Integer>> ranges)
@@ -1323,7 +1325,7 @@ public abstract class TestTDS
             this.aggColumnName = aggColumnName;
             this.columnType = columnType;
             // TODO: we might need to rethink this column naming strategy, it could break in some edge cases
-            this.columnName = ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__");
+            this.columnName = "'" + ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__") + "'";
         }
 
         public String getColumnName()

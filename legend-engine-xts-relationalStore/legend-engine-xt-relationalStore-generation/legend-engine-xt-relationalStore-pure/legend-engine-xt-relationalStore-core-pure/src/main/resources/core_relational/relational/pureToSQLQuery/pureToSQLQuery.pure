@@ -5033,31 +5033,29 @@ function meta::relational::functions::pureToSqlQuery::isResultColumnsDynamic(sel
 
 function meta::relational::functions::pureToSqlQuery::processPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-  let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
+  let inputQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let inputSelect = $inputQuery.select->cast(@TdsSelectSqlQuery);
+  let inputQueryAlias = 'pivotInput_' + $nodeId;
+  let inputTableAlias = ^TableAlias(name = $inputQueryAlias, relationalElement=$inputSelect);
   // NOTE: the semantics of Pivot is not so standardized across different DBs, so for simplicity sake, we don't optimize/merge the SQL at all,
   // we will just by default use sub-select with pivot
-  let pivotColumns = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
+  let noSubSelect = false;
+  let allInputColumns = $inputSelect.columns->map(c | let alias = $inputTableAlias->switchAliasForColumns($c)->toOne();
+                                                      let tac = $alias.relationalElement->cast(@TableAliasColumn);
+                                                      let column = $tac.column;
+                                                      ^$tac(column = ^$column(name = $alias.name));
+  );
+  let pivotColumnNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
       s:String[*]|$s,
       x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
       v:meta::pure::metamodel::relation::ColSpec<Any>[1]|$v.name
-    ])->map(n|^TableAliasColumn(
-      alias = $select.data->toOne().alias,
-      column = ^Column
-              (
-                  name = $n,
-                  type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
-              )
-    ));
-  let noSubSelect = false;
-  let subSelectAliasName = 'pivot_' + $nodeId;
+    ]);
   let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->match([
                         avs:meta::pure::tds::AggregateValue<Any,Any>[*]|$avs->map(a|^AggContainer(name=$a.name,map=$a.mapFn,reduce=$a.aggregateFn));,
                         x:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce);,
                         z:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|$z.aggSpecs->map(x|^AggContainer(name=$x.name,map=$x.map,reduce=$x.reduce));
                       ]);
-  let newColumns= $aggVS->map(a|^Alias(name='"'+$a.name+'"', relationalElement=processTDSMapReduce($a, $select, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context)));
-  let existingPaths = $select.paths;
+  let existingPaths = $inputSelect.paths;
   let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
                                                                                           [
                                                                                             s:String[*]|$s,
@@ -5067,18 +5065,110 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
                                                                                         )->map(n|$existingPaths->filter(p|$p.first == $n))
                    ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
                                                  pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));));
+  let pivotColumnAliasName = 'pivot_column';
+  let subSelectAliasName = 'aggreg';
+  let pivotColumns = $pivotColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the pivot column: ' + $n));
+  let newAggColumns = $aggVS->map(a | processTDSMapReduce($a, $inputSelect, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context));
+  let allButPivotColumns = $allInputColumns->removeAll($pivotColumns);
+  let pivotAlias = ^ColumnName(name = $pivotColumnAliasName);
 
-  ^TdsSelectSqlQuery(
-    // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
-    // so we specify no columns in order to force a `select *`
-    columns = [],
-    data = ^RootJoinTreeNode(alias = ^TableAlias(name = $subSelectAliasName, relationalElement=$select)),
-    pivot = ^Pivot(
-      pivotColumns = $pivotColumns,
-      aggColumns = $newColumns
-    ),
-    paths = $pathInfos
-  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($mainQuery, $state, $extensions);
+  let pivotColumnExtendQueryAndAggPairs = $aggVS->map(agg | let pivotTAC = ^DynaFunction(
+                                                                    name = 'concat',
+                                                                    parameters = $pivotColumns->map(pc | $pc->concatenate(^Literal(value=meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter())))->concatenate(^Literal(value= $agg.name->toOne()))
+                                                                  );
+                                                   let pivotAlias = ^Alias(name=$pivotColumnAliasName, relationalElement=$pivotTAC);
+                                                   let pivotQueryColumns = $allButPivotColumns->concatenate($pivotAlias);
+                                                   let pivotColumExtendQuery = ^TdsSelectSqlQuery(
+                                                      columns = $pivotQueryColumns,
+                                                      data = ^RootJoinTreeNode(alias = $inputTableAlias),
+                                                      paths = $existingPaths
+                                                   )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($inputQuery, $state, $extensions);
+                                                   pair($pivotColumExtendQuery, $agg);
+                                          );
+
+  if ($pivotColumnExtendQueryAndAggPairs->size() == 1,
+      | 
+        let pivotColumnExtendQuery = $pivotColumnExtendQueryAndAggPairs->toOne().first;
+        let pivotColumnExtendSelect = $pivotColumnExtendQuery.select->cast(@TdsSelectSqlQuery);
+        ^TdsSelectSqlQuery(
+          // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+          // so we specify no columns in order to force a `select *`
+          columns = [],
+          data = ^RootJoinTreeNode(alias = ^TableAlias(name = 'pivotColumnExtend', relationalElement = $pivotColumnExtendSelect)),
+          pivot = ^Pivot(
+            pivotColumns = $pivotAlias,
+            aggColumns = $newAggColumns->toOne()
+          ),
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($pivotColumnExtendQuery, $state, $extensions);,
+      | 
+        let aggregateColumnAliasName = 'aggregate_column';
+        let originalAggColumnNames = $newAggColumns->extractTableAliasColumns()->map(tac | $tac.column.name);
+        let originalAggColumns = $originalAggColumnNames->map(n | $allInputColumns->filter(c | $c.column.name->quoteSafeEqual($n))->toOne('Could not find the original aggregate column: ' + $n));
+        let allButPivotAndAggregateColumns = $allButPivotColumns->removeAll($originalAggColumns);
+        let groupByQueries = $pivotColumnExtendQueryAndAggPairs->map(p |let pivotColumnExtendSelect = $p.first.select->cast(@TdsSelectSqlQuery);
+                                                                        let agg = $p.second;
+                                                                        let newAggColumn = ^Alias(name = $aggregateColumnAliasName, relationalElement = processTDSMapReduce(^$agg(name = $aggregateColumnAliasName), $pivotColumnExtendSelect, $noSubSelect, $subSelectAliasName, $currentPropertyMapping, $vars, $state, $context));
+                                                                        let alias = ^TableAlias(name = $subSelectAliasName, relationalElement = $pivotColumnExtendSelect);
+                                                                        let newData = ^RootJoinTreeNode(alias = $alias);
+                                                                        let pivotColumnAlias = ^Alias(name = $pivotColumnAliasName,
+                                                                                                      relationalElement = ^TableAliasColumn
+                                                                                                                          (
+                                                                                                                            alias = $alias,
+                                                                                                                            column = ^Column
+                                                                                                                                    (
+                                                                                                                                      name = $pivotColumnAliasName,
+                                                                                                                                      type = ^meta::relational::metamodel::datatype::Integer()
+                                                                                                                                    )
+                                                                                                                          ));
+                                                                        let groupByAliases = $allButPivotAndAggregateColumns->concatenate($pivotColumnAlias)->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$alias)),
+                                                                                                                                                                               t:TableAliasColumn[1]|^$t(alias=$alias)]
+                                                                                             ));
+                                                                        ^TdsSelectSqlQuery(
+                                                                                            data = $newData,
+                                                                                            columns = $groupByAliases->concatenate($newAggColumn),
+                                                                                            groupBy = $groupByAliases,
+                                                                                            paths = $pathInfos
+                                                                        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($p.first, $state, $extensions);
+        
+        );
+        let rootTable = ^TableAlias(
+          name = 'union',
+          relationalElement = ^UnionAll(queries = $groupByQueries.select)
+        );
+        let newRoot = ^RootJoinTreeNode(alias = $rootTable);
+        let unionAllQuery = ^TdsSelectSqlQuery(
+          columns = $groupByQueries.select->at(0).columns->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
+                                                                            t:TableAliasColumn[1]|^$t(alias=$rootTable)]
+                                                              )),
+          data = $newRoot,
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($groupByQueries->at(0), $state, $extensions);
+        let unionSelect = $unionAllQuery.select->cast(@TdsSelectSqlQuery);
+        let aggDynaFunction = ^DynaFunction(
+                                              name = 'max', // After groupBy operation, there should only be one row for each pivot column, hence arbitrarily using any aggregate function
+                                              parameters = ^TableAliasColumn
+                                                           (
+                                                            alias = $rootTable,
+                                                            column = ^Column
+                                                                    (
+                                                                      name = $aggregateColumnAliasName,
+                                                                      type = ^meta::relational::metamodel::datatype::Integer()
+                                                                    )
+                                                           )
+                                           );
+        ^TdsSelectSqlQuery(
+          // since we don't know which columns will present in the result, new columns based off the unique values of pivoted columns will be present
+          // so we specify no columns in order to force a `select *`
+          columns = [],
+          data = ^RootJoinTreeNode(alias = ^TableAlias(name = 'unionAllPivot', relationalElement=$unionSelect)),
+          pivot = ^Pivot(
+            pivotColumns = $pivotAlias,
+            aggColumns = $aggDynaFunction
+          ),
+          paths = $pathInfos
+        )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($unionAllQuery, $state, $extensions);
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecification[1], params:RelationalOperationElement[*], state:State[1]):RelationalOperationElement[*]

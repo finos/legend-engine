@@ -142,7 +142,8 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                                       range($x.values->size())->map(z | if($x.values->at($z) == TDSNull,
                                                                             | let type = $res.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns->at($z).type;
                                                                               if ([
-                                                                                    pair(|$type == 'Integer' ||
+                                                                                    pair(|$type == 'Integer' || 
+                                                                                          $type == 'Number' || // TODO: Convert to Decimal
                                                                                           $type == 'meta::pure::precisePrimitives::Int', |-2147483648),
                                                                                     pair(|$type == 'String' ||
                                                                                           $type == 'meta::pure::precisePrimitives::Varchar', |'null'),

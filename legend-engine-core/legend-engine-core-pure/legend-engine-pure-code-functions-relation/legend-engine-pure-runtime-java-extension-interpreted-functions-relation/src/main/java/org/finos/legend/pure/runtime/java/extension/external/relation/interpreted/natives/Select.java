@@ -75,6 +75,6 @@ public class Select extends Shared
             }
         }
 
-        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.select(ids.toSet()), returnGenericType, repository, processorSupport), false, processorSupport);
+        return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds.select(ids.toList()), returnGenericType, repository, processorSupport), false, processorSupport);
     }
 }
