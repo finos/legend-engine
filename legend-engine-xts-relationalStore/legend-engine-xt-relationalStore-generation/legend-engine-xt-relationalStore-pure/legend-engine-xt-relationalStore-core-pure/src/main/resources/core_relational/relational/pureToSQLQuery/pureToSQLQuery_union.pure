@@ -333,7 +333,10 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
        |   $setImplementationId->map(setId|let offset = $setImplementationId->indexOf($setId);
                                            let classMapping = $mapping->classMappingById($setId);
                                            assert($classMapping->isNotEmpty(),' Did not find setID '+  $setId + ' from properties '  +$relationalPropertyMappings.property.name->distinct()->joinStrings(',')   +' in any in scope mapping'  );
-                                           let setImplementation = $classMapping->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->toOne();
+                                           let setImplementation = $classMapping->match([r:RootRelationalInstanceSetImplementation[1]|$r,
+                                                                                         e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner,
+                                                                                         a:OperationSetImplementation[*]| fail( 'Found unexpected Operation set imeplentation for ' + $setId +' on properties ' + $relationalPropertyMappings.property.name->joinStrings(',')  + ':specify a non operation targetSet Id'); @RootRelationalInstanceSetImplementation;]
+                                                                                         )->toOne();
                                            let mainTable = $setImplementation->mainRelation();
                                            let cols = $propertyMappingBySetIds->get($setId).values.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode
                                                                               ->extractTableAliasColumns()
@@ -428,7 +431,11 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    // New Queries
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-   let targetSetImplementations = $targetSetImplementationIds->map(t|$state->getClassMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+   
+
+   let targetSetImplementations = $targetSetImplementationIds->map(t|  let set  = $state->getClassMappingById($t);
+                                                                       assert($set->toOne()->instanceOf(RootRelationalInstanceSetImplementation),' expected a target to be a relational property mappings with for these properties with targetID ' + $relationalPropertyMappings->filter(p|$p.targetSetImplementationId==$t).property.name->joinStrings(',')    + ' [' +$t+      '] but found type'   +  $set->toOne()->type()->elementToPath()  );
+                                                                       $set->cast(@RootRelationalInstanceSetImplementation)->toOne(););
 
    print(if(!$context.debug, |'', | $context.space+'  - sourceSetImplIds: ['+$sourceSetImplementationIds->joinStrings(',')+']\n'+$context.space+'  - targetSetImplIds: ['+$targetSetImplementationIds->joinStrings(',')+']\n'));
 

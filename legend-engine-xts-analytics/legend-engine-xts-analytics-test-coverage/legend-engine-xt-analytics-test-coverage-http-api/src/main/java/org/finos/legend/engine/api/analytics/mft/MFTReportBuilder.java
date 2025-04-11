@@ -85,6 +85,9 @@ public class MFTReportBuilder
                                                case "AssertError":
                                                    mftTestReport.status = "Query Feature Not Supported";
                                                    break;
+                                               case "Ignore":
+                                                   mftTestReport.status = "Error";
+                                                   break;
                                                default:
                                                    mftTestReport.status = "Unknown";
                                                    break;
@@ -97,8 +100,8 @@ public class MFTReportBuilder
                                }
                                else
                                {
-                                   mftTestReport.assertionType = "UnTested";
-                                   mftTestReport.status = "UnTested";
+                                   mftTestReport.assertionType = "Untested";
+                                   mftTestReport.status = "Untested";
 
                                }
 

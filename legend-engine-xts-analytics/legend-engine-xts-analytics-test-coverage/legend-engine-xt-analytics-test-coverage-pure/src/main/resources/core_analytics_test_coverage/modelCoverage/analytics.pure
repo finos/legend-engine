@@ -132,16 +132,13 @@ function meta::analytics::testCoverage::featureMatrix::buildStoreReportJSON(func
   let mappingFeatures= $mappingTests->map(mappingTest|
                                           let mappingFeatures =  $mappingTest.stereotypes->filter(s|$s.profile->elementToPath()=='meta::pure::testCoverage::featureMatrix::MappingFeature').value;
                                           let instance =  $mappingTest->eval();
-                                          let assertionTestsMap = $instance.assertions->map(a|  $a.tests->map( test| pair( $test->elementToPath(),  $a  )))->newMap();
+                                          let assertionTestsMap = $instance.assertions->map(a|  $a.tests->map( test| pair( $test->elementToPath(),  $a  )))->groupBy(p|$p.first);
                                           $testFunctions->keyValues()->map(mftTest |let assert = $assertionTestsMap->get($mftTest.first);
                                                                                               if(  $assert->isNotEmpty(), 
-                                                                                                  |  
-                                                                                                      
-                                                                                                  
-                                                                                                      $assert->match([ t:TestAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Assertion,$reportType,$store,[],$mappingTest),
-                                                                                                                       t:TestErrorAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.AssertError,$reportType,$store,$t.expectedErrorMessage,$mappingTest),
-                                                                                                                       i:IgnoreTest[1]    |$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Ignore,$reportType,$store,$i.reason,$mappingTest)
-                                                                                                                    ]);,  
+                                                                                                  |    $assert.values.second->map(a|$a->match([ t:TestAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Assertion,$reportType,$store,[],$mappingTest),
+                                                                                                                                        t:TestErrorAssertion[1]|$mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.AssertError,$reportType,$store,$t.expectedErrorMessage,$mappingTest),
+                                                                                                                                        i:IgnoreTest[1]    | $mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures,FeatureResultAssertionType.Ignore,$reportType,$store,$i.reason,$mappingTest);
+                                                                                                                    ]));,  
                                                                                                   |   $mftTest.second->meta::analytics::testCoverage::featureMatrix::featureForFN($mappingFeatures, FeatureResultAssertionType.Untested,$reportType,$store,[],$mappingTest)
                                                                                                 );
                                                                         );             
