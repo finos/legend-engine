@@ -758,6 +758,88 @@
               }
             }
           ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Product"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "productId",
+                "tableAlias": "Product",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Product"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "productId",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Product"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "productName",
+                "tableAlias": "Product",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Product"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "productName",
+                "class": "meta::relational::transform::autogen::tests::testSchema1::Product"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_testSchema1_Product",
+          "class": "meta::relational::transform::autogen::tests::testSchema1::Product",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "productId",
+              "tableAlias": "Product",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Product"
+              }
+            },
+            {
+              "_type": "column",
+              "column": "productName",
+              "tableAlias": "Product",
+              "table": {
+                "schema": "testSchema1",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Product"
+              }
+            }
+          ]
         }
       ]
     },
@@ -975,6 +1057,48 @@
             "lowerBound": 1
           },
           "name": "name",
+          "genericType": {
+            "rawType": {
+              "fullPath": "String",
+              "_type": "packageableType"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::testSchema1",
+      "_type": "class",
+      "name": "Product",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "productId",
+          "genericType": {
+            "rawType": {
+              "fullPath": "Integer",
+              "_type": "packageableType"
+            }
+          }
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "productName",
           "genericType": {
             "rawType": {
               "fullPath": "String",
