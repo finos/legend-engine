@@ -87,6 +87,10 @@ public class SQLResultColumn
         {
             return Tuples.pair(this.label, "StrictDate");
         }
+        else if (type.startsWith("NUMBER")) // TODO: Numbers should be converted to Decimal
+        {
+            return Tuples.pair(this.label, "Number");
+        }
         return Tuples.pair(this.label, "String"); // Default is String. But shouldn't go here
     }
 }

@@ -330,9 +330,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processPivotForDuckDB(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
+  let pivotDynaFunction = ^DynaFunction(
+                                name = 'concat',
+                                parameters = [^Literal(value='\'')]->concatenate($p.pivotColumns->toOne()->cast(@ColumnName))->concatenate(^Literal(value='\''))
+                              );
   $format.separator + 'pivot ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions) +
-  ' ' + $format.separator + 'on ' + processSelectColumns($p.pivotColumns, $dbConfig, $format->indent(), $config, ' || \'' + pivotColumnDelimeter() + '\' || ', false, $extensions) +
-  ' ' + $format.separator + 'using ' + processSelectColumns($p.aggColumns->cast(@Alias)->map(col|^$col(name='"_|__' + $col.name->substring(1))), $dbConfig, $format->indent(), $config, true, $extensions);
+  ' ' + $format.separator + 'on ' + processSelectColumns($pivotDynaFunction, $dbConfig, $format->indent(), $config, false, $extensions) +
+  ' ' + $format.separator + 'using ' + processSelectColumns($p.aggColumns->toOne(), $dbConfig, $format->indent(), $config, true, $extensions);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSliceOrDropForDuckDB(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
