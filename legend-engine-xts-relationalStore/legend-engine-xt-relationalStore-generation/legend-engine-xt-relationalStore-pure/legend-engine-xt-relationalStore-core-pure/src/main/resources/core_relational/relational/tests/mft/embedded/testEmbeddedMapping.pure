@@ -142,7 +142,7 @@ Mapping meta::relational::tests::mapping::embedded::model::mapping::mft::embedde
        firm(  
        legalName: [MFTtestDB]TEST.PERSON_FIRM.LEGAL_NAME,
        optionalDescription: [MFTtestDB]TEST.PERSON_FIRM.OPTIONAL_DESCRIPTION,
-       employees: [MFTtestDB]@firmEmployees
+       employees[p2]: [MFTtestDB]@firmEmployees
 
 
        )
@@ -165,7 +165,7 @@ Mapping meta::relational::tests::mapping::embedded::model::mapping::mft::embedde
        firm(  
        legalName: [MFTtestDB]TEST.PERSON_FIRM.LEGAL_NAME,
        optionalDescription: [MFTtestDB]TEST.PERSON_FIRM.OPTIONAL_DESCRIPTION,
-       employees: [MFTtestDB]@firmEmployees
+       employees[p1]: [MFTtestDB]@firmEmployees
        )
     }
     

@@ -35,7 +35,7 @@ function <<MappingFeature.merge, meta::pure::test::mft::model::MFT.testCollectio
                                               meta::pure::mft::tests::collection::sort::sortTDS__FunctionDefinition_1_,
                                               meta::pure::mft::tests::collection::take::takeTDS__FunctionDefinition_1_,
                                               meta::pure::mft::tests::collection::filter::simpleTDS__FunctionDefinition_1_,
-                                              meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_     ])]
+                                              meta::pure::mft::tests::collection::groupBy::groupByMultiAggTDS__FunctionDefinition_1_], expectedErrorMessage = '2 connection(s) for "ModelStore" were found in the runtime. Expected 1 connection.' )]
                                   //TODO:  The test runner needs to be updated to handle the merge scenario 
                       );
 }
