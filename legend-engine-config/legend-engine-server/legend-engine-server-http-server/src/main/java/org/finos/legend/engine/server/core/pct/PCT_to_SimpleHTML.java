@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.server.core.pct;
 
+import java.util.Set;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.ListMultimap;
@@ -21,6 +22,7 @@ import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
 import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
@@ -39,11 +41,11 @@ public class PCT_to_SimpleHTML
 
     public static void main(String[] args) throws Exception
     {
-        String html = buildHTML();
+        String html = buildHTML(Sets.mutable.of(args));
         Shared.writeStringToTarget("./target", "ok.html", html);
     }
 
-    public static String buildHTML()
+    public static String buildHTML(Set<String> adapterNames)
     {
         moduleURLs.put("grammar", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
         moduleURLs.put("essential", "https://github.com/finos/legend-pure/tree/master/legend-pure-core/legend-pure-m3-core/src/main/resources");
@@ -52,7 +54,9 @@ public class PCT_to_SimpleHTML
 
         Documentation doc = DocumentationGeneration.buildDocumentation();
 
-        ListMultimap<String, AdapterKey> grouped = Lists.mutable.withAll(doc.adapters).groupBy(x -> x.adapter.group);
+        ListMultimap<String, AdapterKey> grouped = Lists.mutable.withAll(doc.adapters)
+                .select(x -> adapterNames.isEmpty() || adapterNames.contains(x.adapter.name))
+                .groupBy(x -> x.adapter.group);
         MutableList<AdapterKey> orderedAdapters = grouped.keysView().toSortedList().flatCollect(x -> grouped.get(x).toSortedListBy(z -> z.adapter.name));
 
         // Organize by source
