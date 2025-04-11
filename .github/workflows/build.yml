@@ -105,11 +105,28 @@ jobs:
         run: |
           mvn -B -e -DskipTests=true deploy -P docker-snapshot
 
+#      - name: Test (PR)
+#        if: github.ref != 'refs/heads/master' # need secrets, hence can only run on engine repo
+#        env:
+#          MAVEN_OPTS: "-Xmx4g"
+#        run: |
+#          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+
       - name: Test
+#        if: github.ref == 'refs/heads/master' # need secrets, hence can only run on engine repo
         env:
           MAVEN_OPTS: "-Xmx4g"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -P pct-cloud-test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate          
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
       - name: Generate PCT Report
         run: |
@@ -120,6 +137,46 @@ jobs:
         with:
           name: pct-html-report
           path: target/ok.html
+
+      - name: Checkout Legend Docs
+#        if: github.ref == 'refs/heads/master'
+        uses: actions/checkout@v4
+        with:
+          path: 'legend-docs'
+#          ref: 'master'
+          ref: 'rafael-doc-testing'
+          repository: 'finos/legend'
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Copy Legend Docs
+#        if: github.ref == 'refs/heads/master'
+        shell: bash
+        run: |
+          mkdir -p legend-docs/website/static/pct/
+          cp -rvT target/ok.html legend-docs/website/static/pct/PCT_Report_Compatibility.html
+
+      - name: Check for new documentation files
+#        if: github.ref == 'refs/heads/master'
+        id: newFiles
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git add -A
+          git status --porcelain | wc -l
+          if [[ $(git status --porcelain | wc -l) -gt 0 ]];
+            echo  "::set-output name=hasNewFiles::true"
+          else
+            echo  "::set-output name=hasNewFiles::false"
+
+      - name: Commit new documentation files
+        if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
+        shell: bash
+        working-directory: legend-docs
+        run: |
+          git commit -m "maint: update legend-engine docs from ref: ${{ github.sha }}"
+          git push
 
       - name: Upload CI Event
         if: always()
