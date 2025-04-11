@@ -88,7 +88,8 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install
+#          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true install -P pct-cloud-test
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -103,7 +104,7 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: |
-          mvn -B -e -DskipTests=true deploy -P docker-snapshot
+          mvn -B -e -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
 #      - name: Test (PR)
 #        if: github.ref != 'refs/heads/master' # need secrets, hence can only run on engine repo
@@ -144,7 +145,7 @@ jobs:
         with:
           path: 'legend-docs'
 #          ref: 'master'
-          ref: 'rafael-doc-testing'
+          ref: 'rafael-doc-testing' # todo
           repository: 'finos/legend'
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
           fetch-depth: 0
