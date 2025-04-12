@@ -89,8 +89,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install -P pct-cloud-test -T2
-#          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -107,15 +106,15 @@ jobs:
         run: |
           mvn -B -e -DskipTests=true deploy -P docker-snapshot,pct-cloud-test
 
-#      - name: Test (PR)
-#        if: github.ref != 'refs/heads/master' # need secrets, hence can only run on engine repo
-#        env:
-#          MAVEN_OPTS: "-Xmx4g"
-#        run: |
-#          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+      - name: Test (PR)
+        if: github.ref != 'refs/heads/master'
+        env:
+          MAVEN_OPTS: "-Xmx4g"
+        run: |
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
-      - name: Test
-#        if: github.ref == 'refs/heads/master' # need secrets, hence can only run on engine repo
+      - name: Test (with cloud integration tests)
+        if: github.ref == 'refs/heads/master' # need secrets, hence can only run on engine repo
         env:
           MAVEN_OPTS: "-Xmx4g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -141,26 +140,25 @@ jobs:
           path: target/ok.html
 
       - name: Checkout Legend Docs
-#        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v4
         with:
           path: 'legend-docs'
-#          ref: 'master'
-          ref: 'rafael-doc-testing' # todo
+          ref: 'master'
           repository: 'finos/legend'
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
           fetch-depth: 0
           persist-credentials: true
 
       - name: Copy Legend Docs
-#        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         shell: bash
         run: |
           mkdir -p legend-docs/website/static/pct/
           cp -rvT target/ok.html legend-docs/website/static/pct/PCT_Report_Compatibility.html
 
       - name: Check for new documentation files
-#        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         id: newFiles
         shell: bash
         working-directory: legend-docs
