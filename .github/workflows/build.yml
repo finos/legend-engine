@@ -89,7 +89,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install -P pct-cloud-test
+          mvn -B -e -DskipTests=true install -P pct-cloud-test -T2
 #          mvn -B -e -DskipTests=true install
 
       - name: Build (with Maven Deploy + Docker Snapshot)
@@ -167,10 +167,11 @@ jobs:
         run: |
           git add -A
           git status --porcelain | wc -l
-          if [[ $(git status --porcelain | wc -l) -gt 0 ]];
+          if [[ $(git status --porcelain | wc -l) -gt 0 ]]; then
             echo  "hasNewFiles=true" >> $GITHUB_OUTPUT
           else
             echo  "hasNewFiles=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit new documentation files
         if: ${{ steps.newFiles.outputs.hasNewFiles == 'true' }}
