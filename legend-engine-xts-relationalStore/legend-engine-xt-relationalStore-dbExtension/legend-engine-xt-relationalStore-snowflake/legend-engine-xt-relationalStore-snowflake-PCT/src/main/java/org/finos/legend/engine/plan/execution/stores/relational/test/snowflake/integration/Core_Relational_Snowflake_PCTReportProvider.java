@@ -34,7 +34,7 @@ public class Core_Relational_Snowflake_PCTReportProvider implements PCTReportPro
     {
         return PCTReportProviderTool.load(Core_Relational_Snowflake_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
                 "pct-reports/ADAPTER_standard_compiled_Snowflake.json",
-                "pct-reports/ADAPTER_unclassified_compiled_Snowflake.json",
+                "pct-reports/ADAPTER_essential_compiled_Snowflake.json",
                 "pct-reports/ADAPTER_grammar_compiled_Snowflake.json",
                 "pct-reports/ADAPTER_relation_compiled_Snowflake.json"
         );

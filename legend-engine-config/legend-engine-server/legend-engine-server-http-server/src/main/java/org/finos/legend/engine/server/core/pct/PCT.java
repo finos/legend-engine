@@ -18,18 +18,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
-import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
-
+import java.util.Set;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.finos.legend.pure.m3.pct.aggregate.generation.DocumentationGeneration;
+import org.finos.legend.pure.m3.pct.aggregate.model.Documentation;
 
 @Api(tags = "PCT")
 @Path("pct")
@@ -39,16 +36,16 @@ public class PCT
     @Path("html")
     @ApiOperation(value = "PCT report in HTML")
     @Produces(MediaType.TEXT_HTML)
-    public Response htmlPCT(@Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    public Response htmlPCT(@QueryParam("adapter") Set<String> adapterKeys)
     {
-        return Response.status(200).type(MediaType.TEXT_HTML).entity(PCT_to_SimpleHTML.buildHTML()).build();
+        return Response.status(200).type(MediaType.TEXT_HTML).entity(PCT_to_SimpleHTML.buildHTML(adapterKeys)).build();
     }
 
     @GET
     @Path("json")
     @ApiOperation(value = "PCT report in JSON")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response jsonPCT(@Pac4JProfileManager @ApiParam(hidden = true) ProfileManager<CommonProfile> pm)
+    public Response jsonPCT()
     {
         try
         {
