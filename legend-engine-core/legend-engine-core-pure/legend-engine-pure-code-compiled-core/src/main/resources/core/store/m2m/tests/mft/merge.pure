@@ -90,12 +90,19 @@ Mapping meta::pure::mapping::modelToModel::test::mft::mapping::merge::mergeTestM
                   address:$src.address
             }
 
-  Address : Pure
+    Address : Pure
             {
                ~src meta::pure::mapping::modelToModel::test::mft::S_Address
-                street:$src.street
+                street:$src.street,
+                type: EnumerationMapping AddressTypeMapping: $src.type
 
-            }  
+            }   
+   
+   AddressType: EnumerationMapping AddressTypeMapping
+  {
+    PRIMARY: ['PRIMARY'],
+    SECONDARY: ['SECONDARY']
+  }
 
             
       Person[p2] : Pure
