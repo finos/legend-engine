@@ -49,6 +49,9 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_pop([*][1,2])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_pop([1,2]) [42001-214]"),
             one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"select var_samp([*][CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)])\"; expected \"DISTINCT, ALL, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS\"; SQL statement:\nselect var_samp([CAST(1.0 AS FLOAT),CAST(2.0 AS FLOAT),CAST(3.0 AS FLOAT)]) [42001-214]"),
 
+            // Numeric
+            one("meta::pure::functions::math::tests::toDegrees::testToDegrees_Function_1__Boolean_1_", "\"\nexpected: 180.0\nactual:   180.00000000000003\""),
+
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception"),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.Firm (_pureId,legalName) values (10,'f1');"),

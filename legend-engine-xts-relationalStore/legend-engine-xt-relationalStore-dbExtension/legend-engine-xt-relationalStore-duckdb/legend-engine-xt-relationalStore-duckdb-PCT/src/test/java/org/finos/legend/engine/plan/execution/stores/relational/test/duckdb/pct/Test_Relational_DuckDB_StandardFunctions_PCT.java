@@ -41,6 +41,10 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "Error while executing: insert into leSchema.Firm (_pureId,legalName) values (10,'f1');"),
             one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014...\n               ^"),
 
+            // Numeric
+            one("meta::pure::functions::math::tests::toDegrees::testToDegrees_Function_1__Boolean_1_", "java.sql.SQLException: Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."),
+            one("meta::pure::functions::math::tests::toRadians::testToRadians_Function_1__Boolean_1_", "java.sql.SQLException: Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."),
+
             // Max
             one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""),
