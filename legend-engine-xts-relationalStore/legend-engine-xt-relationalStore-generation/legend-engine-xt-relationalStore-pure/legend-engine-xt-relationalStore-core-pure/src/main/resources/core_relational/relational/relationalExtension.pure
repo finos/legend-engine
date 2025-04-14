@@ -299,6 +299,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'between',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Bit()}
+            )
+         ])
+      ),
+
+      pair(
          'booland',
          list([
             pair(

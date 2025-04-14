@@ -1011,6 +1011,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   asin,
   atan,
   atan2,
+  between,
   booland,
   boolor,
   average,
