@@ -56,7 +56,7 @@ public class TestArrowNodeExecutor
 
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "", "");
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
         {
             //setup table
@@ -96,7 +96,7 @@ public class TestArrowNodeExecutor
 
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "", "");
         )
 
         {

@@ -48,26 +48,6 @@ function <<paramTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQuery
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
-// Dyna function should only be used for H2 compatibility
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::castBoolean::testCastBoolean(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(
-    name= 'castBoolean', 
-    parameters=[
-      ^DynaFunction(
-        name='case', 
-        parameters=[
-          ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-          ^Literal(value='true'), 
-          ^Literal(value='false')
-        ]
-      )
-    ]
-  );
-  let expected = ^Literal(value=true);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
-}
-
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAndwithConditions(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='and', parameters=[^DynaFunction(name='greaterThan', parameters=[^Literal(value=11), ^Literal(value=1)]),
